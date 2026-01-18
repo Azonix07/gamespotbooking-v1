@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { apiFetch } from '../services/apiClient';
 import '../styles/FeedbackPage.css';
 
 const FeedbackPage = () => {
@@ -92,11 +93,8 @@ const FeedbackPage = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:8000/api/feedback/submit', {
+      const data = await apiFetch('/api/feedback/submit', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           type: formData.type,
           message: formData.message,
@@ -105,8 +103,6 @@ const FeedbackPage = () => {
           priority: formData.priority
         })
       });
-
-      const data = await response.json();
 
       if (data.success) {
         setSuccess(true);
@@ -127,7 +123,7 @@ const FeedbackPage = () => {
       }
     } catch (err) {
       console.error('Error submitting feedback:', err);
-      setError('Failed to submit feedback. Please try again.');
+      setError(err.message || 'Failed to submit feedback. Please try again.');
     } finally {
       setLoading(false);
     }

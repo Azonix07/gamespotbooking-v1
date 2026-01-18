@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import '../styles/AdminLoginPage.css';
+import { apiFetch } from "../services/apiClient";
+
 
 const MembershipPlansPage = () => {
   const navigate = useNavigate();
@@ -18,85 +20,68 @@ const MembershipPlansPage = () => {
   }, []);
 
   const checkAuthAndLoadData = async () => {
-    try {
-      // Always load plans first (for everyone to see)
-      const plansResponse = await fetch('http://localhost:8000/api/membership/plans', {
-        credentials: 'include'
-      });
-      const plansData = await plansResponse.json();
-      
-      if (plansData.success) {
-        setPlans(plansData.plans);
-      }
-      
-      // Check if user is logged in
-      const authResponse = await fetch('http://localhost:8000/api/auth/check', {
-        credentials: 'include'
-      });
-      const authData = await authResponse.json();
-      
-      if (!authData.authenticated || authData.user_type !== 'customer') {
-        setIsLoggedIn(false);
-        setLoading(false);
-        return;
-      }
-      
-      setIsLoggedIn(true);
-      
-      // Load current membership for logged-in users
-      const statusResponse = await fetch('http://localhost:8000/api/membership/status', {
-        credentials: 'include'
-      });
-      const statusData = await statusResponse.json();
-      
-      if (statusData.success && statusData.has_membership) {
-        setCurrentMembership(statusData.membership);
-      }
-      
-    } catch (err) {
-      console.error('Error loading data:', err);
-      setError('Failed to load membership plans');
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    // 1️⃣ Load plans (public)
+    const plansData = await apiFetch("/api/membership/plans");
 
-  const handleSubscribe = async (planType) => {
-    // If not logged in, redirect to login
-    if (!isLoggedIn) {
-      navigate('/login', { state: { from: '/membership' } });
+    if (plansData.success) {
+      setPlans(plansData.plans);
+    }
+
+    // 2️⃣ Check auth
+    const authData = await apiFetch("/api/auth/check");
+
+    if (!authData.authenticated || authData.user_type !== "customer") {
+      setIsLoggedIn(false);
       return;
     }
-    
-    try {
-      setSubscribing(planType);
-      setError(null);
-      
-      const response = await fetch('http://localhost:8000/api/membership/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ plan_type: planType })
-      });
 
-      const data = await response.json();
-      
-      if (data.success) {
-        alert(`✅ ${data.message}\n\nYour ${planType} membership is now active!`);
-        checkAuthAndLoadData(); // Reload data
-      } else {
-        setError(data.error || 'Subscription failed');
-      }
-      
-    } catch (err) {
-      setError('Subscription failed. Please try again.');
-      console.error('Subscribe error:', err);
-    } finally {
-      setSubscribing(null);
+    setIsLoggedIn(true);
+
+    // 3️⃣ Load membership status
+    const statusData = await apiFetch("/api/membership/status");
+
+    if (statusData.success && statusData.has_membership) {
+      setCurrentMembership(statusData.membership);
     }
-  };
+  } catch (err) {
+    console.error("Error loading data:", err);
+    setError("Failed to load membership plans");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  const handleSubscribe = async (planType) => {
+  if (!isLoggedIn) {
+    navigate("/login", { state: { from: "/membership" } });
+    return;
+  }
+
+  try {
+    setSubscribing(planType);
+    setError(null);
+
+    const data = await apiFetch("/api/membership/subscribe", {
+      method: "POST",
+      body: JSON.stringify({ plan_type: planType }),
+    });
+
+    if (data.success) {
+      alert(`✅ ${data.message}\n\nYour ${planType} membership is now active!`);
+      checkAuthAndLoadData();
+    } else {
+      setError(data.error || "Subscription failed");
+    }
+  } catch (err) {
+    console.error("Subscribe error:", err);
+    setError("Subscription failed. Please try again.");
+  } finally {
+    setSubscribing(null);
+  }
+};
+
 
   if (loading) {
     return (

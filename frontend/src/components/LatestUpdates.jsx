@@ -9,6 +9,8 @@ import {
   FiChevronRight
 } from 'react-icons/fi';
 import '../styles/LatestUpdates.css';
+import { apiFetch } from "../services/apiClient";
+
 
 const LatestUpdates = () => {
   const [updates, setUpdates] = useState([]);
@@ -20,19 +22,19 @@ const LatestUpdates = () => {
   }, []);
 
   const fetchUpdates = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/updates/latest?limit=6');
-      const data = await response.json();
-      
-      if (data.success) {
-        setUpdates(data.updates);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching updates:', error);
-      setLoading(false);
+  try {
+    const data = await apiFetch("/api/updates/latest?limit=6");
+
+    if (data.success) {
+      setUpdates(data.updates);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching updates:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const getCategoryIcon = (category) => {
     switch (category) {

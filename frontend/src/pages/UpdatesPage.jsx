@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { apiFetch } from '../services/apiClient';
 import '../styles/UpdatesPage.css';
 
 const UpdatesPage = () => {
@@ -27,8 +28,7 @@ const UpdatesPage = () => {
   const fetchUpdates = async () => {
     try {
       const categoryParam = selectedCategory !== 'all' ? `&category=${selectedCategory}` : '';
-      const response = await fetch(`http://localhost:8000/api/updates/latest?limit=50${categoryParam}`);
-      const data = await response.json();
+      const data = await apiFetch(`/api/updates/latest?limit=50${categoryParam}`);
       
       if (data.success) {
         setUpdates(data.updates);
@@ -42,8 +42,7 @@ const UpdatesPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/updates/categories');
-      const data = await response.json();
+      const data = await apiFetch('/api/updates/categories');
       
       if (data.success) {
         setCategories(data.categories);

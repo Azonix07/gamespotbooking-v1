@@ -5,6 +5,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AIChat from '../components/AIChat';
 import '../styles/HomePage.css';
+import { apiFetch } from "../services/apiClient";
+
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -17,38 +19,37 @@ const HomePage = () => {
   }, []);
 
   const checkUserSession = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/auth/check', {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      
-      if (data.authenticated) {
-        if (data.user_type === 'admin') {
-          setIsAdmin(true);
-          setUser({ name: data.user.username });
-        } else {
-          setUser(data.user);
-        }
+  try {
+    const data = await apiFetch("/api/auth/check");
+
+    if (data.authenticated) {
+      if (data.user_type === "admin") {
+        setIsAdmin(true);
+        setUser({ name: data.user.username });
+      } else {
+        setUser(data.user);
       }
-    } catch (err) {
-      console.error('Session check error:', err);
     }
-  };
+  } catch (err) {
+    console.error("Session check error:", err);
+  }
+};
+
 
   const handleLogout = async () => {
-    try {
-      await fetch('http://localhost:8000/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      });
-      setUser(null);
-      setIsAdmin(false);
-      window.location.reload();
-    } catch (err) {
-      console.error('Logout error:', err);
-    }
-  };
+  try {
+    await apiFetch("/api/auth/logout", {
+      method: "POST",
+    });
+
+    setUser(null);
+    setIsAdmin(false);
+    window.location.reload();
+  } catch (err) {
+    console.error("Logout error:", err);
+  }
+};
+
 
   return (
     <div className="hero-container">

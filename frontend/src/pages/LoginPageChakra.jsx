@@ -36,6 +36,7 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { apiFetch } from '../services/apiClient';
 
 const LoginPageChakra = () => {
   const navigate = useNavigate();
@@ -65,10 +66,7 @@ const LoginPageChakra = () => {
 
   const checkSession = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/check', {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const data = await apiFetch('/api/auth/check');
       
       if (data.authenticated) {
         if (data.user_type === 'admin') {
@@ -90,19 +88,13 @@ const LoginPageChakra = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:8000/api/auth/login', {
+      const data = await apiFetch('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify({
           username: identifier,
           password: password
         })
       });
-
-      const data = await response.json();
       
       if (data.success) {
         toast({
@@ -123,7 +115,7 @@ const LoginPageChakra = () => {
       }
       
     } catch (err) {
-      setError('Login failed. Please try again.');
+      setError(err.message || 'Login failed. Please try again.');
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -147,12 +139,8 @@ const LoginPageChakra = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:8000/api/auth/signup', {
+      const data = await apiFetch('/api/auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify({
           name: signupName,
           email: signupEmail,
@@ -160,8 +148,6 @@ const LoginPageChakra = () => {
           password: signupPassword
         })
       });
-
-      const data = await response.json();
       
       if (data.success) {
         toast({
@@ -184,7 +170,7 @@ const LoginPageChakra = () => {
       }
       
     } catch (err) {
-      setError('Registration failed. Please try again.');
+      setError(err.message || 'Registration failed. Please try again.');
       console.error('Signup error:', err);
     } finally {
       setLoading(false);

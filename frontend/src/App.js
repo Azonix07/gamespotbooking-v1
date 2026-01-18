@@ -5,9 +5,8 @@ import BookingPage from './pages/BookingPage.jsx';
 import RentalPage from './pages/RentalPage.jsx';
 import CollegeSetupPage from './pages/CollegeSetupPage.jsx';
 import DiscountGamePage from './pages/DiscountGamePage.jsx';
-import AdminLoginPage from './pages/AdminLoginPage.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
-import LoginPageChakra from './pages/LoginPageChakra.jsx';
+import LoginPage from './pages/LoginPage.jsx';
 import SignupPage from './pages/SignupPage.jsx';
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
 import MembershipPlansPage from './pages/MembershipPlansPage.jsx';
@@ -59,7 +58,7 @@ function App() {
         <Route path="/discount-game" element={<DiscountGamePage />} />
         <Route path="/games" element={<GamesPage />} />
         <Route path="/updates" element={<UpdatesPage />} />
-        <Route path="/login" element={<LoginPageChakra />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/membership" element={<MembershipPlansPage />} />

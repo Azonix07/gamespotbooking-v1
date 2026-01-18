@@ -34,8 +34,15 @@ import {
   getAdminUsers,
   getAdminMemberships,
   getAdminStats,
-  getAnalytics
+  getAnalytics,
+  getRentals,
+  getRentalStats,
+  getCollegeBookings,
+  getCollegeStats,
+  getGameLeaderboard,
+  getGameStats
 } from '../services/api';
+
 import { formatDuration, formatPrice, formatTime12Hour } from '../utils/helpers';
 import ThemeSelector from '../components/ThemeSelector';
 import '../styles/AdminDashboard.css';
@@ -139,71 +146,43 @@ const AdminDashboard = () => {
   };
   
   const loadRentals = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/rentals', {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      if (data.success) {
-        setRentals(data.rentals || []);
-      }
-      
-      // Get stats
-      const statsResponse = await fetch('http://localhost:8000/api/rentals/stats', {
-        credentials: 'include'
-      });
-      const statsData = await statsResponse.json();
-      if (statsData.success) {
-        setRentalStats(statsData.stats);
-      }
-    } catch (err) {
-      console.error('Error loading rentals:', err);
-    }
-  };
+  try {
+    const rentalsData = await getRentals();
+    setRentals(rentalsData.rentals || []);
+
+    const statsData = await getRentalStats();
+    setRentalStats(statsData.stats || null);
+  } catch (err) {
+    console.error("Error loading rentals:", err);
+  }
+};
+
   
   const loadCollegeBookings = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/college-bookings', {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      if (data.success) {
-        setCollegeBookings(data.bookings || []);
-      }
-      
-      // Get stats
-      const statsResponse = await fetch('http://localhost:8000/api/college-bookings/stats', {
-        credentials: 'include'
-      });
-      const statsData = await statsResponse.json();
-      if (statsData.success) {
-        setCollegeStats(statsData.stats);
-      }
-    } catch (err) {
-      console.error('Error loading college bookings:', err);
-    }
-  };
+  try {
+    const bookingsData = await getCollegeBookings();
+    setCollegeBookings(bookingsData.bookings || []);
+
+    const statsData = await getCollegeStats();
+    setCollegeStats(statsData.stats || null);
+  } catch (err) {
+    console.error("Error loading college bookings:", err);
+  }
+};
+
   
   const loadGameLeaderboard = async () => {
-    try {
-      const response = await fetch(`http://localhost:8000/api/game/leaderboard?period=${gamePeriod}&limit=100`);
-      const data = await response.json();
-      if (data.success) {
-        setGameLeaderboard(data.leaderboard || []);
-      }
-      
-      // Get stats
-      const statsResponse = await fetch('http://localhost:8000/api/game/stats', {
-        credentials: 'include'
-      });
-      const statsData = await statsResponse.json();
-      if (statsData.success) {
-        setGameStats(statsData.stats);
-      }
-    } catch (err) {
-      console.error('Error loading game leaderboard:', err);
-    }
-  };
+  try {
+    const leaderboardData = await getGameLeaderboard(gamePeriod, 100);
+    setGameLeaderboard(leaderboardData.leaderboard || []);
+
+    const statsData = await getGameStats();
+    setGameStats(statsData.stats || null);
+  } catch (err) {
+    console.error("Error loading game leaderboard:", err);
+  }
+};
+
 
   const applyBookingFilters = () => {
     let filtered = [...bookings];

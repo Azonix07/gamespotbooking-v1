@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiUser } from 'react-icons/fi';
+import { apiFetch } from '../services/apiClient';
 import '../styles/Navbar.css';
 
 const Navbar = ({ showCenter = true }) => {
@@ -42,10 +43,7 @@ const Navbar = ({ showCenter = true }) => {
 
   const checkUserSession = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/check', {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const data = await apiFetch('/api/auth/check');
       
       console.log('Navbar session check:', data); // Debug log
       
@@ -64,9 +62,8 @@ const Navbar = ({ showCenter = true }) => {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:8000/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
+      await apiFetch('/api/auth/logout', {
+        method: 'POST'
       });
       setUser(null);
       setIsAdmin(false);

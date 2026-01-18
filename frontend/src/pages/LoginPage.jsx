@@ -13,6 +13,7 @@ import {
   FiCheckCircle
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
+import { apiFetch } from '../services/apiClient';
 import '../styles/LoginPage.css';
 
 const LoginPage = () => {
@@ -45,10 +46,7 @@ const LoginPage = () => {
 
   const checkSession = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/check', {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const data = await apiFetch('/api/auth/check');
       
       if (data.authenticated) {
         if (data.user_type === 'admin') {
@@ -70,19 +68,13 @@ const LoginPage = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:8000/api/auth/login', {
+      const data = await apiFetch('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify({
           username: identifier,
           password: password
         })
       });
-
-      const data = await response.json();
       
       if (data.success) {
         if (data.user_type === 'admin') {
@@ -96,7 +88,7 @@ const LoginPage = () => {
       }
       
     } catch (err) {
-      setError('Login failed. Please try again.');
+      setError(err.message || 'Login failed. Please try again.');
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -125,12 +117,8 @@ const LoginPage = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:8000/api/auth/register', {
+      const data = await apiFetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify({
           name: signupName,
           email: signupEmail,
@@ -138,8 +126,6 @@ const LoginPage = () => {
           password: signupPassword
         })
       });
-
-      const data = await response.json();
       
       if (data.success) {
         setSuccess('Account created successfully! Redirecting...');
@@ -152,7 +138,7 @@ const LoginPage = () => {
       }
       
     } catch (err) {
-      setError('Registration failed. Please try again.');
+      setError(err.message || 'Registration failed. Please try again.');
       console.error('Signup error:', err);
     } finally {
       setLoading(false);

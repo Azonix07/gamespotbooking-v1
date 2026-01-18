@@ -6,6 +6,7 @@ import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipS
 import { formatDate, getToday, formatDuration, formatPrice, formatTime12Hour, isValidName, isValidPhone } from '../utils/helpers';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { apiFetch } from '../services/apiClient';
 import '../styles/BookingPage.css';
 
 const BookingPage = () => {
@@ -82,10 +83,7 @@ const BookingPage = () => {
 
   const checkUserSession = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/check', {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const data = await apiFetch('/api/auth/check');
       
       if (data.authenticated && data.user_type !== 'admin') {
         // User is logged in (not admin)

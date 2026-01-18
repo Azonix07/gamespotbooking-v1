@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { apiFetch } from '../services/apiClient';
 import '../styles/AdminLoginPage.css';  // Reuse existing styles
 
 const SignupPage = () => {
@@ -88,16 +89,10 @@ const SignupPage = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:8000/api/auth/signup', {
+      const data = await apiFetch('/api/auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify(formData)
       });
-
-      const data = await response.json();
       
       if (data.success) {
         // Auto-logged in after signup
@@ -107,7 +102,7 @@ const SignupPage = () => {
       }
       
     } catch (err) {
-      setError('Signup failed. Please try again.');
+      setError(err.message || 'Signup failed. Please try again.');
       console.error('Signup error:', err);
     } finally {
       setLoading(false);

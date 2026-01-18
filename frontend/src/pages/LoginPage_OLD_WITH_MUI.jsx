@@ -27,6 +27,7 @@ import {
   Person
 } from '@mui/icons-material';
 import Navbar from '../components/Navbar';
+import { apiFetch } from '../services/apiClient';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 // Modern Glassmorphic Theme
@@ -166,10 +167,7 @@ const LoginPage = () => {
 
   const checkSession = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/check', {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const data = await apiFetch('/api/auth/check');
       
       if (data.authenticated) {
         // Redirect based on user type
@@ -194,19 +192,13 @@ const LoginPage = () => {
       setError(null);
       
       // Unified login API call
-      const response = await fetch('http://localhost:8000/api/auth/login', {
+      const data = await apiFetch('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify({
           username: identifier,  // Can be email or "admin"
           password: password
         })
       });
-
-      const data = await response.json();
       
       if (data.success) {
         // Redirect based on user type
@@ -222,7 +214,7 @@ const LoginPage = () => {
       }
       
     } catch (err) {
-      setError('Login failed. Please try again.');
+      setError(err.message || 'Login failed. Please try again.');
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -265,12 +257,8 @@ const LoginPage = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:8000/api/auth/signup', {
+      const data = await apiFetch('/api/auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify({
           name: signupName,
           email: signupEmail,
@@ -278,8 +266,6 @@ const LoginPage = () => {
           password: signupPassword
         })
       });
-
-      const data = await response.json();
       
       if (data.success) {
         // Auto-login after signup - redirect to home
@@ -290,7 +276,7 @@ const LoginPage = () => {
       }
       
     } catch (err) {
-      setError('Signup failed. Please try again.');
+      setError(err.message || 'Signup failed. Please try again.');
       console.error('Signup error:', err);
     } finally {
       setLoading(false);

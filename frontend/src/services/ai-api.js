@@ -1,67 +1,74 @@
 /**
  * AI Booking Assistant API Service
  * Handles communication with the AI chat endpoint
+ * Works in local + production (Railway)
  */
 
-const API_BASE_URL = 'http://localhost:8000/api';
+// 🔑 Use the SAME central backend URL
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL ||
+  "https://gamespotbooking-v1-production.up.railway.app";
 
-/**
- * Send a message to the AI assistant
- * @param {string} message - The user's message
- * @param {string|null} sessionId - Optional session ID for conversation continuity
- * @param {object} context - Optional context object (device, date, time, etc.)
- * @returns {Promise<object>} AI response with reply, action, context, and session_id
- */
-export const sendAIMessage = async (message, sessionId = null, context = {}) => {
+// =======================================================
+// Send message to AI assistant
+// =======================================================
+
+export const sendAIMessage = async (
+  message,
+  sessionId = null,
+  context = {}
+) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/ai/chat`, {
-      method: 'POST',
+    const response = await fetch(`${API_BASE_URL}/api/ai/chat`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify({
         message,
         session_id: sessionId,
-        context
-      })
+        context,
+      }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'AI request failed');
+      throw new Error(errorData.error || "AI request failed");
     }
 
     return await response.json();
   } catch (error) {
-    console.error('AI API Error:', error);
+    console.error("AI API Error:", error);
     throw error;
   }
 };
 
-/**
- * Clear the AI conversation session
- * @param {string} sessionId - The session ID to clear
- * @returns {Promise<object>} Response confirming session cleared
- */
+// =======================================================
+// Clear AI session
+// =======================================================
+
 export const clearAISession = async (sessionId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/ai/clear-session`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ session_id: sessionId })
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/api/ai/clear-session`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ session_id: sessionId }),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error('Failed to clear AI session');
+      throw new Error("Failed to clear AI session");
     }
 
     return await response.json();
   } catch (error) {
-    console.error('AI Session Clear Error:', error);
+    console.error("AI Session Clear Error:", error);
     throw error;
   }
 };

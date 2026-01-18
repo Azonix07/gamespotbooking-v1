@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { apiFetch } from '../services/apiClient';
 import '../styles/AdminLoginPage.css';
 
 const ForgotPasswordPage = () => {
@@ -32,16 +33,10 @@ const ForgotPasswordPage = () => {
       setError(null);
       setSuccess(null);
       
-      const response = await fetch('http://localhost:8000/api/auth/forgot-password', {
+      const data = await apiFetch('/api/auth/forgot-password', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify({ email })
       });
-
-      const data = await response.json();
       
       if (data.success) {
         setSuccess('If the email exists, a reset link has been sent. Please check your email (or console in dev mode).');
@@ -50,7 +45,7 @@ const ForgotPasswordPage = () => {
       }
       
     } catch (err) {
-      setError('Failed to send reset email. Please try again.');
+      setError(err.message || 'Failed to send reset email. Please try again.');
       console.error('Reset request error:', err);
     } finally {
       setLoading(false);
@@ -78,20 +73,14 @@ const ForgotPasswordPage = () => {
       const params = new URLSearchParams(location.search);
       const token = params.get('token');
       
-      const response = await fetch('http://localhost:8000/api/auth/reset-password', {
+      const data = await apiFetch('/api/auth/reset-password', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify({
           token,
           password: newPassword,
           confirmPassword
         })
       });
-
-      const data = await response.json();
       
       if (data.success) {
         setSuccess('Password reset successful! Redirecting to login...');
@@ -103,7 +92,7 @@ const ForgotPasswordPage = () => {
       }
       
     } catch (err) {
-      setError('Password reset failed. Please try again.');
+      setError(err.message || 'Password reset failed. Please try again.');
       console.error('Password reset error:', err);
     } finally {
       setLoading(false);

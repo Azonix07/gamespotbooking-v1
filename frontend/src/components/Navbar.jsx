@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FiUser, FiHome, FiGrid, FiPackage, FiPhone, FiGift, FiMessageSquare, FiCalendar, FiBell, FiX, FiAward, FiTarget, FiStar } from 'react-icons/fi';
 import '../styles/Navbar.css';
+import { apiFetch } from "../services/apiClient";
+
 
 const Navbar = ({ showCenter = true }) => {
   const navigate = useNavigate();
@@ -61,42 +63,47 @@ const Navbar = ({ showCenter = true }) => {
   }, [showProfileDropdown]);
 
   const checkUserSession = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/auth/check', {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      
-      console.log('Navbar session check:', data); // Debug log
-      
-      if (data.authenticated) {
-        if (data.user_type === 'admin') {
-          setIsAdmin(true);
-          setUser({ name: data.user.username || 'Admin' });
-        } else {
-          setUser(data.user);
-        }
-      }
-    } catch (err) {
-      console.error('Navbar session check error:', err);
-    }
-  };
+  try {
+    const data = await apiFetch("/api/auth/check");
 
-  const handleLogout = async () => {
-    try {
-      await fetch('http://localhost:8000/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      });
+    console.log("Navbar session check:", data);
+
+    if (data.authenticated) {
+      if (data.user_type === "admin") {
+        setIsAdmin(true);
+        setUser({ name: data.user?.username || "Admin" });
+      } else {
+        setUser(data.user);
+      }
+    } else {
       setUser(null);
       setIsAdmin(false);
-      setShowProfileDropdown(false);
-      navigate('/');
-      window.location.reload();
-    } catch (err) {
-      console.error('Logout error:', err);
     }
-  };
+  } catch (err) {
+    console.error("Navbar session check error:", err);
+    setUser(null);
+    setIsAdmin(false);
+  }
+};
+
+
+  const handleLogout = async () => {
+  try {
+    await apiFetch("/api/auth/logout", {
+      method: "POST",
+    });
+
+    setUser(null);
+    setIsAdmin(false);
+    setShowProfileDropdown(false);
+
+    navigate("/");
+    window.location.reload();
+  } catch (err) {
+    console.error("Logout error:", err);
+  }
+};
+
 
   const handleProfileClick = () => {
     setShowProfileDropdown(!showProfileDropdown);

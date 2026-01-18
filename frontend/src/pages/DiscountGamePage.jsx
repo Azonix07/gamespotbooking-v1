@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { apiFetch } from '../services/apiClient';
 import '../styles/DiscountGamePage.css';
 
 const DiscountGamePage = () => {
@@ -159,11 +160,8 @@ const DiscountGamePage = () => {
     try {
       const accuracy = totalClicks > 0 ? ((enemiesShot + bossesShot) / totalClicks * 100).toFixed(2) : 0;
       
-      const response = await fetch('http://localhost:8000/api/game/score', {
+      const data = await apiFetch('/api/game/score', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           player_name: name,
           score: finalScore,
@@ -176,8 +174,6 @@ const DiscountGamePage = () => {
           browser: navigator.userAgent.split(/[()]/)[1] || 'unknown'
         })
       });
-
-      const data = await response.json();
       
       if (data.success) {
         console.log('Score submitted to backend:', data);
