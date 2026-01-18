@@ -140,15 +140,19 @@ def get_analytics_stats():
         # Browser stats (simplified from user agent)
         cursor.execute('''
             SELECT 
-                CASE
-                    WHEN user_agent LIKE '%Chrome%' THEN 'Chrome'
-                    WHEN user_agent LIKE '%Firefox%' THEN 'Firefox'
-                    WHEN user_agent LIKE '%Safari%' AND user_agent NOT LIKE '%Chrome%' THEN 'Safari'
-                    WHEN user_agent LIKE '%Edge%' THEN 'Edge'
-                    ELSE 'Other'
-                END as browser,
+                browser,
                 COUNT(*) as count
-            FROM page_visits
+            FROM (
+                SELECT 
+                    CASE
+                        WHEN user_agent LIKE '%Chrome%' AND user_agent NOT LIKE '%Edge%' THEN 'Chrome'
+                        WHEN user_agent LIKE '%Firefox%' THEN 'Firefox'
+                        WHEN user_agent LIKE '%Safari%' AND user_agent NOT LIKE '%Chrome%' THEN 'Safari'
+                        WHEN user_agent LIKE '%Edge%' THEN 'Edge'
+                        ELSE 'Other'
+                    END as browser
+                FROM page_visits
+            ) as browser_data
             GROUP BY browser
             ORDER BY count DESC
         ''')
@@ -157,13 +161,17 @@ def get_analytics_stats():
         # Device stats (desktop vs mobile)
         cursor.execute('''
             SELECT 
-                CASE
-                    WHEN user_agent LIKE '%Mobile%' OR user_agent LIKE '%Android%' THEN 'Mobile'
-                    WHEN user_agent LIKE '%Tablet%' OR user_agent LIKE '%iPad%' THEN 'Tablet'
-                    ELSE 'Desktop'
-                END as device,
+                device,
                 COUNT(*) as count
-            FROM page_visits
+            FROM (
+                SELECT 
+                    CASE
+                        WHEN user_agent LIKE '%Mobile%' OR user_agent LIKE '%Android%' THEN 'Mobile'
+                        WHEN user_agent LIKE '%Tablet%' OR user_agent LIKE '%iPad%' THEN 'Tablet'
+                        ELSE 'Desktop'
+                    END as device
+                FROM page_visits
+            ) as device_data
             GROUP BY device
             ORDER BY count DESC
         ''')
