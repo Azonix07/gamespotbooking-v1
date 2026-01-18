@@ -671,7 +671,9 @@ const BookingPage = () => {
                 <div className="time-section-full">
                   <div className="time-slots-header">
                     <div className="header-left">
-                      <FiClock className="header-icon" />
+                      <div className="header-icon">
+                        <FiClock />
+                      </div>
                       <div className="header-text">
                         <h3 className="header-title">Available Time Slots</h3>
                         <p className="header-subtitle">Select your preferred gaming time</p>
