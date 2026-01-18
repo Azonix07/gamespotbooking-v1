@@ -2,6 +2,19 @@
    LOGIN PAGE - MODERN GLASSMORPHIC DESIGN
    =================================== */
 
+/* CSS Variables - Ensure they're defined */
+:root {
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-dark: #4f46e5;
+  --secondary: #10b981;
+  --white: #ffffff;
+  --light-gray: #f1f5f9;
+  --gray: #94a3b8;
+  --dark: #0f172a;
+  --dark-light: #1e293b;
+}
+
 .login-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #0a0f1e 0%, #1e293b 50%, #312e81 100%);
