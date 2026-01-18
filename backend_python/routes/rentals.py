@@ -1,0 +1,396 @@
+"""
+Rental Bookings API Routes
+Handles VR and PS5 rental booking operations
+"""
+
+from flask import Blueprint, request, jsonify, session
+from config.database import get_db_connection
+from datetime import datetime, timedelta
+import re
+
+rentals_bp = Blueprint('rentals', __name__)
+
+def validate_phone(phone):
+    """Validate phone number format"""
+    pattern = r'^\+?[1-9]\d{1,14}$'
+    return re.match(pattern, phone.replace(' ', '').replace('-', ''))
+
+def validate_email(email):
+    """Validate email format"""
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email)
+
+@rentals_bp.route('/api/rentals', methods=['GET', 'POST', 'OPTIONS'])
+def handle_rentals():
+    """Handle rental booking operations"""
+    
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    # GET: Retrieve rental bookings (with optional filters)
+    if request.method == 'GET':
+        conn = None
+        cursor = None
+        
+        try:
+            # Get query parameters
+            status = request.args.get('status')
+            device_type = request.args.get('device_type')
+            date_from = request.args.get('date_from')
+            date_to = request.args.get('date_to')
+            limit = request.args.get('limit', 100, type=int)
+            offset = request.args.get('offset', 0, type=int)
+            
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            # Build query with filters
+            query = 'SELECT * FROM rental_bookings WHERE 1=1'
+            params = []
+            
+            if status:
+                query += ' AND status = %s'
+                params.append(status)
+            
+            if device_type:
+                query += ' AND device_type = %s'
+                params.append(device_type)
+            
+            if date_from:
+                query += ' AND start_date >= %s'
+                params.append(date_from)
+            
+            if date_to:
+                query += ' AND end_date <= %s'
+                params.append(date_to)
+            
+            query += ' ORDER BY created_at DESC LIMIT %s OFFSET %s'
+            params.extend([limit, offset])
+            
+            cursor.execute(query, params)
+            rentals = cursor.fetchall()
+            
+            # Get total count
+            count_query = 'SELECT COUNT(*) as total FROM rental_bookings WHERE 1=1'
+            count_params = params[:-2]  # Exclude limit and offset
+            
+            if status:
+                count_query += ' AND status = %s'
+            if device_type:
+                count_query += ' AND device_type = %s'
+            if date_from:
+                count_query += ' AND start_date >= %s'
+            if date_to:
+                count_query += ' AND end_date <= %s'
+            
+            cursor.execute(count_query, count_params if count_params else [])
+            total = cursor.fetchone()['total']
+            
+            return jsonify({
+                'success': True,
+                'rentals': rentals,
+                'total': total,
+                'limit': limit,
+                'offset': offset
+            })
+            
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+    
+    # POST: Create new rental booking
+    if request.method == 'POST':
+        conn = None
+        cursor = None
+        
+        try:
+            data = request.get_json()
+            
+            # Validate required fields
+            required_fields = [
+                'customer_name', 'customer_phone', 'delivery_address',
+                'device_type', 'start_date', 'end_date', 'rental_days',
+                'package_type', 'base_price', 'total_price'
+            ]
+            
+            for field in required_fields:
+                if field not in data or not data[field]:
+                    return jsonify({
+                        'success': False,
+                        'error': f'Missing required field: {field}'
+                    }), 400
+            
+            # Validate phone number
+            if not validate_phone(data['customer_phone']):
+                return jsonify({
+                    'success': False,
+                    'error': 'Invalid phone number format'
+                }), 400
+            
+            # Validate email if provided
+            if data.get('customer_email') and not validate_email(data['customer_email']):
+                return jsonify({
+                    'success': False,
+                    'error': 'Invalid email format'
+                }), 400
+            
+            # Validate device type
+            if data['device_type'] not in ['vr', 'ps5']:
+                return jsonify({
+                    'success': False,
+                    'error': 'Invalid device type. Must be "vr" or "ps5"'
+                }), 400
+            
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            # Generate booking ID
+            booking_id = f"RNT-{datetime.now().strftime('%Y%m%d')}-{datetime.now().timestamp():.0f}"
+            
+            # Insert rental booking
+            query = '''
+                INSERT INTO rental_bookings (
+                    customer_name, customer_phone, customer_email, delivery_address,
+                    device_type, start_date, end_date, rental_days,
+                    extra_controllers, controller_cost,
+                    package_type, base_price, total_price, savings,
+                    status, payment_status, booking_id, notes
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                )
+            '''
+            
+            params = (
+                data['customer_name'],
+                data['customer_phone'],
+                data.get('customer_email', ''),
+                data['delivery_address'],
+                data['device_type'],
+                data['start_date'],
+                data['end_date'],
+                data['rental_days'],
+                data.get('extra_controllers', 0),
+                data.get('controller_cost', 0.00),
+                data['package_type'],
+                data['base_price'],
+                data['total_price'],
+                data.get('savings', 0.00),
+                'pending',
+                'pending',
+                booking_id,
+                data.get('notes', '')
+            )
+            
+            cursor.execute(query, params)
+            conn.commit()
+            
+            rental_id = cursor.lastrowid
+            
+            return jsonify({
+                'success': True,
+                'message': 'Rental booking created successfully',
+                'rental_id': rental_id,
+                'booking_id': booking_id
+            }), 201
+            
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+@rentals_bp.route('/api/rentals/<int:rental_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
+def handle_rental_by_id(rental_id):
+    """Handle individual rental booking operations"""
+    
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    # GET: Retrieve specific rental
+    if request.method == 'GET':
+        conn = None
+        cursor = None
+        
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            query = 'SELECT * FROM rental_bookings WHERE id = %s'
+            cursor.execute(query, (rental_id,))
+            rental = cursor.fetchone()
+            
+            if not rental:
+                return jsonify({
+                    'success': False,
+                    'error': 'Rental booking not found'
+                }), 404
+            
+            return jsonify({
+                'success': True,
+                'rental': rental
+            })
+            
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+    
+    # PUT: Update rental booking (admin only)
+    if request.method == 'PUT':
+        # Check admin session
+        if not session.get('admin_logged_in'):
+            return jsonify({
+                'success': False,
+                'error': 'Admin authentication required'
+            }), 401
+        
+        conn = None
+        cursor = None
+        
+        try:
+            data = request.get_json()
+            
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            # Build update query dynamically
+            update_fields = []
+            params = []
+            
+            allowed_fields = [
+                'status', 'payment_status', 'start_date', 'end_date',
+                'total_price', 'admin_notes'
+            ]
+            
+            for field in allowed_fields:
+                if field in data:
+                    update_fields.append(f'{field} = %s')
+                    params.append(data[field])
+            
+            if not update_fields:
+                return jsonify({
+                    'success': False,
+                    'error': 'No valid fields to update'
+                }), 400
+            
+            params.append(rental_id)
+            
+            query = f'UPDATE rental_bookings SET {", ".join(update_fields)} WHERE id = %s'
+            cursor.execute(query, params)
+            conn.commit()
+            
+            if cursor.rowcount == 0:
+                return jsonify({
+                    'success': False,
+                    'error': 'Rental booking not found'
+                }), 404
+            
+            return jsonify({
+                'success': True,
+                'message': 'Rental booking updated successfully'
+            })
+            
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+    
+    # DELETE: Cancel/delete rental booking (admin only)
+    if request.method == 'DELETE':
+        # Check admin session
+        if not session.get('admin_logged_in'):
+            return jsonify({
+                'success': False,
+                'error': 'Admin authentication required'
+            }), 401
+        
+        conn = None
+        cursor = None
+        
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            # Soft delete: Update status to cancelled
+            query = 'UPDATE rental_bookings SET status = %s WHERE id = %s'
+            cursor.execute(query, ('cancelled', rental_id))
+            conn.commit()
+            
+            if cursor.rowcount == 0:
+                return jsonify({
+                    'success': False,
+                    'error': 'Rental booking not found'
+                }), 404
+            
+            return jsonify({
+                'success': True,
+                'message': 'Rental booking cancelled successfully'
+            })
+            
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+@rentals_bp.route('/api/rentals/stats', methods=['GET', 'OPTIONS'])
+def get_rental_stats():
+    """Get rental statistics (admin only)"""
+    
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    # Check admin session
+    if not session.get('admin_logged_in'):
+        return jsonify({
+            'success': False,
+            'error': 'Admin authentication required'
+        }), 401
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Call stored procedure
+        cursor.callproc('get_rental_stats')
+        
+        # Fetch results
+        stats = None
+        for result in cursor.stored_results():
+            stats = result.fetchone()
+        
+        return jsonify({
+            'success': True,
+            'stats': stats
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

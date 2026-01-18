@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+mobile/node_modules/
+
+# Mobile app (do not upload)
+mobile/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# Frontend build
+frontend/build/
+
+# Mac
+.DS_Store

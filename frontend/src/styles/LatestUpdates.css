@@ -1,0 +1,489 @@
+/* ========================================
+   Latest Updates Section - Professional Design
+   ======================================== */
+
+.latest-updates-section {
+  width: 100%;
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.latest-updates-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.updates-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================================
+   Header Section
+   ======================================== */
+
+.updates-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-icon {
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.header-icon svg {
+  font-size: 32px;
+  color: white;
+}
+
+.header-text {
+  color: white;
+}
+
+.section-title {
+  font-size: 42px;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0.8));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-subtitle {
+  font-size: 18px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.header-badge {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.update-count {
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* ========================================
+   Updates Grid
+   ======================================== */
+
+.updates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+/* ========================================
+   Update Card
+   ======================================== */
+
+.update-card {
+  background: white;
+  border-radius: 20px;
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.update-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  border-color: var(--category-color);
+}
+
+.update-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--category-color);
+}
+
+/* Card Decoration */
+.card-decoration {
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  background: var(--category-color);
+  opacity: 0.05;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.update-card:hover .card-decoration {
+  opacity: 0.1;
+  transform: scale(1.2);
+}
+
+/* ========================================
+   Priority Badge
+   ======================================== */
+
+.priority-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 2;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.priority-badge.urgent {
+  background: linear-gradient(135deg, #f97316, #dc2626);
+  color: white;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.priority-badge.high {
+  background: linear-gradient(135deg, #f59e0b, #eab308);
+  color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ========================================
+   Category Badge
+   ======================================== */
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--category-color);
+  color: white;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  opacity: 0.9;
+  transition: all 0.3s ease;
+}
+
+.update-card:hover .category-badge {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.category-icon {
+  font-size: 16px;
+}
+
+/* ========================================
+   Card Content
+   ======================================== */
+
+.card-content {
+  margin-bottom: 24px;
+}
+
+.update-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+}
+
+.update-card:hover .update-title {
+  color: var(--category-color);
+}
+
+.update-description {
+  font-size: 15px;
+  color: #4a5568;
+  line-height: 1.7;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ========================================
+   Card Footer
+   ======================================== */
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 2px solid #f1f5f9;
+}
+
+.update-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.update-date svg {
+  font-size: 16px;
+}
+
+.learn-more-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--category-color);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.learn-more-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transform: translateX(4px);
+}
+
+.learn-more-btn svg {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.learn-more-btn:hover svg {
+  transform: translateX(4px);
+}
+
+/* ========================================
+   View All Section
+   ======================================== */
+
+.view-all-section {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.view-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 40px;
+  background: white;
+  color: #667eea;
+  border: 2px solid white;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.view-all-btn:hover {
+  background: transparent;
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.view-all-btn svg {
+  font-size: 20px;
+  transition: transform 0.3s ease;
+}
+
+.view-all-btn:hover svg {
+  transform: translateX(6px);
+}
+
+/* ========================================
+   Loading State
+   ======================================== */
+
+.loading-spinner {
+  text-align: center;
+  padding: 60px 20px;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 1200px) {
+  .updates-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .latest-updates-section {
+    padding: 60px 16px;
+  }
+
+  .updates-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .header-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .header-icon svg {
+    font-size: 28px;
+  }
+
+  .section-title {
+    font-size: 32px;
+  }
+
+  .section-subtitle {
+    font-size: 16px;
+  }
+
+  .updates-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .update-card {
+    padding: 24px;
+  }
+
+  .update-title {
+    font-size: 20px;
+  }
+
+  .update-description {
+    font-size: 14px;
+  }
+
+  .priority-badge {
+    top: 16px;
+    right: 16px;
+    font-size: 11px;
+  }
+
+  .view-all-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-title {
+    font-size: 28px;
+  }
+
+  .header-badge {
+    padding: 10px 20px;
+  }
+
+  .update-count {
+    font-size: 14px;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+}
+
+/* ========================================
+   Dark Mode Support
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+  .update-card {
+    background: #1a202c;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .update-title {
+    color: white;
+  }
+
+  .update-description {
+    color: #cbd5e0;
+  }
+
+  .card-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .update-date {
+    color: #a0aec0;
+  }
+
+  .learn-more-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}

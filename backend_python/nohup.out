@@ -1,0 +1,31 @@
+/Users/abhijithca/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+✅ Mistral 7B available
+✅ Mistral AI Booking System initialized
+✅ Mistral AI active (SMARTER, SELF-HOSTED, UNLIMITED)
+✅ gTTS available (Basic fallback)
+
+🎤 Active TTS Engine: gtts
+�� Available engines: gtts
+🎵 Voice Quality: ⭐⭐⭐ Basic (FREE fallback)
+✅ Database connection pool initialized
+============================================================
+🎮 GameSpot Booking System - Python Backend
+============================================================
+✅ Server starting on http://localhost:8000
+✅ CORS enabled for React frontend
+✅ Session-based authentication enabled
+✅ MySQL connection pool initialized
+============================================================
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://192.168.1.205:8000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+/Users/abhijithca/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+ * Debugger is active!
+ * Debugger PIN: 308-506-085
