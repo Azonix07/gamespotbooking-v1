@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiUser, FiHome, FiGrid, FiPackage, FiPhone, FiGift, FiMessageSquare, FiCalendar, FiBell, FiX, FiAward, FiTarget, FiStar } from 'react-icons/fi';
+import { FiUser, FiHome, FiGrid, FiPackage, FiPhone, FiGift, FiMessageSquare, FiCalendar, FiBell, FiX, FiAward, FiTarget, FiStar, FiMonitor, FiBook, FiMail, FiLogOut, FiSettings, FiCreditCard } from 'react-icons/fi';
 import '../styles/Navbar.css';
 import { apiFetch } from "../services/apiClient";
 
@@ -138,10 +138,9 @@ const Navbar = ({ showCenter = true }) => {
               Games
             </div>
             
-            {/* Membership Tab - Always Visible */}
-            <div className="navbar-item membership-tab" onClick={() => navigate('/membership')}>
-              <span className="tab-text">Membership</span>
-              <FiAward className="tab-bg-icon" />
+            {/* Membership Tab - Normal styling */}
+            <div className="navbar-item" onClick={() => navigate('/membership')}>
+              Membership
             </div>
             
             {/* Services Dropdown */}
@@ -152,24 +151,24 @@ const Navbar = ({ showCenter = true }) => {
               </div>
               <div className="dropdown-menu">
                 <div className="dropdown-item" onClick={() => navigate('/rental')}>
-                  <span className="dropdown-icon">🎮</span>
+                  <FiMonitor className="dropdown-icon" />
                   <div className="dropdown-text-wrapper">
                     <div className="dropdown-title">VR & PS5 Rental</div>
-                    <div className="dropdown-description">Rent gaming equipment for home</div>
+                    <div className="dropdown-description">Rent gaming equipment for home use</div>
                   </div>
                 </div>
                 <div className="dropdown-item" onClick={() => navigate('/college-setup')}>
-                  <span className="dropdown-icon">🎓</span>
+                  <FiBook className="dropdown-icon" />
                   <div className="dropdown-text-wrapper">
-                    <div className="dropdown-title">College Setup</div>
-                    <div className="dropdown-description">Gaming events for colleges</div>
+                    <div className="dropdown-title">College Events</div>
+                    <div className="dropdown-description">Gaming setup for college fests</div>
                   </div>
                 </div>
                 <div className="dropdown-item" onClick={() => navigate('/feedback')}>
-                  <span className="dropdown-icon">💬</span>
+                  <FiMessageSquare className="dropdown-icon" />
                   <div className="dropdown-text-wrapper">
                     <div className="dropdown-title">Feedback</div>
-                    <div className="dropdown-description">Share your experience</div>
+                    <div className="dropdown-description">Share your experience with us</div>
                   </div>
                 </div>
               </div>
@@ -183,17 +182,17 @@ const Navbar = ({ showCenter = true }) => {
               </div>
               <div className="dropdown-menu">
                 <div className="dropdown-item" onClick={() => navigate('/updates')}>
-                  <span className="dropdown-icon">📢</span>
+                  <FiBell className="dropdown-icon" />
                   <div className="dropdown-text-wrapper">
                     <div className="dropdown-title">Updates</div>
                     <div className="dropdown-description">Latest news & announcements</div>
                   </div>
                 </div>
                 <div className="dropdown-item" onClick={() => navigate('/contact')}>
-                  <span className="dropdown-icon">📞</span>
+                  <FiPhone className="dropdown-icon" />
                   <div className="dropdown-text-wrapper">
                     <div className="dropdown-title">Contact Us</div>
-                    <div className="dropdown-description">Get in touch with us</div>
+                    <div className="dropdown-description">Get in touch with our team</div>
                   </div>
                 </div>
               </div>
@@ -245,7 +244,7 @@ const Navbar = ({ showCenter = true }) => {
                     }}
                   >
                     <span className="profile-dropdown-icon-small">
-                      {isAdmin ? '📊' : '💳'}
+                      {isAdmin ? <FiSettings /> : <FiCreditCard />}
                     </span>
                     {isAdmin ? 'Dashboard' : 'Membership'}
                   </button>
@@ -258,7 +257,7 @@ const Navbar = ({ showCenter = true }) => {
                         navigate('/booking');
                       }}
                     >
-                      <span className="profile-dropdown-icon-small">📅</span>
+                      <span className="profile-dropdown-icon-small"><FiCalendar /></span>
                       My Bookings
                     </button>
                   )}
@@ -269,7 +268,7 @@ const Navbar = ({ showCenter = true }) => {
                     className="profile-dropdown-item profile-dropdown-logout"
                     onClick={handleLogout}
                   >
-                    <span className="profile-dropdown-icon-small">🚪</span>
+                    <span className="profile-dropdown-icon-small"><FiLogOut /></span>
                     Sign Out
                   </button>
                 </div>
@@ -341,10 +340,10 @@ const Navbar = ({ showCenter = true }) => {
           </div>
           
           <div 
-            className={`mobile-nav-item membership-item ${isActivePath('/membership') ? 'active' : ''}`}
+            className={`mobile-nav-item ${isActivePath('/membership') ? 'active' : ''}`}
             onClick={() => handleMobileNavClick('/membership')}
           >
-            💎
+            <FiAward className="nav-icon" />
             Membership
           </div>
 
@@ -355,7 +354,7 @@ const Navbar = ({ showCenter = true }) => {
             className={`mobile-nav-item ${isActivePath('/rental') ? 'active' : ''}`}
             onClick={() => handleMobileNavClick('/rental')}
           >
-            <FiPackage className="nav-icon" />
+            <FiMonitor className="nav-icon" />
             VR & PS5 Rental
           </div>
           
@@ -363,8 +362,8 @@ const Navbar = ({ showCenter = true }) => {
             className={`mobile-nav-item ${isActivePath('/college-setup') ? 'active' : ''}`}
             onClick={() => handleMobileNavClick('/college-setup')}
           >
-            🎓
-            College Setup
+            <FiBook className="nav-icon" />
+            College Events
           </div>
           
           <div 
@@ -401,8 +400,8 @@ const Navbar = ({ showCenter = true }) => {
             className={`mobile-nav-item discount-item ${isActivePath('/discount-game') ? 'active' : ''}`}
             onClick={() => handleMobileNavClick('/discount-game')}
           >
-            <FiGift className="nav-icon" />
-            🎯 Win Free Game
+            <FiTarget className="nav-icon" />
+            Win Free Game
           </div>
         </div>
       </div>
