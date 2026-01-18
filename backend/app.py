@@ -4,7 +4,7 @@ Flask application with MySQL database
 Converted from PHP to Python while maintaining 100% API compatibility
 """
 
-from flask import Flask, session
+from flask import Flask, session, request
 from flask_cors import CORS
 from datetime import timedelta
 import os
@@ -46,22 +46,20 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
 # CORS Configuration - Allow React dev server, Mobile app, and Production
 CORS(app, 
-     origins=[
-         'http://localhost:3000',    # Web frontend dev
-         'http://localhost:3001',    # Additional web port
-         'http://localhost:3002',    # Additional web port
-         'http://localhost:8081',    # Mobile app (Expo web)
-         'http://192.168.1.11:8081', # Mobile app (network access)
-         'http://192.168.1.205:8081', # Mobile app (network access)
-         'https://gamespotbooking-v1-production.up.railway.app',  # Backend itself
-         'https://*.vercel.app',     # Vercel deployments
-         'https://*.netlify.app',    # Netlify deployments
-         'https://gamespot.in',      # Custom domain (if any)
-         'https://www.gamespot.in',  # Custom domain with www
-     ],
      supports_credentials=True,
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+
+# Add after_request handler to properly set CORS headers for credentials
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get('Origin')
+    if origin:
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    return response
 
 # Initialize database connection pool
 init_db_pool()
