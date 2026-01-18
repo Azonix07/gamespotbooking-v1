@@ -2503,59 +2503,10 @@ html, body {
 
 /* ===================================
    LOGIN/SIGNUP PAGE MOBILE STYLES
+   These styles are now managed in LoginPage.css with proper scoping
    =================================== */
 
-@media (max-width: 767px) {
-  .login-container {
-    padding: 1.5rem;
-    margin-top: 50px;
-  }
-  
-  .login-card {
-    padding: 2rem 1.5rem;
-    border-radius: 20px;
-  }
-  
-  .tab-container {
-    gap: 0.5rem;
-    padding: 0.35rem;
-  }
-  
-  .tab-button {
-    padding: 0.85rem;
-    font-size: 0.95rem;
-  }
-  
-  .form-input {
-    padding: 0.9rem 0.9rem 0.9rem 2.75rem;
-    font-size: 16px; /* Prevents zoom on iOS */
-  }
-  
-  .btn-primary {
-    padding: 0.9rem;
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 479px) {
-  .login-container {
-    padding: 1rem;
-    margin-top: 45px;
-  }
-  
-  .login-card {
-    padding: 1.5rem 1.25rem;
-    border-radius: 16px;
-  }
-  
-  .form-label {
-    font-size: 0.85rem;
-  }
-  
-  .divider {
-    margin: 1.5rem 0;
-  }
-}
+/* Removed duplicate styles - see LoginPage.css for all login page styling */
 
 /* ===================================
    DISCOUNT GAME PAGE MOBILE STYLES

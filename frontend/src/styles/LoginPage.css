@@ -22,13 +22,16 @@
 
 .login-page {
   min-height: 100vh;
-  width: 100%;
+  width: 100vw !important;
+  max-width: 100vw !important;
   background: linear-gradient(135deg, #0a0f1e 0%, #1e293b 50%, #312e81 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch; /* Changed from center to stretch for full-width navbar */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
   position: relative;
   overflow-x: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .login-page::before {
@@ -52,33 +55,36 @@
 /* ===================================
    CONTAINER - CENTERED
    =================================== */
-.login-container {
+.login-page .login-container {
   flex: 1;
-  width: 100%;
-  max-width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 2rem;
-  padding-top: 120px;
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1.5rem 1.5rem;
+  padding-top: 90px;
   position: relative;
   z-index: 1;
+  margin: 0 !important;
+  min-height: calc(100vh - 70px);
 }
 
-.login-card {
-  background: rgba(30, 41, 59, 0.9);
+.login-page .login-card {
+  background: rgba(30, 41, 59, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(99, 102, 241, 0.25);
-  border-radius: 28px;
-  padding: 3rem;
+  border-radius: 20px;
+  padding: 2rem 2.25rem;
   width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
+  max-width: 420px !important;
+  min-width: 300px;
+  margin: 0 auto !important;
   box-shadow: 
-    0 25px 80px rgba(0, 0, 0, 0.5),
+    0 20px 60px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  animation: slideUp 0.5s ease-out;
+  animation: slideUp 0.4s ease-out;
 }
 
 @keyframes slideUp {
@@ -95,24 +101,24 @@
 /* ===================================
    TABS
    =================================== */
-.tab-container {
+.login-page .tab-container {
   display: flex;
-  gap: 0.75rem;
-  margin-bottom: 2.5rem;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
   background: rgba(15, 23, 42, 0.6);
-  border-radius: 16px;
-  padding: 0.5rem;
+  border-radius: 12px;
+  padding: 0.35rem;
   border: 1px solid rgba(99, 102, 241, 0.1);
 }
 
-.tab-button {
+.login-page .tab-button {
   flex: 1;
-  padding: 1rem 1.25rem;
+  padding: 0.7rem 1rem;
   background: transparent;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--gray);
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -122,71 +128,71 @@
   justify-content: center;
 }
 
-.tab-button:hover {
+.login-page .tab-button:hover {
   color: var(--primary-light);
   background: rgba(99, 102, 241, 0.1);
 }
 
-.tab-button.active {
+.login-page .tab-button.active {
   background: linear-gradient(135deg, var(--primary), #4f46e5);
   color: var(--white);
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
 }
 
 /* ===================================
    FORM ELEMENTS
    =================================== */
-.form-group {
-  margin-bottom: 1.75rem;
+.login-page .form-group {
+  margin-bottom: 1rem;
 }
 
-.form-label {
+.login-page .form-label {
   display: block;
   color: var(--light-gray);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.4rem;
   letter-spacing: 0.01em;
 }
 
-.input-wrapper {
+.login-page .input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.input-icon {
+.login-page .input-icon {
   position: absolute;
-  left: 1.25rem;
+  left: 1rem;
   color: var(--gray);
-  font-size: 1.2rem;
+  font-size: 1rem;
   pointer-events: none;
   z-index: 1;
 }
 
-.form-input {
+.login-page .form-input {
   width: 100%;
-  padding: 1.1rem 1.25rem 1.1rem 3.25rem;
+  padding: 0.85rem 1rem 0.85rem 2.75rem;
   background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(10px);
-  border: 2px solid rgba(99, 102, 241, 0.15);
-  border-radius: 14px;
+  border: 1.5px solid rgba(99, 102, 241, 0.15);
+  border-radius: 10px;
   color: var(--white);
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: all 0.3s ease;
   outline: none;
 }
 
-.form-input::placeholder {
+.login-page .form-input::placeholder {
   color: var(--gray);
 }
 
-.form-input:hover {
+.login-page .form-input:hover {
   background: rgba(15, 23, 42, 0.7);
   border-color: rgba(99, 102, 241, 0.4);
 }
 
-.form-input:focus {
+.login-page .form-input:focus {
   background: rgba(15, 23, 42, 0.8);
   border-color: var(--primary);
   box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
@@ -194,7 +200,7 @@
 }
 
 /* Password Toggle Button */
-.password-toggle {
+.login-page .password-toggle {
   position: absolute;
   right: 1rem;
   background: none;
@@ -207,7 +213,7 @@
   z-index: 1;
 }
 
-.password-toggle:hover {
+.login-page .password-toggle:hover {
   color: var(--primary-light);
   transform: scale(1.1);
 }
@@ -215,75 +221,75 @@
 /* ===================================
    BUTTONS
    =================================== */
-.btn-primary {
+.login-page .btn-primary {
   width: 100%;
-  padding: 1.15rem 1.5rem;
+  padding: 0.85rem 1.25rem;
   background: linear-gradient(135deg, var(--primary), #4f46e5);
   color: var(--white);
   border: none;
-  border-radius: 14px;
-  font-size: 1.1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
-  margin-top: 0.5rem;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  margin-top: 0.25rem;
 }
 
-.btn-primary:hover:not(:disabled) {
+.login-page .btn-primary:hover:not(:disabled) {
   background: linear-gradient(135deg, #4f46e5, #4338ca);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
 }
 
-.btn-primary:active:not(:disabled) {
+.login-page .btn-primary:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.btn-primary:disabled {
+.login-page .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.btn-secondary {
+.login-page .btn-secondary {
   width: 100%;
-  padding: 1.15rem 1.5rem;
+  padding: 0.85rem 1.25rem;
   background: rgba(16, 185, 129, 0.12);
   color: var(--secondary);
-  border: 2px solid var(--secondary);
-  border-radius: 14px;
-  font-size: 1.1rem;
+  border: 1.5px solid var(--secondary);
+  border-radius: 10px;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
 }
 
-.btn-secondary:hover:not(:disabled) {
+.login-page .btn-secondary:hover:not(:disabled) {
   background: rgba(16, 185, 129, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
 }
 
 /* ===================================
    ALERTS
    =================================== */
-.alert {
-  padding: 1.1rem 1.25rem;
-  border-radius: 14px;
-  margin-bottom: 1.75rem;
+.login-page .alert {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  font-size: 0.95rem;
+  gap: 0.6rem;
+  font-size: 0.875rem;
   font-weight: 500;
   animation: slideDown 0.3s ease-out;
 }
@@ -299,19 +305,19 @@
   }
 }
 
-.alert-error {
+.login-page .alert-error {
   background: rgba(248, 113, 113, 0.15);
   border: 1px solid rgba(248, 113, 113, 0.3);
   color: #fca5a5;
 }
 
-.alert-success {
+.login-page .alert-success {
   background: rgba(52, 211, 153, 0.15);
   border: 1px solid rgba(52, 211, 153, 0.3);
   color: #6ee7b7;
 }
 
-.alert-icon {
+.login-page .alert-icon {
   font-size: 1.25rem;
   flex-shrink: 0;
 }
@@ -319,35 +325,35 @@
 /* ===================================
    DIVIDER
    =================================== */
-.divider {
+.login-page .divider {
   display: flex;
   align-items: center;
-  margin: 2.5rem 0;
+  margin: 1.25rem 0;
   color: var(--gray);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 500;
 }
 
-.divider::before,
-.divider::after {
+.login-page .divider::before,
+.login-page .divider::after {
   content: '';
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
 }
 
-.divider::before {
-  margin-right: 1.25rem;
+.login-page .divider::before {
+  margin-right: 1rem;
 }
 
-.divider::after {
-  margin-left: 1.25rem;
+.login-page .divider::after {
+  margin-left: 1rem;
 }
 
 /* ===================================
    LINKS
    =================================== */
-.form-link {
+.login-page .form-link {
   color: var(--primary-light);
   text-decoration: none;
   font-weight: 600;
@@ -355,57 +361,57 @@
   cursor: pointer;
 }
 
-.form-link:hover {
+.login-page .form-link:hover {
   color: var(--primary);
   text-decoration: underline;
 }
 
-.text-center {
+.login-page .text-center {
   text-align: center;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   color: var(--gray);
-  font-size: 0.95rem;
+  font-size: 0.875rem;
 }
 
 /* ===================================
    TYPOGRAPHY
    =================================== */
-.form-title {
-  font-size: 2.2rem;
+.login-page .form-title {
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--white);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
   text-align: center;
   letter-spacing: -0.02em;
 }
 
-.form-subtitle {
-  font-size: 1.05rem;
+.login-page .form-subtitle {
+  font-size: 0.9rem;
   color: var(--gray);
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
   text-align: center;
 }
 
 /* ===================================
    HELPER TEXT
    =================================== */
-.helper-text {
-  font-size: 0.85rem;
+.login-page .helper-text {
+  font-size: 0.75rem;
   color: var(--gray);
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
 }
 
-.helper-text.error {
+.login-page .helper-text.error {
   color: #fca5a5;
 }
 
 /* ===================================
    LOADING STATE
    =================================== */
-.loading-spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+.login-page .loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -419,104 +425,106 @@
    RESPONSIVE DESIGN
    =================================== */
 @media (max-width: 768px) {
-  .login-container {
-    padding: 1.5rem;
-    padding-top: 100px;
+  .login-page .login-container {
+    padding: 1rem !important;
+    padding-top: 80px !important;
+    justify-content: center !important;
   }
 
-  .login-card {
-    padding: 2.25rem;
-    border-radius: 24px;
-    max-width: 100%;
+  .login-page .login-card {
+    padding: 1.75rem 1.5rem;
+    border-radius: 18px;
+    max-width: 100% !important;
+    margin: 0 auto !important;
   }
 
-  .form-title {
-    font-size: 1.8rem;
+  .login-page .form-title {
+    font-size: 1.4rem;
   }
 
-  .form-subtitle {
-    font-size: 1rem;
-    margin-bottom: 2rem;
+  .login-page .form-subtitle {
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
   }
 
-  .tab-button {
-    padding: 0.85rem 1rem;
-    font-size: 0.95rem;
+  .login-page .tab-button {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
   }
   
-  .form-group {
-    margin-bottom: 1.5rem;
+  .login-page .form-group {
+    margin-bottom: 0.875rem;
   }
 
-  .form-input {
-    padding: 1rem 1rem 1rem 3rem;
+  .login-page .form-input {
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
   }
 }
 
 @media (max-width: 480px) {
-  .login-container {
-    padding: 1rem;
-    padding-top: 85px;
+  .login-page .login-container {
+    padding: 0.75rem !important;
+    padding-top: 70px !important;
   }
 
-  .login-card {
-    padding: 1.75rem;
-    border-radius: 20px;
+  .login-page .login-card {
+    padding: 1.5rem 1.25rem;
+    border-radius: 16px;
   }
 
-  .form-title {
-    font-size: 1.5rem;
+  .login-page .form-title {
+    font-size: 1.25rem;
   }
   
-  .form-subtitle {
-    font-size: 0.95rem;
-    margin-bottom: 1.75rem;
+  .login-page .form-subtitle {
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
   }
 
-  .form-input {
-    padding: 0.95rem 0.95rem 0.95rem 2.75rem;
-    font-size: 0.95rem;
+  .login-page .form-input {
+    padding: 0.7rem 0.7rem 0.7rem 2.25rem;
+    font-size: 16px; /* Prevents zoom on iOS */
   }
   
-  .input-icon {
-    font-size: 1.1rem;
-    left: 1rem;
+  .login-page .input-icon {
+    font-size: 0.9rem;
+    left: 0.75rem;
   }
 
-  .btn-primary,
-  .btn-secondary {
-    padding: 1rem 1.25rem;
-    font-size: 1rem;
-  }
-  
-  .tab-container {
-    gap: 0.5rem;
-    padding: 0.4rem;
-  }
-  
-  .tab-button {
-    padding: 0.75rem 0.85rem;
+  .login-page .btn-primary,
+  .login-page .btn-secondary {
+    padding: 0.75rem 1rem;
     font-size: 0.9rem;
   }
-
-  .form-group {
-    margin-bottom: 1.25rem;
+  
+  .login-page .tab-container {
+    gap: 0.35rem;
+    padding: 0.3rem;
+  }
+  
+  .login-page .tab-button {
+    padding: 0.55rem 0.6rem;
+    font-size: 0.8rem;
   }
 
-  .divider {
-    margin: 2rem 0;
+  .login-page .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .login-page .divider {
+    margin: 1rem 0;
   }
 }
 
 /* ===================================
    WELCOME BACK ANIMATION
    =================================== */
-.welcome-animation {
+.login-page .welcome-animation {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-.welcome-icon {
+.login-page .welcome-icon {
   font-size: 3rem;
   color: var(--primary);
   margin-bottom: 1rem;
@@ -527,4 +535,3 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
-
