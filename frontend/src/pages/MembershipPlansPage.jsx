@@ -47,33 +47,33 @@ const MembershipPlansPage = () => {
 
 
   const handleSubscribe = async (planType) => {
-  if (!isLoggedIn) {
-    navigate("/login", { state: { from: "/membership" } });
-    return;
-  }
-
-  try {
-    setSubscribing(planType);
-    setError(null);
-
-    const data = await apiFetch("/api/membership/subscribe", {
-      method: "POST",
-      body: JSON.stringify({ plan_type: planType }),
-    });
-
-    if (data.success) {
-      alert(`✅ ${data.message}\n\nYour ${planType} membership is now active!`);
-      checkAuthAndLoadData();
-    } else {
-      setError(data.error || "Subscription failed");
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: "/membership" } });
+      return;
     }
-  } catch (err) {
-    console.error("Subscribe error:", err);
-    setError("Subscription failed. Please try again.");
-  } finally {
-    setSubscribing(null);
-  }
-};
+
+    try {
+      setSubscribing(planType);
+      setError(null);
+
+      const data = await apiFetch("/api/membership/subscribe", {
+        method: "POST",
+        body: JSON.stringify({ plan_type: planType }),
+      });
+
+      if (data.success) {
+        alert(`✅ ${data.message}\n\nYour ${planType} membership is now active!`);
+        loadData();
+      } else {
+        setError(data.error || "Subscription failed");
+      }
+    } catch (err) {
+      console.error("Subscribe error:", err);
+      setError("Subscription failed. Please try again.");
+    } finally {
+      setSubscribing(null);
+    }
+  };
 
 
   if (loading) {
