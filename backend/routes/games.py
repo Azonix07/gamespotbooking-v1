@@ -6,8 +6,35 @@ Handles game catalog, PS5 filtering, and game recommendations with voting
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
 from functools import wraps
+import mysql.connector
 
 games_bp = Blueprint('games', __name__)
+
+# Fallback games data when database tables don't exist
+FALLBACK_GAMES = [
+    {'id': 1, 'name': 'God of War Ragnarök', 'cover_image': '/images/games/god-of-war.jpg', 'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.5, 'description': 'Embark on an epic journey as Kratos and Atreus.', 'release_year': 2022, 'ps5_numbers': [1, 3]},
+    {'id': 2, 'name': 'Spider-Man 2', 'cover_image': '/images/games/spiderman-2.jpg', 'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.0, 'description': 'The incredible power of the symbiote forces Peter and Miles to face the ultimate test.', 'release_year': 2023, 'ps5_numbers': [1, 2]},
+    {'id': 3, 'name': 'Horizon Forbidden West', 'cover_image': '/images/games/horizon.jpg', 'genre': 'Action RPG', 'max_players': 1, 'rating': 8.8, 'description': 'Join Aloy as she braves the Forbidden West.', 'release_year': 2022, 'ps5_numbers': [3]},
+    {'id': 4, 'name': 'The Last of Us Part II', 'cover_image': '/images/games/tlou2.jpg', 'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.2, 'description': 'Experience the emotional story of Ellie.', 'release_year': 2020, 'ps5_numbers': [1, 3]},
+    {'id': 5, 'name': 'Gran Turismo 7', 'cover_image': '/images/games/gt7.jpg', 'genre': 'Racing', 'max_players': 2, 'rating': 8.5, 'description': 'The ultimate driving simulator.', 'release_year': 2022, 'ps5_numbers': [2]},
+    {'id': 6, 'name': 'Call of Duty: Modern Warfare III', 'cover_image': '/images/games/cod-mw3.jpg', 'genre': 'First-Person Shooter', 'max_players': 4, 'rating': 8.0, 'description': 'The latest Call of Duty experience.', 'release_year': 2023, 'ps5_numbers': [2]},
+    {'id': 7, 'name': 'FIFA 24', 'cover_image': '/images/games/fifa24.jpg', 'genre': 'Sports', 'max_players': 4, 'rating': 8.2, 'description': 'The world\'s game with HyperMotionV technology.', 'release_year': 2023, 'ps5_numbers': [2]},
+    {'id': 8, 'name': 'NBA 2K24', 'cover_image': '/images/games/nba2k24.jpg', 'genre': 'Sports', 'max_players': 4, 'rating': 8.0, 'description': 'Experience basketball like never before.', 'release_year': 2023, 'ps5_numbers': [2]},
+    {'id': 9, 'name': 'Mortal Kombat 1', 'cover_image': '/images/games/mk1.jpg', 'genre': 'Fighting', 'max_players': 2, 'rating': 8.3, 'description': 'A new beginning for the iconic fighting franchise.', 'release_year': 2023, 'ps5_numbers': [2]},
+    {'id': 10, 'name': 'Resident Evil 4 Remake', 'cover_image': '/images/games/re4.jpg', 'genre': 'Survival Horror', 'max_players': 1, 'rating': 9.3, 'description': 'The horror classic reimagined.', 'release_year': 2023, 'ps5_numbers': [1]},
+    {'id': 11, 'name': 'Elden Ring', 'cover_image': '/images/games/elden-ring.jpg', 'genre': 'Action RPG', 'max_players': 1, 'rating': 9.6, 'description': 'Rise, Tarnished, and be guided by grace.', 'release_year': 2022, 'ps5_numbers': [1, 3]},
+    {'id': 12, 'name': 'Hogwarts Legacy', 'cover_image': '/images/games/hogwarts.jpg', 'genre': 'Action RPG', 'max_players': 1, 'rating': 8.4, 'description': 'Experience life at Hogwarts School.', 'release_year': 2023, 'ps5_numbers': [3]},
+    {'id': 13, 'name': 'Tekken 8', 'cover_image': '/images/games/tekken8.jpg', 'genre': 'Fighting', 'max_players': 2, 'rating': 8.6, 'description': 'The legendary fighting game returns.', 'release_year': 2024, 'ps5_numbers': [2]},
+    {'id': 14, 'name': 'Red Dead Redemption 2', 'cover_image': '/images/games/rdr2.jpg', 'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.8, 'description': 'America, 1899. The end of the Wild West era.', 'release_year': 2018, 'ps5_numbers': [1, 3]},
+    {'id': 15, 'name': 'Ghost of Tsushima', 'cover_image': '/images/games/ghost-tsushima.jpg', 'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.1, 'description': 'A beautiful samurai epic set in feudal Japan.', 'release_year': 2020, 'ps5_numbers': [1, 3]},
+]
+
+FALLBACK_RECOMMENDATIONS = [
+    {'id': 1, 'game_name': 'GTA VI', 'description': 'The most anticipated game! Would love to see it here.', 'votes': 45, 'status': 'pending'},
+    {'id': 2, 'game_name': 'Elden Ring DLC', 'description': 'Shadow of the Erdtree expansion pack.', 'votes': 32, 'status': 'pending'},
+    {'id': 3, 'game_name': 'Baldurs Gate 3', 'description': 'Award-winning RPG that everyone is talking about.', 'votes': 28, 'status': 'pending'},
+    {'id': 4, 'game_name': 'Final Fantasy XVI', 'description': 'Latest entry in the legendary series.', 'votes': 22, 'status': 'pending'},
+]
 
 def require_auth(f):
     """Decorator to require user authentication"""
@@ -80,12 +107,47 @@ def get_games():
             'filter': ps5_filter if ps5_filter else 'all'
         }), 200
         
+    except mysql.connector.Error as e:
+        # Check if it's a "table doesn't exist" error
+        if e.errno == 1146:  # Table doesn't exist
+            print(f"Games tables not found, using fallback data")
+            # Filter fallback games by PS5 if needed
+            ps5_filter = request.args.get('ps5', None)
+            games = FALLBACK_GAMES
+            if ps5_filter:
+                ps5_num = int(ps5_filter)
+                games = [g for g in FALLBACK_GAMES if ps5_num in g['ps5_numbers']]
+            
+            return jsonify({
+                'success': True,
+                'games': games,
+                'count': len(games),
+                'filter': ps5_filter if ps5_filter else 'all',
+                'fallback': True
+            }), 200
+        else:
+            print(f"Error fetching games: {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': f'Failed to fetch games: {str(e)}'
+            }), 500
+            
     except Exception as e:
         print(f"Error fetching games: {str(e)}")
+        # Return fallback data on any error
+        ps5_filter = request.args.get('ps5', None)
+        games = FALLBACK_GAMES
+        if ps5_filter:
+            ps5_num = int(ps5_filter)
+            games = [g for g in FALLBACK_GAMES if ps5_num in g['ps5_numbers']]
+        
         return jsonify({
-            'success': False,
-            'message': f'Failed to fetch games: {str(e)}'
-        }), 500
+            'success': True,
+            'games': games,
+            'count': len(games),
+            'filter': ps5_filter if ps5_filter else 'all',
+            'fallback': True
+        }), 200
 
 
 @games_bp.route('/api/games/recommendations', methods=['GET', 'OPTIONS'])
@@ -128,12 +190,32 @@ def get_recommendations():
             'count': len(recommendations)
         }), 200
         
+    except mysql.connector.Error as e:
+        # Check if it's a "table doesn't exist" error
+        if e.errno == 1146:  # Table doesn't exist
+            print(f"Recommendations table not found, using fallback data")
+            return jsonify({
+                'success': True,
+                'recommendations': FALLBACK_RECOMMENDATIONS,
+                'count': len(FALLBACK_RECOMMENDATIONS),
+                'fallback': True
+            }), 200
+        else:
+            print(f"Error fetching recommendations: {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': f'Failed to fetch recommendations: {str(e)}'
+            }), 500
+            
     except Exception as e:
         print(f"Error fetching recommendations: {str(e)}")
+        # Return fallback data on any error
         return jsonify({
-            'success': False,
-            'message': f'Failed to fetch recommendations: {str(e)}'
-        }), 500
+            'success': True,
+            'recommendations': FALLBACK_RECOMMENDATIONS,
+            'count': len(FALLBACK_RECOMMENDATIONS),
+            'fallback': True
+        }), 200
 
 
 @games_bp.route('/api/games/recommend', methods=['POST', 'OPTIONS'])

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiStar, FiUsers, FiThumbsUp, FiPlus, FiX, FiSearch, FiFilter, FiHeart, FiCheck, FiExternalLink } from 'react-icons/fi';
 import { getGames, getRecommendations, recommendGame, voteForGame } from '../services/api';
+import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import '../styles/GamesPage.css';
 
@@ -213,6 +214,7 @@ const GamesPage = () => {
 
   return (
     <div className="games-page">
+      <Navbar />
       {/* Hero Section */}
       <section className="games-hero">
         <div className="hero-bg-effects">
