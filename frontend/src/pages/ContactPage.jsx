@@ -26,20 +26,22 @@ const ContactPage = () => {
   const contactInfo = {
     phone: '+91 70121 25919',
     email: 'contact@gamespot.com',
-    address: 'GameSpot Kodungallur',
-    city: 'Thrissur, Kerala, India',
+    address: 'GameSpot Gaming Lounge, Near KSRTC Bus Stand',
+    city: 'Kodungallur, Thrissur, Kerala 680664',
+    fullAddress: 'GameSpot Gaming Lounge, Near KSRTC Bus Stand, Kodungallur, Thrissur, Kerala 680664',
     instagram: '@gamespot_kdlr',
     facebook: 'GameSpotOfficial',
     twitter: '@GameSpotIndia',
-    googleMapsLink: 'https://maps.google.com/?q=10.2167,76.2000',
-    googleMapsEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3923.0!2d76.2000!3d10.2167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTDCsDEzJzAwLjEiTiA3NsKwMTInMDAuMCJF!5e0!3m2!1sen!2sin!4v1234567890',
+    googleMapsLink: 'https://maps.app.goo.gl/SZR9uXT92GYof6LRA',
+    googleMapsEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3923.5!2d76.19!3d10.23!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b080e9d0d9c1b0f%3A0x9c1d8b9c9c9c9c9c!2sGameSpot%20Gaming%20Lounge!5e0!3m2!1sen!2sin!4v1705555555555!5m2!1sen!2sin',
     whatsappNumber: '917012125919', // Without + and spaces for WhatsApp API
     rating: 4.8,
     totalReviews: 326,
     workingHours: {
       weekdays: '10:00 AM - 11:00 PM',
       weekends: '9:00 AM - 12:00 AM'
-    }
+    },
+    landmark: 'Near KSRTC Bus Stand, Kodungallur'
   };
 
   const handleCopyPhone = () => {
@@ -292,7 +294,7 @@ const ContactPage = () => {
               <div className="location-header">
                 <FiMapPin className="location-icon" />
                 <div>
-                  <h3>GameSpot Gaming Arena</h3>
+                  <h3>GameSpot Gaming Lounge</h3>
                   <div className="rating-section">
                     <div className="stars-container">
                       {renderStars(contactInfo.rating)}
@@ -349,7 +351,7 @@ const ContactPage = () => {
                 <button 
                   className="share-btn"
                   onClick={() => {
-                    navigator.clipboard.writeText(contactInfo.address + ', ' + contactInfo.city);
+                    navigator.clipboard.writeText(contactInfo.fullAddress);
                     alert('Address copied to clipboard!');
                   }}
                 >
