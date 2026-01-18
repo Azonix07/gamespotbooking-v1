@@ -241,27 +241,113 @@
 }
 
 @media (max-width: 600px) {
+  .modern-datepicker-container {
+    position: relative;
+  }
+  
   .datepicker-trigger {
     min-width: 100%;
+    padding: 10px 14px;
+  }
+  
+  .trigger-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+  }
+  
+  .trigger-label {
+    font-size: 0.7rem;
+  }
+  
+  .trigger-value {
+    font-size: 0.95rem;
   }
   
   .calendar-dropdown {
-    position: fixed;
-    top: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    transform: none !important;
     width: 100%;
-    border-radius: 24px 24px 0 0;
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    transform-origin: bottom center;
-    padding: 24px;
-    padding-bottom: 40px; /* Safe area */
+    max-width: none;
+    border-radius: 16px;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    padding: 16px;
+    z-index: 9999;
+    animation: slideDownMobile 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
-  @keyframes slideDoawn {
-    from { opacity: 0; transform: translateY(100%); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes slideDownMobile {
+    from { 
+      opacity: 0; 
+      transform: translateY(-8px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+  
+  .calendar-header {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+  
+  .current-month {
+    font-size: 0.95rem;
+  }
+  
+  .month-nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+  
+  .calendar-grid {
+    gap: 4px;
+  }
+  
+  .weekday-header {
+    font-size: 0.65rem;
+    margin-bottom: 4px;
+  }
+  
+  .calendar-day {
+    height: 36px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+  }
+  
+  .calendar-footer {
+    margin-top: 10px;
+    padding-top: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .quick-date-btn {
+    padding: 6px 10px;
+    font-size: 0.7rem;
+    border-radius: 6px;
+  }
+}
+
+/* Extra small mobile */
+@media (max-width: 380px) {
+  .calendar-dropdown {
+    padding: 12px;
+  }
+  
+  .calendar-day {
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  
+  .calendar-grid {
+    gap: 3px;
   }
 }

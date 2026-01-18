@@ -2022,3 +2022,576 @@
 .mini-continue-btn:active {
     transform: scale(0.95);
 }
+
+/* ============================================
+   MOBILE RESPONSIVE - CHECKOUT PAGE
+   ============================================ */
+
+@media (max-width: 900px) {
+  .checkout-layout-v2 {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .summary-card-v2 {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .booking-container {
+    padding: 80px 12px 180px; /* More bottom padding for floating elements */
+  }
+  
+  .checkout-layout-v2 {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .checkout-form-v2 {
+    padding: 20px;
+    border-radius: 16px;
+  }
+  
+  .form-title-v2 {
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+  }
+  
+  .user-profile-card {
+    padding: 16px;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .profile-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  
+  .profile-name {
+    font-size: 1rem;
+  }
+  
+  .form-group-v2 {
+    margin-bottom: 16px;
+  }
+  
+  .form-input-v2 {
+    padding: 14px 16px 14px 48px;
+    font-size: 1rem;
+    height: 52px;
+  }
+  
+  .input-wrapper-v2 {
+    height: 52px;
+  }
+  
+  .summary-card-v2 {
+    padding: 20px;
+    border-radius: 16px;
+  }
+  
+  .summary-title-v2 {
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+  
+  .summary-item-v2 {
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  
+  .summary-icon-v2 {
+    padding: 8px;
+    font-size: 1rem;
+  }
+  
+  .summary-value-v2 {
+    font-size: 1rem;
+  }
+  
+  .item-row-v2 {
+    padding: 10px;
+  }
+  
+  .item-icon-v2 {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+    font-size: 0.95rem;
+  }
+  
+  .item-name-v2 {
+    font-size: 0.9rem;
+  }
+  
+  .item-meta-v2 {
+    font-size: 0.75rem;
+  }
+  
+  .summary-total-v2 {
+    padding: 16px;
+    margin-top: 16px;
+  }
+  
+  .total-amount-v2 {
+    font-size: 1.6rem;
+  }
+  
+  .submit-btn-v2 {
+    padding: 16px;
+    font-size: 1rem;
+    border-radius: 14px;
+    margin-top: 16px;
+  }
+  
+  /* Card header mobile adjustments */
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .card-header.with-back {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .back-button {
+    order: -1;
+  }
+  
+  .header-date-picker {
+    width: 100%;
+  }
+  
+  /* Step indicator mobile */
+  .steps-container {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .step-item {
+    min-width: auto;
+    padding: 8px 12px;
+  }
+  
+  .step-content {
+    display: none;
+  }
+  
+  .step-connector {
+    width: 20px;
+    height: 2px;
+  }
+  
+  .connector-line {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* ============================================
+     EQUIPMENT PAGE MOBILE - 768px
+     ============================================ */
+  
+  /* Booking card compact */
+  .booking-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+  
+  .card-title {
+    font-size: 1.1rem;
+  }
+  
+  .card-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  /* Devices grid - 1 column on mobile */
+  .devices-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .devices-section {
+    margin-top: 4px;
+  }
+  
+  .devices-section-header {
+    margin-bottom: 12px;
+    min-height: auto;
+  }
+  
+  .section-title {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+  
+  .section-title.driving-title {
+    margin-top: 20px;
+  }
+  
+  /* Device card compact */
+  .device-card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+  
+  .device-header {
+    gap: 12px;
+  }
+  
+  .device-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+    border-radius: 10px;
+  }
+  
+  .device-name {
+    font-size: 1rem;
+  }
+  
+  .device-unit {
+    font-size: 0.75rem;
+  }
+  
+  /* Player buttons compact */
+  .player-buttons {
+    padding: 4px;
+    border-radius: 12px;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  
+  .player-btn {
+    padding: 8px 0;
+    font-size: 0.85rem;
+    border-radius: 10px;
+  }
+  
+  /* Duration buttons compact */
+  .duration-buttons {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 6px;
+  }
+  
+  .duration-btn {
+    padding: 8px 2px;
+    border-radius: 10px;
+  }
+  
+  .duration-btn .dur-value {
+    font-size: 1.1rem;
+  }
+  
+  .duration-btn .dur-unit {
+    font-size: 0.6rem;
+  }
+  
+  /* Option group compact */
+  .option-group {
+    margin-top: 14px;
+    padding: 0 2px;
+  }
+  
+  .option-label {
+    font-size: 0.7rem;
+    margin-bottom: 6px;
+    letter-spacing: 0.08em;
+  }
+  
+  /* Header session info badges */
+  .header-session-info {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin-top: 8px;
+  }
+  
+  .session-badge {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+  
+  /* Time slots compact */
+  .time-slots-header {
+    padding: 12px;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .slot-status-legend {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .slot-status-legend .legend-item {
+    font-size: 0.7rem;
+  }
+  
+  .time-slots-scroll-wrapper {
+    padding: 10px;
+  }
+  
+  .time-slots-grid {
+    gap: 6px;
+  }
+  
+  .time-slot {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-container {
+    padding: 70px 10px 200px;
+  }
+  
+  .checkout-form-v2 {
+    padding: 16px;
+  }
+  
+  .form-title-v2 {
+    font-size: 1.2rem;
+  }
+  
+  .user-profile-card {
+    padding: 12px;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .profile-info {
+    align-items: center;
+  }
+  
+  .summary-card-v2 {
+    padding: 16px;
+  }
+  
+  .summary-title-v2 {
+    font-size: 1.1rem;
+  }
+  
+  .total-amount-v2 {
+    font-size: 1.4rem;
+  }
+  
+  .submit-btn-v2 {
+    padding: 14px;
+    font-size: 0.95rem;
+  }
+  
+  /* Mini price pill mobile */
+  .mini-price-pill {
+    padding: 6px 6px 6px 16px;
+    gap: 10px;
+    min-height: 48px;
+  }
+  
+  .mini-price-amount {
+    font-size: 1.1rem;
+  }
+  
+  .mini-continue-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+  
+  /* Devices section header mobile */
+  .devices-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .mini-price-pill {
+    width: 100%;
+  }
+  
+  /* ============================================
+     EQUIPMENT PAGE MOBILE - 480px (Small phones)
+     ============================================ */
+  
+  /* Booking card extra compact */
+  .booking-card {
+    padding: 12px;
+    border-radius: 14px;
+  }
+  
+  .card-header {
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+  
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+  
+  .card-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .card-title {
+    font-size: 1rem;
+  }
+  
+  .card-subtitle {
+    font-size: 0.75rem;
+  }
+  
+  /* Devices grid extra compact */
+  .devices-grid {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  
+  .section-title {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+  
+  .section-title.driving-title {
+    margin-top: 16px;
+  }
+  
+  /* Device card extra compact */
+  .device-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+  
+  .device-header {
+    gap: 10px;
+  }
+  
+  .device-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    border-radius: 8px;
+  }
+  
+  .device-name {
+    font-size: 0.95rem;
+  }
+  
+  .device-unit {
+    font-size: 0.7rem;
+  }
+  
+  /* Player buttons extra compact */
+  .player-buttons {
+    padding: 3px;
+    border-radius: 10px;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  
+  .player-btn {
+    padding: 6px 0;
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+  
+  /* Duration buttons - 4 columns compact */
+  .duration-buttons {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-top: 4px;
+  }
+  
+  .duration-btn {
+    padding: 6px 2px;
+    border-radius: 8px;
+  }
+  
+  .duration-btn .dur-value {
+    font-size: 1rem;
+  }
+  
+  .duration-btn .dur-unit {
+    font-size: 0.55rem;
+  }
+  
+  /* Option group extra compact */
+  .option-group {
+    margin-top: 10px;
+    padding: 0;
+  }
+  
+  .option-label {
+    font-size: 0.65rem;
+    margin-bottom: 4px;
+  }
+  
+  /* Time slots extra compact */
+  .time-slots-header {
+    padding: 10px;
+    gap: 8px;
+  }
+  
+  .time-slots-scroll-wrapper {
+    padding: 8px;
+  }
+  
+  .time-slot {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+    min-width: 60px;
+  }
+  
+  /* Steps container hide on small */
+  .steps-container {
+    display: none;
+  }
+  
+  /* Hero section compact */
+  .booking-hero {
+    padding: 24px 12px 16px;
+    margin-bottom: 16px;
+  }
+  
+  .booking-title {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+  }
+  
+  .booking-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .hero-badge {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    margin-bottom: 12px;
+  }
+}

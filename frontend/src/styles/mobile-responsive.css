@@ -699,15 +699,14 @@ html, body {
     flex-direction: row !important;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 16px;
+    gap: 0;
+    padding: 8px 12px;
     margin-bottom: 20px;
-    background: rgba(30, 41, 59, 0.6);
-    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 50px;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    overflow: hidden;
+    min-height: 52px; /* Fixed height for vertical centering */
   }
   
   .steps-container::-webkit-scrollbar {
@@ -718,28 +717,28 @@ html, body {
     display: flex !important;
     flex-direction: row;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 10px 14px;
-    min-width: auto;
-    flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
+    padding: 10px 16px;
+    flex: 1;
+    min-width: 0;
+    min-height: 36px; /* Ensure consistent height */
+    background: transparent;
+    border: none;
+    border-radius: 50px;
     opacity: 0.5;
     transition: all 0.3s ease;
   }
   
   .step-item.active {
     opacity: 1;
-    background: rgba(99, 102, 241, 0.2);
-    border-color: rgba(99, 102, 241, 0.4);
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.15));
+    box-shadow: 0 2px 15px rgba(99, 102, 241, 0.3);
   }
   
   .step-item.completed {
     opacity: 0.8;
     background: rgba(16, 185, 129, 0.15);
-    border-color: rgba(16, 185, 129, 0.35);
   }
   
   .step-number {
@@ -755,6 +754,7 @@ html, body {
     border-radius: 50%;
     color: #fff;
     flex-shrink: 0;
+    margin: auto 0; /* Vertical center within step-item */
   }
   
   .step-item.active .step-number {
@@ -778,55 +778,28 @@ html, body {
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
     white-space: nowrap;
-    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .step-desc {
-    font-size: 0.65rem;
-    color: rgba(148, 163, 184, 0.9);
-    white-space: nowrap;
-    line-height: 1.2;
+    display: none; /* Hide description on mobile */
   }
   
   .step-item.active .step-label {
     color: #fff;
   }
   
-  .step-item.active .step-desc {
-    color: rgba(129, 140, 248, 1);
-  }
-  
-  /* Step Connectors - Compact horizontal lines */
+  /* Step Connectors - Hidden on mobile for cleaner look */
   .step-connector {
-    width: 20px;
-    height: 2px;
-    flex: none;
-    margin: 0;
-    display: flex;
-    align-items: center;
+    display: none !important;
   }
-  
-  .connector-line {
-    width: 100%;
-    height: 2px;
-    background: rgba(100, 116, 139, 0.4);
-    border-radius: 1px;
-    overflow: hidden;
-  }
-  
-  .connector-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #6366f1, #8b5cf6);
-    border-radius: 1px;
-  }
-  
+
   /* Booking Card */
   .booking-card {
     padding: 20px 16px;
     border-radius: 18px;
-  }
-  
-  /* Card Header - Stack on Mobile */
+  }  /* Card Header - Stack on Mobile */
   .card-header {
     flex-direction: column;
     align-items: flex-start;
@@ -874,6 +847,17 @@ html, body {
     gap: 12px;
     margin-left: 0;
     margin-top: 8px;
+  }
+  
+  /* Modern Date Picker Mobile Fixes */
+  .modern-datepicker-container {
+    width: 100%;
+    position: static;
+  }
+  
+  .datepicker-trigger {
+    width: 100%;
+    min-width: unset;
   }
   
   .date-input-compact {
@@ -936,90 +920,106 @@ html, body {
     font-size: 0.9rem;
   }
   
-  /* Time Slots Header */
-  .time-slots-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-    padding: 16px;
-  }
-  
-  .header-left {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  
-  .header-icon {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .slots-title {
-    font-size: 1.1rem;
-  }
-  
-  /* FIX: Time Slots Header - Proper layout */
+  /* Time Slots Header - Compact */
   .time-slots-header {
     display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch;
-    gap: 16px;
-    padding: 16px;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
-    border-bottom: 2px solid rgba(99, 102, 241, 0.2);
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.15);
   }
   
   .header-left {
     display: flex !important;
     flex-direction: row;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+  }
+  
+  .header-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
   }
   
   .header-text {
     display: flex !important;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
   }
   
   .header-title {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: #fff;
     margin: 0;
   }
   
   .header-subtitle {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: rgba(148, 163, 184, 0.9);
     margin: 0;
   }
   
-  /* FIX: Slot Status Legend - Full visibility with dots */
+  .slots-title {
+    font-size: 0.95rem;
+  }
+  
+  /* FIX: Slot Status Legend - Compact inline */
   .slot-status-legend {
-    width: 100%;
+    width: auto;
     display: flex !important;
     flex-direction: row !important;
-    justify-content: space-around;
+    justify-content: flex-end;
     align-items: center;
-    padding: 14px 16px;
-    border-radius: 12px;
-    gap: 10px;
-    background: rgba(30, 41, 59, 0.6) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
   
   .legend-item {
     display: flex !important;
     flex-direction: row !important;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    text-align: center;
-    flex: 1;
+    gap: 3px;
   }
   
+  .status-dot {
+    display: inline-block !important;
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0;
+  }
+  
+  .status-label {
+    font-size: 0.55rem;
+    display: inline-block !important;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  
+  .status-dot.status-available {
+    background: #10b981 !important;
+  }
+  
+  .status-dot.status-partial {
+    background: #f59e0b !important;
+  }
+  
+  .status-dot.status-full {
+    background: #ef4444 !important;
+  }
+
   /* FIX: Status dots - Ensure visible with proper colors */
   .status-dot {
     width: 12px !important;
@@ -1054,35 +1054,71 @@ html, body {
     color: rgba(255, 255, 255, 0.8);
   }
   
-  /* Time Slots Grid */
+  /* ========================================
+     TIME SLOTS - ULTRA COMPACT GRID
+     5 columns, minimal padding for less scroll
+     ======================================== */
   .time-slots-scroll-wrapper {
-    padding: 16px;
+    padding: 8px;
   }
   
   .time-slots-grid.compact-horizontal {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
   }
   
   .time-slot {
     flex: none;
     min-width: 0;
     max-width: none;
-    padding: 14px 8px;
-    border-radius: 12px;
-    font-size: 0.9rem;
+    padding: 8px 2px;
+    border-radius: 8px;
+    font-size: 0.7rem;
     text-align: center;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .slot-time {
-    font-size: 0.95rem;
+    font-size: 0.7rem;
     font-weight: 600;
+    line-height: 1;
   }
   
-  .slot-players {
-    font-size: 0.7rem;
-    margin-top: 4px;
+  .slot-players,
+  .slot-capacity {
+    display: none !important; /* Hide to save space */
+  }
+  
+  .slot-selected-indicator {
+    display: none; /* Hide indicator on mobile */
+  }
+  
+  /* Time slot states - compact styling */
+  .time-slot.available {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  
+  .time-slot.partial {
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+  
+  .time-slot.full {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    opacity: 0.5;
+  }
+  
+  .time-slot.selected {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    border-color: transparent !important;
+    color: white;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
   }
   
   /* Devices Section */
@@ -1184,19 +1220,19 @@ html, body {
   .driving-card,
   .device-card.driving-card {
     margin-top: 8px;
-    margin-bottom: 120px !important; /* Extra space for fixed price-footer */
+    margin-bottom: 20px !important; /* Reduced margin for cleaner layout */
     padding-bottom: 20px;
   }
   
   /* FIX: Devices Section - Add bottom margin for fixed footer clearance */
   .devices-section {
-    padding-bottom: 100px !important;
+    padding-bottom: 80px !important;
   }
   
   .devices-section:last-child,
   .devices-grid:last-child,
   .device-card:last-child {
-    margin-bottom: 100px !important;
+    margin-bottom: 20px !important;
   }
   
   /* FIX: Driving section title spacing */
@@ -1507,99 +1543,82 @@ html, body {
   
   /* ========================================
      STEPS CONTAINER - SMALL MOBILE
-     Ultra-compact pill design
+     Ultra-compact modern pill design
      ======================================== */
   .steps-container {
     display: flex !important;
     flex-direction: row !important;
     align-items: center;
-    justify-content: space-between;
-    gap: 4px;
-    padding: 12px 10px;
+    justify-content: center;
+    gap: 0;
+    padding: 8px;
     margin-bottom: 16px;
-    background: rgba(30, 41, 59, 0.7);
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    min-height: 48px; /* Fixed height for vertical centering */
   }
   
   .step-item {
     display: flex !important;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 4px;
-    padding: 8px 6px;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px;
     flex: 1;
     min-width: 0;
+    min-height: 32px; /* Ensure consistent height */
     background: transparent;
     border: none;
-    border-radius: 10px;
-    opacity: 0.45;
+    border-radius: 50px;
+    opacity: 0.5;
+    transition: all 0.3s ease;
   }
   
   .step-item.active {
     opacity: 1;
-    background: rgba(99, 102, 241, 0.2);
-    border: 1px solid rgba(99, 102, 241, 0.35);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.2));
+    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
   }
   
   .step-item.completed {
-    opacity: 0.75;
-    background: rgba(16, 185, 129, 0.12);
+    opacity: 0.8;
+    background: rgba(16, 185, 129, 0.15);
   }
   
   .step-number {
-    width: 26px;
-    height: 26px;
-    min-width: 26px;
-    font-size: 0.75rem;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    font-size: 0.7rem;
     font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(100, 116, 139, 0.5);
+    border-radius: 50%;
+    color: #fff;
+    margin: auto 0; /* Vertical center within step-item */
   }
   
   .step-item.active .step-number {
-    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.35);
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+  }
+  
+  .step-item.completed .step-number {
+    background: #10b981;
   }
   
   .step-content {
-    display: flex !important;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0;
+    display: none !important; /* Hide text on small mobile */
   }
   
-  .step-label {
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.85);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 70px;
-    line-height: 1.3;
-  }
-  
-  .step-desc {
-    display: none;
-  }
-  
-  .step-item.active .step-label {
-    color: #fff;
-  }
-  
-  /* Step Connectors - Small dots/lines */
+  /* Step Connectors - Hidden on small mobile */
   .step-connector {
-    width: 12px;
-    height: 2px;
-    flex: none;
-    display: flex;
-    align-items: center;
-  }
-  
-  .connector-line {
-    width: 100%;
-    height: 2px;
-    background: rgba(100, 116, 139, 0.35);
-    border-radius: 1px;
+    display: none !important;
   }
   
   /* Booking Card */
@@ -1741,28 +1760,38 @@ html, body {
     color: rgba(255, 255, 255, 0.8);
   }
   
+  /* ========================================
+     TIME SLOTS - SUPER COMPACT FOR SMALL PHONES
+     5 columns, tiny padding
+     ======================================== */
   .time-slots-scroll-wrapper {
-    padding: 14px;
+    padding: 6px;
   }
   
   .time-slots-grid.compact-horizontal {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 3px;
   }
   
   .time-slot {
-    padding: 12px 6px;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    min-height: 60px;
+    padding: 6px 2px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .slot-time {
-    font-size: 0.9rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    line-height: 1;
   }
   
-  .slot-players {
-    font-size: 0.65rem;
+  .slot-players,
+  .slot-capacity {
+    display: none !important;
   }
   
   /* Devices */
@@ -1823,28 +1852,23 @@ html, body {
     font-size: 0.65rem;
   }
   
-  /* FIX: Driving Simulator Card - Add bottom space for fixed footer */
+  /* FIX: Driving Simulator Card - Reduced margin */
   .driving-card,
   .device-card.driving-card {
-    margin-bottom: 130px !important;
+    margin-bottom: 20px !important;
     padding-bottom: 20px;
   }
   
   /* FIX: Devices Section - Add bottom margin for fixed footer clearance */
   .devices-section {
-    padding-bottom: 110px !important;
+    padding-bottom: 80px !important;
   }
   
   .section-title.driving-title {
     margin-top: 20px;
   }
   
-  /* Ensure last device card has bottom margin for footer clearance */
-  .devices-section:last-child,
-  .devices-grid:last-child,
-  .device-card:last-child {
-    margin-bottom: 90px;
-  }
+  /* Removed margin-bottom for last-child - not needed with padding-bottom on section */
   
   /* Price Footer */
   .price-footer {
@@ -1864,6 +1888,91 @@ html, body {
     padding: 12px 16px;
     font-size: 0.95rem;
     border-radius: 10px;
+  }
+  
+  /* ========================================
+     MINI PRICE PILL - MOBILE OPTIMIZED
+     Compact, sleek floating price display
+     ======================================== */
+  .mini-price-pill {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    border-radius: 40px;
+    padding: 6px 6px 6px 16px;
+    min-height: 48px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: none;
+  }
+  
+  .mini-price-pill:hover {
+    transform: none; /* Disable hover effects on mobile */
+  }
+  
+  .mini-price-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .mini-price-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: var(--booking-primary-light);
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    display: none; /* Hide label on small mobile */
+  }
+  
+  .mini-price-amount {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    color: white;
+    font-size: 1.15rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  
+  .mini-continue-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    flex-shrink: 0;
+  }
+  
+  .mini-continue-btn:hover,
+  .mini-continue-btn:active {
+    transform: none;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  }
+  
+  /* Devices section header with mini-price-pill */
+  .devices-section-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px;
+  }
+  
+  .devices-section-header .mini-price-pill {
+    margin-top: 4px;
   }
   
   /* Checkout V2 */
