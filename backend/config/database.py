@@ -1,93 +1,121 @@
 """
 Database Configuration
 MySQL connection setup with connection pooling
+Railway-compatible (NO localhost, NO unix_socket)
 """
 
+import os
 import mysql.connector
 from mysql.connector import pooling
-import os
 
-# Database Configuration
-DB_CONFIG = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'database': os.getenv('DB_NAME', 'gamespot_booking'),
-    'user': os.getenv('DB_USER', 'root'),
-    'password': os.getenv('DB_PASS', 'newpassword'),
-    'charset': 'utf8mb4',
-    'unix_socket': '/tmp/mysql.sock' if os.path.exists('/tmp/mysql.sock') else None
-}
-
-# Connection Pool
+# Global connection pool
 connection_pool = None
 
+
 def init_db_pool():
-    """Initialize database connection pool"""
+    """
+    Initialize MySQL connection pool.
+    Will NOT crash the app if database is temporarily unavailable.
+    """
     global connection_pool
-    
+
     try:
-        # Remove None values from config
-        config = {k: v for k, v in DB_CONFIG.items() if v is not None}
-        
+        db_config = {
+            "host": os.getenv("MYSQLHOST"),
+            "port": int(os.getenv("MYSQLPORT", 3306)),
+            "user": os.getenv("MYSQLUSER"),
+            "password": os.getenv("MYSQLPASSWORD"),
+            "database": os.getenv("MYSQLDATABASE"),
+            "charset": "utf8mb4",
+        }
+
+        # Remove empty values
+        db_config = {k: v for k, v in db_config.items() if v}
+
+        if not all(
+            key in db_config
+            for key in ("host", "user", "password", "database")
+        ):
+            print("⚠️ MySQL environment variables not fully set")
+            connection_pool = None
+            return
+
         connection_pool = pooling.MySQLConnectionPool(
             pool_name="gamespot_pool",
             pool_size=10,
             pool_reset_session=True,
-            **config
+            **db_config
         )
+
         print("✅ Database connection pool initialized")
+
     except mysql.connector.Error as err:
-        print(f"❌ Database connection failed: {err}")
-        raise
+        print(f"⚠️ Database connection failed: {err}")
+        connection_pool = None
+
 
 def get_db_connection():
-    """Get a database connection from the pool"""
-    try:
-        if connection_pool is None:
-            init_db_pool()
-        return connection_pool.get_connection()
-    except mysql.connector.Error as err:
-        print(f"❌ Failed to get database connection: {err}")
-        raise
+    """
+    Get a database connection from the pool.
+    """
+    global connection_pool
 
-def execute_query(query, params=None, fetch_one=False, fetch_all=True, commit=False):
+    if connection_pool is None:
+        init_db_pool()
+
+    if connection_pool is None:
+        raise RuntimeError("Database connection pool is not available")
+
+    return connection_pool.get_connection()
+
+
+def execute_query(
+    query,
+    params=None,
+    fetch_one=False,
+    fetch_all=True,
+    commit=False,
+):
     """
-    Execute a database query
-    
+    Execute a database query safely.
+
     Args:
-        query: SQL query string
-        params: Query parameters (tuple or list)
-        fetch_one: Return single result
-        fetch_all: Return all results
-        commit: Commit transaction
-        
+        query (str): SQL query
+        params (tuple | list): query parameters
+        fetch_one (bool): return single row
+        fetch_all (bool): return all rows
+        commit (bool): commit transaction
+
     Returns:
-        Query results or None
+        Query result or None
     """
+
     conn = None
     cursor = None
-    
+
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        
+
         cursor.execute(query, params or ())
-        
+
         if commit:
             conn.commit()
-            return cursor.lastrowid if cursor.lastrowid else True
-        
+            return cursor.lastrowid or True
+
         if fetch_one:
             return cursor.fetchone()
-        
+
         if fetch_all:
             return cursor.fetchall()
-        
+
         return True
-        
+
     except mysql.connector.Error as err:
         if conn:
             conn.rollback()
         raise err
+
     finally:
         if cursor:
             cursor.close()
