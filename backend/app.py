@@ -40,21 +40,27 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'gamespot-secret-key-change-in-production')
 app.config['SESSION_COOKIE_NAME'] = 'gamespot_session'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin
+app.config['SESSION_COOKIE_SECURE'] = True  # Required when SameSite=None
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
-# CORS Configuration - Allow React dev server and Mobile app
+# CORS Configuration - Allow React dev server, Mobile app, and Production
 CORS(app, 
      origins=[
-         'http://localhost:3000',    # Web frontend
+         'http://localhost:3000',    # Web frontend dev
          'http://localhost:3001',    # Additional web port
          'http://localhost:3002',    # Additional web port
          'http://localhost:8081',    # Mobile app (Expo web)
-         'http://192.168.1.11:8081', # Mobile app (network access - current IP)
-         'http://192.168.1.205:8081', # Mobile app (network access - old IP)
+         'http://192.168.1.11:8081', # Mobile app (network access)
+         'http://192.168.1.205:8081', # Mobile app (network access)
+         'https://gamespotbooking-v1-production.up.railway.app',  # Backend itself
+         'https://*.vercel.app',     # Vercel deployments
+         'https://*.netlify.app',    # Netlify deployments
+         'https://gamespot.in',      # Custom domain (if any)
+         'https://www.gamespot.in',  # Custom domain with www
      ],
      supports_credentials=True,
-     allow_headers=['Content-Type', 'Authorization'],
+     allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
 # Initialize database connection pool
