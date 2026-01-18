@@ -4,53 +4,46 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import '../styles/AdminLoginPage.css';
 import { apiFetch } from "../services/apiClient";
+import { useAuth } from "../context/AuthContext";
 
 
 const MembershipPlansPage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, isAdmin, loading: authLoading } = useAuth();
   const [plans, setPlans] = useState([]);
   const [currentMembership, setCurrentMembership] = useState(null);
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState(null);
   const [error, setError] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    checkAuthAndLoadData();
-  }, []);
+    loadData();
+  }, [isAuthenticated, authLoading]);
 
-  const checkAuthAndLoadData = async () => {
-  try {
-    // 1️⃣ Load plans (public)
-    const plansData = await apiFetch("/api/membership/plans");
+  const loadData = async () => {
+    if (authLoading) return;
+    
+    try {
+      // 1️⃣ Load plans (public)
+      const plansData = await apiFetch("/api/membership/plans");
+      if (plansData.success) {
+        setPlans(plansData.plans);
+      }
 
-    if (plansData.success) {
-      setPlans(plansData.plans);
+      // 2️⃣ If authenticated as customer, load membership status
+      if (isAuthenticated && !isAdmin) {
+        const statusData = await apiFetch("/api/membership/status");
+        if (statusData.success && statusData.has_membership) {
+          setCurrentMembership(statusData.membership);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading data:", err);
+      setError("Failed to load membership plans");
+    } finally {
+      setLoading(false);
     }
-
-    // 2️⃣ Check auth
-    const authData = await apiFetch("/api/auth/check");
-
-    if (!authData.authenticated || authData.user_type !== "customer") {
-      setIsLoggedIn(false);
-      return;
-    }
-
-    setIsLoggedIn(true);
-
-    // 3️⃣ Load membership status
-    const statusData = await apiFetch("/api/membership/status");
-
-    if (statusData.success && statusData.has_membership) {
-      setCurrentMembership(statusData.membership);
-    }
-  } catch (err) {
-    console.error("Error loading data:", err);
-    setError("Failed to load membership plans");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   const handleSubscribe = async (planType) => {

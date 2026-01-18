@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import HomePage from './pages/HomePage.jsx';
 import BookingPage from './pages/BookingPage.jsx';
 import RentalPage from './pages/RentalPage.jsx';
@@ -48,27 +49,29 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <PageTracker />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/booking" element={<BookingPage />} />
-        <Route path="/rental" element={<RentalPage />} />
-        <Route path="/college-setup" element={<CollegeSetupPage />} />
-        <Route path="/discount-game" element={<DiscountGamePage />} />
-        <Route path="/games" element={<GamesPage />} />
-        <Route path="/updates" element={<UpdatesPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/membership" element={<MembershipPlansPage />} />
-        <Route path="/feedback" element={<FeedbackPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        {/* Redirect old admin login to new unified login */}
-        <Route path="/admin/login" element={<Navigate to="/login" replace />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <PageTracker />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/booking" element={<BookingPage />} />
+          <Route path="/rental" element={<RentalPage />} />
+          <Route path="/college-setup" element={<CollegeSetupPage />} />
+          <Route path="/discount-game" element={<DiscountGamePage />} />
+          <Route path="/games" element={<GamesPage />} />
+          <Route path="/updates" element={<UpdatesPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/membership" element={<MembershipPlansPage />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          {/* Redirect old admin login to new unified login */}
+          <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

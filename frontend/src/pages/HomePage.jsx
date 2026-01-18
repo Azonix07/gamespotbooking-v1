@@ -1,54 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiCpu } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AIChat from '../components/AIChat';
 import '../styles/HomePage.css';
-import { apiFetch } from "../services/apiClient";
+import { useAuth } from "../context/AuthContext";
 
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [showAIChat, setShowAIChat] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    checkUserSession();
-  }, []);
-
-  const checkUserSession = async () => {
-  try {
-    const data = await apiFetch("/api/auth/check");
-
-    if (data.authenticated) {
-      if (data.user_type === "admin") {
-        setIsAdmin(true);
-        setUser({ name: data.user.username });
-      } else {
-        setUser(data.user);
-      }
-    }
-  } catch (err) {
-    console.error("Session check error:", err);
-  }
-};
-
+  const { user, isAdmin, logout } = useAuth();
 
   const handleLogout = async () => {
-  try {
-    await apiFetch("/api/auth/logout", {
-      method: "POST",
-    });
-
-    setUser(null);
-    setIsAdmin(false);
-    window.location.reload();
-  } catch (err) {
-    console.error("Logout error:", err);
-  }
-};
+    await logout();
+  };
 
 
   return (

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { apiFetch } from '../services/apiClient';
+import { useAuth } from '../context/AuthContext';
 import '../styles/AdminLoginPage.css';  // Reuse existing styles
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const { signup, isAuthenticated, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,6 +18,13 @@ const SignupPage = () => {
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleChange = (e) => {
     setFormData({
@@ -89,16 +97,13 @@ const SignupPage = () => {
       setLoading(true);
       setError(null);
       
-      const data = await apiFetch('/api/auth/signup', {
-        method: 'POST',
-        body: JSON.stringify(formData)
-      });
+      const result = await signup(formData);
       
-      if (data.success) {
+      if (result.success) {
         // Auto-logged in after signup
-        navigate('/', { state: { message: 'Account created successfully!' } });
+        navigate('/', { replace: true, state: { message: 'Account created successfully!' } });
       } else {
-        setError(data.error || 'Signup failed');
+        setError(result.error || 'Signup failed');
       }
       
     } catch (err) {

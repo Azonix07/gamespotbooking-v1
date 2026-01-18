@@ -13,12 +13,13 @@ import {
   FiCheckCircle
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
-import { apiFetch } from '../services/apiClient';
+import { useAuth } from '../context/AuthContext';
 import '../styles/LoginPage.css';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated, isAdmin, login, signup, loading: authLoading } = useAuth();
   
   // Tab state
   const [activeTab, setActiveTab] = useState('login');
@@ -40,26 +41,17 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Redirect if already authenticated
   useEffect(() => {
-    checkSession();
-  }, []);
-
-  const checkSession = async () => {
-    try {
-      const data = await apiFetch('/api/auth/check');
-      
-      if (data.authenticated) {
-        if (data.user_type === 'admin') {
-          navigate('/admin/dashboard');
-        } else {
-          const from = location.state?.from?.pathname || '/';
-          navigate(from);
-        }
+    if (!authLoading && isAuthenticated) {
+      if (isAdmin) {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        const from = location.state?.from?.pathname || '/';
+        navigate(from, { replace: true });
       }
-    } catch (err) {
-      console.error('Session check error:', err);
     }
-  };
+  }, [isAuthenticated, isAdmin, authLoading, navigate, location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,23 +60,17 @@ const LoginPage = () => {
       setLoading(true);
       setError(null);
       
-      const data = await apiFetch('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({
-          username: identifier,
-          password: password
-        })
-      });
+      const result = await login(identifier, password);
       
-      if (data.success) {
-        if (data.user_type === 'admin') {
-          navigate('/admin/dashboard');
+      if (result.success) {
+        if (result.userType === 'admin') {
+          navigate('/admin/dashboard', { replace: true });
         } else {
           const from = location.state?.from?.pathname || '/';
-          navigate(from);
+          navigate(from, { replace: true });
         }
       } else {
-        setError(data.error || 'Login failed');
+        setError(result.error || 'Login failed');
       }
       
     } catch (err) {
@@ -117,24 +103,22 @@ const LoginPage = () => {
       setLoading(true);
       setError(null);
       
-      const data = await apiFetch('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: signupName,
-          email: signupEmail,
-          phone: signupPhone,
-          password: signupPassword
-        })
+      const result = await signup({
+        name: signupName,
+        email: signupEmail,
+        phone: signupPhone,
+        password: signupPassword,
+        confirmPassword: confirmPassword
       });
       
-      if (data.success) {
+      if (result.success) {
         setSuccess('Account created successfully! Redirecting...');
         setTimeout(() => {
           const from = location.state?.from?.pathname || '/';
-          navigate(from);
+          navigate(from, { replace: true });
         }, 1500);
       } else {
-        setError(data.error || 'Registration failed');
+        setError(result.error || 'Registration failed');
       }
       
     } catch (err) {

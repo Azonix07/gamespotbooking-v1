@@ -2,22 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FiUser, FiHome, FiGrid, FiPackage, FiPhone, FiGift, FiMessageSquare, FiCalendar, FiBell, FiX, FiAward, FiTarget, FiStar, FiMonitor, FiBook, FiMail, FiLogOut, FiSettings, FiCreditCard } from 'react-icons/fi';
 import '../styles/Navbar.css';
-import { apiFetch } from "../services/apiClient";
+import { useAuth } from '../context/AuthContext';
 
 
 const Navbar = ({ showCenter = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, isAdmin, isAuthenticated, logout } = useAuth();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  // SINGLE useEffect for session check on mount
-  useEffect(() => {
-    checkUserSession();
-  }, []); // Empty dependency - runs once on mount
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -62,47 +56,12 @@ const Navbar = ({ showCenter = true }) => {
     };
   }, [showProfileDropdown]);
 
-  const checkUserSession = async () => {
-  try {
-    const data = await apiFetch("/api/auth/check");
-
-    console.log("Navbar session check:", data);
-
-    if (data.authenticated) {
-      if (data.user_type === "admin") {
-        setIsAdmin(true);
-        setUser({ name: data.user?.username || "Admin" });
-      } else {
-        setUser(data.user);
-      }
-    } else {
-      setUser(null);
-      setIsAdmin(false);
-    }
-  } catch (err) {
-    console.error("Navbar session check error:", err);
-    setUser(null);
-    setIsAdmin(false);
-  }
-};
-
 
   const handleLogout = async () => {
-  try {
-    await apiFetch("/api/auth/logout", {
-      method: "POST",
-    });
-
-    setUser(null);
-    setIsAdmin(false);
+    await logout();
     setShowProfileDropdown(false);
-
     navigate("/");
-    window.location.reload();
-  } catch (err) {
-    console.error("Logout error:", err);
-  }
-};
+  };
 
 
   const handleProfileClick = () => {

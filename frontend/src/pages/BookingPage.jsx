@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus } from '../services/api';
 import { formatDate, getToday, formatDuration, formatPrice, formatTime12Hour, isValidName, isValidPhone } from '../utils/helpers';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { apiFetch } from '../services/apiClient';
+import ModernDatePicker from '../components/ModernDatePicker';
 import '../styles/BookingPage.css';
 
 const BookingPage = () => {
@@ -640,18 +641,11 @@ const BookingPage = () => {
                   <p className="card-subtitle">Select your preferred date and time slot</p>
                 </div>
                 <div className="header-date-picker">
-                  <input
-                    type="date"
-                    className="date-input-compact"
-                    value={selectedDate}
-                    min={getToday()}
+                  <ModernDatePicker 
+                    selectedDate={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
+                    minDate={getToday()}
                   />
-                  <div className="selected-date-badge">
-                    <span className="badge-day">{new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                    <span className="badge-date">{new Date(selectedDate).toLocaleDateString('en-US', { day: 'numeric' })}</span>
-                    <span className="badge-month">{new Date(selectedDate).toLocaleDateString('en-US', { month: 'short' })}</span>
-                  </div>
                 </div>
               </div>
               
@@ -835,10 +829,39 @@ const BookingPage = () => {
                   
                   {/* Device Selection Grid */}
                   <div className="devices-section">
-                    <h3 className="section-title">
-                      <FiMonitor className="section-icon" />
-                      PlayStation 5 Consoles
-                    </h3>
+                    <div className="devices-section-header">
+                        <h3 className="section-title" style={{ display: 'flex', alignItems: 'center' }}>
+                          <FiMonitor className="section-icon" />
+                          <span>PlayStation 5 Consoles</span>
+                        </h3>
+                        
+                        {(ps5Bookings.length > 0 || drivingSim) && (
+                            <motion.div 
+                                className="mini-price-pill"
+                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                layout
+                            >
+                                <div className="mini-price-content">
+                                    <span className="mini-price-label">Total</span>
+                                    <span className="mini-price-amount">
+                                      {discountInfo ? (
+                                        <span style={{ color: '#10b981' }}>{formatPrice(price)}</span> /* Show discounted price green */
+                                      ) : (
+                                        formatPrice(price)
+                                      )}
+                                    </span>
+                                </div>
+                                <button 
+                                    className="mini-continue-btn"
+                                    onClick={() => setCurrentStep(3)}
+                                    title="Continue to Review"
+                                >
+                                    <FiArrowRight />
+                                </button>
+                            </motion.div>
+                        )}
+                    </div>
                     
                     <div className="devices-grid">
                       {[1, 2, 3].map((unitNumber) => {
@@ -890,7 +913,7 @@ const BookingPage = () => {
                                   initial={{ opacity: 0, height: 0 }}
                                   animate={{ opacity: 1, height: 'auto' }}
                                   exit={{ opacity: 0, height: 0 }}
-                                  transition={{ duration: 0.3 }}
+                                  transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }} // Smoother bezier curve
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <div className="option-group">
@@ -1035,42 +1058,6 @@ const BookingPage = () => {
                       </AnimatePresence>
                     </motion.div>
                   </div>
-                  
-                  {/* Floating Price Bar */}
-                  <motion.div 
-                    className="price-footer"
-                    initial={{ y: 100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <div className="price-display">
-                      {discountInfo ? (
-                        <>
-                          <span className="price-label">
-                            <FiTag className="discount-icon" />
-                            {discountInfo.percentage}% Member Discount
-                          </span>
-                          <div className="price-with-discount">
-                            <span className="original-price">{formatPrice(originalPrice)}</span>
-                            <span className="price-amount discounted">{formatPrice(price)}</span>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <span className="price-label">Total Price</span>
-                          <span className="price-amount">{formatPrice(price)}</span>
-                        </>
-                      )}
-                    </div>
-                    <button
-                      className="continue-btn"
-                      onClick={() => setCurrentStep(3)}
-                      disabled={ps5Bookings.length === 0 && !drivingSim}
-                    >
-                      Continue
-                      <FiArrowRight className="btn-icon" />
-                    </button>
-                  </motion.div>
                 </>
               )}
             </motion.div>
@@ -1152,9 +1139,7 @@ const BookingPage = () => {
                       <div className="form-group-v2">
                         <label htmlFor="customerPhone" className="form-label-v2">Phone Number</label>
                         <div className="input-wrapper-v2">
-                           <svg className="input-icon-v2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                          </svg>
+                           <FiPhone className="input-icon-v2" /> {/* Use Icon component instead of raw SVG for consistency */}
                           <input
                             id="customerPhone"
                             type="tel"
@@ -1265,33 +1250,22 @@ const BookingPage = () => {
                           <span className="total-amount-v2">{formatPrice(price)}</span>
                         </div>
                       )}
-                      <p className="payment-note-v2">Pay at venue</p>
+                      <p className="payment-note-v2"><FiCheckCircle style={{verticalAlign: 'middle', marginRight: 6}} /> No payment required now</p>
                     </div>
+                    
+                    <button 
+                         className="submit-btn-v2" 
+                         disabled={loading}
+                         onClick={(e) => {
+                             // Find the form and submit it
+                             const form = document.querySelector('form');
+                             if(form) form.requestSubmit();
+                         }}
+                    >
+                          {loading ? 'Processing...' : 'Confirm Booking'}
+                          {!loading && <FiCheck />}
+                    </button>
                   </div>
-
-                  <motion.button
-                    type="submit"
-                    onClick={handleSubmit}
-                    className="submit-btn-v2"
-                    disabled={loading}
-                    whileHover={{ scale: loading ? 1 : 1.02, y: -2 }}
-                    whileTap={{ scale: loading ? 1 : 0.98 }}
-                  >
-                    {loading ? (
-                      <div className="btn-loading">
-                        <div className="btn-spinner"></div>
-                        <span>Processing...</span>
-                      </div>
-                    ) : (
-                      <>
-                        <FiZap className="btn-icon" />
-                        <span>Confirm & Book Now</span>
-                      </>
-                    )}
-                  </motion.button>
-                  <p className="terms-note-v2">
-                    By booking, you agree to our Terms of Service.
-                  </p>
                 </motion.div>
               </div>
             </motion.div>
