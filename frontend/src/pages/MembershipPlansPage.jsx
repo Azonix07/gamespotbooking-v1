@@ -102,7 +102,7 @@ const MembershipPlansPage = () => {
         </div>
         
         {/* Login prompt for guests */}
-        {!isLoggedIn && (
+        {!isAuthenticated && (
           <div style={{
             background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)',
             border: '1px solid rgba(99, 102, 241, 0.3)',
