@@ -40,10 +40,13 @@ const LoginPage = () => {
   const [success, setSuccess] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    // Don't redirect if we're in the middle of submitting
+    if (!authLoading && isAuthenticated && !isSubmitting) {
+      console.log('[LoginPage] Already authenticated, redirecting...', { isAdmin });
       if (isAdmin) {
         navigate('/admin/dashboard', { replace: true });
       } else {
@@ -51,18 +54,35 @@ const LoginPage = () => {
         navigate(from, { replace: true });
       }
     }
-  }, [isAuthenticated, isAdmin, authLoading, navigate, location.state]);
+  }, [isAuthenticated, isAdmin, authLoading, navigate, location.state, isSubmitting]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling
+    
+    // Prevent double submission
+    if (loading || isSubmitting) {
+      console.log('[LoginPage] Already submitting, ignoring duplicate submission');
+      return;
+    }
     
     try {
+      setIsSubmitting(true);
       setLoading(true);
       setError(null);
       
+      console.log('[LoginPage] Starting login process...');
+      
       const result = await login(identifier, password);
       
+      console.log('[LoginPage] Login result:', result);
+      
       if (result.success) {
+        console.log('[LoginPage] Login successful, navigating...', { userType: result.userType });
+        
+        // Small delay to ensure state is updated
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         if (result.userType === 'admin') {
           navigate('/admin/dashboard', { replace: true });
         } else {
@@ -70,12 +90,15 @@ const LoginPage = () => {
           navigate(from, { replace: true });
         }
       } else {
+        console.error('[LoginPage] Login failed:', result.error);
         setError(result.error || 'Login failed');
+        setIsSubmitting(false); // Reset on failure
       }
       
     } catch (err) {
+      console.error('[LoginPage] Login error:', err);
       setError(err.message || 'Login failed. Please try again.');
-      console.error('Login error:', err);
+      setIsSubmitting(false); // Reset on error
     } finally {
       setLoading(false);
     }
@@ -83,6 +106,13 @@ const LoginPage = () => {
 
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling
+    
+    // Prevent double submission
+    if (loading || isSubmitting) {
+      console.log('[LoginPage] Already submitting, ignoring duplicate submission');
+      return;
+    }
     
     if (!signupName || !signupEmail || !signupPhone || !signupPassword) {
       setError('Please fill in all fields');
@@ -100,8 +130,11 @@ const LoginPage = () => {
     }
     
     try {
+      setIsSubmitting(true);
       setLoading(true);
       setError(null);
+      
+      console.log('[LoginPage] Starting signup process...');
       
       const result = await signup({
         name: signupName,
@@ -111,19 +144,26 @@ const LoginPage = () => {
         confirmPassword: confirmPassword
       });
       
+      console.log('[LoginPage] Signup result:', result);
+      
       if (result.success) {
         setSuccess('Account created successfully! Redirecting...');
-        setTimeout(() => {
-          const from = location.state?.from?.pathname || '/';
-          navigate(from, { replace: true });
-        }, 1500);
+        
+        // Small delay before redirect
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        const from = location.state?.from?.pathname || '/';
+        navigate(from, { replace: true });
       } else {
+        console.error('[LoginPage] Signup failed:', result.error);
         setError(result.error || 'Registration failed');
+        setIsSubmitting(false); // Reset on failure
       }
       
     } catch (err) {
+      console.error('[LoginPage] Signup error:', err);
       setError(err.message || 'Registration failed. Please try again.');
-      console.error('Signup error:', err);
+      setIsSubmitting(false); // Reset on error
     } finally {
       setLoading(false);
     }
