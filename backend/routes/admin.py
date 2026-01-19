@@ -5,6 +5,7 @@ Handles admin authentication (login, logout, session check)
 
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
+from middleware.auth import require_admin, check_admin_auth, generate_admin_token
 import bcrypt
 
 admin_bp = Blueprint('admin', __name__)
@@ -102,11 +103,8 @@ def handle_admin():
     return jsonify({'success': False, 'error': 'Invalid action'}), 400
 
 
-def require_admin():
-    """Check if admin is logged in"""
-    if not session.get('admin_logged_in'):
-        return jsonify({'success': False, 'error': 'Unauthorized. Admin login required.'}), 401
-    return None
+# Note: require_admin is now imported from middleware.auth
+# It supports both session-based and JWT token authentication
 
 
 @admin_bp.route('/api/admin/users', methods=['GET', 'OPTIONS'])

@@ -5,6 +5,7 @@ Handles creating, reading, updating, and deleting bookings
 
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
+from middleware.auth import require_admin
 from utils.helpers import (
     validate_booking_data, 
     get_affected_slots, 
@@ -15,11 +16,9 @@ import mysql.connector
 
 bookings_bp = Blueprint('bookings', __name__)
 
-def require_admin():
-    """Check if admin is logged in"""
-    if not session.get('admin_logged_in'):
-        return jsonify({'success': False, 'error': 'Unauthorized. Admin login required.'}), 401
-    return None
+
+# Note: require_admin is now imported from middleware.auth
+# It supports both session-based and JWT token authentication
 
 @bookings_bp.route('/api/bookings.php', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 def handle_bookings():

@@ -14,6 +14,7 @@ from services.auth_service import (
 )
 from routes.admin import verify_php_password
 from config.database import get_db_connection
+from middleware.auth import generate_admin_token, generate_user_token
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -113,18 +114,22 @@ def login():
             if not admin or not verify_php_password(password, admin['password_hash']):
                 return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
             
-            # Set admin session
+            # Set admin session (for desktop browsers with cookies)
             session.clear()  # Clear any existing session
             session['admin_logged_in'] = True
             session['admin_id'] = admin['id']
             session['admin_username'] = admin['username']
             session.permanent = True
             
+            # Generate JWT token (for mobile browsers without cookies)
+            token = generate_admin_token(admin['id'], admin['username'])
+            
             return jsonify({
                 'success': True,
                 'message': 'Admin login successful',
                 'user_type': 'admin',
-                'username': admin['username']
+                'username': admin['username'],
+                'token': token  # Mobile browsers use this token
             })
         
         # Customer login flow
@@ -137,7 +142,7 @@ def login():
         result = login_user(login_email, password)
         
         if result['success']:
-            # Set customer session
+            # Set customer session (for desktop browsers with cookies)
             session.clear()  # Clear any existing session
             session['user_logged_in'] = True
             session['user_id'] = result['user']['id']
@@ -146,9 +151,17 @@ def login():
             session['user_phone'] = result['user']['phone']
             session.permanent = True
             
+            # Generate JWT token (for mobile browsers without cookies)
+            token = generate_user_token(
+                result['user']['id'],
+                result['user']['email'],
+                result['user']['name']
+            )
+            
             return jsonify({
                 **result,
-                'user_type': 'customer'
+                'user_type': 'customer',
+                'token': token  # Mobile browsers use this token
             })
         else:
             return jsonify(result), 401

@@ -157,10 +157,14 @@ export const AuthProvider = ({ children }) => {
         }
         setIsAuthenticated(true);
         
-        // Store login indicator in localStorage for mobile persistence
+        // MOBILE FIX: Store JWT token for API calls (mobile browsers block cookies)
         try {
           localStorage.setItem('gamespot_logged_in', 'true');
           localStorage.setItem('gamespot_user_type', data.user_type);
+          if (data.token) {
+            localStorage.setItem('gamespot_auth_token', data.token);
+            console.log('[AuthContext] JWT token stored for mobile API calls');
+          }
         } catch (e) {
           console.log('[AuthContext] localStorage not available');
         }
@@ -202,10 +206,11 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       lastCheckTimeRef.current = 0;
       
-      // Clear localStorage indicators
+      // Clear localStorage indicators and JWT token
       try {
         localStorage.removeItem('gamespot_logged_in');
         localStorage.removeItem('gamespot_user_type');
+        localStorage.removeItem('gamespot_auth_token');
       } catch (e) {
         console.log('[AuthContext] localStorage not available');
       }

@@ -2,6 +2,7 @@
  * API Service
  * Handles all API calls to the backend
  * Works in local + production (Railway)
+ * Supports both session cookies (desktop) and JWT tokens (mobile)
  */
 
 // 🔑 Central backend URL
@@ -10,17 +11,40 @@ const API_BASE_URL =
   "https://gamespotbooking-v1-production.up.railway.app";
 
 // =======================================================
-// Shared fetch helper (session + JSON)
+// JWT Token Helper for Mobile
+// =======================================================
+
+const getAuthToken = () => {
+  try {
+    return localStorage.getItem('gamespot_auth_token');
+  } catch (e) {
+    return null;
+  }
+};
+
+// =======================================================
+// Shared fetch helper (session + JSON + JWT)
 // =======================================================
 
 const fetchWithCredentials = async (url, options = {}) => {
+  // Get JWT token for mobile authentication
+  const token = getAuthToken();
+  
+  // Build headers with optional Authorization token
+  const headers = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
+  
+  // Add Authorization header if we have a token (mobile browsers)
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
   const response = await fetch(url, {
     ...options,
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
+    headers,
   });
 
   const data = await response.json();
