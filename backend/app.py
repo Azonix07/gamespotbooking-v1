@@ -1,10 +1,10 @@
 """
 GameSpot Booking System - Python Backend
 Flask application with MySQL database
-Converted from PHP to Python while maintaining 100% API compatibility
+Serves both API and React Frontend from same origin
 """
 
-from flask import Flask, session, request
+from flask import Flask, session, request, send_from_directory
 from flask_cors import CORS
 from datetime import timedelta
 import os
@@ -33,15 +33,20 @@ from routes.rentals import rentals_bp  # Rental bookings (VR & PS5)
 from routes.college import college_bp  # College event bookings
 from routes.game_leaderboard import game_leaderboard_bp  # Game leaderboard and winners
 
-# Create Flask app
-app = Flask(__name__)
+# Get the frontend build directory path
+FRONTEND_BUILD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'build')
+
+# Create Flask app with static folder pointing to React build
+app = Flask(__name__, 
+            static_folder=FRONTEND_BUILD_DIR,
+            static_url_path='')
 
 # Configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'gamespot-secret-key-change-in-production')
 app.config['SESSION_COOKIE_NAME'] = 'gamespot_session'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin
-app.config['SESSION_COOKIE_SECURE'] = True  # Required when SameSite=None
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Same-origin now, so Lax is fine
+app.config['SESSION_COOKIE_SECURE'] = True  # Always use Secure on production
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 app.config['SESSION_COOKIE_DOMAIN'] = None  # Let browser handle domain automatically
 
@@ -87,9 +92,9 @@ app.register_blueprint(game_leaderboard_bp)  # Game leaderboard and winners
 def health_check():
     return {'status': 'healthy', 'message': 'GameSpot Python Backend is running'}, 200
 
-# Root endpoint
-@app.route('/', methods=['GET'])
-def root():
+# API info endpoint (for debugging)
+@app.route('/api', methods=['GET'])
+def api_info():
     return {
         'message': 'GameSpot Booking System API',
         'version': '2.0.0',
@@ -105,6 +110,21 @@ def root():
             'membership_plans': '/api/membership/plans'
         }
     }, 200
+
+# Serve React frontend for all non-API routes
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    # If path starts with 'api/', let the API routes handle it (this shouldn't reach here)
+    if path.startswith('api/'):
+        return {'error': 'API endpoint not found'}, 404
+    
+    # Try to serve static file (JS, CSS, images, etc.)
+    if path and os.path.exists(os.path.join(FRONTEND_BUILD_DIR, path)):
+        return send_from_directory(FRONTEND_BUILD_DIR, path)
+    
+    # For all other routes, serve index.html (React Router handles routing)
+    return send_from_directory(FRONTEND_BUILD_DIR, 'index.html')
 
 if __name__ == '__main__':
     print("=" * 60)

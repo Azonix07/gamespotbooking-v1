@@ -1,13 +1,13 @@
 /**
  * Central API Client
  * Handles ALL backend communication
+ * Now uses relative URLs since frontend and backend are same-origin
  */
 
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL ||
-  "https://gamespotbooking-v1-production.up.railway.app";
+// Use relative URL for same-origin requests (fixes mobile cookie issues)
+const API_BASE_URL = process.env.REACT_APP_API_URL || "";
 
-console.log('[apiClient] Using API URL:', API_BASE_URL);
+console.log('[apiClient] Using API URL:', API_BASE_URL || '(relative/same-origin)');
 
 export const apiFetch = async (path, options = {}) => {
   const url = `${API_BASE_URL}${path}`;

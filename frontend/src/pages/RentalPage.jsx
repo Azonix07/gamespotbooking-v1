@@ -215,7 +215,7 @@ const RentalPage = () => {
       };
 
       // Make API call to save rental booking
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+      const API_BASE_URL = process.env.REACT_APP_API_URL || '';
       const response = await fetch(`${API_BASE_URL}/api/rentals`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

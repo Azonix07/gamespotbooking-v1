@@ -2,12 +2,12 @@
  * AI Booking Assistant API Service
  * Handles communication with the AI chat endpoint
  * Works in local + production (Railway)
+ * Uses relative URLs for same-origin requests (fixes mobile cookies)
  */
 
-// 🔑 Use the SAME central backend URL
+// 🔑 Use the SAME central backend URL - empty for same-origin
 const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL ||
-  "https://gamespotbooking-v1-production.up.railway.app";
+  process.env.REACT_APP_API_BASE_URL || "";
 
 // =======================================================
 // Send message to AI assistant
