@@ -31,11 +31,6 @@ def validate_phone(phone):
     pattern = r'^\+?[1-9]\d{1,14}$'
     return re.match(pattern, phone.replace(' ', '').replace('-', ''))
 
-def validate_email(email):
-    """Validate email format"""
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    return re.match(pattern, email)
-
 # GameSpot Kodungallur location
 GAMESPOT_LAT = 10.2167
 GAMESPOT_LNG = 76.2000
@@ -165,13 +160,6 @@ def handle_college_bookings():
                 return jsonify({
                     'success': False,
                     'error': 'Invalid phone number format'
-                }), 400
-            
-            # Validate email if provided
-            if data.get('contact_email') and not validate_email(data['contact_email']):
-                return jsonify({
-                    'success': False,
-                    'error': 'Invalid email format'
                 }), 400
             
             # Calculate distance if coordinates provided
@@ -628,6 +616,203 @@ def add_college_media(booking_id):
             'media_id': media_id
         }), 201
         
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+# ================== COLLEGE REVIEWS API ==================
+
+def ensure_college_reviews_table(cursor):
+    """Ensure college_reviews table exists"""
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS college_reviews (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            college_id VARCHAR(100) NOT NULL,
+            college_name VARCHAR(255) NOT NULL,
+            reviewer_name VARCHAR(255) NOT NULL,
+            rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+            review_text TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            is_approved BOOLEAN DEFAULT TRUE,
+            INDEX idx_college_id (college_id),
+            INDEX idx_rating (rating)
+        )
+    ''')
+
+@college_bp.route('/api/college-reviews', methods=['GET', 'POST', 'OPTIONS'])
+def handle_college_reviews():
+    """Handle college reviews operations"""
+    
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Ensure table exists
+        ensure_college_reviews_table(cursor)
+        conn.commit()
+        
+        # GET: Retrieve reviews
+        if request.method == 'GET':
+            college_id = request.args.get('college_id')
+            
+            if college_id:
+                query = '''
+                    SELECT id, college_id, college_name, reviewer_name, rating, 
+                           review_text, created_at 
+                    FROM college_reviews 
+                    WHERE college_id = %s AND is_approved = TRUE
+                    ORDER BY created_at DESC
+                '''
+                cursor.execute(query, (college_id,))
+            else:
+                query = '''
+                    SELECT id, college_id, college_name, reviewer_name, rating, 
+                           review_text, created_at 
+                    FROM college_reviews 
+                    WHERE is_approved = TRUE
+                    ORDER BY created_at DESC
+                '''
+                cursor.execute(query)
+            
+            reviews = cursor.fetchall()
+            
+            # Convert datetime to ISO format
+            for review in reviews:
+                if review.get('created_at'):
+                    review['created_at'] = review['created_at'].isoformat()
+            
+            # Also get aggregated stats per college
+            cursor.execute('''
+                SELECT college_id, 
+                       AVG(rating) as avg_rating, 
+                       COUNT(*) as review_count
+                FROM college_reviews 
+                WHERE is_approved = TRUE
+                GROUP BY college_id
+            ''')
+            stats = cursor.fetchall()
+            
+            # Convert Decimal to float
+            for stat in stats:
+                if stat.get('avg_rating'):
+                    stat['avg_rating'] = float(stat['avg_rating'])
+            
+            return jsonify({
+                'success': True,
+                'reviews': reviews,
+                'stats': {s['college_id']: s for s in stats}
+            }), 200
+        
+        # POST: Add new review
+        elif request.method == 'POST':
+            data = request.json
+            
+            # Validate required fields
+            required_fields = ['college_id', 'college_name', 'reviewer_name', 'rating']
+            for field in required_fields:
+                if not data.get(field):
+                    return jsonify({
+                        'success': False,
+                        'error': f'{field} is required'
+                    }), 400
+            
+            # Validate rating
+            rating = int(data['rating'])
+            if rating < 1 or rating > 5:
+                return jsonify({
+                    'success': False,
+                    'error': 'Rating must be between 1 and 5'
+                }), 400
+            
+            # Insert review
+            query = '''
+                INSERT INTO college_reviews (
+                    college_id, college_name, reviewer_name, rating, review_text
+                ) VALUES (%s, %s, %s, %s, %s)
+            '''
+            
+            cursor.execute(query, (
+                data['college_id'],
+                data['college_name'],
+                data['reviewer_name'],
+                rating,
+                data.get('review_text', '')
+            ))
+            conn.commit()
+            
+            review_id = cursor.lastrowid
+            
+            # Get updated stats for this college
+            cursor.execute('''
+                SELECT AVG(rating) as avg_rating, COUNT(*) as review_count
+                FROM college_reviews 
+                WHERE college_id = %s AND is_approved = TRUE
+            ''', (data['college_id'],))
+            updated_stats = cursor.fetchone()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Review added successfully',
+                'review_id': review_id,
+                'updated_stats': {
+                    'avg_rating': float(updated_stats['avg_rating']) if updated_stats['avg_rating'] else 0,
+                    'review_count': updated_stats['review_count']
+                }
+            }), 201
+    
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@college_bp.route('/api/college-reviews/<int:review_id>', methods=['DELETE', 'OPTIONS'])
+def delete_college_review(review_id):
+    """Delete a college review"""
+    
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute('DELETE FROM college_reviews WHERE id = %s', (review_id,))
+        conn.commit()
+        
+        if cursor.rowcount == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Review not found'
+            }), 404
+        
+        return jsonify({
+            'success': True,
+            'message': 'Review deleted successfully'
+        }), 200
+    
     except Exception as e:
         if conn:
             conn.rollback()
