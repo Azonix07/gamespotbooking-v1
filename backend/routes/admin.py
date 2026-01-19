@@ -409,3 +409,544 @@ def update_theme():
             cursor.close()
         if conn:
             conn.close()
+
+
+# ============================================
+# RENTAL BOOKINGS - Admin Endpoints
+# ============================================
+
+@admin_bp.route('/api/admin/rentals', methods=['GET', 'OPTIONS'])
+def get_all_rentals():
+    """Get all rental bookings (VR & PS5)"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    # Check admin authentication
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get all rentals
+        query = '''
+            SELECT 
+                id,
+                customer_name,
+                customer_phone,
+                customer_email,
+                device_type,
+                rental_duration,
+                extra_controllers,
+                start_date,
+                end_date,
+                delivery_address,
+                delivery_city,
+                total_price,
+                deposit_amount,
+                status,
+                notes,
+                created_at
+            FROM rental_bookings
+            ORDER BY created_at DESC
+        '''
+        cursor.execute(query)
+        rentals = cursor.fetchall()
+        
+        # Convert dates to ISO format
+        for rental in rentals:
+            if rental.get('start_date'):
+                rental['start_date'] = rental['start_date'].isoformat() if hasattr(rental['start_date'], 'isoformat') else str(rental['start_date'])
+            if rental.get('end_date'):
+                rental['end_date'] = rental['end_date'].isoformat() if hasattr(rental['end_date'], 'isoformat') else str(rental['end_date'])
+            if rental.get('created_at'):
+                rental['created_at'] = rental['created_at'].isoformat() if hasattr(rental['created_at'], 'isoformat') else str(rental['created_at'])
+        
+        return jsonify({
+            'success': True,
+            'rentals': rentals,
+            'count': len(rentals)
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/rentals/<int:rental_id>/status', methods=['PUT', 'OPTIONS'])
+def update_rental_status(rental_id):
+    """Update rental booking status"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        data = request.get_json()
+        new_status = data.get('status')
+        
+        valid_statuses = ['pending', 'confirmed', 'delivered', 'returned', 'cancelled']
+        if new_status not in valid_statuses:
+            return jsonify({'success': False, 'error': 'Invalid status'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute('UPDATE rental_bookings SET status = %s WHERE id = %s', (new_status, rental_id))
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Rental status updated to {new_status}'
+        })
+        
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+# ============================================
+# COLLEGE EVENT BOOKINGS - Admin Endpoints
+# ============================================
+
+@admin_bp.route('/api/admin/college-bookings', methods=['GET', 'OPTIONS'])
+def get_all_college_bookings():
+    """Get all college event bookings"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    # Check admin authentication
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get all college bookings
+        query = '''
+            SELECT 
+                id,
+                college_name,
+                college_city,
+                college_state,
+                event_name,
+                event_type,
+                event_start_date,
+                event_end_date,
+                expected_participants,
+                contact_person_name,
+                contact_person_email,
+                contact_person_phone,
+                contact_person_role,
+                equipment_requested,
+                setup_requirements,
+                additional_notes,
+                budget_range,
+                distance_km,
+                estimated_travel_cost,
+                estimated_total,
+                status,
+                admin_notes,
+                created_at
+            FROM college_bookings
+            ORDER BY created_at DESC
+        '''
+        cursor.execute(query)
+        bookings = cursor.fetchall()
+        
+        # Convert dates to ISO format
+        for booking in bookings:
+            if booking.get('event_start_date'):
+                booking['event_start_date'] = booking['event_start_date'].isoformat() if hasattr(booking['event_start_date'], 'isoformat') else str(booking['event_start_date'])
+            if booking.get('event_end_date'):
+                booking['event_end_date'] = booking['event_end_date'].isoformat() if hasattr(booking['event_end_date'], 'isoformat') else str(booking['event_end_date'])
+            if booking.get('created_at'):
+                booking['created_at'] = booking['created_at'].isoformat() if hasattr(booking['created_at'], 'isoformat') else str(booking['created_at'])
+        
+        return jsonify({
+            'success': True,
+            'college_bookings': bookings,
+            'count': len(bookings)
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/college-bookings/<int:booking_id>/status', methods=['PUT', 'OPTIONS'])
+def update_college_booking_status(booking_id):
+    """Update college booking status"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        data = request.get_json()
+        new_status = data.get('status')
+        admin_notes = data.get('admin_notes', '')
+        
+        valid_statuses = ['pending', 'reviewing', 'confirmed', 'in_progress', 'completed', 'cancelled']
+        if new_status not in valid_statuses:
+            return jsonify({'success': False, 'error': 'Invalid status'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute(
+            'UPDATE college_bookings SET status = %s, admin_notes = %s WHERE id = %s', 
+            (new_status, admin_notes, booking_id)
+        )
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'College booking status updated to {new_status}'
+        })
+        
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+# ============================================
+# GAME LEADERBOARD - Admin Endpoints
+# ============================================
+
+@admin_bp.route('/api/admin/leaderboard', methods=['GET', 'OPTIONS'])
+def get_all_leaderboard_entries():
+    """Get all game leaderboard entries"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    # Check admin authentication
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get all leaderboard entries
+        query = '''
+            SELECT 
+                id,
+                player_name,
+                player_email,
+                player_phone,
+                score,
+                enemies_shot,
+                boss_enemies_shot,
+                accuracy_percentage,
+                game_duration_seconds,
+                is_winner,
+                discount_awarded,
+                discount_code,
+                is_verified,
+                is_flagged,
+                played_at,
+                created_at
+            FROM game_leaderboard
+            ORDER BY score DESC, played_at DESC
+        '''
+        cursor.execute(query)
+        entries = cursor.fetchall()
+        
+        # Convert dates to ISO format and add rank
+        for idx, entry in enumerate(entries):
+            entry['rank'] = idx + 1
+            if entry.get('played_at'):
+                entry['played_at'] = entry['played_at'].isoformat() if hasattr(entry['played_at'], 'isoformat') else str(entry['played_at'])
+            if entry.get('created_at'):
+                entry['created_at'] = entry['created_at'].isoformat() if hasattr(entry['created_at'], 'isoformat') else str(entry['created_at'])
+        
+        # Get stats
+        stats_query = '''
+            SELECT 
+                COUNT(*) as total_entries,
+                COUNT(DISTINCT player_name) as unique_players,
+                SUM(CASE WHEN is_winner = TRUE THEN 1 ELSE 0 END) as total_winners,
+                MAX(score) as highest_score,
+                AVG(score) as average_score
+            FROM game_leaderboard
+        '''
+        cursor.execute(stats_query)
+        stats = cursor.fetchone()
+        
+        return jsonify({
+            'success': True,
+            'leaderboard': entries,
+            'count': len(entries),
+            'stats': {
+                'total_entries': stats['total_entries'],
+                'unique_players': stats['unique_players'],
+                'total_winners': stats['total_winners'],
+                'highest_score': stats['highest_score'],
+                'average_score': float(stats['average_score']) if stats['average_score'] else 0
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/leaderboard/<int:entry_id>/verify', methods=['PUT', 'OPTIONS'])
+def verify_leaderboard_entry(entry_id):
+    """Verify or flag a leaderboard entry"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        data = request.get_json()
+        is_verified = data.get('is_verified', True)
+        is_flagged = data.get('is_flagged', False)
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute(
+            'UPDATE game_leaderboard SET is_verified = %s, is_flagged = %s WHERE id = %s', 
+            (is_verified, is_flagged, entry_id)
+        )
+        conn.commit()
+        
+        action = 'flagged' if is_flagged else ('verified' if is_verified else 'unverified')
+        
+        return jsonify({
+            'success': True,
+            'message': f'Leaderboard entry {action}'
+        })
+        
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/leaderboard/<int:entry_id>/winner', methods=['PUT', 'OPTIONS'])
+def set_leaderboard_winner(entry_id):
+    """Mark a player as winner and award discount"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        data = request.get_json()
+        is_winner = data.get('is_winner', True)
+        discount_percentage = data.get('discount_percentage', 10)
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        if is_winner:
+            # Generate discount code
+            import random
+            import string
+            discount_code = 'WIN' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            
+            cursor.execute(
+                '''UPDATE game_leaderboard 
+                   SET is_winner = TRUE, discount_awarded = %s, discount_code = %s 
+                   WHERE id = %s''', 
+                (discount_percentage, discount_code, entry_id)
+            )
+        else:
+            cursor.execute(
+                'UPDATE game_leaderboard SET is_winner = FALSE, discount_awarded = NULL, discount_code = NULL WHERE id = %s', 
+                (entry_id,)
+            )
+        
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Winner status updated',
+            'is_winner': is_winner,
+            'discount_code': discount_code if is_winner else None
+        })
+        
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+# ============================================
+# ADMIN DASHBOARD STATS - Updated with all data
+# ============================================
+
+@admin_bp.route('/api/admin/dashboard-stats', methods=['GET', 'OPTIONS'])
+def get_full_dashboard_stats():
+    """Get complete dashboard statistics including rentals, college, leaderboard"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        stats = {}
+        
+        # Regular bookings stats
+        try:
+            cursor.execute('SELECT COUNT(*) as count FROM bookings')
+            stats['total_bookings'] = cursor.fetchone()['count']
+            
+            cursor.execute('SELECT COALESCE(SUM(total_price), 0) as revenue FROM bookings')
+            stats['total_revenue'] = float(cursor.fetchone()['revenue'])
+        except:
+            stats['total_bookings'] = 0
+            stats['total_revenue'] = 0
+        
+        # Rental stats
+        try:
+            cursor.execute('SELECT COUNT(*) as count FROM rental_bookings')
+            stats['total_rentals'] = cursor.fetchone()['count']
+            
+            cursor.execute("SELECT COUNT(*) as count FROM rental_bookings WHERE status = 'pending'")
+            stats['pending_rentals'] = cursor.fetchone()['count']
+            
+            cursor.execute('SELECT COALESCE(SUM(total_price), 0) as revenue FROM rental_bookings')
+            stats['rental_revenue'] = float(cursor.fetchone()['revenue'])
+        except:
+            stats['total_rentals'] = 0
+            stats['pending_rentals'] = 0
+            stats['rental_revenue'] = 0
+        
+        # College booking stats
+        try:
+            cursor.execute('SELECT COUNT(*) as count FROM college_bookings')
+            stats['total_college_bookings'] = cursor.fetchone()['count']
+            
+            cursor.execute("SELECT COUNT(*) as count FROM college_bookings WHERE status = 'pending'")
+            stats['pending_college_bookings'] = cursor.fetchone()['count']
+        except:
+            stats['total_college_bookings'] = 0
+            stats['pending_college_bookings'] = 0
+        
+        # Leaderboard stats
+        try:
+            cursor.execute('SELECT COUNT(*) as count FROM game_leaderboard')
+            stats['total_game_entries'] = cursor.fetchone()['count']
+            
+            cursor.execute('SELECT COUNT(DISTINCT player_name) as count FROM game_leaderboard')
+            stats['unique_players'] = cursor.fetchone()['count']
+            
+            cursor.execute("SELECT COUNT(*) as count FROM game_leaderboard WHERE is_winner = TRUE")
+            stats['total_winners'] = cursor.fetchone()['count']
+        except:
+            stats['total_game_entries'] = 0
+            stats['unique_players'] = 0
+            stats['total_winners'] = 0
+        
+        # Users and memberships
+        try:
+            cursor.execute('SELECT COUNT(*) as count FROM users')
+            stats['total_users'] = cursor.fetchone()['count']
+            
+            cursor.execute("SELECT COUNT(*) as count FROM memberships WHERE status = 'active' AND end_date >= CURDATE()")
+            stats['active_memberships'] = cursor.fetchone()['count']
+        except:
+            stats['total_users'] = 0
+            stats['active_memberships'] = 0
+        
+        return jsonify({
+            'success': True,
+            'stats': stats
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
