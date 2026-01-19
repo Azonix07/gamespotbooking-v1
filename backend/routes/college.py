@@ -240,6 +240,7 @@ def handle_college_bookings():
                 ("estimated_distance_km", "DECIMAL(10, 2)"),
                 ("event_name", "VARCHAR(200)"),
                 ("event_type", "VARCHAR(50)"),
+                ("event_date", "DATE"),
                 ("event_start_date", "DATE"),
                 ("event_end_date", "DATE"),
                 ("event_duration_days", "INT DEFAULT 1"),
@@ -277,13 +278,13 @@ def handle_college_bookings():
                     contact_name, contact_person, contact_phone, contact_email, contact_position,
                     college_name, college_address, college_city, college_state, college_pincode,
                     college_latitude, college_longitude, estimated_distance_km,
-                    event_name, event_type, event_start_date, event_end_date, event_duration_days,
+                    event_name, event_type, event_date, event_start_date, event_end_date, event_duration_days,
                     expected_students, setup_type, ps5_stations, vr_zones, driving_simulator,
                     additional_requirements, base_price, transport_cost, setup_cost,
                     total_estimated_cost, final_price, status, booking_reference,
                     inquiry_source, notes
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 )
             '''
@@ -304,6 +305,7 @@ def handle_college_bookings():
                 estimated_distance,
                 data.get('event_name', ''),
                 data.get('event_type', ''),
+                data['event_start_date'],  # event_date
                 data['event_start_date'],
                 data['event_end_date'],
                 data['event_duration_days'],
