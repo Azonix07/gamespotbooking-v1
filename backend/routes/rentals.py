@@ -151,18 +151,57 @@ def handle_rentals():
             # Generate booking ID
             booking_id = f"RNT-{datetime.now().strftime('%Y%m%d')}-{datetime.now().timestamp():.0f}"
             
-            # First, ensure the table has the right structure by adding missing columns
+            # First, ensure the table exists with proper structure
+            try:
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS rental_bookings (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        customer_name VARCHAR(100),
+                        customer_phone VARCHAR(20),
+                        customer_email VARCHAR(255),
+                        delivery_address TEXT,
+                        device_type VARCHAR(20) DEFAULT 'vr',
+                        start_date DATE,
+                        end_date DATE,
+                        rental_days INT DEFAULT 1,
+                        extra_controllers INT DEFAULT 0,
+                        controller_cost DECIMAL(10,2) DEFAULT 0,
+                        package_type VARCHAR(20) DEFAULT 'daily',
+                        base_price DECIMAL(10,2) DEFAULT 0,
+                        total_price DECIMAL(10,2) DEFAULT 0,
+                        savings DECIMAL(10,2) DEFAULT 0,
+                        status VARCHAR(20) DEFAULT 'pending',
+                        payment_status VARCHAR(20) DEFAULT 'pending',
+                        booking_id VARCHAR(50),
+                        notes TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                ''')
+                conn.commit()
+            except:
+                conn.rollback()
+            
+            # Add missing columns if table already exists with different structure
             columns_to_add = [
+                ("customer_name", "VARCHAR(100)"),
+                ("customer_phone", "VARCHAR(20)"),
+                ("customer_email", "VARCHAR(255)"),
                 ("delivery_address", "TEXT"),
+                ("device_type", "VARCHAR(20) DEFAULT 'vr'"),
+                ("start_date", "DATE"),
+                ("end_date", "DATE"),
                 ("rental_days", "INT DEFAULT 1"),
                 ("extra_controllers", "INT DEFAULT 0"),
                 ("controller_cost", "DECIMAL(10,2) DEFAULT 0"),
                 ("package_type", "VARCHAR(20) DEFAULT 'daily'"),
                 ("base_price", "DECIMAL(10,2) DEFAULT 0"),
+                ("total_price", "DECIMAL(10,2) DEFAULT 0"),
                 ("savings", "DECIMAL(10,2) DEFAULT 0"),
+                ("status", "VARCHAR(20) DEFAULT 'pending'"),
                 ("payment_status", "VARCHAR(20) DEFAULT 'pending'"),
                 ("booking_id", "VARCHAR(50)"),
-                ("notes", "TEXT")
+                ("notes", "TEXT"),
+                ("created_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
             ]
             
             for col_name, col_type in columns_to_add:
