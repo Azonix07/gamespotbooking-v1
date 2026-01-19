@@ -2624,6 +2624,57 @@ html, body {
 
 /* Removed duplicate styles - see LoginPage.css for all login page styling */
 
+/* Fix z-index issue on mobile - ensure login page content is above nav overlay */
+@media (max-width: 1023px) {
+  .login-page {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .login-page .login-container {
+    position: relative;
+    z-index: 1101 !important; /* Above mobile nav overlay (1099) and drawer (1100) */
+  }
+  
+  .login-page .login-card {
+    position: relative;
+    z-index: 1101 !important;
+  }
+  
+  .login-page .btn-primary,
+  .login-page .btn-secondary,
+  .login-page .form-input,
+  .login-page .tab-button {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto !important;
+  }
+  
+  /* Fix for pages using AdminLoginPage.css (SignupPage, ForgotPasswordPage, etc.) */
+  .admin-login {
+    position: relative;
+    z-index: 1101 !important;
+  }
+  
+  .admin-login .login-container {
+    position: relative;
+    z-index: 1101 !important;
+  }
+  
+  .admin-login .login-card {
+    position: relative;
+    z-index: 1101 !important;
+  }
+  
+  .admin-login .btn-primary,
+  .admin-login .btn-secondary,
+  .admin-login input,
+  .admin-login button {
+    position: relative;
+    pointer-events: auto !important;
+  }
+}
+
 /* ===================================
    DISCOUNT GAME PAGE MOBILE STYLES
    =================================== */
