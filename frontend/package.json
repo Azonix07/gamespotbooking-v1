@@ -17,7 +17,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "start:prod": "serve -s build -l $PORT",
+    "start:prod": "serve -s build -p ${PORT:-3000}",
     "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

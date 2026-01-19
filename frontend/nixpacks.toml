@@ -9,4 +9,4 @@ cmds = ["npm install"]
 cmds = ["CI=false npm run build"]
 
 [start]
-cmd = "npm run start:prod"
+cmd = "npx serve -s build -p $PORT"
