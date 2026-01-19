@@ -255,6 +255,7 @@ def handle_college_bookings():
                 ("base_price", "DECIMAL(10, 2) DEFAULT 0"),
                 ("transport_cost", "DECIMAL(10, 2) DEFAULT 0"),
                 ("setup_cost", "DECIMAL(10, 2) DEFAULT 0"),
+                ("total_price", "DECIMAL(10, 2) DEFAULT 0"),
                 ("total_estimated_cost", "DECIMAL(10, 2) DEFAULT 0"),
                 ("final_price", "DECIMAL(10, 2) DEFAULT 0"),
                 ("status", "VARCHAR(50) DEFAULT 'inquiry'"),
@@ -284,11 +285,11 @@ def handle_college_bookings():
                     event_start_date, event_end_date, event_duration_days,
                     expected_students, setup_type, ps5_stations, vr_zones, driving_simulator,
                     additional_requirements, base_price, transport_cost, setup_cost,
-                    total_estimated_cost, final_price, status, booking_reference,
+                    total_price, total_estimated_cost, final_price, status, booking_reference,
                     inquiry_source, notes
                 ) VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 )
             '''
             
@@ -323,6 +324,7 @@ def handle_college_bookings():
                 data.get('base_price', 0.00),
                 data.get('transport_cost', 0.00),
                 data.get('setup_cost', 0.00),
+                data.get('total_estimated_cost', 0.00),  # total_price
                 data.get('total_estimated_cost', 0.00),
                 data.get('final_price', 0.00),
                 'inquiry',
