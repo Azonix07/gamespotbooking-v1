@@ -226,6 +226,7 @@ def handle_college_bookings():
             # Add missing columns if table already exists
             columns_to_add = [
                 ("contact_name", "VARCHAR(100)"),
+                ("contact_person", "VARCHAR(100)"),
                 ("contact_phone", "VARCHAR(20)"),
                 ("contact_email", "VARCHAR(255)"),
                 ("contact_position", "VARCHAR(100)"),
@@ -273,7 +274,7 @@ def handle_college_bookings():
             # Insert college booking
             query = '''
                 INSERT INTO college_bookings (
-                    contact_name, contact_phone, contact_email, contact_position,
+                    contact_name, contact_person, contact_phone, contact_email, contact_position,
                     college_name, college_address, college_city, college_state, college_pincode,
                     college_latitude, college_longitude, estimated_distance_km,
                     event_name, event_type, event_start_date, event_end_date, event_duration_days,
@@ -282,13 +283,14 @@ def handle_college_bookings():
                     total_estimated_cost, final_price, status, booking_reference,
                     inquiry_source, notes
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 )
             '''
             
             params = (
                 data['contact_name'],
+                data['contact_name'],  # contact_person = contact_name
                 data['contact_phone'],
                 data.get('contact_email', ''),
                 data.get('contact_position', ''),
