@@ -8,6 +8,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const BUILD_DIR = path.join(__dirname, 'build');
 
+// Trust Railway proxy
+app.set('trust proxy', true);
+
 console.log('🚀 Starting GameSpot Frontend Server...');
 console.log('📁 Build directory:', BUILD_DIR);
 console.log('🔌 Port:', PORT);
@@ -89,13 +92,19 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log('='.repeat(50));
   console.log('');
   
-  // Test the server is actually listening
+  // Test the server is actually listening (use 127.0.0.1 for IPv4)
   console.log('🔍 Testing server connectivity...');
   const http = require('http');
-  const testReq = http.get(`http://localhost:${PORT}/health`, (testRes) => {
+  const testReq = http.get({
+    hostname: '127.0.0.1',
+    port: PORT,
+    path: '/health',
+    family: 4  // Force IPv4
+  }, (testRes) => {
     console.log(`✅ Self-test successful! Status: ${testRes.statusCode}`);
   }).on('error', (err) => {
-    console.error('❌ Self-test failed:', err.message);
+    console.error('⚠️  Self-test failed (this may be ok):', err.message);
+    console.log('✅ Server is still running and waiting for connections');
   });
 });
 
