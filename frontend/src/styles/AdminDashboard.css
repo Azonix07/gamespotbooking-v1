@@ -1470,3 +1470,491 @@
   margin: 0;
 }
 
+
+/* ===================================
+   MOBILE-FIRST ADMIN DASHBOARD REDESIGN
+   Better tab organization and touch-friendly UI
+   =================================== */
+
+@media (max-width: 768px) {
+  /* Main Layout */
+  .admin-sidebar-layout {
+    flex-direction: column;
+    padding-bottom: 70px; /* Space for bottom nav */
+  }
+  
+  /* Hide sidebar header and footer on mobile */
+  .admin-sidebar .sidebar-header,
+  .admin-sidebar .sidebar-footer {
+    display: none;
+  }
+  
+  /* Bottom Navigation Bar - Improved */
+  .admin-sidebar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: 100%;
+    min-width: 100%;
+    height: 70px;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    z-index: 1000;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 1) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    padding: 0;
+    overflow: visible;
+  }
+  
+  /* Sidebar Navigation - Horizontal scrolling tabs */
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
+    margin: 0;
+    gap: 0;
+    height: 100%;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .sidebar-nav::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide section titles on mobile */
+  .nav-section {
+    display: contents;
+  }
+  
+  .nav-section-title {
+    display: none !important;
+  }
+  
+  /* Nav items - Compact pill design */
+  .sidebar-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 72px;
+    max-width: 85px;
+    flex: 0 0 auto;
+    height: 100%;
+    padding: 8px 12px;
+    gap: 4px;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .sidebar-nav-item::before {
+    display: none;
+  }
+  
+  .sidebar-nav-item .nav-icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+  
+  .sidebar-nav-item .nav-label {
+    display: block !important;
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    letter-spacing: 0.02em;
+  }
+  
+  /* Active state with indicator dot */
+  .sidebar-nav-item.active {
+    color: #818cf8;
+    background: rgba(99, 102, 241, 0.15);
+  }
+  
+  .sidebar-nav-item.active::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #818cf8;
+    border-radius: 50%;
+  }
+  
+  .sidebar-nav-item.active .nav-icon {
+    transform: scale(1.1);
+  }
+  
+  /* Hover state for touch feedback */
+  .sidebar-nav-item:active {
+    background: rgba(99, 102, 241, 0.25);
+    transform: scale(0.95);
+  }
+  
+  /* Logout and Home buttons - Special styling */
+  .sidebar-nav-item.logout-btn {
+    color: rgba(239, 68, 68, 0.7);
+  }
+  
+  .sidebar-nav-item.logout-btn:active {
+    background: rgba(239, 68, 68, 0.2);
+  }
+  
+  .sidebar-nav-item.home-btn {
+    color: rgba(34, 197, 94, 0.7);
+  }
+  
+  .sidebar-nav-item.home-btn:active {
+    background: rgba(34, 197, 94, 0.2);
+  }
+  
+  /* Main Content Area */
+  .admin-main-content {
+    margin-left: 0;
+    margin-bottom: 0;
+    min-height: calc(100vh - 70px);
+  }
+  
+  /* Top Bar - Compact */
+  .admin-topbar {
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .topbar-title h1 {
+    font-size: 1rem;
+    margin: 0;
+  }
+  
+  .topbar-title p {
+    font-size: 0.75rem;
+    margin: 0;
+    opacity: 0.7;
+  }
+  
+  .topbar-actions {
+    gap: 8px;
+  }
+  
+  .topbar-actions .btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  
+  /* Content Wrapper */
+  .admin-content-wrapper {
+    padding: 12px;
+  }
+  
+  /* Stats Grid - 2 columns on mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .stat-card {
+    padding: 12px;
+  }
+  
+  .stat-card h3 {
+    font-size: 0.7rem;
+    margin-bottom: 6px;
+  }
+  
+  .stat-card .value {
+    font-size: 1.3rem;
+  }
+  
+  .stat-card .change {
+    font-size: 0.65rem;
+  }
+  
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+  
+  /* Section Titles */
+  .section-title {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Table Responsive - Card Layout */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -12px;
+    padding: 0 12px;
+  }
+  
+  .table {
+    min-width: 600px;
+    font-size: 0.8rem;
+  }
+  
+  .table th,
+  .table td {
+    padding: 10px 8px;
+    white-space: nowrap;
+  }
+  
+  /* Action Buttons in Tables */
+  .action-buttons {
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+  
+  .action-buttons .btn {
+    padding: 6px 8px;
+    min-width: auto;
+  }
+  
+  /* Filter Controls */
+  .filter-controls {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  
+  .filter-controls input,
+  .filter-controls select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .filter-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .filter-group {
+    width: 100%;
+  }
+  
+  /* Period Selector - Scrollable */
+  .period-selector {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+  
+  .period-selector .btn {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+  }
+  
+  /* Analytics Cards - Stack vertically */
+  .analytics-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .analytics-card {
+    padding: 16px;
+  }
+  
+  .analytics-card h3 {
+    font-size: 1rem;
+  }
+  
+  /* Recent Activity */
+  .activity-list {
+    max-height: 300px;
+  }
+  
+  .activity-item {
+    padding: 10px 12px;
+  }
+  
+  /* Forms */
+  .form-group {
+    margin-bottom: 12px;
+  }
+  
+  .form-group label {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+  
+  /* Cards */
+  .card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .card-header {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .card-title {
+    font-size: 1rem;
+  }
+  
+  /* Pagination */
+  .pagination {
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+  
+  .pagination-btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    min-width: 36px;
+  }
+  
+  /* Status Badges */
+  .status-badge {
+    padding: 4px 8px;
+    font-size: 0.65rem;
+  }
+  
+  /* Scrollbar hint - fade edges */
+  .table-container::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(to right, transparent, rgba(15, 23, 42, 0.8));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .table-container:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Extra small devices (phones in portrait) */
+@media (max-width: 480px) {
+  .admin-sidebar {
+    height: 65px;
+  }
+  
+  .admin-sidebar-layout {
+    padding-bottom: 65px;
+  }
+  
+  .sidebar-nav-item {
+    min-width: 60px;
+    padding: 6px 8px;
+  }
+  
+  .sidebar-nav-item .nav-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .sidebar-nav-item .nav-label {
+    font-size: 0.55rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .stat-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .stat-card .stat-icon {
+    order: -1;
+  }
+  
+  .stat-card .stat-content {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .stat-card h3 {
+    margin-bottom: 0;
+  }
+  
+  .topbar-title h1 {
+    font-size: 0.9rem;
+  }
+  
+  .admin-content-wrapper {
+    padding: 10px;
+  }
+}
+
+/* Landscape orientation on phones */
+@media (max-width: 768px) and (orientation: landscape) {
+  .admin-sidebar {
+    height: 55px;
+  }
+  
+  .admin-sidebar-layout {
+    padding-bottom: 55px;
+  }
+  
+  .sidebar-nav-item {
+    flex-direction: row;
+    min-width: auto;
+    padding: 8px 16px;
+    gap: 8px;
+  }
+  
+  .sidebar-nav-item .nav-label {
+    font-size: 0.7rem;
+  }
+  
+  .sidebar-nav-item.active::after {
+    top: 50%;
+    left: 4px;
+    transform: translateY(-50%);
+  }
+}
