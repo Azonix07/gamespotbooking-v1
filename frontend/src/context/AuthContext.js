@@ -14,7 +14,11 @@ const CACHE_DURATION = 5 * 60 * 1000;
 
 // Flag to track recent login (prevents session check from clearing state)
 let recentLoginTimestamp = 0;
-const RECENT_LOGIN_GRACE_PERIOD = 5000; // 5 seconds grace period after login
+const RECENT_LOGIN_GRACE_PERIOD = 10000; // 10 seconds grace period after login
+
+// Track retry attempts to prevent infinite loops
+let sessionRetryCount = 0;
+const MAX_SESSION_RETRIES = 2;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -44,16 +48,21 @@ export const AuthProvider = ({ children }) => {
       return { authenticated: isAuthenticated, user, isAdmin };
     }
     
-    // MOBILE FIX: Check if we just logged in recently - don't clear auth state
+    // MOBILE FIX: If we just logged in, trust the auth state we already set
     const justLoggedIn = (now - recentLoginTimestamp) < RECENT_LOGIN_GRACE_PERIOD;
     if (justLoggedIn && isAuthenticated) {
-      console.log('[AuthContext] Recently logged in, skipping session check to preserve state');
+      console.log('[AuthContext] Recently logged in, trusting current auth state');
       setLoading(false);
+      lastCheckTimeRef.current = now; // Update cache time so we don't keep checking
       return { authenticated: true, user, isAdmin };
     }
     
     try {
       checkInProgressRef.current = true;
+      // Don't set loading=true on subsequent checks to prevent flicker
+      if (lastCheckTimeRef.current === 0) {
+        setLoading(true);
+      }
       console.log('[AuthContext] Checking session...', { force });
       
       const data = await apiFetch('/api/auth/check');
@@ -68,6 +77,7 @@ export const AuthProvider = ({ children }) => {
       if (!mountedRef.current) return data;
       
       lastCheckTimeRef.current = now;
+      sessionRetryCount = 0; // Reset retry count on successful check
       
       if (data.authenticated) {
         if (data.user_type === 'admin') {
@@ -78,29 +88,22 @@ export const AuthProvider = ({ children }) => {
           setUser(data.user);
         }
         setIsAuthenticated(true);
+        // Sync localStorage
+        try {
+          localStorage.setItem('gamespot_logged_in', 'true');
+          localStorage.setItem('gamespot_user_type', data.user_type);
+        } catch (e) {}
         console.log('[AuthContext] Session authenticated successfully');
       } else {
-        // MOBILE FIX: Check localStorage before clearing auth state
-        // If localStorage says we're logged in, the cookie might just be slow
-        let shouldClearState = true;
+        // Session not authenticated - clear localStorage and state
         try {
-          const localLoggedIn = localStorage.getItem('gamespot_logged_in');
-          if (localLoggedIn === 'true') {
-            console.log('[AuthContext] Session check failed but localStorage indicates logged in - waiting for cookie');
-            // Don't clear state yet, retry in a moment
-            shouldClearState = false;
-            setTimeout(() => checkSession(true), 1000);
-          }
-        } catch (e) {
-          // localStorage not available, proceed normally
-        }
-        
-        if (shouldClearState) {
-          setUser(null);
-          setIsAdmin(false);
-          setIsAuthenticated(false);
-          console.log('[AuthContext] No active session');
-        }
+          localStorage.removeItem('gamespot_logged_in');
+          localStorage.removeItem('gamespot_user_type');
+        } catch (e) {}
+        setUser(null);
+        setIsAdmin(false);
+        setIsAuthenticated(false);
+        console.log('[AuthContext] No active session');
       }
       
       setError(null);
@@ -109,16 +112,11 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('[AuthContext] Session check error:', err);
       if (mountedRef.current) {
-        // MOBILE FIX: Don't clear auth state on network errors if we just logged in
-        const justLoggedIn = (Date.now() - recentLoginTimestamp) < RECENT_LOGIN_GRACE_PERIOD;
-        if (!justLoggedIn) {
-          setError(err.message);
-          setUser(null);
-          setIsAdmin(false);
-          setIsAuthenticated(false);
-        } else {
-          console.log('[AuthContext] Session check error but recently logged in, preserving state');
-        }
+        // On error, just mark as not authenticated (don't keep retrying)
+        setError(err.message);
+        setUser(null);
+        setIsAdmin(false);
+        setIsAuthenticated(false);
       }
       return { authenticated: false, user: null, isAdmin: false };
     } finally {
@@ -167,17 +165,10 @@ export const AuthProvider = ({ children }) => {
           console.log('[AuthContext] localStorage not available');
         }
         
-        console.log('[AuthContext] Auth state set immediately from login response');
+        // Update cache time to prevent immediate re-checking
+        lastCheckTimeRef.current = Date.now();
         
-        // Force refresh session after a delay (for mobile cookie processing)
-        lastCheckTimeRef.current = 0;
-        setTimeout(async () => {
-          try {
-            await checkSession(true);
-          } catch (e) {
-            console.log('[AuthContext] Delayed session check failed, but login already succeeded');
-          }
-        }, 500);
+        console.log('[AuthContext] Auth state set immediately from login response');
         
         return { success: true, userType: data.user_type };
       } else {
@@ -193,7 +184,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [checkSession]);
+  }, []);
 
   // Logout function
   const logout = useCallback(async () => {
@@ -249,15 +240,8 @@ export const AuthProvider = ({ children }) => {
           console.log('[AuthContext] localStorage not available');
         }
         
-        // Force refresh session after a delay (for mobile cookie processing)
-        lastCheckTimeRef.current = 0;
-        setTimeout(async () => {
-          try {
-            await checkSession(true);
-          } catch (e) {
-            console.log('[AuthContext] Delayed session check failed, but signup already succeeded');
-          }
-        }, 500);
+        // Update cache time to prevent immediate re-checking
+        lastCheckTimeRef.current = Date.now();
         
         return { success: true };
       } else {
@@ -271,7 +255,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [checkSession]);
+  }, []);
 
   // Initial session check on mount
   useEffect(() => {
