@@ -109,10 +109,37 @@ export const AuthProvider = ({ children }) => {
       console.log('[AuthContext] Login response:', { success: data.success, userType: data.user_type });
       
       if (data.success) {
-        // Force refresh session after login
+        // MOBILE FIX: Set auth state immediately from login response
+        // Don't wait for session check - mobile browsers have cookie timing issues
+        if (data.user_type === 'admin') {
+          setIsAdmin(true);
+          setUser({ name: data.username || 'Admin' });
+        } else {
+          setIsAdmin(false);
+          setUser(data.user || { name: identifier });
+        }
+        setIsAuthenticated(true);
+        
+        // Store login indicator in localStorage for mobile persistence
+        try {
+          localStorage.setItem('gamespot_logged_in', 'true');
+          localStorage.setItem('gamespot_user_type', data.user_type);
+        } catch (e) {
+          console.log('[AuthContext] localStorage not available');
+        }
+        
+        console.log('[AuthContext] Auth state set immediately from login response');
+        
+        // Force refresh session after a delay (for mobile cookie processing)
         lastCheckTimeRef.current = 0;
-        const sessionCheck = await checkSession(true);
-        console.log('[AuthContext] Session check after login:', sessionCheck);
+        setTimeout(async () => {
+          try {
+            await checkSession(true);
+          } catch (e) {
+            console.log('[AuthContext] Delayed session check failed, but login already succeeded');
+          }
+        }, 500);
+        
         return { success: true, userType: data.user_type };
       } else {
         console.error('[AuthContext] Login failed:', data.error);
@@ -141,6 +168,14 @@ export const AuthProvider = ({ children }) => {
       setIsAdmin(false);
       setIsAuthenticated(false);
       lastCheckTimeRef.current = 0;
+      
+      // Clear localStorage indicators
+      try {
+        localStorage.removeItem('gamespot_logged_in');
+        localStorage.removeItem('gamespot_user_type');
+      } catch (e) {
+        console.log('[AuthContext] localStorage not available');
+      }
     }
   }, []);
 
@@ -156,9 +191,29 @@ export const AuthProvider = ({ children }) => {
       });
       
       if (data.success) {
-        // Force refresh session after signup (auto-login)
+        // MOBILE FIX: Set auth state immediately from signup response
+        setIsAdmin(false);
+        setUser(data.user || { name: formData.name, email: formData.email });
+        setIsAuthenticated(true);
+        
+        // Store login indicator in localStorage for mobile persistence
+        try {
+          localStorage.setItem('gamespot_logged_in', 'true');
+          localStorage.setItem('gamespot_user_type', 'customer');
+        } catch (e) {
+          console.log('[AuthContext] localStorage not available');
+        }
+        
+        // Force refresh session after a delay (for mobile cookie processing)
         lastCheckTimeRef.current = 0;
-        await checkSession(true);
+        setTimeout(async () => {
+          try {
+            await checkSession(true);
+          } catch (e) {
+            console.log('[AuthContext] Delayed session check failed, but signup already succeeded');
+          }
+        }, 500);
+        
         return { success: true };
       } else {
         setError(data.error || 'Signup failed');
