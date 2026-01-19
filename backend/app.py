@@ -33,13 +33,36 @@ from routes.rentals import rentals_bp  # Rental bookings (VR & PS5)
 from routes.college import college_bp  # College event bookings
 from routes.game_leaderboard import game_leaderboard_bp  # Game leaderboard and winners
 
-# Get the frontend build directory path
-FRONTEND_BUILD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'build')
+# Get the frontend build directory path - try multiple locations
+def get_frontend_build_dir():
+    # Possible locations for the frontend build
+    possible_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'build'),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend', 'build'),
+        '/app/frontend/build',  # Railway default
+        os.path.join(os.getcwd(), 'frontend', 'build'),
+        os.path.join(os.getcwd(), '..', 'frontend', 'build'),
+    ]
+    
+    for path in possible_paths:
+        abs_path = os.path.abspath(path)
+        if os.path.exists(abs_path) and os.path.isfile(os.path.join(abs_path, 'index.html')):
+            print(f"✅ Found frontend build at: {abs_path}")
+            return abs_path
+    
+    # Log all attempted paths for debugging
+    print("❌ Frontend build directory not found. Tried:")
+    for path in possible_paths:
+        abs_path = os.path.abspath(path)
+        exists = os.path.exists(abs_path)
+        print(f"  - {abs_path} (exists: {exists})")
+    
+    return None
 
-# Create Flask app with static folder pointing to React build
-app = Flask(__name__, 
-            static_folder=FRONTEND_BUILD_DIR,
-            static_url_path='')
+FRONTEND_BUILD_DIR = get_frontend_build_dir()
+
+# Create Flask app
+app = Flask(__name__)
 
 # Configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'gamespot-secret-key-change-in-production')
@@ -90,7 +113,11 @@ app.register_blueprint(game_leaderboard_bp)  # Game leaderboard and winners
 # Health check endpoint
 @app.route('/health', methods=['GET'])
 def health_check():
-    return {'status': 'healthy', 'message': 'GameSpot Python Backend is running'}, 200
+    return {
+        'status': 'healthy', 
+        'message': 'GameSpot Python Backend is running',
+        'frontend_available': FRONTEND_BUILD_DIR is not None
+    }, 200
 
 # API info endpoint (for debugging)
 @app.route('/api', methods=['GET'])
@@ -99,6 +126,7 @@ def api_info():
         'message': 'GameSpot Booking System API',
         'version': '2.0.0',
         'backend': 'Python/Flask',
+        'frontend_path': FRONTEND_BUILD_DIR,
         'endpoints': {
             'slots': '/api/slots.php',
             'pricing': '/api/pricing.php',
@@ -119,12 +147,26 @@ def serve_frontend(path):
     if path.startswith('api/'):
         return {'error': 'API endpoint not found'}, 404
     
+    # Check if frontend build exists
+    if FRONTEND_BUILD_DIR is None:
+        return {
+            'error': 'Frontend not available',
+            'message': 'The React frontend build was not found. Please ensure the frontend is built.',
+            'cwd': os.getcwd(),
+            'dirname': os.path.dirname(os.path.abspath(__file__))
+        }, 503
+    
     # Try to serve static file (JS, CSS, images, etc.)
-    if path and os.path.exists(os.path.join(FRONTEND_BUILD_DIR, path)):
+    file_path = os.path.join(FRONTEND_BUILD_DIR, path)
+    if path and os.path.exists(file_path) and os.path.isfile(file_path):
         return send_from_directory(FRONTEND_BUILD_DIR, path)
     
     # For all other routes, serve index.html (React Router handles routing)
-    return send_from_directory(FRONTEND_BUILD_DIR, 'index.html')
+    index_path = os.path.join(FRONTEND_BUILD_DIR, 'index.html')
+    if os.path.exists(index_path):
+        return send_from_directory(FRONTEND_BUILD_DIR, 'index.html')
+    else:
+        return {'error': 'index.html not found', 'path': FRONTEND_BUILD_DIR}, 404
 
 if __name__ == '__main__':
     print("=" * 60)
