@@ -2,13 +2,13 @@
 nixPkgs = ["nodejs-18_x"]
 
 [phases.install]
-cmds = ["npm ci"]
+cmds = ["npm install"]
 
 [phases.build]
 cmds = ["npm run build"]
 
 [start]
-cmd = "node server.js"
+cmd = "node diagnose.js"
 
 [variables]
 CI = "false"
