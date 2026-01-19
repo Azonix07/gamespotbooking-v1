@@ -2,12 +2,12 @@
  * API Service
  * Handles all API calls to the backend
  * Works in local + production (Railway)
- * Uses relative URLs for same-origin requests (fixes mobile cookies)
  */
 
-// 🔑 Central backend URL - empty for same-origin
+// 🔑 Central backend URL
 const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "";
+  process.env.REACT_APP_API_BASE_URL ||
+  "https://gamespotbooking-v1-production.up.railway.app";
 
 // =======================================================
 // Shared fetch helper (session + JSON)

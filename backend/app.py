@@ -1,10 +1,9 @@
 """
 GameSpot Booking System - Python Backend
 Flask application with MySQL database
-Serves both API and React Frontend from same origin
 """
 
-from flask import Flask, session, request, send_from_directory
+from flask import Flask, session, request
 from flask_cors import CORS
 from datetime import timedelta
 import os
@@ -33,34 +32,6 @@ from routes.rentals import rentals_bp  # Rental bookings (VR & PS5)
 from routes.college import college_bp  # College event bookings
 from routes.game_leaderboard import game_leaderboard_bp  # Game leaderboard and winners
 
-# Get the frontend build directory path - try multiple locations
-def get_frontend_build_dir():
-    # Possible locations for the frontend build
-    possible_paths = [
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'build'),
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend', 'build'),
-        '/app/frontend/build',  # Railway default
-        os.path.join(os.getcwd(), 'frontend', 'build'),
-        os.path.join(os.getcwd(), '..', 'frontend', 'build'),
-    ]
-    
-    for path in possible_paths:
-        abs_path = os.path.abspath(path)
-        if os.path.exists(abs_path) and os.path.isfile(os.path.join(abs_path, 'index.html')):
-            print(f"✅ Found frontend build at: {abs_path}")
-            return abs_path
-    
-    # Log all attempted paths for debugging
-    print("❌ Frontend build directory not found. Tried:")
-    for path in possible_paths:
-        abs_path = os.path.abspath(path)
-        exists = os.path.exists(abs_path)
-        print(f"  - {abs_path} (exists: {exists})")
-    
-    return None
-
-FRONTEND_BUILD_DIR = get_frontend_build_dir()
-
 # Create Flask app
 app = Flask(__name__)
 
@@ -68,8 +39,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'gamespot-secret-key-change-in-production')
 app.config['SESSION_COOKIE_NAME'] = 'gamespot_session'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Same-origin now, so Lax is fine
-app.config['SESSION_COOKIE_SECURE'] = True  # Always use Secure on production
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin cookies
+app.config['SESSION_COOKIE_SECURE'] = True  # Required when SameSite=None
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 app.config['SESSION_COOKIE_DOMAIN'] = None  # Let browser handle domain automatically
 
@@ -113,20 +84,15 @@ app.register_blueprint(game_leaderboard_bp)  # Game leaderboard and winners
 # Health check endpoint
 @app.route('/health', methods=['GET'])
 def health_check():
-    return {
-        'status': 'healthy', 
-        'message': 'GameSpot Python Backend is running',
-        'frontend_available': FRONTEND_BUILD_DIR is not None
-    }, 200
+    return {'status': 'healthy', 'message': 'GameSpot Python Backend is running'}, 200
 
-# API info endpoint (for debugging)
-@app.route('/api', methods=['GET'])
-def api_info():
+# Root endpoint - API info
+@app.route('/', methods=['GET'])
+def root():
     return {
         'message': 'GameSpot Booking System API',
         'version': '2.0.0',
         'backend': 'Python/Flask',
-        'frontend_path': FRONTEND_BUILD_DIR,
         'endpoints': {
             'slots': '/api/slots.php',
             'pricing': '/api/pricing.php',
@@ -138,35 +104,6 @@ def api_info():
             'membership_plans': '/api/membership/plans'
         }
     }, 200
-
-# Serve React frontend for all non-API routes
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve_frontend(path):
-    # If path starts with 'api/', let the API routes handle it (this shouldn't reach here)
-    if path.startswith('api/'):
-        return {'error': 'API endpoint not found'}, 404
-    
-    # Check if frontend build exists
-    if FRONTEND_BUILD_DIR is None:
-        return {
-            'error': 'Frontend not available',
-            'message': 'The React frontend build was not found. Please ensure the frontend is built.',
-            'cwd': os.getcwd(),
-            'dirname': os.path.dirname(os.path.abspath(__file__))
-        }, 503
-    
-    # Try to serve static file (JS, CSS, images, etc.)
-    file_path = os.path.join(FRONTEND_BUILD_DIR, path)
-    if path and os.path.exists(file_path) and os.path.isfile(file_path):
-        return send_from_directory(FRONTEND_BUILD_DIR, path)
-    
-    # For all other routes, serve index.html (React Router handles routing)
-    index_path = os.path.join(FRONTEND_BUILD_DIR, 'index.html')
-    if os.path.exists(index_path):
-        return send_from_directory(FRONTEND_BUILD_DIR, 'index.html')
-    else:
-        return {'error': 'index.html not found', 'path': FRONTEND_BUILD_DIR}, 404
 
 if __name__ == '__main__':
     print("=" * 60)

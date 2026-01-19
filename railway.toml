@@ -1,10 +1,8 @@
 [build]
 builder = "NIXPACKS"
-# Use a custom build script
-buildCommand = "chmod +x ./build.sh && ./build.sh"
+buildCommand = "cd frontend && npm install && npm run build"
 
 [deploy]
-# Start Flask backend (which serves both API and React frontend)
-startCommand = "cd backend && gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+startCommand = "cd frontend && node server.js"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
