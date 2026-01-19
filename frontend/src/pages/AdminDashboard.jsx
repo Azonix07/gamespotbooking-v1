@@ -294,8 +294,11 @@ const AdminDashboard = () => {
 
   // Render Dashboard Stats
   const renderDashboard = () => (
-    <div className="dashboard-stats">
-      <h2 className="section-title">📊 Dashboard Overview</h2>
+    <div className="dashboard-stats fade-in">
+      <div className="section-header-mobile">
+        <h2 className="section-title">📊 Overview</h2>
+        <span className="current-date">{new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+      </div>
       
       {stats && (
         <div className="stats-grid">
@@ -451,14 +454,12 @@ const AdminDashboard = () => {
         <>
           <div className="card">
             <div className="table-container">
-              <table className="table">
+              <table className="table admin-table" id="bookings-table">
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Date & Time</th>
                     <th>Customer</th>
-                    <th>Phone</th>
-                    <th>Date</th>
-                    <th>Time</th>
                     <th>Duration</th>
                     <th>Devices</th>
                     <th>Price</th>
@@ -466,25 +467,22 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentBookings.map((booking) => (
+                  {currentBookings.map(booking => (
                     <tr key={booking.id}>
-                      <td className="booking-id">#{booking.id}</td>
-                      <td className="customer-name">{booking.customer_name}</td>
-                      <td>{booking.customer_phone}</td>
-                      <td>{booking.booking_date}</td>
-                      <td>
-                        {editingId === booking.id ? (
-                          <input
-                            type="time"
-                            value={editForm.start_time}
-                            onChange={(e) => setEditForm({ ...editForm, start_time: e.target.value })}
-                            className="form-control"
-                          />
-                        ) : (
-                          <span className="time-display">{formatTime12Hour(booking.start_time)}</span>
-                        )}
+                      <td data-label="BOOKING ID"><span className="booking-id">#{booking.id}</span></td>
+                      <td data-label="DATE & TIME">
+                        <div className="date-time-cell">
+                          <span className="date">{new Date(booking.booking_date).toLocaleDateString()}</span>
+                          <span className="time">{formatTime12Hour(booking.start_time)}</span>
+                        </div>
                       </td>
-                      <td>
+                      <td data-label="CUSTOMER">
+                        <div className="customer-cell">
+                          <span className="customer-name">{booking.customer_name}</span>
+                          <span className="customer-phone">{booking.customer_phone}</span>
+                        </div>
+                      </td>
+                      <td data-label="DURATION">
                         {editingId === booking.id ? (
                           <select
                             value={editForm.duration_minutes}
@@ -500,8 +498,8 @@ const AdminDashboard = () => {
                           formatDuration(booking.duration_minutes)
                         )}
                       </td>
-                      <td className="devices">{formatDevices(booking.devices)}</td>
-                      <td>
+                      <td className="devices" data-label="DEVICES">{formatDevices(booking.devices)}</td>
+                      <td data-label="PRICE">
                         {editingId === booking.id ? (
                           <input
                             type="number"
@@ -513,23 +511,23 @@ const AdminDashboard = () => {
                           <span className="price">{formatPrice(booking.total_price)}</span>
                         )}
                       </td>
-                      <td>
+                      <td data-label="ACTIONS">
                         {editingId === booking.id ? (
                           <div className="action-buttons">
                             <button className="btn btn-success btn-sm" onClick={() => handleSaveEdit(booking.id)}>
-                              <FiSave /> Save
+                              <FiSave />  <span className="btn-text">Save</span>
                             </button>
                             <button className="btn btn-secondary btn-sm" onClick={handleCancelEdit}>
-                              <FiX /> Cancel
+                              <FiX /> <span className="btn-text">Cancel</span>
                             </button>
                           </div>
                         ) : (
                           <div className="action-buttons">
                             <button className="btn btn-primary btn-sm" onClick={() => handleEdit(booking)}>
-                              <FiEdit2 /> Edit
+                              <FiEdit2 />  <span className="btn-text">Edit</span>
                             </button>
                             <button className="btn btn-danger btn-sm" onClick={() => handleDelete(booking.id)}>
-                              <FiTrash2 /> Delete
+                              <FiTrash2 />  <span className="btn-text">Delete</span>
                             </button>
                           </div>
                         )}
@@ -705,31 +703,31 @@ const AdminDashboard = () => {
               <tbody>
                 {filteredMemberships.map(membership => (
                   <tr key={membership.id}>
-                    <td className="membership-id">#{membership.id}</td>
-                    <td className="user-name">{membership.user_name}</td>
-                    <td>{membership.user_email}</td>
-                    <td>
-                      <span className={`plan-badge ${membership.plan_type}`}>
-                        {membership.plan_type}
-                      </span>
-                    </td>
-                    <td>{new Date(membership.start_date).toLocaleDateString()}</td>
-                    <td>{new Date(membership.end_date).toLocaleDateString()}</td>
-                    <td className="discount">{membership.discount_percentage}%</td>
-                    <td>
-                      <span className={`status-badge ${membership.status}`}>
-                        {membership.status}
-                      </span>
-                    </td>
-                    <td>
-                      {membership.days_remaining !== null ? (
-                        <span className={membership.days_remaining > 7 ? 'days-ok' : 'days-expiring'}>
-                          {membership.days_remaining > 0 ? `${membership.days_remaining} days` : 'Expired'}
+                    <td className="membership-id" data-label="ID">#{membership.id}</td>
+                    <td className="user-name" data-label="USER">{membership.user_name}</td>
+                    <td data-label="EMAIL">{membership.user_email}</td>
+                    <td data-label="PLAN">
+                        <span className={`plan-badge ${membership.plan_type}`}>
+                          {membership.plan_type}
                         </span>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
+                      </td>
+                      <td data-label="START DATE">{new Date(membership.start_date).toLocaleDateString()}</td>
+                      <td data-label="END DATE">{new Date(membership.end_date).toLocaleDateString()}</td>
+                      <td className="discount" data-label="DISCOUNT">{membership.discount_percentage}%</td>
+                      <td data-label="STATUS">
+                        <span className={`status-badge ${membership.status}`}>
+                          {membership.status}
+                        </span>
+                      </td>
+                      <td data-label="DAYS LEFT">
+                        {membership.days_remaining !== null ? (
+                          <span className={membership.days_remaining > 7 ? 'days-ok' : 'days-expiring'}>
+                            {membership.days_remaining > 0 ? `${membership.days_remaining} days` : 'Expired'}
+                          </span>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
                   </tr>
                 ))}
               </tbody>
