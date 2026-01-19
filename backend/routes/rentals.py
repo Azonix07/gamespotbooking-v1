@@ -200,6 +200,58 @@ def handle_rentals():
         except Exception as e:
             if conn:
                 conn.rollback()
+            error_msg = str(e).lower()
+            # If table doesn't exist, try to create it
+            if "doesn't exist" in error_msg or "does not exist" in error_msg or "1146" in str(e):
+                try:
+                    # Auto-create the table
+                    conn2 = get_db_connection()
+                    cursor2 = conn2.cursor(dictionary=True)
+                    create_table_query = '''
+                        CREATE TABLE IF NOT EXISTS rental_bookings (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            customer_name VARCHAR(100) NOT NULL,
+                            customer_phone VARCHAR(20) NOT NULL,
+                            customer_email VARCHAR(255),
+                            delivery_address TEXT NOT NULL,
+                            device_type ENUM('vr', 'ps5') NOT NULL DEFAULT 'vr',
+                            start_date DATE NOT NULL,
+                            end_date DATE NOT NULL,
+                            rental_days INT NOT NULL,
+                            extra_controllers INT DEFAULT 0,
+                            controller_cost DECIMAL(10, 2) DEFAULT 0.00,
+                            package_type ENUM('daily', 'weekly', 'monthly', 'custom') NOT NULL,
+                            base_price DECIMAL(10, 2) NOT NULL,
+                            total_price DECIMAL(10, 2) NOT NULL,
+                            savings DECIMAL(10, 2) DEFAULT 0.00,
+                            status ENUM('pending', 'confirmed', 'in_progress', 'completed', 'cancelled') DEFAULT 'pending',
+                            payment_status ENUM('pending', 'paid', 'refunded') DEFAULT 'pending',
+                            booking_id VARCHAR(50) UNIQUE,
+                            notes TEXT,
+                            admin_notes TEXT,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                        )
+                    '''
+                    cursor2.execute(create_table_query)
+                    conn2.commit()
+                    
+                    # Now retry the insert
+                    cursor2.execute(query, params)
+                    conn2.commit()
+                    rental_id = cursor2.lastrowid
+                    
+                    cursor2.close()
+                    conn2.close()
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': 'Rental booking created successfully (table was auto-created)',
+                        'rental_id': rental_id,
+                        'booking_id': booking_id
+                    }), 201
+                except Exception as e2:
+                    return jsonify({'success': False, 'error': f'Failed to create table: {str(e2)}'}), 500
             return jsonify({'success': False, 'error': str(e)}), 500
         finally:
             if cursor:

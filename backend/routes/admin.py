@@ -441,15 +441,19 @@ def get_all_rentals():
                 customer_phone,
                 customer_email,
                 device_type,
-                rental_duration,
+                rental_days,
                 extra_controllers,
+                controller_cost,
                 start_date,
                 end_date,
                 delivery_address,
-                delivery_city,
+                package_type,
+                base_price,
                 total_price,
-                deposit_amount,
+                savings,
                 status,
+                payment_status,
+                booking_id,
                 notes,
                 created_at
             FROM rental_bookings
@@ -474,6 +478,15 @@ def get_all_rentals():
         })
         
     except Exception as e:
+        error_msg = str(e).lower()
+        # If table doesn't exist, return empty array instead of error
+        if "doesn't exist" in error_msg or "does not exist" in error_msg or "1146" in str(e):
+            return jsonify({
+                'success': True,
+                'rentals': [],
+                'count': 0,
+                'message': 'Rental bookings table not initialized yet'
+            })
         return jsonify({'success': False, 'error': str(e)}), 500
         
     finally:
@@ -597,6 +610,15 @@ def get_all_college_bookings():
         })
         
     except Exception as e:
+        error_msg = str(e).lower()
+        # If table doesn't exist, return empty array instead of error
+        if "doesn't exist" in error_msg or "does not exist" in error_msg or "1146" in str(e):
+            return jsonify({
+                'success': True,
+                'college_bookings': [],
+                'count': 0,
+                'message': 'College bookings table not initialized yet'
+            })
         return jsonify({'success': False, 'error': str(e)}), 500
         
     finally:
@@ -736,6 +758,22 @@ def get_all_leaderboard_entries():
         })
         
     except Exception as e:
+        error_msg = str(e).lower()
+        # If table doesn't exist, return empty array instead of error
+        if "doesn't exist" in error_msg or "does not exist" in error_msg or "1146" in str(e):
+            return jsonify({
+                'success': True,
+                'leaderboard': [],
+                'count': 0,
+                'stats': {
+                    'total_entries': 0,
+                    'unique_players': 0,
+                    'total_winners': 0,
+                    'highest_score': 0,
+                    'average_score': 0
+                },
+                'message': 'Game leaderboard table not initialized yet'
+            })
         return jsonify({'success': False, 'error': str(e)}), 500
         
     finally:
