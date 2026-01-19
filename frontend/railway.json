@@ -5,7 +5,7 @@
     "buildCommand": "CI=false npm install && npm run build"
   },
   "deploy": {
-    "startCommand": "npx serve -s build -p $PORT",
+    "startCommand": "node server.js",
     "healthcheckPath": "/",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",

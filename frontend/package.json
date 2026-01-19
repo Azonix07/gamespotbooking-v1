@@ -13,11 +13,12 @@
     "react-router-dom": "^6.20.0",
     "react-scripts": "5.0.1",
     "serve": "^14.2.0",
+    "serve-handler": "^6.1.5",
     "three": "^0.182.0"
   },
   "scripts": {
     "start": "react-scripts start",
-    "start:prod": "serve -s build -p ${PORT:-3000}",
+    "start:prod": "node server.js",
     "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
