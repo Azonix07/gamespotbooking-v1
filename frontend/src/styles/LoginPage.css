@@ -126,6 +126,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Mobile touch optimizations */
+  -webkit-tap-highlight-color: rgba(99, 102, 241, 0.3);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  z-index: 10;
 }
 
 .login-page .tab-button:hover {
@@ -142,8 +149,16 @@
 /* ===================================
    FORM ELEMENTS
    =================================== */
+.login-page form {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+}
+
 .login-page .form-group {
   margin-bottom: 1rem;
+  position: relative;
+  z-index: 10;
 }
 
 .login-page .form-label {
@@ -181,6 +196,11 @@
   font-size: 0.95rem;
   transition: all 0.3s ease;
   outline: none;
+  /* Mobile optimizations */
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  z-index: 5;
 }
 
 .login-page .form-input::placeholder {
@@ -238,6 +258,13 @@
   gap: 0.5rem;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
   margin-top: 0.25rem;
+  /* Mobile touch optimizations */
+  -webkit-tap-highlight-color: rgba(99, 102, 241, 0.3);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  z-index: 10;
 }
 
 .login-page .btn-primary:hover:not(:disabled) {
@@ -271,6 +298,13 @@
   justify-content: center;
   gap: 0.5rem;
   margin-top: 0.25rem;
+  /* Mobile touch optimizations */
+  -webkit-tap-highlight-color: rgba(16, 185, 129, 0.3);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  z-index: 10;
 }
 
 .login-page .btn-secondary:hover:not(:disabled) {
