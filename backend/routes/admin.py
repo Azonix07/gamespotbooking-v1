@@ -594,14 +594,14 @@ def get_all_college_bookings():
         cursor.execute(query)
         bookings = cursor.fetchall()
         
-        # Convert dates to ISO format
+        # Convert dates and times to ISO format
         for booking in bookings:
-            if booking.get('event_start_date'):
-                booking['event_start_date'] = booking['event_start_date'].isoformat() if hasattr(booking['event_start_date'], 'isoformat') else str(booking['event_start_date'])
-            if booking.get('event_end_date'):
-                booking['event_end_date'] = booking['event_end_date'].isoformat() if hasattr(booking['event_end_date'], 'isoformat') else str(booking['event_end_date'])
-            if booking.get('created_at'):
-                booking['created_at'] = booking['created_at'].isoformat() if hasattr(booking['created_at'], 'isoformat') else str(booking['created_at'])
+            for key, value in booking.items():
+                if value is not None and hasattr(value, 'isoformat'):
+                    booking[key] = value.isoformat()
+                elif value is not None and hasattr(value, 'total_seconds'):
+                    # Handle timedelta objects
+                    booking[key] = str(value)
         
         return jsonify({
             'success': True,

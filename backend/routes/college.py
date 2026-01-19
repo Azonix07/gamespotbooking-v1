@@ -96,6 +96,15 @@ def handle_college_bookings():
             cursor.execute(query, params)
             bookings = cursor.fetchall()
             
+            # Convert dates and times to ISO format
+            for booking in bookings:
+                for key, value in booking.items():
+                    if value is not None and hasattr(value, 'isoformat'):
+                        booking[key] = value.isoformat()
+                    elif value is not None and hasattr(value, 'total_seconds'):
+                        # Handle timedelta objects
+                        booking[key] = str(value)
+            
             # Get total count
             count_query = 'SELECT COUNT(*) as total FROM college_bookings WHERE 1=1'
             count_params = params[:-2]  # Exclude limit and offset
