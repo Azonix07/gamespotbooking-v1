@@ -335,7 +335,8 @@ html, body {
   }
   
   .meta-icon {
-    height: 35px !important;
+    height: 30px !important; /* Reduced from 35px for better alignment */
+    vertical-align: middle; /* Better vertical alignment with other icons */
   }
   
   .console-separator {
@@ -390,24 +391,19 @@ html, body {
   }
   
   .meta-icon {
-    height: 30px !important;
+    height: 24px !important; /* Reduced from 30px for better alignment */
+    vertical-align: middle;
   }
   
   .console-separator {
     font-size: 12px !important;
   }
   
-  .welcome-banner {
-    padding: 6px 10px;
-    margin-bottom: 8px;
-    font-size: 0.75rem;
-  }
-  
-  /* FAB Buttons */
+  /* FAB Buttons - Larger and more touchable on mobile */
   .fab-button,
   .floating-btn {
-    width: 42px;
-    height: 42px;
+    width: 56px !important; /* Increased from 42px */
+    height: 56px !important;
   }
   
   .fab-button.fab-ai-chat {
@@ -416,7 +412,7 @@ html, body {
   }
   
   .fab-icon {
-    font-size: 18px;
+    font-size: 24px !important; /* Increased from 18px for better visibility */
   }
 }
 
@@ -458,7 +454,8 @@ html, body {
   }
   
   .meta-icon {
-    height: 25px !important;
+    height: 20px !important; /* Reduced from 25px for better alignment */
+    vertical-align: middle;
   }
   
   .console-separator {
@@ -471,10 +468,11 @@ html, body {
     margin-bottom: 6px;
   }
   
+  /* FAB Buttons - Maintain good size even on smallest screens */
   .fab-button,
   .floating-btn {
-    width: 42px;
-    height: 42px;
+    width: 50px !important; /* Slightly smaller but still touchable */
+    height: 50px !important;
   }
   
   .fab-button.fab-ai-chat {
@@ -483,7 +481,7 @@ html, body {
   }
   
   .fab-icon {
-    font-size: 18px;
+    font-size: 22px !important; /* Good visibility even on small screens */
   }
 }
 
