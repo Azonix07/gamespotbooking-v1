@@ -4,8 +4,9 @@ import { AuthProvider } from './context/AuthContext';
 import { getTheme } from './services/api';
 import usePageTracking from './hooks/usePageTracking';
 
-// Eager load only HomePage for fast initial load
+// Eager load critical pages for fast access
 import HomePage from './pages/HomePage.jsx';
+import LoginPage from './pages/LoginPage.jsx'; // Critical auth page - no lazy loading delay
 
 // Lazy load all other pages - load only when visited
 const BookingPage = lazy(() => import('./pages/BookingPage.jsx'));
@@ -13,7 +14,6 @@ const RentalPage = lazy(() => import('./pages/RentalPage.jsx'));
 const CollegeSetupPage = lazy(() => import('./pages/CollegeSetupPage.jsx'));
 const DiscountGamePage = lazy(() => import('./pages/DiscountGamePage.jsx'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx'));
-const LoginPage = lazy(() => import('./pages/LoginPage.jsx'));
 const SignupPage = lazy(() => import('./pages/SignupPage.jsx'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage.jsx'));
 const MembershipPlansPage = lazy(() => import('./pages/MembershipPlansPage.jsx'));
