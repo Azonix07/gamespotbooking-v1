@@ -1,6 +1,7 @@
 /**
  * AuthContext - Centralized Authentication State Management
  * Prevents redundant API calls and infinite loops
+ * Mobile-optimized with localStorage backup for cookie timing issues
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
@@ -10,6 +11,10 @@ const AuthContext = createContext(null);
 
 // Cache duration in milliseconds (5 minutes)
 const CACHE_DURATION = 5 * 60 * 1000;
+
+// Flag to track recent login (prevents session check from clearing state)
+let recentLoginTimestamp = 0;
+const RECENT_LOGIN_GRACE_PERIOD = 5000; // 5 seconds grace period after login
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -37,6 +42,14 @@ export const AuthProvider = ({ children }) => {
     if (!force && (now - lastCheckTimeRef.current) < CACHE_DURATION && lastCheckTimeRef.current > 0) {
       console.log('[AuthContext] Using cached session data');
       return { authenticated: isAuthenticated, user, isAdmin };
+    }
+    
+    // MOBILE FIX: Check if we just logged in recently - don't clear auth state
+    const justLoggedIn = (now - recentLoginTimestamp) < RECENT_LOGIN_GRACE_PERIOD;
+    if (justLoggedIn && isAuthenticated) {
+      console.log('[AuthContext] Recently logged in, skipping session check to preserve state');
+      setLoading(false);
+      return { authenticated: true, user, isAdmin };
     }
     
     try {
@@ -67,10 +80,27 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
         console.log('[AuthContext] Session authenticated successfully');
       } else {
-        setUser(null);
-        setIsAdmin(false);
-        setIsAuthenticated(false);
-        console.log('[AuthContext] No active session');
+        // MOBILE FIX: Check localStorage before clearing auth state
+        // If localStorage says we're logged in, the cookie might just be slow
+        let shouldClearState = true;
+        try {
+          const localLoggedIn = localStorage.getItem('gamespot_logged_in');
+          if (localLoggedIn === 'true') {
+            console.log('[AuthContext] Session check failed but localStorage indicates logged in - waiting for cookie');
+            // Don't clear state yet, retry in a moment
+            shouldClearState = false;
+            setTimeout(() => checkSession(true), 1000);
+          }
+        } catch (e) {
+          // localStorage not available, proceed normally
+        }
+        
+        if (shouldClearState) {
+          setUser(null);
+          setIsAdmin(false);
+          setIsAuthenticated(false);
+          console.log('[AuthContext] No active session');
+        }
       }
       
       setError(null);
@@ -79,10 +109,16 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('[AuthContext] Session check error:', err);
       if (mountedRef.current) {
-        setError(err.message);
-        setUser(null);
-        setIsAdmin(false);
-        setIsAuthenticated(false);
+        // MOBILE FIX: Don't clear auth state on network errors if we just logged in
+        const justLoggedIn = (Date.now() - recentLoginTimestamp) < RECENT_LOGIN_GRACE_PERIOD;
+        if (!justLoggedIn) {
+          setError(err.message);
+          setUser(null);
+          setIsAdmin(false);
+          setIsAuthenticated(false);
+        } else {
+          console.log('[AuthContext] Session check error but recently logged in, preserving state');
+        }
       }
       return { authenticated: false, user: null, isAdmin: false };
     } finally {
@@ -109,6 +145,9 @@ export const AuthProvider = ({ children }) => {
       console.log('[AuthContext] Login response:', { success: data.success, userType: data.user_type });
       
       if (data.success) {
+        // MOBILE FIX: Mark this as a recent login to prevent session check from clearing state
+        recentLoginTimestamp = Date.now();
+        
         // MOBILE FIX: Set auth state immediately from login response
         // Don't wait for session check - mobile browsers have cookie timing issues
         if (data.user_type === 'admin') {
@@ -158,6 +197,9 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = useCallback(async () => {
+    // Reset the login timestamp to allow session checks to clear state
+    recentLoginTimestamp = 0;
+    
     try {
       await apiFetch('/api/auth/logout', { method: 'POST' });
     } catch (err) {
@@ -191,6 +233,9 @@ export const AuthProvider = ({ children }) => {
       });
       
       if (data.success) {
+        // MOBILE FIX: Mark this as a recent login to prevent session check from clearing state
+        recentLoginTimestamp = Date.now();
+        
         // MOBILE FIX: Set auth state immediately from signup response
         setIsAdmin(false);
         setUser(data.user || { name: formData.name, email: formData.email });
