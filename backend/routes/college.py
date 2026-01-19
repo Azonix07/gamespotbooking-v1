@@ -177,6 +177,96 @@ def handle_college_bookings():
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
             
+            # Ensure the table exists with proper structure
+            try:
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS college_bookings (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        contact_name VARCHAR(100),
+                        contact_phone VARCHAR(20),
+                        contact_email VARCHAR(255),
+                        contact_position VARCHAR(100),
+                        college_name VARCHAR(200),
+                        college_address TEXT,
+                        college_city VARCHAR(100),
+                        college_state VARCHAR(100),
+                        college_pincode VARCHAR(20),
+                        college_latitude DECIMAL(10, 6),
+                        college_longitude DECIMAL(10, 6),
+                        estimated_distance_km DECIMAL(10, 2),
+                        event_name VARCHAR(200),
+                        event_type VARCHAR(50),
+                        event_start_date DATE,
+                        event_end_date DATE,
+                        event_duration_days INT DEFAULT 1,
+                        expected_students INT DEFAULT 0,
+                        setup_type VARCHAR(50) DEFAULT 'standard',
+                        ps5_stations INT DEFAULT 4,
+                        vr_zones INT DEFAULT 2,
+                        driving_simulator BOOLEAN DEFAULT TRUE,
+                        additional_requirements TEXT,
+                        base_price DECIMAL(10, 2) DEFAULT 0,
+                        transport_cost DECIMAL(10, 2) DEFAULT 0,
+                        setup_cost DECIMAL(10, 2) DEFAULT 0,
+                        total_estimated_cost DECIMAL(10, 2) DEFAULT 0,
+                        final_price DECIMAL(10, 2) DEFAULT 0,
+                        status VARCHAR(50) DEFAULT 'inquiry',
+                        booking_reference VARCHAR(50),
+                        inquiry_source VARCHAR(50) DEFAULT 'website',
+                        notes TEXT,
+                        admin_notes TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    )
+                ''')
+                conn.commit()
+            except:
+                conn.rollback()
+            
+            # Add missing columns if table already exists
+            columns_to_add = [
+                ("contact_name", "VARCHAR(100)"),
+                ("contact_phone", "VARCHAR(20)"),
+                ("contact_email", "VARCHAR(255)"),
+                ("contact_position", "VARCHAR(100)"),
+                ("college_name", "VARCHAR(200)"),
+                ("college_address", "TEXT"),
+                ("college_city", "VARCHAR(100)"),
+                ("college_state", "VARCHAR(100)"),
+                ("college_pincode", "VARCHAR(20)"),
+                ("college_latitude", "DECIMAL(10, 6)"),
+                ("college_longitude", "DECIMAL(10, 6)"),
+                ("estimated_distance_km", "DECIMAL(10, 2)"),
+                ("event_name", "VARCHAR(200)"),
+                ("event_type", "VARCHAR(50)"),
+                ("event_start_date", "DATE"),
+                ("event_end_date", "DATE"),
+                ("event_duration_days", "INT DEFAULT 1"),
+                ("expected_students", "INT DEFAULT 0"),
+                ("setup_type", "VARCHAR(50) DEFAULT 'standard'"),
+                ("ps5_stations", "INT DEFAULT 4"),
+                ("vr_zones", "INT DEFAULT 2"),
+                ("driving_simulator", "BOOLEAN DEFAULT TRUE"),
+                ("additional_requirements", "TEXT"),
+                ("base_price", "DECIMAL(10, 2) DEFAULT 0"),
+                ("transport_cost", "DECIMAL(10, 2) DEFAULT 0"),
+                ("setup_cost", "DECIMAL(10, 2) DEFAULT 0"),
+                ("total_estimated_cost", "DECIMAL(10, 2) DEFAULT 0"),
+                ("final_price", "DECIMAL(10, 2) DEFAULT 0"),
+                ("status", "VARCHAR(50) DEFAULT 'inquiry'"),
+                ("booking_reference", "VARCHAR(50)"),
+                ("inquiry_source", "VARCHAR(50) DEFAULT 'website'"),
+                ("notes", "TEXT"),
+                ("admin_notes", "TEXT")
+            ]
+            
+            for col_name, col_type in columns_to_add:
+                try:
+                    cursor.execute(f"ALTER TABLE college_bookings ADD COLUMN {col_name} {col_type}")
+                    conn.commit()
+                except:
+                    conn.rollback()
+            
             # Generate booking reference
             booking_ref = f"COL-{datetime.now().strftime('%Y%m%d')}-{datetime.now().timestamp():.0f}"
             

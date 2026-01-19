@@ -337,14 +337,67 @@ const CollegeSetupPage = () => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      const id = `CS-${Date.now()}`;
-      setBookingId(id);
+    try {
+      // Calculate pricing
+      const days = numberOfDays;
+      const equipmentCost = (ps5Count * equipmentPricing.ps5.pricePerDay * days) +
+                           (vrCount * equipmentPricing.vr.pricePerDay * days) +
+                           (includeDrivingSim ? equipmentPricing.drivingSim.pricePerDay * days : 0);
+      const transportCost = Math.round(distance * 15 * 2); // ₹15/km round trip
+      const totalCost = equipmentCost + transportCost;
+
+      // Prepare booking data
+      const bookingData = {
+        contact_name: contactPerson,
+        contact_phone: phone,
+        contact_email: email,
+        college_name: collegeName,
+        college_address: location,
+        college_city: selectedPlace?.city || '',
+        college_state: selectedPlace?.state || 'Kerala',
+        college_latitude: selectedPlace?.lat || null,
+        college_longitude: selectedPlace?.lng || null,
+        event_name: `${collegeName} Gaming Event`,
+        event_type: 'college_fest',
+        event_start_date: startDate,
+        event_end_date: endDate || startDate,
+        event_duration_days: days,
+        expected_students: 500,
+        setup_type: 'premium',
+        ps5_stations: ps5Count,
+        vr_zones: vrCount,
+        driving_simulator: includeDrivingSim,
+        base_price: equipmentCost,
+        transport_cost: transportCost,
+        total_estimated_cost: totalCost,
+        final_price: totalCost,
+        inquiry_source: 'website'
+      };
+
+      // Make API call
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+      const response = await fetch(`${API_BASE_URL}/api/college-bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(bookingData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Booking failed');
+      }
+
+      setBookingId(result.booking_reference || `CS-${Date.now()}`);
       setLoading(false);
       setShowSuccess(true);
       setShowBookingForm(false);
-    }, 2000);
+    } catch (error) {
+      console.error('Booking error:', error);
+      alert(error.message || 'Failed to submit booking. Please try again.');
+      setLoading(false);
+    }
   };
   
   const closeSuccessModal = () => {
