@@ -151,6 +151,28 @@ def handle_rentals():
             # Generate booking ID
             booking_id = f"RNT-{datetime.now().strftime('%Y%m%d')}-{datetime.now().timestamp():.0f}"
             
+            # First, ensure the table has the right structure by adding missing columns
+            columns_to_add = [
+                ("delivery_address", "TEXT"),
+                ("rental_days", "INT DEFAULT 1"),
+                ("extra_controllers", "INT DEFAULT 0"),
+                ("controller_cost", "DECIMAL(10,2) DEFAULT 0"),
+                ("package_type", "VARCHAR(20) DEFAULT 'daily'"),
+                ("base_price", "DECIMAL(10,2) DEFAULT 0"),
+                ("savings", "DECIMAL(10,2) DEFAULT 0"),
+                ("payment_status", "VARCHAR(20) DEFAULT 'pending'"),
+                ("booking_id", "VARCHAR(50)"),
+                ("notes", "TEXT")
+            ]
+            
+            for col_name, col_type in columns_to_add:
+                try:
+                    cursor.execute(f"ALTER TABLE rental_bookings ADD COLUMN {col_name} {col_type}")
+                    conn.commit()
+                except Exception as alter_err:
+                    # Column already exists or other error - that's fine
+                    conn.rollback()
+            
             # Insert rental booking
             query = '''
                 INSERT INTO rental_bookings (
