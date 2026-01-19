@@ -195,31 +195,41 @@ const RentalPage = () => {
       setLoading(true);
       setError(null);
 
-      // Simulate API call
+      // Prepare booking data for API
       const bookingData = {
-        device: 'Meta Quest 3',
-        startDate,
-        endDate,
-        days: customDays,
-        package: selectedPackage,
-        totalPrice,
-        customerName,
-        customerPhone,
-        customerEmail,
-        deliveryAddress
+        device_type: selectedDevice,
+        start_date: startDate,
+        end_date: endDate,
+        rental_days: customDays,
+        package_type: selectedPackage || 'custom',
+        base_price: totalPrice - (extraControllers * 50),
+        total_price: totalPrice,
+        savings: savings,
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_email: customerEmail,
+        delivery_address: deliveryAddress,
+        extra_controllers: extraControllers,
+        controller_cost: extraControllers * 50,
+        notes: `Device: ${selectedDevice === 'vr' ? 'Meta Quest 3' : 'PS5'}`
       };
 
-      // Here you would make the actual API call
-      // const response = await fetch('http://localhost:8000/api/rentals/create', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(bookingData)
-      // });
+      // Make API call to save rental booking
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+      const response = await fetch(`${API_BASE_URL}/api/rentals`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(bookingData)
+      });
 
-      // Simulate success
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Booking failed');
+      }
       
-      setBookingId('RNT' + Math.floor(Math.random() * 100000));
+      setBookingId(result.booking_id || 'RNT' + Math.floor(Math.random() * 100000));
       setShowBookingForm(false);
       setShowSuccessModal(true);
 
