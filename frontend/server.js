@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const handler = require('serve-handler');
-const http = require('http');
+const express = require('express');
 const path = require('path');
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 const BUILD_DIR = path.join(__dirname, 'build');
 
@@ -11,60 +11,44 @@ console.log('🚀 Starting GameSpot Frontend Server...');
 console.log('📁 Build directory:', BUILD_DIR);
 console.log('🔌 Port:', PORT);
 
-const server = http.createServer(async (request, response) => {
-  // Log all requests
-  console.log(`📥 ${request.method} ${request.url}`);
-  
-  // Health check endpoint
-  if (request.url === '/health' || request.url === '/healthz') {
-    response.writeHead(200, { 'Content-Type': 'text/plain' });
-    response.end('OK');
-    return;
-  }
-
-  // Serve static files
-  try {
-    await handler(request, response, {
-      public: BUILD_DIR,
-      rewrites: [
-        { source: '**', destination: '/index.html' }
-      ],
-      headers: [
-        {
-          source: '**',
-          headers: [
-            {
-              key: 'Cache-Control',
-              value: 'public, max-age=3600'
-            }
-          ]
-        }
-      ]
-    });
-  } catch (error) {
-    console.error('❌ Error serving file:', error);
-    response.writeHead(500, { 'Content-Type': 'text/plain' });
-    response.end('Internal Server Error');
-  }
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
 });
 
-server.listen(PORT, '0.0.0.0', () => {
+app.get('/healthz', (req, res) => {
+  res.status(200).send('OK');
+});
+
+// Serve static files from the build directory
+app.use(express.static(BUILD_DIR, {
+  maxAge: '1h',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  }
+}));
+
+// Handle React routing - return index.html for all routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(BUILD_DIR, 'index.html'));
+});
+
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running at http://0.0.0.0:${PORT}`);
   console.log(`✅ Ready to accept connections`);
   console.log(`✅ Health check available at /health`);
 });
 
 // Handle errors
-server.on('error', (error) => {
-  console.error('❌ Server error:', error);
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
   process.exit(1);
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received, shutting down gracefully...');
-  server.close(() => {
-    console.log('👋 Server closed');
-    process.exit(0);
-  });
+process.on('unhandledRejection', (error) => {
+  console.error('❌ Unhandled Rejection:', error);
+  process.exit(1);
 });
