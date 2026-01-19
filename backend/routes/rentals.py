@@ -216,14 +216,17 @@ def handle_rentals():
             query = '''
                 INSERT INTO rental_bookings (
                     customer_name, customer_phone, customer_email, delivery_address,
-                    device_type, rental_type, start_date, end_date, rental_days,
+                    device_type, rental_type, item_name, start_date, end_date, rental_days,
                     extra_controllers, controller_cost,
                     package_type, base_price, total_price, savings,
                     status, payment_status, booking_id, notes
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 )
             '''
+            
+            # Determine item name based on device type
+            item_name = 'Meta Quest 3' if data['device_type'] == 'vr' else 'PlayStation 5'
             
             params = (
                 data['customer_name'],
@@ -232,6 +235,7 @@ def handle_rentals():
                 data.get('delivery_address', ''),
                 data['device_type'],
                 data['device_type'],  # rental_type = device_type (vr or ps5)
+                item_name,  # item_name
                 data['start_date'],
                 data['end_date'],
                 data['rental_days'],
