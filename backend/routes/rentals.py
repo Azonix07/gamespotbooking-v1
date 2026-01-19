@@ -216,12 +216,12 @@ def handle_rentals():
             query = '''
                 INSERT INTO rental_bookings (
                     customer_name, customer_phone, customer_email, delivery_address,
-                    device_type, start_date, end_date, rental_days,
+                    device_type, rental_type, start_date, end_date, rental_days,
                     extra_controllers, controller_cost,
                     package_type, base_price, total_price, savings,
                     status, payment_status, booking_id, notes
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 )
             '''
             
@@ -229,15 +229,16 @@ def handle_rentals():
                 data['customer_name'],
                 data['customer_phone'],
                 data.get('customer_email', ''),
-                data['delivery_address'],
+                data.get('delivery_address', ''),
                 data['device_type'],
+                data['device_type'],  # rental_type = device_type (vr or ps5)
                 data['start_date'],
                 data['end_date'],
                 data['rental_days'],
                 data.get('extra_controllers', 0),
                 data.get('controller_cost', 0.00),
-                data['package_type'],
-                data['base_price'],
+                data.get('package_type', 'daily'),
+                data.get('base_price', 0),
                 data['total_price'],
                 data.get('savings', 0.00),
                 'pending',
