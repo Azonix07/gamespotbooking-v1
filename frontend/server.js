@@ -33,20 +33,34 @@ if (!fs.existsSync(indexPath)) {
 console.log('✅ Build directory found');
 console.log('✅ index.html found');
 
-// Health check endpoint
+// Middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.url} from ${req.ip}`);
+  next();
+});
+
+// Health check endpoints - MUST respond quickly
 app.get('/health', (req, res) => {
-  console.log('📥 Health check requested');
-  res.status(200).send('OK');
+  console.log('✅ Health check OK');
+  res.status(200).type('text/plain').send('OK');
 });
 
 app.get('/healthz', (req, res) => {
-  console.log('📥 Healthz check requested');
-  res.status(200).send('OK');
+  console.log('✅ Healthz check OK');
+  res.status(200).type('text/plain').send('OK');
+});
+
+// Root health check for Railway
+app.get('/healthcheck', (req, res) => {
+  console.log('✅ Healthcheck OK');
+  res.status(200).type('text/plain').send('OK');
 });
 
 // Serve static files from the build directory
 app.use(express.static(BUILD_DIR, {
   maxAge: '1h',
+  etag: true,
+  lastModified: true,
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-cache');
@@ -54,10 +68,15 @@ app.use(express.static(BUILD_DIR, {
   }
 }));
 
-// Handle React routing - return index.html for all routes
+// Handle React routing - return index.html for all other routes
 app.get('*', (req, res) => {
-  console.log('📥 Serving:', req.path);
-  res.sendFile(indexPath);
+  console.log('� Serving index.html for:', req.path);
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('❌ Error sending index.html:', err);
+      res.status(500).send('Internal Server Error');
+    }
+  });
 });
 
 // Start server
@@ -69,6 +88,15 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Health check available at /health`);
   console.log('='.repeat(50));
   console.log('');
+  
+  // Test the server is actually listening
+  console.log('🔍 Testing server connectivity...');
+  const http = require('http');
+  const testReq = http.get(`http://localhost:${PORT}/health`, (testRes) => {
+    console.log(`✅ Self-test successful! Status: ${testRes.statusCode}`);
+  }).on('error', (err) => {
+    console.error('❌ Self-test failed:', err.message);
+  });
 });
 
 // Handle server errors
@@ -78,6 +106,11 @@ server.on('error', (error) => {
     console.error(`❌ Port ${PORT} is already in use`);
   }
   process.exit(1);
+});
+
+// Keep the server alive
+server.on('listening', () => {
+  console.log('✅ Server is actively listening for connections');
 });
 
 // Handle errors
