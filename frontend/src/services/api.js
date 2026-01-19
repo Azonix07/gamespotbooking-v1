@@ -343,22 +343,22 @@ export const getFeedbackStats = async () => {
 // Rentals API
 // =======================
 export const getRentals = async () => {
-  return fetchWithCredentials(`${API_BASE_URL}/rentals`);
+  return fetchWithCredentials(`${API_BASE_URL}/api/rentals`);
 };
 
 export const getRentalStats = async () => {
-  return fetchWithCredentials(`${API_BASE_URL}/rentals/stats`);
+  return fetchWithCredentials(`${API_BASE_URL}/api/rentals/stats`);
 };
 
 // =======================
 // College Bookings API
 // =======================
 export const getCollegeBookings = async () => {
-  return fetchWithCredentials(`${API_BASE_URL}/college-bookings`);
+  return fetchWithCredentials(`${API_BASE_URL}/api/college-bookings`);
 };
 
 export const getCollegeStats = async () => {
-  return fetchWithCredentials(`${API_BASE_URL}/college-bookings/stats`);
+  return fetchWithCredentials(`${API_BASE_URL}/api/college-bookings/stats`);
 };
 
 // =======================
@@ -366,10 +366,10 @@ export const getCollegeStats = async () => {
 // =======================
 export const getGameLeaderboard = async (period = "all", limit = 100) => {
   return fetchWithCredentials(
-    `${API_BASE_URL}/game/leaderboard?period=${period}&limit=${limit}`
+    `${API_BASE_URL}/api/game/leaderboard?period=${period}&limit=${limit}`
   );
 };
 
 export const getGameStats = async () => {
-  return fetchWithCredentials(`${API_BASE_URL}/game/stats`);
+  return fetchWithCredentials(`${API_BASE_URL}/api/game/stats`);
 };
