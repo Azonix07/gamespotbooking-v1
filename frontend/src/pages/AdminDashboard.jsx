@@ -30,7 +30,6 @@ import {
   updateBooking, 
   deleteBooking, 
   adminLogout, 
-  checkAdminSession,
   getAdminUsers,
   getAdminMemberships,
   getAdminStats,
@@ -42,6 +41,7 @@ import {
   getGameLeaderboard,
   getGameStats
 } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 import { formatDuration, formatPrice, formatTime12Hour } from '../utils/helpers';
 import ThemeSelector from '../components/ThemeSelector';
@@ -49,6 +49,7 @@ import '../styles/AdminDashboard.css';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, isAdmin, loading: authLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   
   // Dashboard Stats
@@ -93,27 +94,26 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Use AuthContext for authentication check (mobile-friendly)
   useEffect(() => {
-    checkAuth();
-  }, []);
+    // Wait for AuthContext to finish loading
+    if (authLoading) return;
+    
+    // Check if user is authenticated and is admin
+    if (!isAuthenticated || !isAdmin) {
+      console.log('[AdminDashboard] Not authenticated as admin, redirecting to login');
+      navigate('/login');
+      return;
+    }
+    
+    // User is authenticated as admin, load data
+    console.log('[AdminDashboard] Admin authenticated, loading data...');
+    loadAllData();
+  }, [authLoading, isAuthenticated, isAdmin, navigate]);
 
   useEffect(() => {
     applyBookingFilters();
   }, [bookings, bookingFilters]);
-
-  const checkAuth = async () => {
-    try {
-      const response = await checkAdminSession();
-      if (!response.authenticated) {
-        navigate('/login');
-      } else {
-        loadAllData();
-      }
-    } catch (err) {
-      console.error('Admin auth check failed:', err);
-      navigate('/login');
-    }
-  };
 
   const loadAllData = async () => {
     setLoading(true);
@@ -214,7 +214,8 @@ const AdminDashboard = () => {
 
   const handleLogout = async () => {
     try {
-      await adminLogout();
+      // Use AuthContext logout for proper state cleanup (mobile-friendly)
+      await logout();
       navigate('/');
     } catch (err) {
       console.error('Logout error:', err);
@@ -1265,6 +1266,16 @@ const AdminDashboard = () => {
       )}
     </div>
   );
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="admin-dashboard" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <div className="loading-spinner"></div>
+        <span style={{ marginLeft: '1rem' }}>Checking authentication...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-dashboard admin-sidebar-layout">
