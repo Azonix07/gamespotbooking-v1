@@ -29,18 +29,27 @@ export const AuthProvider = ({ children }) => {
     
     // Skip if check is already in progress
     if (checkInProgressRef.current) {
+      console.log('[AuthContext] Session check already in progress, skipping');
       return { authenticated: isAuthenticated, user, isAdmin };
     }
     
     // Skip if we checked recently (within cache duration) and not forcing
     if (!force && (now - lastCheckTimeRef.current) < CACHE_DURATION && lastCheckTimeRef.current > 0) {
+      console.log('[AuthContext] Using cached session data');
       return { authenticated: isAuthenticated, user, isAdmin };
     }
     
     try {
       checkInProgressRef.current = true;
+      console.log('[AuthContext] Checking session...', { force });
       
       const data = await apiFetch('/api/auth/check');
+      
+      console.log('[AuthContext] Session check response:', {
+        authenticated: data.authenticated,
+        userType: data.user_type,
+        hasUser: !!data.user
+      });
       
       // Only update state if component is still mounted
       if (!mountedRef.current) return data;
@@ -56,17 +65,19 @@ export const AuthProvider = ({ children }) => {
           setUser(data.user);
         }
         setIsAuthenticated(true);
+        console.log('[AuthContext] Session authenticated successfully');
       } else {
         setUser(null);
         setIsAdmin(false);
         setIsAuthenticated(false);
+        console.log('[AuthContext] No active session');
       }
       
       setError(null);
       return data;
       
     } catch (err) {
-      console.error('Session check error:', err);
+      console.error('[AuthContext] Session check error:', err);
       if (mountedRef.current) {
         setError(err.message);
         setUser(null);
@@ -88,22 +99,29 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
+      console.log('[AuthContext] Login attempt for:', identifier);
+      
       const data = await apiFetch('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ username: identifier, password })
       });
       
+      console.log('[AuthContext] Login response:', { success: data.success, userType: data.user_type });
+      
       if (data.success) {
         // Force refresh session after login
         lastCheckTimeRef.current = 0;
-        await checkSession(true);
+        const sessionCheck = await checkSession(true);
+        console.log('[AuthContext] Session check after login:', sessionCheck);
         return { success: true, userType: data.user_type };
       } else {
+        console.error('[AuthContext] Login failed:', data.error);
         setError(data.error || 'Login failed');
         return { success: false, error: data.error };
       }
       
     } catch (err) {
+      console.error('[AuthContext] Login error:', err);
       setError(err.message || 'Login failed');
       return { success: false, error: err.message };
     } finally {

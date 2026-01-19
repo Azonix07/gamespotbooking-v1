@@ -40,8 +40,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'gamespot-secret-key-change-in-production')
 app.config['SESSION_COOKIE_NAME'] = 'gamespot_session'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin
-app.config['SESSION_COOKIE_SECURE'] = True  # Required when SameSite=None
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Lax for same-site (frontend & backend on same domain)
+app.config['SESSION_COOKIE_SECURE'] = True  # HTTPS only
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
 # CORS Configuration - Allow React dev server, Mobile app, and Production
