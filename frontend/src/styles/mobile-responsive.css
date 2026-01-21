@@ -1634,12 +1634,24 @@ html, body {
     border-radius: 16px;
   }
   
+  .card-header {
+    flex-wrap: nowrap !important; /* Force single row */
+    align-items: center; /* Center vertically */
+  }
+
+  .card-header-content {
+    flex: 1; /* Take remaining space */
+    min-width: 0; /* Allow text truncation if needed */
+    text-align: left; /* Ensure text aligns left next to icon */
+  }
+
   .card-icon {
     width: 42px;
     height: 42px;
     min-width: 42px;
     font-size: 1.1rem;
     border-radius: 12px;
+    flex-shrink: 0; /* Prevent icon shrinking */
   }
   
   .card-title {
