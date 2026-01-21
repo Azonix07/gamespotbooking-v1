@@ -1211,15 +1211,32 @@ html, body {
     margin-bottom: 10px;
   }
   
-  /* Player & Duration Buttons - Grid Layout */
-  .player-buttons,
+  /* Player & Duration Buttons - Compact Row Layout for Mobile */
+  .player-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .player-btn {
+    flex: 1;
+    padding: 8px 4px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Keep duration buttons as grid if needed, or unify. User asked specifically for "selecting the number of players" */
   .duration-buttons {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
   
-  .player-btn,
   .duration-btn {
     padding: 14px 10px;
     font-size: 0.95rem;
@@ -1234,8 +1251,8 @@ html, body {
   
   .player-count,
   .dur-value {
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: 1rem; /* Slightly smaller */
+    font-weight: 600;
   }
   
   .player-label,
@@ -2856,7 +2873,7 @@ html, body {
   .form-input,
   .form-textarea,
   .form-select {
-    padding: 14px 16px;
+       padding: 14px 16px;
     min-height: 48px;
   }
   
@@ -3535,15 +3552,5 @@ html, body {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.option-group {
-  margin-bottom: 12px;
-}
-  
-.option-label {
-  font-size: 0.8rem;
-  margin-bottom: 8px;
-  opacity: 0.7;
 }
 
