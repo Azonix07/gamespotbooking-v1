@@ -1677,6 +1677,29 @@ html, body {
     width: 100%;
     margin-top: 12px;
   }
+
+  /* FORCE BACK BUTTON SIZE */
+  .booking-card .back-button {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    font-size: 24px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+  }
+
+  .booking-card .back-button svg {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    font-size: 28px !important;
+  }
 }
 
 @media (max-width: 479px) {
@@ -2869,7 +2892,7 @@ html, body {
   .btn,
   button {
     min-height: 44px;
-    padding: 12px 20px;
+    padding: 12px  20px;
     font-size: 0.95rem;
   }
   
