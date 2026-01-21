@@ -1212,52 +1212,45 @@ html, body {
   }
   
   /* Player & Duration Buttons - Compact Row Layout for Mobile */
-  .player-buttons {
+  .player-buttons,
+  .duration-buttons {
     display: flex !important;
     flex-direction: row !important;
-    gap: 8px;
+    gap: 6px; /* Slightly tighter gap to fit more items */
     width: 100%;
   }
 
-  .player-btn {
+  .player-btn,
+  .duration-btn {
     flex: 1;
-    padding: 8px 4px;
-    font-size: 0.9rem;
+    padding: 8px 2px;
+    font-size: 0.85rem;
     border-radius: 10px;
     min-height: 40px;
     display: flex;
+    flex-direction: column; /* To stack value and unit if needed */
     align-items: center;
     justify-content: center;
+  }
+  
+  /* Ensure text inside buttons is compact */
+  .player-btn span,
+  .duration-btn span {
+      display: inline-block;
   }
 
-  /* Keep duration buttons as grid if needed, or unify. User asked specifically for "selecting the number of players" */
-  .duration-buttons {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  
-  .duration-btn {
-    padding: 14px 10px;
-    font-size: 0.95rem;
-    border-radius: 12px;
-    min-height: 52px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-  }
-  
   .player-count,
   .dur-value {
-    font-size: 1rem; /* Slightly smaller */
+    font-size: 0.95rem; 
     font-weight: 600;
+    line-height: 1;
   }
   
   .player-label,
   .dur-unit {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
+    line-height: 1;
+    margin-top: 2px;
   }
   
   /* FIX: Driving Simulator Card - Ensure not covered by fixed footer */
@@ -2881,7 +2874,7 @@ html, body {
   input[type="checkbox"],
   input[type="radio"] {
     width: 22px;
-    height: 22px;
+       height: 22px;
     min-width: 22px;
   }
   
