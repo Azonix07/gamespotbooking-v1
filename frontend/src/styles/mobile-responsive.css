@@ -2874,7 +2874,7 @@ html, body {
   input[type="checkbox"],
   input[type="radio"] {
     width: 22px;
-                         height: 22px;
+                                                 height: 22px;
     min-width: 22px;
   }
   
@@ -3570,78 +3570,54 @@ html, body {
 }
 
 /* =========================================================
-   FIXED BOTTOM PRICE FOOTER (Mobile Only)
-   Price on Left, "Next" Button on Right
+   FIXED PRICE FOOTER - MOBILE OVERRIDES
+   Transform the Desktop Floating Pill into Full Width Bar
    ========================================================= */
-
-/* Hide the desktop mini-price-pill since we have a dedicated footer now */
-.mini-price-pill {
-  display: none !important;
+.pf-fixed-footer {
+  padding: 0 !important; /* Remove wrapper padding */
+  pointer-events: auto !important; /* Ensure clicks work everywhere */
+  background: rgba(15, 23, 42, 0.98); /* Ensure solid-ish background for notch area */
 }
 
-/* Construct the fixed footer */
-.price-footer-mobile {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: rgba(15, 23, 42, 0.95); /* Dark semi-transparent bg */
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 12px 20px;
-  padding-bottom: max(12px, env(safe-area-inset-bottom)); /* Respect iOS home indicator */
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 1000;
-  box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.3);
+.pf-container {
+  border-radius: 0 !important; /* Full width, no corners */
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 12px 20px !important;
+  padding-bottom: max(12px, env(safe-area-inset-bottom)) !important; /* iOS Safe Area */
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3) !important;
+  gap: 16px !important;
 }
 
-.pf-price-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
+.pf-price-section {
+  align-items: flex-start !important;
 }
 
 .pf-label {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.7rem !important;
 }
 
 .pf-amount {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: white;
-  font-family: 'Space Grotesk', sans-serif;
-  line-height: 1.1;
+  font-size: 1.5rem !important;
 }
 
 .pf-next-btn {
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 24px;
-  font-size: 1rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-  transition: transform 0.2s ease;
+  padding: 12px 20px !important;
+  font-size: 0.95rem !important;
+  border-radius: 12px !important; /* Rounded button inside square bar */
 }
 
-.pf-next-btn:active {
-  transform: scale(0.96);
+.pf-next-btn span {
+    display: inline !important; /* Ensure text is visible */
 }
 
-/* Make sure we can see this new footer by hiding any existing desktop version if present */
+/* Hide old elements if they still persist */
+.mini-price-pill, 
 .price-footer {
-  display: none !important; /* Hide old footer structure if any */
+    display: none !important;
 }
 

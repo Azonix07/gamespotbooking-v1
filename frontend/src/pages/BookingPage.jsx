@@ -834,33 +834,6 @@ const BookingPage = () => {
                           <FiMonitor className="section-icon" />
                           <span>PlayStation 5 Consoles</span>
                         </h3>
-                        
-                        {(ps5Bookings.length > 0 || drivingSim) && (
-                            <motion.div 
-                                className="mini-price-pill"
-                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                layout
-                            >
-                                <div className="mini-price-content">
-                                    <span className="mini-price-label">Total</span>
-                                    <span className="mini-price-amount">
-                                      {discountInfo ? (
-                                        <span style={{ color: '#10b981' }}>{formatPrice(price)}</span> /* Show discounted price green */
-                                      ) : (
-                                        formatPrice(price)
-                                      )}
-                                    </span>
-                                </div>
-                                <button 
-                                    className="mini-continue-btn"
-                                    onClick={() => setCurrentStep(3)}
-                                    title="Continue to Review"
-                                >
-                                    <FiArrowRight />
-                                </button>
-                            </motion.div>
-                        )}
                     </div>
                     
                     <div className="devices-grid">
@@ -1057,25 +1030,37 @@ const BookingPage = () => {
                         )}
                       </AnimatePresence>
                     </motion.div>
-                  </div> {/* End of devices-section (repurposed from simple div to block container) */}
 
-                  {/* FIXED FOOTER for Step 2 - Placing it here to ensure it's rendered when Step 2 is active */}
-                  <div className="price-footer">
-                    <button 
-                      className="continue-btn"
-                      onClick={() => setCurrentStep(3)}
-                      disabled={loading || (ps5Bookings.length === 0 && !drivingSim)}
-                    >
-                      <span className="footer-price">
-                        <span className="footer-label">Total</span>
-                        <span className="footer-amount">
-                          {discountInfo ? formatPrice(price) : formatPrice(price)}
-                        </span>
-                      </span>
-                      <span className="footer-action">
-                        Continue <FiArrowRight />
-                      </span>
-                    </button>
+                    {/* Desktop & Mobile Price Footer */}
+                    {(ps5Bookings.length > 0 || drivingSim) && (
+                      <motion.div 
+                          className="pf-fixed-footer"
+                          initial={{ opacity: 0, y: 100 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 100 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      >
+                          <div className="pf-container">
+                              <div className="pf-price-section">
+                                  <span className="pf-label">TOTAL</span>
+                                  <span className="pf-amount">
+                                    {discountInfo ? (
+                                      <span style={{ color: '#10b981' }}>{formatPrice(price)}</span> 
+                                    ) : (
+                                      formatPrice(price)
+                                    )}
+                                  </span>
+                              </div>
+                              <button 
+                                  className="pf-next-btn"
+                                  onClick={() => setCurrentStep(3)}
+                              >
+                                  <span>Review Booking</span>
+                                  <FiArrowRight />
+                              </button>
+                          </div>
+                      </motion.div>
+                    )}
                   </div>
                 </>
               )}
