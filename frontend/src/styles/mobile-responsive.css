@@ -1150,89 +1150,609 @@ html, body {
   
   /* Devices Section */
   .devices-section {
-    margin-top: 10px; /* Reduced margin */
+    margin-top: 20px;
   }
   
-  /* Hide section titles on mobile */
-  .section-title,
-  .section-title.driving-title {
-    display: none !important;
+  .section-title {
+    font-size: 1.1rem;
+    margin-bottom: 14px;
   }
   
   .devices-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  
+  .device-card {
+    padding: 18px;
+    border-radius: 16px;
+  }
+  
+  .device-header {
+    gap: 14px;
+  }
+  
+  .device-icon-wrapper {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    border-radius: 14px;
+  }
+  
+  .device-icon {
+    font-size: 1.4rem;
+  }
+  
+  .device-name {
+    font-size: 1.1rem;
+  }
+  
+  .device-unit {
+    font-size: 0.8rem;
+  }
+  
+  .check-indicator {
+    width: 28px;
+    height: 28px;
+  }
+  
+  /* Device Options */
+  .device-options {
+    padding-top: 16px;
+    margin-top: 16px;
+  }
+  
+  .option-group {
+    margin-bottom: 16px;
+  }
+  
+  .option-label {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+  
+  /* Player & Duration Buttons - Compact Row Layout for Mobile */
+  .player-buttons,
+  .duration-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 6px; /* Slightly tighter gap to fit more items */
+    width: 100%;
+  }
+
+  .player-btn,
+  .duration-btn {
+    flex: 1;
+    padding: 8px 2px;
+    font-size: 0.85rem;
+    border-radius: 10px;
+    min-height: 40px;
+    display: flex;
+    flex-direction: column; /* To stack value and unit if needed */
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Ensure text inside buttons is compact */
+  .player-btn span,
+  .duration-btn span {
+      display: inline-block;
+  }
+
+  .player-count,
+  .dur-value {
+    font-size: 0.95rem; 
+    font-weight: 600;
+    line-height: 1;
+  }
+  
+  .player-label,
+  .dur-unit {
+    font-size: 0.65rem;
+    line-height: 1;
+    margin-top: 2px;
+  }
+  
+  /* FIX: Driving Simulator Card - Ensure not covered by fixed footer */
+  .driving-card,
+  .device-card.driving-card {
+    margin-top: 8px;
+    margin-bottom: 20px !important; /* Reduced margin for cleaner layout */
+    padding-bottom: 20px;
+  }
+  
+  /* FIX: Devices Section - Add bottom margin for fixed footer clearance */
+  .devices-section {
+    padding-bottom: 80px !important;
+  }
+  
+  .devices-section:last-child,
+  .devices-grid:last-child,
+  .device-card:last-child {
+    margin-bottom: 20px !important;
+  }
+  
+  /* FIX: Driving section title spacing */
+  .section-title.driving-title {
+    margin-top: 24px;
+  }
+  
+  .after-ps5-option {
+    padding: 14px;
+    border-radius: 12px;
+    margin-top: 12px;
+  }
+  
+  .toggle-label {
+    font-size: 0.9rem;
+    gap: 12px;
+  }
+  
+  .toggle-switch {
+    width: 48px;
+    height: 26px;
+  }
+  
+  .after-ps5-info {
+    font-size: 0.8rem;
+    margin-top: 10px;
+    padding: 10px;
+  }
+  
+  /* Price Footer - Fixed at Bottom */
+  .price-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: rgba(15, 23, 42, 0.98);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .price-display {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  
+  .price-label {
+    font-size: 0.75rem;
+  }
+  
+  .price-amount {
+    font-size: 1.5rem;
+  }
+  
+  .continue-btn {
+    flex: 1;
+    max-width: 180px;
+    padding: 14px 20px;
+    font-size: 1rem;
+    border-radius: 12px;
+    justify-content: center;
+  }
+  
+  /* Checkout Layout V2 */
+  .checkout-layout-v2 {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .checkout-form-v2 {
+    padding: 24px 20px;
+    border-radius: 18px;
+    order: 1;
+  }
+  
+  .checkout-summary-v2 {
+    position: static;
+    top: auto;
+    order: 2;
+  }
+  
+  .form-title-v2 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+  
+  .user-profile-card {
+    flex-wrap: wrap;
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .profile-avatar {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    font-size: 1.3rem;
+  }
+  
+  .profile-info {
+    flex: 1;
+    min-width: 150px;
+  }
+  
+  .profile-greeting {
+    font-size: 0.8rem;
+  }
+  
+  .profile-name {
+    font-size: 1rem;
+  }
+  
+  .profile-verified {
+    font-size: 0.75rem;
+  }
+  
+  .form-section-v2 {
+    gap: 18px;
+  }
+  
+  .form-group-v2 {
+    gap: 8px;
+  }
+  
+  .form-label-v2 {
+    font-size: 0.9rem;
+  }
+  
+  .form-input-v2 {
+    padding: 16px 16px 16px 48px;
+    font-size: 1rem;
+    border-radius: 12px;
+    /* Prevent zoom on iOS */
+    font-size: 16px;
+  }
+  
+  .input-icon-v2 {
+    left: 16px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Summary Card V2 */
+  .summary-title-v2 {
+    font-size: 1.3rem;
+    margin-bottom: 14px;
+  }
+  
+  .summary-card-v2 {
+    padding: 20px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+  }
+  
+  .summary-section-v2 {
+    gap: 14px;
+  }
+  
+  .summary-item-v2 {
+    gap: 12px;
+  }
+  
+  .summary-icon-v2 {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 10px;
+  }
+  
+  .summary-label-v2 {
+    font-size: 0.7rem;
+  }
+  
+  .summary-value-v2 {
+    font-size: 0.95rem;
+  }
+  
+  .summary-divider-v2 {
+    margin: 16px 0;
+  }
+  
+  .section-title-v2 {
+    font-size: 0.75rem;
+    margin-bottom: 10px;
+  }
+  
+  .items-list-v2 {
+    gap: 10px;
+  }
+  
+  .item-row-v2 {
+    gap: 10px;
+    padding: 10px 0;
+  }
+  
+  .item-icon-v2 {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 10px;
+  }
+  
+  .item-name-v2 {
+    font-size: 0.95rem;
+  }
+  
+  .item-meta-v2 {
+    font-size: 0.8rem;
+  }
+  
+  .item-price-v2 {
+    font-size: 0.95rem;
+  }
+  
+  .total-row-v2 {
+    padding-top: 16px;
+  }
+  
+  .total-label-v2 {
+    font-size: 1rem;
+  }
+  
+  .total-amount-v2 {
+    font-size: 1.6rem;
+  }
+  
+  .payment-note-v2 {
+    font-size: 0.8rem;
+  }
+  
+  .submit-btn-v2 {
+    padding: 16px;
+    font-size: 1.05rem;
+    border-radius: 14px;
+    min-height: 56px;
+  }
+  
+  .btn-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .terms-note-v2 {
+    font-size: 0.75rem;
+    margin-top: 14px;
+    padding: 0 10px;
+  }
+  
+  /* Alert Messages */
+  .alert {
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+  }
+  
+  .alert-icon {
+    font-size: 1.1rem;
+  }
+  
+  /* Loading State */
+  .loading-container {
+    padding: 48px 20px;
+  }
+  
+  .loader {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .loading-text {
+    font-size: 0.9rem;
+  }
+}
+
+/* Small Mobile Styles (max-width: 479px) */
+@media (max-width: 479px) {
+  /* FIX: Navbar clearance and price footer clearance for small mobile */
+  .booking-page .booking-container,
+  .booking-container {
+    padding: 105px 12px 210px !important; /* Top: navbar clearance, Bottom: fixed price-footer clearance */
+  }
+  
+  .booking-hero {
+    margin-bottom: 16px;
+  }
+  
+  .hero-badge {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+  }
+  
+  .booking-title {
+    font-size: 1.4rem;
+    line-height: 1.25;
+  }
+  
+  .booking-subtitle {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  
+  /* ========================================
+     STEPS CONTAINER - SMALL MOBILE
+     Hidden to save vertical space
+     ======================================== */
+  .steps-container {
+    display: none !important;
+  }
+  
+}
+
+/* ===================================
+   BOOKING PAGE - ADDITIONAL MOBILE ENHANCEMENTS
+   =================================== */
+
+/* Better touch interactions for booking elements */
+@media (max-width: 767px) {
+  /* Time slot hover/active states for touch */
+  .time-slot:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
+  
+  .time-slot.selected {
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+  }
+  
+  /* Device card touch feedback */
+  .device-card:active:not(.unavailable) {
+    transform: scale(0.98);
+  }
+  
+  .device-card.selected {
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+  }
+  
+  /* Button touch feedback */
+  .player-btn:active,
+  .duration-btn:active {
+    transform: scale(0.95);
+  }
+  
+  .continue-btn:active,
+  .submit-btn-v2:active {
+    transform: scale(0.98);
+  }
+  
+  /* Smooth scrolling for time slots */
+  .time-slots-scroll-wrapper {
+    scroll-behavior: smooth;
+  }
+  
+  /* Selected/unavailable badges on devices */
+  .selected-badge,
+  .unavailable-badge {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  
+  /* Unavailable overlay */
+  .device-card.unavailable::after {
+    border-radius: 16px;
+  }
+  
+  /* Success Modal Mobile */
+  .modal-overlay {
+    padding: 16px;
+  }
+  
+  .success-modal {
+    padding: 28px 20px;
+    border-radius: 20px;
+    max-width: 100%;
+  }
+  
+  .success-animation {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+  }
+  
+  .checkmark-icon {
+    font-size: 2rem;
+  }
+  
+  .success-title {
+    font-size: 1.4rem;
+  }
+  
+  .success-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+  
+  .success-details {
+    margin-bottom: 24px;
+  }
+  
+  .detail-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  
+  /* FORCE CARD HEADER LAYOUT ON MOBILE */
+  .card-header {
+    flex-wrap: wrap !important;
+    align-items: center;
+    justify-content: center; /* Center the Icon+Text group */
     gap: 12px;
   }
 
-  /* Price Footer - Fixed Bottom Bar */
-  .price-footer {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    display: flex; /* Changed from just padding to flex container for button */
-    align-items: center;
-    justify-content: space-between;
-    padding: 0; 
-    margin: 0;
-    gap: 0;
-    width: auto;
-    z-index: 1000;
-    pointer-events: none; /* Let clicks pass through container, re-enable on button */
-    background: transparent !important;
-    backdrop-filter: none !important;
-    border: none !important;
-    box-shadow: none !important;
+  .card-icon {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
   }
-  
-  /* Use the continue button to show price & action */
-  .continue-btn {
-    pointer-events: auto;
-    flex: 1;
+
+  .card-header-content {
+    flex: 0 1 auto; /* Don't stretch to fill, only take needed width so centering works */
+    min-width: 0;
+    text-align: left; /* Text itself remains left-aligned next to icon */
+  }
+
+  /* Force Date Picker to its own line */
+  .header-date-picker {
+    flex-basis: 100%;
     width: 100%;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 24px;
-    background: var(--booking-primary); 
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
-    border-radius: 16px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: white;
+    margin-top: 12px;
+  }
+
+  /* FORCE BACK BUTTON SIZE */
+  .booking-card .back-button {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    font-size: 24px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+  }
+
+  .booking-card .back-button svg {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    font-size: 28px !important;
+  }
+}
+
+@media (max-width: 479px) {
+  .success-modal {
+    padding: 24px 16px;
+    border-radius: 18px;
   }
   
-  /* Fixed Footer Button Content Styling */
-  .footer-price {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    line-height: 1.2;
+  .success-animation {
+    width: 70px;
+    height: 70px;
   }
   
-  .footer-label {
-    font-size: 0.75rem;
-    opacity: 0.8;
-  }
-  
-  .footer-amount {
+  .success-title {
     font-size: 1.25rem;
-    font-weight: 700;
   }
   
-  .footer-action {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1.1rem;
+  .success-subtitle {
+    font-size: 0.85rem;
   }
   
-  /* Disable button styling */
-  .continue-btn:disabled {
-    opacity: 0.5;
-    background: #475569;
-    cursor: not-allowed;
+  .detail-card {
+    padding: 14px;
   }
 }
 
@@ -1668,7 +2188,1155 @@ html, body {
 }
 
 /* ===================================
-   DISCOUNT GAME PAGE MOBILE FIXES
+   DISCOUNT GAME PAGE MOBILE STYLES
+   =================================== */
+
+@media (max-width: 767px) {
+  .discount-container {
+    padding: 80px 16px 40px;
+  }
+  
+  .discount-title {
+    font-size: 2rem;
+  }
+  
+  .wheel-container {
+    transform: scale(0.85);
+    margin: 0 auto;
+  }
+  
+  .prizes-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 479px) {
+  .discount-container {
+    padding: 70px 12px 30px;
+  }
+  
+  .discount-title {
+    font-size: 1.5rem;
+  }
+  
+  .wheel-container {
+    transform: scale(0.7);
+  }
+  
+  .prizes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===================================
+   FEEDBACK PAGE MOBILE STYLES
+   =================================== */
+
+@media (max-width: 767px) {
+  .feedback-container {
+    padding: 80px 16px 40px;
+  }
+  
+  .feedback-card {
+    padding: 24px 16px;
+  }
+  
+  .rating-stars {
+    gap: 8px;
+  }
+  
+  .star-btn {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .feedback-container {
+    padding: 70px 12px 30px;
+  }
+  
+  .feedback-title {
+    font-size: 1.5rem;
+  }
+  
+  .star-btn {
+    font-size: 1.75rem;
+  }
+}
+
+/* ===================================
+   UPDATES PAGE MOBILE STYLES
+   =================================== */
+
+@media (max-width: 767px) {
+  .updates-container {
+    padding: 80px 16px 40px;
+  }
+  
+  .updates-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .update-card {
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 479px) {
+  .updates-container {
+    padding: 70px 12px 30px;
+  }
+  
+  .updates-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* ===================================
+   MEMBERSHIP PAGE MOBILE STYLES
+   =================================== */
+
+@media (max-width: 1023px) {
+  .membership-container {
+    padding: 100px 16px 60px;
+  }
+  
+  .plans-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    max-width: 450px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .membership-container {
+    padding: 80px 12px 40px;
+  }
+  
+  .membership-title {
+    font-size: 2rem;
+  }
+  
+  .plan-card {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 479px) {
+  .membership-title {
+    font-size: 1.6rem;
+  }
+  
+  .plan-price {
+    font-size: 2.5rem;
+  }
+}
+
+/* ===================================
+   COLLEGE SETUP PAGE MOBILE STYLES
+   =================================== */
+
+@media (max-width: 767px) {
+  .college-container {
+    padding: 80px 16px 40px;
+  }
+  
+  .college-hero-title {
+    font-size: 2rem;
+  }
+  
+  .setup-options-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 479px) {
+  .college-container {
+    padding: 70px 12px 30px;
+  }
+  
+  .college-hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===================================
+   ADMIN DASHBOARD MOBILE STYLES
+   =================================== */
+
+@media (max-width: 1023px) {
+  .admin-dashboard {
+    padding: 80px 16px 40px;
+  }
+  
+  .admin-sidebar {
+    position: fixed;
+    left: -280px;
+    transition: left 0.3s ease;
+    z-index: 1050;
+  }
+  
+  .admin-sidebar.open {
+    left: 0;
+  }
+  
+  .admin-content {
+    margin-left: 0;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-dashboard {
+    padding: 70px 12px 30px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .admin-table {
+    min-width: 600px;
+  }
+}
+
+/* ===================================
+   MODALS MOBILE STYLES
+   =================================== */
+
+@media (max-width: 767px) {
+  .modal-backdrop {
+    padding: 16px;
+  }
+  
+  .modal-content {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 20px;
+    margin: 0;
+  }
+  
+  .modal-header {
+    padding: 16px;
+  }
+  
+  .modal-body {
+    padding: 16px;
+  }
+  
+  .modal-footer {
+    padding: 16px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .modal-footer button {
+    width: 100%;
+  }
+}
+
+/* ===================================
+   AI CHAT MOBILE STYLES
+   =================================== */
+
+@media (max-width: 767px) {
+  .ai-chat-modal {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    bottom: 0;
+    right: 0;
+  }
+  
+  .ai-chat-messages {
+    height: calc(100vh - 180px);
+  }
+  
+  .ai-chat-input-container {
+    padding: 12px;
+  }
+  
+  .ai-chat-input {
+    font-size: 16px;
+  }
+}
+
+/* ===================================
+   FOOTER MOBILE STYLES
+   =================================== */
+
+@media (max-width: 767px) {
+  .footer-content {
+    padding: 1.5rem 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .copyright-text {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .footer-content {
+    padding: 1.25rem 0.75rem;
+  }
+  
+  .copyright-text {
+    font-size: 0.8rem;
+  }
+}
+
+/* ===================================
+   UTILITY CLASSES FOR MOBILE
+   =================================== */
+
+/* Hide on mobile */
+@media (max-width: 767px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Hide on tablet and below */
+@media (max-width: 1023px) {
+  .hide-tablet {
+    display: none !important;
+  }
+}
+
+/* Show only on mobile */
+@media (min-width: 768px) {
+  .show-mobile-only {
+    display: none !important;
+  }
+}
+
+/* Mobile-specific padding adjustments */
+@media (max-width: 767px) {
+  .mobile-p-sm {
+    padding: 12px !important;
+  }
+  
+  .mobile-px-sm {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  
+  .mobile-py-sm {
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+  
+  .mobile-mt-0 {
+    margin-top: 0 !important;
+  }
+  
+  .mobile-text-center {
+    text-align: center !important;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+  }
+}
+
+/* ===================================
+   TOUCH-FRIENDLY INTERACTIONS
+   =================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  .game-card:hover {
+    transform: none;
+  }
+  
+  .game-overlay {
+    opacity: 1;
+    background: linear-gradient(
+      180deg, 
+      transparent 0%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.8) 100%
+    );
+  }
+  
+  .overlay-content {
+    transform: translateY(0);
+  }
+  
+  /* Add tap states */
+  .btn-primary:active,
+  .btn-secondary:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+  
+  .game-card:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ===================================
+   SAFE AREA INSETS (iPhone X+)
+   =================================== */
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .navbar {
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+  
+  .site-footer {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  
+  .mobile-nav-drawer {
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+  }
+  
+  .fab-button,
+  .floating-btn {
+    bottom: max(20px, calc(env(safe-area-inset-bottom) + 16px));
+  }
+}
+
+/* ===================================
+   LANDSCAPE ORIENTATION FIXES
+   =================================== */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero-content {
+    padding: 16px;
+  }
+  
+  .hero-logo {
+    max-width: 150px;
+  }
+  
+  .hero-subtitle,
+  .hero-subtitle2 {
+    display: none;
+  }
+  
+  .cta-book-now-button {
+    padding: 8px 24px;
+    font-size: 14px;
+  }
+  
+  .console-icons-container {
+    margin-top: 12px;
+  }
+  
+  .console-icon {
+    height: 20px;
+  }
+  
+  .booking-hero {
+    margin-bottom: 16px;
+  }
+  
+  .fab-button {
+    bottom: 10px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ===================================
+   REDUCED MOTION PREFERENCE
+   =================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .bg-orb,
+  .hero-orb {
+    animation: none;
+  }
+}
+
+/* ===================================
+   PRINT STYLES
+   =================================== */
+
+@media print {
+  .navbar,
+  .mobile-menu-btn,
+  .mobile-nav-drawer,
+  .fab-button,
+  .floating-btn,
+  .ai-chat-modal {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .booking-card,
+  .card {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ===================================
+   DISCOUNT GAME PAGE MOBILE STYLES
+   =================================== */
+
+@media (max-width: 1023px) {
+  .game-container {
+    padding: 100px 16px 60px;
+  }
+  
+  .game-hero {
+    margin-bottom: 40px;
+  }
+  
+  .game-hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .game-main-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .game-sidebar {
+    position: relative;
+    top: auto;
+    order: 2;
+  }
+  
+  .game-main-section {
+    order: 1;
+  }
+  
+  .game-info-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .game-container {
+    padding: 80px 12px 40px;
+  }
+  
+  .game-hero-title {
+    font-size: 1.8rem;
+  }
+  
+  .game-hero-subtitle {
+    font-size: 1rem;
+  }
+  
+  .game-info-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .game-panel {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  
+  .game-area {
+    min-height: 280px;
+    max-height: 350px;
+  }
+  
+  .game-stats {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .stat-item {
+    flex: 1 1 calc(50% - 5px);
+    min-width: 80px;
+    padding: 12px 8px;
+    font-size: 0.85rem;
+  }
+  
+  .stat-value {
+    font-size: 1.25rem;
+  }
+  
+  .btn-start-game,
+  .btn-restart-game {
+    padding: 14px 24px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .game-hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .game-area {
+    min-height: 300px;
+    max-height: 400px;
+  }
+  
+  .game-controls {
+    top: 8px;
+    right: 8px;
+    gap: 6px;
+  }
+  
+  .btn-pause-game,
+  .btn-fullscreen {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  
+  .enemy {
+    min-width: 40px;
+    min-height: 40px;
+  }
+  
+  .crosshair {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* ===================================
+   FORM ELEMENTS MOBILE OPTIMIZATION
+   =================================== */
+
+@media (max-width: 767px) {
+  /* Prevent iOS zoom on input focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  
+  /* Better touch targets for form elements */
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .form-input,
+  .form-textarea,
+  .form-select {
+       padding: 14px 16px;
+    min-height: 48px;
+  }
+  
+  /* Checkbox and radio improvements */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 22px;
+                         height: 22px;
+    min-width: 22px;
+  }
+  
+  /* Label spacing */
+  .form-label {
+    margin-bottom: 8px;
+  }
+}
+
+/* ===================================
+   CARDS MOBILE IMPROVEMENTS
+   =================================== */
+
+@media (max-width: 767px) {
+  .card {
+    padding: 16px;
+    border-radius: 14px;
+    margin-bottom: 16px;
+  }
+  
+  .card-title {
+    font-size: 1.25rem;
+  }
+  
+  .card-header {
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+  
+  /* Stacked card layouts */
+  .cards-grid,
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* ===================================
+   BUTTONS MOBILE IMPROVEMENTS
+   =================================== */
+
+@media (max-width: 767px) {
+  .btn,
+  button {
+    min-height: 44px;
+    padding: 12px  20px;
+    font-size: 0.95rem;
+  }
+  
+  .btn-lg,
+  .btn-large {
+    padding: 14px 28px;
+    font-size: 1.05rem;
+  }
+  
+  .btn-sm,
+  .btn-small {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    min-height: 36px;
+  }
+  
+  /* Full-width buttons on mobile */
+  .btn-block-mobile {
+    width: 100%;
+    display: block;
+  }
+  
+  /* Button groups stack vertically */
+  .btn-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .btn-group .btn {
+    width: 100%;
+  }
+}
+
+/* ===================================
+   TABLES MOBILE IMPROVEMENTS
+   =================================== */
+
+@media (max-width: 767px) {
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -12px;
+    padding: 0 12px;
+   }
+  
+  table {
+    min-width: 500px;
+  }
+  
+  th, td {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+  
+  /* Responsive table - stack on mobile */
+  .table-responsive-stack {
+    min-width: auto;
+  }
+  
+  .table-responsive-stack thead {
+    display: none;
+  }
+  
+  .table-responsive-stack tr {
+    display: block;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: var(--booking-glass);
+    border: 1px solid var(--booking-glass-border);
+    border-radius: 12px;
+  }
+  
+  .table-responsive-stack td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border: none;
+    border-bottom: 1px solid var(--booking-glass-border);
+  }
+  
+  .table-responsive-stack td:last-child {
+    border-bottom: none;
+  }
+  
+  .table-responsive-stack td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--booking-gray-400);
+    margin-right: 10px;
+  }
+}
+
+/* ===================================
+   ALERTS & NOTIFICATIONS MOBILE
+   =================================== */
+
+@media (max-width: 767px) {
+  .alert {
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+  }
+  
+  .alert-icon {
+    font-size: 1.1rem;
+  }
+  
+  /* Toast notifications */
+  .toast {
+    left: 12px;
+    right: 12px;
+    max-width: none;
+    font-size: 0.9rem;
+  }
+}
+
+/* ===================================
+   BOOKING CONFIRMATION MOBILE
+   =================================== */
+
+@media (max-width: 767px) {
+  .confirmation-card {
+    padding: 20px 16px;
+  }
+  
+  .confirmation-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .confirmation-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .confirmation-title {
+    font-size: 1.4rem;
+  }
+  
+  .confirmation-details {
+    gap: 12px;
+  }
+  
+  .detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 12px;
+  }
+  
+  .booking-qr {
+    max-width: 180px;
+    margin: 0 auto;
+  }
+}
+
+/* ===================================
+   EQUIPMENT SELECTION MOBILE
+   =================================== */
+
+@media (max-width: 767px) {
+  .equipment-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .equipment-card {
+    padding: 14px;
+  }
+  
+  .equipment-icon {
+    font-size: 2rem;
+  }
+  
+  .equipment-name {
+    font-size: 0.85rem;
+  }
+  
+  .equipment-price {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .equipment-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===================================
+   VOICE AI / VOICE INTERFACE MOBILE
+   =================================== */
+
+@media (max-width: 767px) {
+  .voice-interface {
+    width: calc(100% - 24px);
+    max-width: none;
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+    border-radius: 20px;
+  }
+  
+  .voice-button {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .voice-status {
+    font-size: 0.85rem;
+  }
+  
+  .voice-transcript {
+    font-size: 0.9rem;
+    max-height: 80px;
+  }
+}
+
+/* ===================================
+   LOADING STATES MOBILE
+   =================================== */
+
+@media (max-width: 767px) {
+  .loading-container {
+    padding: 40px 16px;
+  }
+  
+  .loader {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .loading-text {
+    font-size: 0.9rem;
+  }
+  
+  /* Skeleton loaders */
+  .skeleton {
+    border-radius: 8px;
+  }
+  
+  .skeleton-card {
+    height: 200px;
+  }
+}
+
+/* ===================================
+   SPACING HELPERS MOBILE
+   =================================== */
+
+@media (max-width: 767px) {
+  /* Section spacing */
+  .section {
+    padding: 40px 0;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+  
+  /* Container padding */
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  /* Margin utilities */
+  .mb-mobile-sm {
+    margin-bottom: 12px !important;
+  }
+  
+  .mb-mobile-md {
+    margin-bottom: 20px !important;
+  }
+  
+  .mb-mobile-lg {
+    margin-bottom: 32px !important;
+  }
+  
+  /* Gap utilities */
+  .gap-mobile-sm {
+    gap: 8px !important;
+  }
+  
+  .gap-mobile-md {
+    gap: 12px !important;
+  }
+  
+  .gap-mobile-lg {
+    gap: 20px !important;
+  }
+}
+
+/* ===================================
+   HERO SECTIONS GENERAL MOBILE
+   =================================== */
+
+@media (max-width: 767px) {
+  .hero,
+  .page-hero {
+    padding: 60px 16px 40px;
+    min-height: auto;
+  }
+  
+  .hero-title,
+  .page-title {
+    font-size: 1.8rem;
+    line-height: 1.2;
+  }
+  
+  .hero-subtitle,
+  .page-subtitle {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  .hero-cta {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .hero-cta .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 479px) {
+  .hero-title,
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .hero-subtitle,
+  .page-subtitle {
+    font-size: 0.9rem;
+  }
+}
+
+/* ===================================
+   SCROLL BEHAVIOR MOBILE
+   =================================== */
+
+@media (max-width: 1023px) {
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 70px;
+  }
+  
+  /* Hide scrollbars on horizontal scroll containers */
+  .horizontal-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .horizontal-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Snap scrolling for carousels */
+  .scroll-snap-x {
+    scroll-snap-type: x mandatory;
+  }
+  
+  .scroll-snap-item {
+    scroll-snap-align: start;
+  }
+}
+
+/* ===================================
+   IMAGE OPTIMIZATION MOBILE
+   =================================== */
+
+@media (max-width: 767px) {
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .image-container {
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+  
+  .image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Avatar sizes */
+  .avatar-lg {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .avatar-md {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .avatar-sm {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* ===================================
+   DISCOUNT GAME PAGE - MOBILE FIXES
    =================================== */
 
 @media (max-width: 1023px) {
@@ -1686,3 +3354,294 @@ html, body {
     order: 1;
   }
 }
+
+@media (max-width: 767px) {
+  .discount-game-page .game-container {
+    padding: 90px 12px 60px !important;
+  }
+  
+  .discount-game-page .game-hero {
+    margin-bottom: 30px !important;
+  }
+  
+  .discount-game-page .game-title {
+    font-size: 1.8rem !important;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .discount-game-page .title-icon {
+    font-size: 2rem !important;
+  }
+  
+  .discount-game-page .game-subtitle {
+    font-size: 0.95rem !important;
+  }
+  
+  .discount-game-page .game-info-cards {
+    display: none !important; /* Hide on mobile to save space */
+  }
+  
+  .discount-game-page .game-panel {
+    padding: 16px !important;
+    border-radius: 16px !important;
+  }
+  
+  .discount-game-page .game-area-container {
+    min-height: 350px !important;
+    border-radius: 12px !important;
+  }
+  
+  .discount-game-page .game-area {
+    height: 350px !important;
+    min-height: 350px !important;
+  }
+  
+  .discount-game-page .game-menu {
+    padding: 30px 20px !important;
+    min-height: 350px !important;
+  }
+  
+  .discount-game-page .game-menu h2 {
+    font-size: 1.5rem !important;
+  }
+  
+  .discount-game-page .player-name-input {
+    max-width: 100% !important;
+    padding: 14px 16px !important;
+  }
+  
+  .discount-game-page .btn-start-game,
+  .discount-game-page .btn-view-leaderboard {
+    width: 100%;
+    padding: 14px 24px !important;
+    font-size: 1rem !important;
+    justify-content: center;
+  }
+  
+  .discount-game-page .game-instructions {
+    padding: 16px !important;
+    margin-top: 16px !important;
+  }
+  
+  .discount-game-page .game-instructions h3 {
+    font-size: 1rem !important;
+  }
+  
+  .discount-game-page .game-instructions li {
+    font-size: 0.85rem !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .discount-game-page .leaderboard-panel {
+    padding: 16px !important;
+    border-radius: 16px !important;
+  }
+  
+  .discount-game-page .leaderboard-header h2 {
+    font-size: 1.2rem !important;
+  }
+  
+  .discount-game-page .leaderboard-item {
+    padding: 10px !important;
+  }
+  
+  .discount-game-page .game-over {
+    padding: 24px 16px !important;
+  }
+  
+  .discount-game-page .game-over h2 {
+    font-size: 1.5rem !important;
+  }
+  
+  .discount-game-page .final-score-card {
+    min-width: auto !important;
+    padding: 16px !important;
+  }
+  
+  .discount-game-page .score-row {
+    padding: 8px 0 !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .discount-game-page .score-value {
+    font-size: 1.1rem !important;
+  }
+  
+  .discount-game-page .gameover-actions {
+    flex-direction: column;
+    gap: 10px !important;
+  }
+  
+  .discount-game-page .btn-play-again,
+  .discount-game-page .btn-view-ranks,
+  .discount-game-page .btn-menu {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px !important;
+  }
+}
+
+@media (max-width: 479px) {
+  .discount-game-page .hero-badge {
+    font-size: 0.75rem !important;
+    padding: 6px 14px !important;
+  }
+  
+  .discount-game-page .game-title {
+    font-size: 1.5rem !important;
+  }
+  
+  .discount-game-page .game-area,
+  .discount-game-page .game-area-container {
+    min-height: 300px !important;
+    height: 300px !important;
+  }
+  
+  .discount-game-page .combo-display {
+    top: 8px !important;
+  }
+  
+  .discount-game-page .combo-count {
+    font-size: 1.8rem !important;
+  }
+  
+  .discount-game-page .combo-text {
+    font-size: 0.65rem !important;
+    letter-spacing: 1px !important;
+  }
+}
+
+/* Modern Mobile Device Card Overrides */
+.device-card {
+  padding: 14px;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.device-header {
+  gap: 12px;
+}
+
+.device-icon-wrapper {
+  width: 42px; /* Smaller icon on mobile */
+  height: 42px;
+  border-radius: 10px;
+  font-size: 1.2rem;
+}
+
+.device-name {
+  font-size: 1rem;
+}
+
+.device-unit {
+  font-size: 0.75rem;
+}
+
+/* Compact Options for Mobile */
+.device-options {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* HIDE Section Headings on Mobile */
+.section-title, 
+.section-title.driving-title {
+  display: none !important;
+}
+
+/* Improve Spacing around device grids */
+.devices-grid, .devices-section {
+  margin-top: 5px !important; /* Minimal gap */
+  gap: 12px;
+}
+
+/* Compact gap between PS5 list and Driving Sim card */
+.devices-grid + .device-card.driving-card {
+  margin-top: 12px !important; 
+}
+
+/* REMOVE existing padding-bottom as we will use a fixed footer */
+.devices-section, .booking-container {
+  padding-bottom: 90px !important; /* Ensure content clears fixed footer */
+}
+
+/* =========================================================
+   FIXED BOTTOM PRICE FOOTER (Mobile Only)
+   Price on Left, "Next" Button on Right
+   ========================================================= */
+
+/* Hide the desktop mini-price-pill since we have a dedicated footer now */
+.mini-price-pill {
+  display: none !important;
+}
+
+/* Construct the fixed footer */
+.price-footer-mobile {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.95); /* Dark semi-transparent bg */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 20px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom)); /* Respect iOS home indicator */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1000;
+  box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.3);
+}
+
+.pf-price-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.pf-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pf-amount {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
+  font-family: 'Space Grotesk', sans-serif;
+  line-height: 1.1;
+}
+
+.pf-next-btn {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.pf-next-btn:active {
+  transform: scale(0.96);
+}
+
+/* Make sure we can see this new footer by hiding any existing desktop version if present */
+.price-footer {
+  display: none !important; /* Hide old footer structure if any */
+}
+
