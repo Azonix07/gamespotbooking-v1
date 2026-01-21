@@ -1057,6 +1057,25 @@ const BookingPage = () => {
                         )}
                       </AnimatePresence>
                     </motion.div>
+                  </div> {/* End of devices-section (repurposed from simple div to block container) */}
+
+                  {/* FIXED FOOTER for Step 2 - Placing it here to ensure it's rendered when Step 2 is active */}
+                  <div className="price-footer">
+                    <button 
+                      className="continue-btn"
+                      onClick={() => setCurrentStep(3)}
+                      disabled={loading || (ps5Bookings.length === 0 && !drivingSim)}
+                    >
+                      <span className="footer-price">
+                        <span className="footer-label">Total</span>
+                        <span className="footer-amount">
+                          {discountInfo ? formatPrice(price) : formatPrice(price)}
+                        </span>
+                      </span>
+                      <span className="footer-action">
+                        Continue <FiArrowRight />
+                      </span>
+                    </button>
                   </div>
                 </>
               )}
