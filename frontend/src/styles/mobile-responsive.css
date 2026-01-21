@@ -1556,41 +1556,6 @@ html, body {
     display: none !important;
   }
   
-  /* 
-  .steps-container {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-    padding: 2px;
-    margin: 0 auto 8px auto; 
-    width: fit-content; 
-    max-width: 90%; 
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    overflow: hidden;
-    min-height: 28px; 
-  }
-  
-  .step-item {
-    display: flex !important;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 3px 10px; /* Slightly more padding for touch target but kept compact */
-    flex: 0 0 auto; /* Don't expand, just fit content */
-    min-width: 0;
-    min-height: 24px; /* Ensure consistent height - Reduced */
-    background: transparent;
-    border: none;
-    border-radius: 50px;
-    opacity: 0.5;
-    transition: all 0.3s ease;
-  }
-  */
 }
 
 /* ===================================
@@ -2949,7 +2914,7 @@ html, body {
     -webkit-overflow-scrolling: touch;
     margin: 0 -12px;
     padding: 0 12px;
-  }
+   }
   
   table {
     min-width: 500px;
