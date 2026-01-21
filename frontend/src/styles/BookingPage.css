@@ -1273,6 +1273,36 @@
   gap: 14px;
   position: relative;
   z-index: 2; 
+  width: 100%; /* Ensure header takes full width */
+}
+
+/* Ensure details take up available space to push icon to the right */
+.device-details {
+  flex: 1; /* Grow to fill space */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Position the expand icon (dropdown arrow) to the far right */
+.expand-icon {
+  margin-left: auto; /* Push to the right */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: rgba(255, 255, 255, 0.4);
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.device-card:hover .expand-icon {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.expand-icon.rotated {
+  transform: rotate(180deg);
+  color: var(--booking-primary);
 }
 
 .device-icon-wrapper {
