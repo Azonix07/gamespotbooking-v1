@@ -885,39 +885,59 @@ html, body {
     font-size: 1.4rem;
   }
   
-  /* Session Info Badges - Grid on Mobile */
+  /* Session Info Badges - Minimal Mobile Design */
   .header-session-info {
     width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
     margin-left: 0;
-    margin-top: 12px;
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
   }
   
   .session-badge {
-    flex: none;
+    flex: 0 1 auto;
     min-width: 0;
-    padding: 12px;
-    border-radius: 12px;
+    padding: 0;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     justify-content: center;
+    gap: 6px;
   }
   
   .badge-icon {
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 15px;
+    margin-bottom: 0px !important;
+    opacity: 0.9;
+    color: var(--primary-color, #ffd700);
   }
   
   .badge-content {
-    flex: 1;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
   }
   
   .badge-label {
-    font-size: 0.65rem;
+    display: none;
   }
   
   .badge-value {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1;
   }
   
   /* Time Slots Header - Compact */
