@@ -302,9 +302,11 @@
   }
   
   .month-nav-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 44px; /* Increased from 32px for better touch target */
+    height: 44px;
+    border-radius: 12px;
+    font-size: 1.2rem; /* Increase icon size */
+    background: rgba(255, 255, 255, 0.1); /* Make it more visible */
   }
   
   .calendar-grid {
