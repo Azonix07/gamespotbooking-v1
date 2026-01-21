@@ -885,197 +885,639 @@ html, body {
     font-size: 1.4rem;
   }
   
-  /* Session Info Badges - Single Line on Mobile */
+  /* Session Info Badges - Grid on Mobile */
   .header-session-info {
     width: 100%;
-    display: flex;       /* Use Flexbox for single line row */
-    flex-wrap: nowrap;   /* Prevent wrapping to new lines */
-    gap: 8px;            /* Moderate gap between items */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
     margin-left: 0;
     margin-top: 12px;
   }
   
   .session-badge {
-    flex: 1;             /* Each badge takes equal width */
-    min-width: 0;        /* Allow flex items to shrink below content size if needed */
-    padding: 8px 4px;    /* Compact padding */
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column; /* Stack Icon above Text */
-    align-items: center;    /* Center horizontally */
-    justify-content: center;/* Center vertically */
-    background: rgba(255, 255, 255, 0.03); /* Subtle background */
-    border: 1px solid rgba(255, 255, 255, 0.08); /* Subtle border */
+    flex: none;
+    min-width: 0;
+    padding: 12px;
+    border-radius: 12px;
+    justify-content: center;
   }
   
   .badge-icon {
-    width: 16px;         /* Smaller icon size */
-    height: 16px;
-    margin: 0 0 4px 0;   /* Space below icon */
-    opacity: 0.8;
+    width: 20px;
+    height: 20px;
   }
   
   .badge-content {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
   }
   
   .badge-label {
-    display: none;       /* Hide "Date"/"Time"/"Capacity" labels for minimal look */
+    font-size: 0.65rem;
   }
   
   .badge-value {
-    font-size: 0.8rem;   /* Smaller, readable font size */
-    font-weight: 500;
-    white-space: nowrap; /* Keep text on one line */
-    text-align: center;
+    font-size: 0.9rem;
   }
   
-  /* Step Connectors - Hidden on mobile for cleaner look */
-  .step-connector {
-    display: none !important;
+  /* Time Slots Header - Compact */
+  .time-slots-header {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+  }
+  
+  .header-left {
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .header-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+  
+  .header-text {
+    display: flex !important;
+    flex-direction: column;
+    gap: 1px;
+  }
+  
+  .header-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+  }
+  
+  .header-subtitle {
+    font-size: 0.7rem;
+    color: rgba(148, 163, 184, 0.9);
+    margin: 0;
+  }
+  
+  .slots-title {
+    font-size: 0.95rem;
+  }
+  
+  /* FIX: Slot Status Legend - Compact inline */
+  .slot-status-legend {
+    width: auto;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .legend-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 3px;
+  }
+  
+  .status-dot {
+    display: inline-block !important;
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0;
+  }
+  
+  .status-label {
+    font-size: 0.55rem;
+    display: inline-block !important;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  
+  .status-dot.status-available {
+    background: #10b981 !important;
+  }
+  
+  .status-dot.status-partial {
+    background: #f59e0b !important;
+  }
+  
+  .status-dot.status-full {
+    background: #ef4444 !important;
   }
 
-  /* Booking Card */
-  .booking-card {
-    padding: 20px 16px;
-    border-radius: 18px;
-  }  /* Card Header - Stack on Mobile */
-  .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-    padding-bottom: 16px;
+  /* FIX: Status dots - Ensure visible with proper colors */
+  .status-dot {
+    width: 12px !important;
+    height: 12px !important;
+    min-width: 12px !important;
+    min-height: 12px !important;
+    display: inline-block !important;
+    border-radius: 50% !important;
+    flex-shrink: 0;
   }
   
-  .card-header.with-back {
-    flex-direction: row;
-    flex-wrap: wrap;
+  .status-dot.status-available {
+    background: #10b981 !important;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+  }
+  
+  .status-dot.status-partial {
+    background: #f59e0b !important;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+  }
+  
+  .status-dot.status-full {
+    background: #ef4444 !important;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+  }
+  
+  .status-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    display: inline-block !important;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  /* ========================================
+     TIME SLOTS - ULTRA COMPACT GRID
+     5 columns, minimal padding for less scroll
+     ======================================== */
+  .time-slots-scroll-wrapper {
+    padding: 8px;
+  }
+  
+  .time-slots-grid.compact-horizontal {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+  }
+  
+  .time-slot {
+    flex: none;
+    min-width: 0;
+    max-width: none;
+    padding: 8px 2px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    text-align: center;
+    min-height: 36px;
+    display: flex;
     align-items: center;
+    justify-content: center;
   }
   
-  .back-button {
-    width: 44px;
-    height: 44px;
+  .slot-time {
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1;
   }
   
-  .card-icon {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    font-size: 1.2rem;
+  .slot-players,
+  .slot-capacity {
+    display: none !important; /* Hide to save space */
+  }
+  
+  .slot-selected-indicator {
+    display: none; /* Hide indicator on mobile */
+  }
+  
+  /* Time slot states - compact styling */
+  .time-slot.available {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  
+  /* Hide status dots on mobile to prevent covering time text */
+  .time-slot.available::before,
+  .time-slot.partial::before,
+  .time-slot.full::before {
+    display: none !important;
+  }
+  
+  .time-slot.partial {
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+  
+  .time-slot.full {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    opacity: 0.5;
+  }
+  
+  .time-slot.selected {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    border-color: transparent !important;
+    color: white;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+  }
+  
+  /* Devices Section */
+  .devices-section {
+    margin-top: 20px;
+  }
+  
+  .section-title {
+    font-size: 1.1rem;
+    margin-bottom: 14px;
+  }
+  
+  .devices-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  
+  .device-card {
+    padding: 18px;
+    border-radius: 16px;
+  }
+  
+  .device-header {
+    gap: 14px;
+  }
+  
+  .device-icon-wrapper {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
     border-radius: 14px;
   }
   
-  .card-header-content {
-    width: 100%;
-  }
-  
-  .card-title {
-    font-size: 1.25rem;
-    margin-bottom: 4px;
-  }
-  
-  .card-subtitle {
-    font-size: 0.85rem;
-    line-height: 1.4;
-  }
-  
-  /* Header Date Picker - Full Width on Mobile */
-  .header-date-picker {
-    width: 100%;
-    flex-direction: column;
-    gap: 12px;
-    margin-left: 0;
-    margin-top: 8px;
-  }
-  
-  /* Modern Date Picker Mobile Fixes */
-  .modern-datepicker-container {
-    width: 100%;
-    position: static;
-  }
-  
-  .datepicker-trigger {
-    width: 100%;
-    min-width: unset;
-  }
-  
-  .date-input-compact {
-    width: 100%;
-    padding: 14px 16px;
-    font-size: 1rem;
-    border-radius: 12px;
-    text-align: center;
-  }
-  
-  .selected-date-badge {
-    width: 100%;
-    flex-direction: row;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 16px;
-    border-radius: 12px;
-  }
-  
-  .badge-day, .badge-month {
-    font-size: 0.85rem;
-  }
-  
-  .badge-date {
+  .device-icon {
     font-size: 1.4rem;
   }
   
-  /* Session Info Badges - Single Line on Mobile */
-  .header-session-info {
-    width: 100%;
-    display: flex;       /* Use Flexbox for single line row */
-    flex-wrap: nowrap;   /* Prevent wrapping to new lines */
-    gap: 8px;            /* Moderate gap between items */
-    margin-left: 0;
-    margin-top: 12px;
+  .device-name {
+    font-size: 1.1rem;
   }
   
-  .session-badge {
-    flex: 1;             /* Each badge takes equal width */
-    min-width: 0;        /* Allow flex items to shrink below content size if needed */
-    padding: 8px 4px;    /* Compact padding */
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column; /* Stack Icon above Text */
-    align-items: center;    /* Center horizontally */
-    justify-content: center;/* Center vertically */
-    background: rgba(255, 255, 255, 0.03); /* Subtle background */
-    border: 1px solid rgba(255, 255, 255, 0.08); /* Subtle border */
+  .device-unit {
+    font-size: 0.8rem;
   }
   
-  .badge-icon {
-    width: 16px;         /* Smaller icon size */
-    height: 16px;
-    margin: 0 0 4px 0;   /* Space below icon */
-    opacity: 0.8;
+  .check-indicator {
+    width: 28px;
+    height: 28px;
   }
   
-  .badge-content {
-    flex: 1;
+  /* Device Options */
+  .device-options {
+    padding-top: 16px;
+    margin-top: 16px;
+  }
+  
+  .option-group {
+    margin-bottom: 16px;
+  }
+  
+  .option-label {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+  
+  /* Player & Duration Buttons - Grid Layout */
+  .player-buttons,
+  .duration-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .player-btn,
+  .duration-btn {
+    padding: 14px 10px;
+    font-size: 0.95rem;
+    border-radius: 12px;
+    min-height: 52px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
+    justify-content: center;
+    gap: 2px;
   }
   
-  .badge-label {
-    display: none;       /* Hide "Date"/"Time"/"Capacity" labels for minimal look */
+  .player-count,
+  .dur-value {
+    font-size: 1.1rem;
+    font-weight: 700;
   }
   
-  .badge-value {
-    font-size: 0.8rem;   /* Smaller, readable font size */
-    font-weight: 500;
-    white-space: nowrap; /* Keep text on one line */
-    text-align: center;
+  .player-label,
+  .dur-unit {
+    font-size: 0.7rem;
+  }
+  
+  /* FIX: Driving Simulator Card - Ensure not covered by fixed footer */
+  .driving-card,
+  .device-card.driving-card {
+    margin-top: 8px;
+    margin-bottom: 20px !important; /* Reduced margin for cleaner layout */
+    padding-bottom: 20px;
+  }
+  
+  /* FIX: Devices Section - Add bottom margin for fixed footer clearance */
+  .devices-section {
+    padding-bottom: 80px !important;
+  }
+  
+  .devices-section:last-child,
+  .devices-grid:last-child,
+  .device-card:last-child {
+    margin-bottom: 20px !important;
+  }
+  
+  /* FIX: Driving section title spacing */
+  .section-title.driving-title {
+    margin-top: 24px;
+  }
+  
+  .after-ps5-option {
+    padding: 14px;
+    border-radius: 12px;
+    margin-top: 12px;
+  }
+  
+  .toggle-label {
+    font-size: 0.9rem;
+    gap: 12px;
+  }
+  
+  .toggle-switch {
+    width: 48px;
+    height: 26px;
+  }
+  
+  .after-ps5-info {
+    font-size: 0.8rem;
+    margin-top: 10px;
+    padding: 10px;
+  }
+  
+  /* Price Footer - Fixed at Bottom */
+  .price-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: rgba(15, 23, 42, 0.98);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .price-display {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  
+  .price-label {
+    font-size: 0.75rem;
+  }
+  
+  .price-amount {
+    font-size: 1.5rem;
+  }
+  
+  .continue-btn {
+    flex: 1;
+    max-width: 180px;
+    padding: 14px 20px;
+    font-size: 1rem;
+    border-radius: 12px;
+    justify-content: center;
+  }
+  
+  /* Checkout Layout V2 */
+  .checkout-layout-v2 {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .checkout-form-v2 {
+    padding: 24px 20px;
+    border-radius: 18px;
+    order: 1;
+  }
+  
+  .checkout-summary-v2 {
+    position: static;
+    top: auto;
+    order: 2;
+  }
+  
+  .form-title-v2 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+  
+  .user-profile-card {
+    flex-wrap: wrap;
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .profile-avatar {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    font-size: 1.3rem;
+  }
+  
+  .profile-info {
+    flex: 1;
+    min-width: 150px;
+  }
+  
+  .profile-greeting {
+    font-size: 0.8rem;
+  }
+  
+  .profile-name {
+    font-size: 1rem;
+  }
+  
+  .profile-verified {
+    font-size: 0.75rem;
+  }
+  
+  .form-section-v2 {
+    gap: 18px;
+  }
+  
+  .form-group-v2 {
+    gap: 8px;
+  }
+  
+  .form-label-v2 {
+    font-size: 0.9rem;
+  }
+  
+  .form-input-v2 {
+    padding: 16px 16px 16px 48px;
+    font-size: 1rem;
+    border-radius: 12px;
+    /* Prevent zoom on iOS */
+    font-size: 16px;
+  }
+  
+  .input-icon-v2 {
+    left: 16px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Summary Card V2 */
+  .summary-title-v2 {
+    font-size: 1.3rem;
+    margin-bottom: 14px;
+  }
+  
+  .summary-card-v2 {
+    padding: 20px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+  }
+  
+  .summary-section-v2 {
+    gap: 14px;
+  }
+  
+  .summary-item-v2 {
+    gap: 12px;
+  }
+  
+  .summary-icon-v2 {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 10px;
+  }
+  
+  .summary-label-v2 {
+    font-size: 0.7rem;
+  }
+  
+  .summary-value-v2 {
+    font-size: 0.95rem;
+  }
+  
+  .summary-divider-v2 {
+    margin: 16px 0;
+  }
+  
+  .section-title-v2 {
+    font-size: 0.75rem;
+    margin-bottom: 10px;
+  }
+  
+  .items-list-v2 {
+    gap: 10px;
+  }
+  
+  .item-row-v2 {
+    gap: 10px;
+    padding: 10px 0;
+  }
+  
+  .item-icon-v2 {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 10px;
+  }
+  
+  .item-name-v2 {
+    font-size: 0.95rem;
+  }
+  
+  .item-meta-v2 {
+    font-size: 0.8rem;
+  }
+  
+  .item-price-v2 {
+    font-size: 0.95rem;
+  }
+  
+  .total-row-v2 {
+    padding-top: 16px;
+  }
+  
+  .total-label-v2 {
+    font-size: 1rem;
+  }
+  
+  .total-amount-v2 {
+    font-size: 1.6rem;
+  }
+  
+  .payment-note-v2 {
+    font-size: 0.8rem;
+  }
+  
+  .submit-btn-v2 {
+    padding: 16px;
+    font-size: 1.05rem;
+    border-radius: 14px;
+    min-height: 56px;
+  }
+  
+  .btn-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .terms-note-v2 {
+    font-size: 0.75rem;
+    margin-top: 14px;
+    padding: 0 10px;
+  }
+  
+  /* Alert Messages */
+  .alert {
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+  }
+  
+  .alert-icon {
+    font-size: 1.1rem;
+  }
+  
+  /* Loading State */
+  .loading-container {
+    padding: 48px 20px;
+  }
+  
+  .loader {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .loading-text {
+    font-size: 0.9rem;
   }
 }
 
@@ -1213,21 +1655,20 @@ html, body {
   .card-header {
     flex-wrap: wrap !important;
     align-items: center;
-    justify-content: flex-start !important; /* Left align everything */
+    justify-content: center; /* Center the Icon+Text group */
     gap: 12px;
   }
 
   .card-icon {
     flex: 0 0 42px;
-    width: 42px; /* Fixed width for icon */
+    width: 42px;
     height: 42px;
-    margin-right: 4px; /* Slight extra gap */
   }
 
   .card-header-content {
-    flex: 1 1 auto; /* Allow text to take remaining space */
+    flex: 0 1 auto; /* Don't stretch to fill, only take needed width so centering works */
     min-width: 0;
-    text-align: left;
+    text-align: left; /* Text itself remains left-aligned next to icon */
   }
 
   /* Force Date Picker to its own line */
