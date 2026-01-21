@@ -1651,32 +1651,30 @@ html, body {
     border-radius: 14px;
   }
   
-  .detail-row {
-    padding: 8px 0;
+  /* FORCE CARD HEADER LAYOUT ON MOBILE */
+  .card-header {
+    flex-wrap: wrap !important;
+    align-items: center;
+    gap: 12px;
   }
-  
-  .detail-label {
-    font-size: 0.85rem;
+
+  .card-icon {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
   }
-  
-  .detail-value {
-    font-size: 0.9rem;
+
+  .card-header-content {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: left;
   }
-  
-  .detail-value.highlight {
-    font-size: 1rem;
-  }
-  
-  .detail-value.price {
-    font-size: 1.15rem;
-  }
-  
-  .btn-success-action {
+
+  /* Force Date Picker to its own line */
+  .header-date-picker {
+    flex-basis: 100%;
     width: 100%;
-    padding: 14px 20px;
-    font-size: 0.95rem;
-    border-radius: 12px;
-    justify-content: center;
+    margin-top: 4px;
   }
 }
 
