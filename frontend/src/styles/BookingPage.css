@@ -1200,7 +1200,7 @@
 
 .device-card {
   position: relative;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08); /* Fainter border by default */
   border-radius: 16px; /* Slightly softer corners */
   padding: 20px; /* More breathing room */
@@ -1492,7 +1492,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%; /* Circle instead of pill */
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 10px rgba(99, 102,241, 0.4);
   font-size: 0; /* Hide text */
   margin: 0;
   z-index: 5;
@@ -2167,6 +2167,20 @@
   .header-date-picker {
     width: 100%;
   }
+
+  /* Force larger arrows for back button on mobile */
+  .back-button {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    font-size: 1.5rem; /* Large arrow icon */
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .back-button svg {
+    width: 24px;
+    height: 24px;
+  }
   
   /* Step indicator mobile */
   .steps-container {
@@ -2347,7 +2361,7 @@
   
   .slot-status-legend {
     width: 100%;
-    justify-content: flex-start;
+       justify-content: flex-start;
     flex-wrap: wrap;
     gap: 8px;
   }
