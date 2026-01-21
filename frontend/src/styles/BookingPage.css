@@ -2172,22 +2172,29 @@
   .steps-container {
     flex-direction: row;
     overflow-x: auto;
-    gap: 8px;
-    padding-bottom: 10px;
+    gap: 4px;
+    padding-bottom: 2px;
+    margin-bottom: 8px; /* Reduced spacing */
     -webkit-overflow-scrolling: touch;
   }
   
   .step-item {
     min-width: auto;
-    padding: 8px 12px;
+    padding: 4px 8px; /* Smaller padding */
   }
   
+  .step-number {
+    width: 20px; /* Smaller size */
+    height: 20px;
+    font-size: 0.7rem;
+  }
+
   .step-content {
     display: none;
   }
   
   .step-connector {
-    width: 20px;
+    width: 10px; /* Smaller connector */
     height: 2px;
   }
   

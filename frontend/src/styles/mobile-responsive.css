@@ -752,7 +752,8 @@ html, body {
     border-radius: 50%;
     color: #fff;
     flex-shrink: 0;
-    margin: auto 0; /* Vertical center within step-item */
+    margin: 0;
+    transition: all 0.3s ease;
   }
   
   .step-item.active .step-number {
@@ -1556,13 +1557,13 @@ html, body {
     align-items: center;
     justify-content: center;
     gap: 0;
-    padding: 8px;
-    margin-bottom: 16px;
+    padding: 2px;
+    margin-bottom: 8px;
     background: rgba(15, 23, 42, 0.8);
     border-radius: 50px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     overflow: hidden;
-    min-height: 48px; /* Fixed height for vertical centering */
+    min-height: 28px; /* Fixed height for vertical centering - Reduced */
   }
   
   .step-item {
@@ -1570,11 +1571,11 @@ html, body {
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 10px 16px;
+    gap: 4px;
+    padding: 3px 8px;
     flex: 1;
     min-width: 0;
-    min-height: 32px; /* Ensure consistent height */
+    min-height: 24px; /* Ensure consistent height - Reduced */
     background: transparent;
     border: none;
     border-radius: 50px;
@@ -1585,7 +1586,7 @@ html, body {
   .step-item.active {
     opacity: 1;
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.2));
-    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 1px 6px rgba(99, 102, 241, 0.15);
   }
   
   .step-item.completed {
@@ -1594,10 +1595,10 @@ html, body {
   }
   
   .step-number {
-    width: 24px;
-    height: 24px;
-    min-width: 24px;
-    font-size: 0.7rem;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    font-size: 0.6rem;
     font-weight: 700;
     display: flex;
     align-items: center;
@@ -1605,7 +1606,8 @@ html, body {
     background: rgba(100, 116, 139, 0.5);
     border-radius: 50%;
     color: #fff;
-    margin: auto 0; /* Vertical center within step-item */
+    flex-shrink: 0;
+    margin: 0;
   }
   
   .step-item.active .step-number {
