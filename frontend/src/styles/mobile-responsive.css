@@ -704,7 +704,8 @@ html, body {
     border-radius: 50px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     overflow: hidden;
-    min-height: 52px; /* Fixed height for vertical centering */
+    width: fit-content; /* Only take necessary width */
+    margin: 0 auto 20px auto; /* Center horizontally */
   }
   
   .steps-container::-webkit-scrollbar {
@@ -718,7 +719,7 @@ html, body {
     justify-content: center;
     gap: 8px;
     padding: 10px 16px;
-    flex: 1;
+    flex: 0 0 auto; /* Don't expand, just fit content */
     min-width: 0;
     min-height: 36px; /* Ensure consistent height */
     background: transparent;
@@ -1558,7 +1559,9 @@ html, body {
     justify-content: center;
     gap: 0;
     padding: 2px;
-    margin-bottom: 8px;
+    margin: 0 auto 8px auto; /* Center horizontally */
+    width: fit-content; /* Only take necessary width */
+    max-width: 90%; /* Prevent overflow */
     background: rgba(15, 23, 42, 0.8);
     border-radius: 50px;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1572,8 +1575,8 @@ html, body {
     align-items: center;
     justify-content: center;
     gap: 4px;
-    padding: 3px 8px;
-    flex: 1;
+    padding: 3px 10px; /* Slightly more padding for touch target but kept compact */
+    flex: 0 0 auto; /* Don't expand, just fit content */
     min-width: 0;
     min-height: 24px; /* Ensure consistent height - Reduced */
     background: transparent;
