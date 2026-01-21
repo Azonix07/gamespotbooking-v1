@@ -1655,6 +1655,7 @@ html, body {
   .card-header {
     flex-wrap: wrap !important;
     align-items: center;
+    justify-content: center; /* Center the Icon+Text group */
     gap: 12px;
   }
 
@@ -1665,16 +1666,16 @@ html, body {
   }
 
   .card-header-content {
-    flex: 1 1 auto;
+    flex: 0 1 auto; /* Don't stretch to fill, only take needed width so centering works */
     min-width: 0;
-    text-align: left;
+    text-align: left; /* Text itself remains left-aligned next to icon */
   }
 
   /* Force Date Picker to its own line */
   .header-date-picker {
     flex-basis: 100%;
     width: 100%;
-    margin-top: 4px;
+    margin-top: 12px;
   }
 }
 
