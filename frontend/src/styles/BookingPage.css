@@ -1167,8 +1167,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
-  min-height: 48px; /* Reserve height to prevent layout jump */
+  margin-bottom: 16px;
+  padding: 0;
 }
 
 .section-title {
@@ -1179,7 +1179,7 @@
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--booking-white);
-  margin: 0 0 16px;
+  margin: 0;
 }
 
 .section-title.driving-title {
