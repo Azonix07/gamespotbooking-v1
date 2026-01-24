@@ -7,7 +7,7 @@
 
 // 🔑 Use the SAME central backend URL - empty for same-origin
 const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "";
+  process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || "";
 
 // =======================================================
 // Send message to AI assistant
