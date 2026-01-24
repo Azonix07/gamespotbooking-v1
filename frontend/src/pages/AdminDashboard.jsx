@@ -23,7 +23,8 @@ import {
   FiMessageSquare,
   FiPackage,
   FiAward,
-  FiTarget
+  FiTarget,
+  FiZap
 } from 'react-icons/fi';
 import { 
   getAllBookings, 
@@ -452,90 +453,167 @@ const AdminDashboard = () => {
         </div>
       ) : (
         <>
-          <div className="card">
-            <div className="table-container">
-              <table className="table admin-table" id="bookings-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Date & Time</th>
-                    <th>Customer</th>
-                    <th>Duration</th>
-                    <th>Devices</th>
-                    <th>Price</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentBookings.map(booking => (
-                    <tr key={booking.id}>
-                      <td data-label="BOOKING ID"><span className="booking-id">#{booking.id}</span></td>
-                      <td data-label="DATE & TIME">
-                        <div className="date-time-cell">
-                          <span className="date">{new Date(booking.booking_date).toLocaleDateString()}</span>
-                          <span className="time">{formatTime12Hour(booking.start_time)}</span>
-                        </div>
-                      </td>
-                      <td data-label="CUSTOMER">
-                        <div className="customer-cell">
-                          <span className="customer-name">{booking.customer_name}</span>
-                          <span className="customer-phone">{booking.customer_phone}</span>
-                        </div>
-                      </td>
-                      <td data-label="DURATION">
-                        {editingId === booking.id ? (
-                          <select
-                            value={editForm.duration_minutes}
-                            onChange={(e) => setEditForm({ ...editForm, duration_minutes: parseInt(e.target.value) })}
-                            className="form-control"
-                          >
-                            <option value={30}>30 min</option>
-                            <option value={60}>1 hr</option>
-                            <option value={90}>1.5 hr</option>
-                            <option value={120}>2 hr</option>
-                          </select>
-                        ) : (
-                          formatDuration(booking.duration_minutes)
-                        )}
-                      </td>
-                      <td className="devices" data-label="DEVICES">{formatDevices(booking.devices)}</td>
-                      <td data-label="PRICE">
-                        {editingId === booking.id ? (
-                          <input
-                            type="number"
-                            value={editForm.total_price}
-                            onChange={(e) => setEditForm({ ...editForm, total_price: parseFloat(e.target.value) })}
-                            className="form-control"
-                          />
-                        ) : (
-                          <span className="price">{formatPrice(booking.total_price)}</span>
-                        )}
-                      </td>
-                      <td data-label="ACTIONS">
-                        {editingId === booking.id ? (
-                          <div className="action-buttons">
-                            <button className="btn btn-success btn-sm" onClick={() => handleSaveEdit(booking.id)}>
-                              <FiSave />  <span className="btn-text">Save</span>
-                            </button>
-                            <button className="btn btn-secondary btn-sm" onClick={handleCancelEdit}>
-                              <FiX /> <span className="btn-text">Cancel</span>
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="action-buttons">
-                            <button className="btn btn-primary btn-sm" onClick={() => handleEdit(booking)}>
-                              <FiEdit2 />  <span className="btn-text">Edit</span>
-                            </button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(booking.id)}>
-                              <FiTrash2 />  <span className="btn-text">Delete</span>
-                            </button>
-                          </div>
-                        )}
-                      </td>
+          <div className="bookings-list">
+            {currentBookings.map(booking => (
+              <div key={booking.id} className="booking-card">
+                <div className="booking-card-header">
+                  <div className="booking-card-id">#{booking.id}</div>
+                  <div className="booking-card-price">{formatPrice(booking.total_price)}</div>
+                </div>
+                <div className="booking-card-body">
+                  <div className="booking-card-customer">
+                    <div className="customer-name">{booking.customer_name}</div>
+                    <div className="customer-phone">{booking.customer_phone}</div>
+                  </div>
+                  <div className="booking-card-details">
+                    <div className="detail-item">
+                      <FiCalendar className="icon" />
+                      <span>{new Date(booking.booking_date).toLocaleDateString()}</span>
+                    </div>
+                    <div className="detail-item">
+                      <FiClock className="icon" />
+                      <span>{formatTime12Hour(booking.start_time)}</span>
+                    </div>
+                    <div className="detail-item">
+                      <FiZap className="icon" />
+                      <span>{formatDuration(booking.duration_minutes)}</span>
+                    </div>
+                  </div>
+                  <div className="booking-card-devices">
+                    {formatDevices(booking.devices)}
+                  </div>
+                </div>
+                <div className="booking-card-actions">
+                  {editingId === booking.id ? (
+                    <>
+                      <div className="edit-form-grid">
+                        <select
+                          value={editForm.duration_minutes}
+                          onChange={(e) => setEditForm({ ...editForm, duration_minutes: parseInt(e.target.value) })}
+                        >
+                          <option value={30}>30 min</option>
+                          <option value={60}>1 hr</option>
+                          <option value={90}>1.5 hr</option>
+                          <option value={120}>2 hr</option>
+                        </select>
+                        <input
+                          type="number"
+                          value={editForm.total_price}
+                          onChange={(e) => setEditForm({ ...editForm, total_price: parseFloat(e.target.value) })}
+                          placeholder="Price"
+                        />
+                      </div>
+                      <div className="action-buttons">
+                        <button className="btn btn-success btn-sm" onClick={() => handleSaveEdit(booking.id)}>
+                          <FiSave /> Save
+                        </button>
+                        <button className="btn btn-secondary btn-sm" onClick={handleCancelEdit}>
+                          <FiX /> Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="action-buttons">
+                      <button className="btn btn-primary btn-sm" onClick={() => handleEdit(booking)}>
+                        <FiEdit2 /> Edit
+                      </button>
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(booking.id)}>
+                        <FiTrash2 /> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Fallback Table for larger screens if needed, hidden on mobile */}
+          <div className="table-container-desktop">
+            <div className="card">
+              <div className="table-container">
+                <table className="table admin-table" id="bookings-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Date & Time</th>
+                      <th>Customer</th>
+                      <th>Duration</th>
+                      <th>Devices</th>
+                      <th>Price</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {currentBookings.map(booking => (
+                      <tr key={booking.id}>
+                        <td data-label="BOOKING ID"><span className="booking-id">#{booking.id}</span></td>
+                        <td data-label="DATE & TIME">
+                          <div className="date-time-cell">
+                            <span className="date">{new Date(booking.booking_date).toLocaleDateString()}</span>
+                            <span className="time">{formatTime12Hour(booking.start_time)}</span>
+                          </div>
+                        </td>
+                        <td data-label="CUSTOMER">
+                          <div className="customer-cell">
+                            <span className="customer-name">{booking.customer_name}</span>
+                            <span className="customer-phone">{booking.customer_phone}</span>
+                          </div>
+                        </td>
+                        <td data-label="DURATION">
+                          {editingId === booking.id ? (
+                            <select
+                              value={editForm.duration_minutes}
+                              onChange={(e) => setEditForm({ ...editForm, duration_minutes: parseInt(e.target.value) })}
+                              className="form-control"
+                            >
+                              <option value={30}>30 min</option>
+                              <option value={60}>1 hr</option>
+                              <option value={90}>1.5 hr</option>
+                              <option value={120}>2 hr</option>
+                            </select>
+                          ) : (
+                            formatDuration(booking.duration_minutes)
+                          )}
+                        </td>
+                        <td className="devices" data-label="DEVICES">{formatDevices(booking.devices)}</td>
+                        <td data-label="PRICE">
+                          {editingId === booking.id ? (
+                            <input
+                              type="number"
+                              value={editForm.total_price}
+                              onChange={(e) => setEditForm({ ...editForm, total_price: parseFloat(e.target.value) })}
+                              className="form-control"
+                            />
+                          ) : (
+                            <span className="price">{formatPrice(booking.total_price)}</span>
+                          )}
+                        </td>
+                        <td data-label="ACTIONS">
+                          {editingId === booking.id ? (
+                            <div className="action-buttons">
+                              <button className="btn btn-success btn-sm" onClick={() => handleSaveEdit(booking.id)}>
+                                <FiSave />  <span className="btn-text">Save</span>
+                              </button>
+                              <button className="btn btn-secondary btn-sm" onClick={handleCancelEdit}>
+                                <FiX /> <span className="btn-text">Cancel</span>
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="action-buttons">
+                              <button className="btn btn-primary btn-sm" onClick={() => handleEdit(booking)}>
+                                <FiEdit2 />  <span className="btn-text">Edit</span>
+                              </button>
+                              <button className="btn btn-danger btn-sm" onClick={() => handleDelete(booking.id)}>
+                                <FiTrash2 />  <span className="btn-text">Delete</span>
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
