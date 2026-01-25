@@ -32,6 +32,7 @@ from routes.rentals import rentals_bp  # Rental bookings (VR & PS5)
 from routes.college import college_bp  # College event bookings
 from routes.game_leaderboard import game_leaderboard_bp  # Game leaderboard and winners
 from routes.instagram_promotion import instagram_promo_bp  # Instagram promotions
+from routes.setup_promo import setup_bp  # One-time setup for Instagram promotions
 
 # Create Flask app
 app = Flask(__name__)
@@ -82,6 +83,7 @@ app.register_blueprint(rentals_bp)  # Rental bookings (VR & PS5)
 app.register_blueprint(college_bp)  # College event bookings
 app.register_blueprint(game_leaderboard_bp)  # Game leaderboard and winners
 app.register_blueprint(instagram_promo_bp)  # Instagram promotions
+app.register_blueprint(setup_bp)  # One-time setup for Instagram promotions
 
 # Health check endpoint
 @app.route('/health', methods=['GET'])
