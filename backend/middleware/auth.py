@@ -81,28 +81,42 @@ def require_login(f):
     return decorated_function
 
 
+def check_admin_auth():
+    """
+    Check if request is from an authenticated admin
+    Returns: (is_authenticated, admin_info or None)
+    """
+    # Try session-based auth first
+    if session.get('admin_logged_in') and session.get('admin_id'):
+        return True, {
+            'admin_id': session.get('admin_id'),
+            'username': session.get('admin_username')
+        }
+    
+    # Try JWT auth
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split(' ')[1]
+        payload = verify_token(token)
+        if payload and payload.get('user_type') == 'admin':
+            return True, {
+                'admin_id': payload.get('admin_id'),
+                'username': payload.get('username')
+            }
+    
+    return False, None
+
+
 def require_admin(f):
     """Decorator to require admin authentication"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Try session-based auth first
-        if session.get('admin_logged_in') and session.get('admin_id'):
-            return f(*args, **kwargs)
-        
-        # Try JWT auth
-        auth_header = request.headers.get('Authorization')
-        if auth_header and auth_header.startswith('Bearer '):
-            token = auth_header.split(' ')[1]
-            payload = verify_token(token)
-            if payload and payload.get('user_type') == 'admin':
-                session['admin_logged_in'] = True
-                session['admin_id'] = payload.get('admin_id')
-                session['admin_username'] = payload.get('username')
-                return f(*args, **kwargs)
-        
-        return jsonify({
-            'success': False,
-            'error': 'Admin authentication required'
-        }), 401
+        is_auth, admin_info = check_admin_auth()
+        if not is_auth:
+            return jsonify({
+                'success': False,
+                'error': 'Admin authentication required'
+            }), 401
+        return f(*args, **kwargs)
     
     return decorated_function
