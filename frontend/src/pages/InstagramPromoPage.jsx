@@ -34,16 +34,32 @@ const InstagramPromoPage = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Debug: Log auth state on every render
+  console.log('[InstagramPromo] Render:', { 
+    isAuthenticated, 
+    user: user?.name, 
+    authLoading, 
+    loading,
+    activePromotion: activePromotion?.title 
+  });
+
   // Check eligibility and load active promotion
   useEffect(() => {
     const loadPromotionData = async () => {
       // Wait for auth to be ready
-      if (authLoading) return;
+      if (authLoading) {
+        console.log('[InstagramPromo] Waiting for auth to load...');
+        return;
+      }
+      
+      console.log('[InstagramPromo] Auth loaded:', { isAuthenticated, user: user?.name });
       
       try {
         if (isAuthenticated && user) {
           // User is logged in - check eligibility
+          console.log('[InstagramPromo] User is authenticated, checking eligibility...');
           const eligibilityResponse = await apiFetch('/api/instagram-promo/check-eligibility');
+          console.log('[InstagramPromo] Eligibility response:', eligibilityResponse);
           setEligibility(eligibilityResponse);
           
           if (eligibilityResponse.promotion) {
@@ -51,6 +67,7 @@ const InstagramPromoPage = () => {
           }
         } else {
           // User not logged in - still fetch active promotions to show info
+          console.log('[InstagramPromo] User not authenticated, fetching active promotions...');
           try {
             const promoResponse = await apiFetch('/api/instagram-promo/active');
             if (promoResponse.success && promoResponse.promotions.length > 0) {
@@ -129,6 +146,7 @@ const InstagramPromoPage = () => {
   };
 
   if (loading || authLoading) {
+    console.log('[InstagramPromo] Showing loading screen:', { loading, authLoading });
     return (
       <div className="instagram-promo-page">
         <Navbar />
@@ -142,6 +160,7 @@ const InstagramPromoPage = () => {
   }
 
   if (!isAuthenticated || !user) {
+    console.log('[InstagramPromo] User not authenticated, showing login screen:', { isAuthenticated, user: user?.name });
     return (
       <div className="instagram-promo-page">
         <Navbar />
