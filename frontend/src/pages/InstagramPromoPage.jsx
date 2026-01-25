@@ -15,12 +15,13 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../services/apiClient';
 import '../styles/InstagramPromoPage.css';
 
 const InstagramPromoPage = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [activePromotion, setActivePromotion] = useState(null);
   const [eligibility, setEligibility] = useState(null);
@@ -33,16 +34,15 @@ const InstagramPromoPage = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Check if user is logged in
+  // Check eligibility and load active promotion
   useEffect(() => {
-    const checkAuthAndEligibility = async () => {
+    const loadPromotionData = async () => {
+      // Wait for auth to be ready
+      if (authLoading) return;
+      
       try {
-        // Check authentication
-        const authResponse = await apiFetch('/api/auth/check');
-        if (authResponse.logged_in) {
-          setUser(authResponse.user);
-          
-          // Check eligibility for Instagram promotion
+        if (isAuthenticated && user) {
+          // User is logged in - check eligibility
           const eligibilityResponse = await apiFetch('/api/instagram-promo/check-eligibility');
           setEligibility(eligibilityResponse);
           
@@ -50,7 +50,7 @@ const InstagramPromoPage = () => {
             setActivePromotion(eligibilityResponse.promotion);
           }
         } else {
-          // User not logged in - still check for active promotions to show info
+          // User not logged in - still fetch active promotions to show info
           try {
             const promoResponse = await apiFetch('/api/instagram-promo/active');
             if (promoResponse.success && promoResponse.promotions.length > 0) {
@@ -61,14 +61,14 @@ const InstagramPromoPage = () => {
           }
         }
       } catch (err) {
-        console.error('Auth check error:', err);
+        console.error('Error loading promotion data:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    checkAuthAndEligibility();
-  }, []);
+    loadPromotionData();
+  }, [isAuthenticated, user, authLoading]);
 
   const handleClaimPromotion = async (e) => {
     e.preventDefault();
@@ -128,7 +128,7 @@ const InstagramPromoPage = () => {
     setFriendHandles(newHandles);
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="instagram-promo-page">
         <Navbar />
@@ -141,7 +141,7 @@ const InstagramPromoPage = () => {
     );
   }
 
-  if (!user) {
+  if (!isAuthenticated || !user) {
     return (
       <div className="instagram-promo-page">
         <Navbar />
