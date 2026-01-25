@@ -1384,11 +1384,11 @@ const AdminDashboard = () => {
             </button>
             <button className={`sidebar-nav-item ${activeTab === 'college' ? 'active' : ''}`} onClick={() => setActiveTab('college')}>
               <FiAward className="nav-icon" />
-              <span className="nav-label">College Events</span>
+              <span className="nav-label">College</span>
             </button>
             <button className={`sidebar-nav-item ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>
               <FiTarget className="nav-icon" />
-              <span className="nav-label">Leaderboard</span>
+              <span className="nav-label">Scores</span>
             </button>
           </div>
 
