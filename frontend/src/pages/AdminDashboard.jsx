@@ -1353,9 +1353,23 @@ const AdminDashboard = () => {
     );
   }
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard': return renderDashboard();
+      case 'bookings': return renderBookings();
+      case 'users': return renderUsers();
+      case 'memberships': return renderMemberships();
+      case 'rentals': return renderRentals();
+      case 'college': return renderCollegeBookings();
+      case 'leaderboard': return renderGameLeaderboard();
+      case 'analytics': return renderAnalytics();
+      default: return renderDashboard();
+    }
+  };
+
   return (
-    <div className="admin-dashboard admin-sidebar-layout">
-      {/* Left Sidebar */}
+    <div className="admin-sidebar-layout">
+      {/* Sidebar Navigation */}
       <aside className="admin-sidebar">
         <div className="sidebar-header">
           <div className="sidebar-logo" onClick={() => navigate('/')}>
@@ -1364,88 +1378,53 @@ const AdminDashboard = () => {
           </div>
           <span className="sidebar-badge">Admin</span>
         </div>
-        
+
         <nav className="sidebar-nav">
           <div className="nav-section">
             <span className="nav-section-title">Main</span>
-            <button 
-              className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-              onClick={() => setActiveTab('dashboard')}
-            >
+            <button className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
               <FiBarChart2 className="nav-icon" />
               <span className="nav-label">Dashboard</span>
             </button>
-            <button 
-              className={`sidebar-nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
-              onClick={() => setActiveTab('bookings')}
-            >
+            <button className={`sidebar-nav-item ${activeTab === 'bookings' ? 'active' : ''}`} onClick={() => setActiveTab('bookings')}>
               <FiCalendar className="nav-icon" />
               <span className="nav-label">Bookings</span>
             </button>
-            <button 
-              className={`sidebar-nav-item ${activeTab === 'users' ? 'active' : ''}`}
-              onClick={() => setActiveTab('users')}
-            >
+            <button className={`sidebar-nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
               <FiUsers className="nav-icon" />
               <span className="nav-label">Users</span>
             </button>
-          </div>
-          
-          <div className="nav-section">
-            <span className="nav-section-title">Services</span>
-            <button 
-              className={`sidebar-nav-item ${activeTab === 'memberships' ? 'active' : ''}`}
-              onClick={() => setActiveTab('memberships')}
-            >
+            <button className={`sidebar-nav-item ${activeTab === 'memberships' ? 'active' : ''}`} onClick={() => setActiveTab('memberships')}>
               <FiCreditCard className="nav-icon" />
               <span className="nav-label">Memberships</span>
             </button>
-            <button 
-              className={`sidebar-nav-item ${activeTab === 'rentals' ? 'active' : ''}`}
-              onClick={() => setActiveTab('rentals')}
-            >
+          </div>
+
+          <div className="nav-section">
+            <span className="nav-section-title">Sections</span>
+            <button className={`sidebar-nav-item ${activeTab === 'rentals' ? 'active' : ''}`} onClick={() => setActiveTab('rentals')}>
               <FiPackage className="nav-icon" />
               <span className="nav-label">Rentals</span>
             </button>
-            <button 
-              className={`sidebar-nav-item ${activeTab === 'college' ? 'active' : ''}`}
-              onClick={() => setActiveTab('college')}
-            >
-              <FiUsers className="nav-icon" />
+            <button className={`sidebar-nav-item ${activeTab === 'college' ? 'active' : ''}`} onClick={() => setActiveTab('college')}>
+              <FiAward className="nav-icon" />
               <span className="nav-label">College Events</span>
             </button>
-          </div>
-          
-          <div className="nav-section">
-            <span className="nav-section-title">Insights</span>
-            <button 
-              className={`sidebar-nav-item ${activeTab === 'game' ? 'active' : ''}`}
-              onClick={() => setActiveTab('game')}
-            >
+            <button className={`sidebar-nav-item ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>
               <FiTarget className="nav-icon" />
               <span className="nav-label">Leaderboard</span>
             </button>
-            <button 
-              className={`sidebar-nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
-              onClick={() => setActiveTab('analytics')}
-            >
-              <FiActivity className="nav-icon" />
+          </div>
+
+          <div className="nav-section">
+            <span className="nav-section-title">Analysis</span>
+            <button className={`sidebar-nav-item ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
+              <FiTrendingUp className="nav-icon" />
               <span className="nav-label">Analytics</span>
             </button>
           </div>
-          
-          <div className="nav-section">
-            <span className="nav-section-title">System</span>
-            <button 
-              className={`sidebar-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
-              onClick={() => setActiveTab('settings')}
-            >
-              <FiSettings className="nav-icon" />
-              <span className="nav-label">Settings</span>
-            </button>
-          </div>
         </nav>
-        
+
         <div className="sidebar-footer">
           <button className="sidebar-nav-item home-btn" onClick={() => navigate('/')}>
             <FiHome className="nav-icon" />
@@ -1458,7 +1437,7 @@ const AdminDashboard = () => {
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <main className="admin-main-content">
         <header className="admin-topbar">
           <div className="topbar-title">
@@ -1469,7 +1448,7 @@ const AdminDashboard = () => {
               {activeTab === 'memberships' && '💳 Memberships'}
               {activeTab === 'rentals' && '📦 Rentals'}
               {activeTab === 'college' && '🎓 College Events'}
-              {activeTab === 'game' && '🎯 Game Leaderboard'}
+              {activeTab === 'leaderboard' && '🎯 Game Leaderboard'}
               {activeTab === 'analytics' && '📈 Analytics'}
               {activeTab === 'settings' && '⚙️ Settings'}
             </h1>
@@ -1491,19 +1470,7 @@ const AdminDashboard = () => {
             </div>
           ) : (
             <div className="tab-content">
-              {activeTab === 'dashboard' && renderDashboard()}
-              {activeTab === 'bookings' && renderBookings()}
-              {activeTab === 'users' && renderUsers()}
-              {activeTab === 'memberships' && renderMemberships()}
-              {activeTab === 'rentals' && renderRentals()}
-              {activeTab === 'college' && renderCollegeEvents()}
-              {activeTab === 'game' && renderGameLeaderboard()}
-              {activeTab === 'analytics' && renderAnalytics()}
-              {activeTab === 'settings' && (
-                <div className="settings-content">
-                  <ThemeSelector />
-                </div>
-              )}
+              {renderContent()}
             </div>
           )}
         </div>
