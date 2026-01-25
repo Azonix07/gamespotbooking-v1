@@ -1131,40 +1131,30 @@ const AdminDashboard = () => {
   const renderCollegeEvents = () => (
     <div className="college-section">
       <div className="section-header">
-        <h2 className="section-title"><FiUsers /> College Event Bookings ({collegeBookings.length})</h2>
-        <button className="btn btn-primary" onClick={loadCollegeBookings}>
-          <FiRefreshCw /> Refresh
-        </button>
+        <h2 className="section-title">🎓 College & Corporate Events ({collegeBookings.length})</h2>
       </div>
 
       {collegeStats && (
         <div className="stats-grid">
-          <div className="stat-card stat-primary">
+          <div className="stat-card">
             <div className="stat-icon">🎓</div>
             <div className="stat-content">
-              <div className="stat-value">{collegeStats.total_inquiries || 0}</div>
-              <div className="stat-label">Total Inquiries (90d)</div>
+              <div className="stat-value">{collegeStats.total_bookings}</div>
+              <div className="stat-label">Total Events</div>
             </div>
           </div>
-          <div className="stat-card stat-success">
-            <div className="stat-icon">✅</div>
-            <div className="stat-content">
-              <div className="stat-value">{collegeStats.confirmed_events || 0}</div>
-              <div className="stat-label">Confirmed Events</div>
-            </div>
-          </div>
-          <div className="stat-card stat-info">
-            <div className="stat-icon">👥</div>
-            <div className="stat-content">
-              <div className="stat-value">{(collegeStats.total_students_reached || 0).toLocaleString()}</div>
-              <div className="stat-label">Students Reached</div>
-            </div>
-          </div>
-          <div className="stat-card stat-warning">
+          <div className="stat-card">
             <div className="stat-icon">💰</div>
             <div className="stat-content">
-              <div className="stat-value">₹{(collegeStats.total_revenue || 0).toLocaleString()}</div>
-              <div className="stat-label">Revenue</div>
+              <div className="stat-value">{formatPrice(collegeStats.total_revenue)}</div>
+              <div className="stat-label">Total Revenue</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon">👥</div>
+            <div className="stat-content">
+              <div className="stat-value">{collegeStats.total_participants}</div>
+              <div className="stat-label">Total Participants</div>
             </div>
           </div>
         </div>
@@ -1172,7 +1162,7 @@ const AdminDashboard = () => {
 
       {collegeBookings.length === 0 ? (
         <div className="empty-state">
-          <p>🎓 No college event bookings yet</p>
+          <p>🎓 No college or corporate events found.</p>
         </div>
       ) : (
         <div className="card">
@@ -1180,44 +1170,30 @@ const AdminDashboard = () => {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Ref</th>
-                  <th>College</th>
-                  <th>Event</th>
+                  <th>Booking Ref</th>
+                  <th>College/Company</th>
                   <th>Contact</th>
-                  <th>Date</th>
-                  <th>Students</th>
-                  <th>Distance</th>
+                  <th>Event Date</th>
+                  <th>Participants</th>
+                  <th>Total Price</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {collegeBookings.map(booking => (
                   <tr key={booking.id}>
-                    <td className="booking-ref">{booking.booking_reference}</td>
-                    <td>
-                      <strong>{booking.college_name}</strong>
-                      <br />
-                      <small>{booking.college_city}</small>
-                    </td>
-                    <td>
-                      {booking.event_name}
-                      <br />
-                      <small>{booking.event_type}</small>
-                    </td>
-                    <td>
-                      {booking.contact_name}
-                      <br />
+                    <td data-label="Booking Ref" className="booking-ref">#{booking.booking_reference}</td>
+                    <td data-label="College/Company">{booking.college_name}</td>
+                    <td data-label="Contact">
+                      {booking.contact_person}<br />
+                      <small>{booking.contact_email}</small><br />
                       <small>{booking.contact_phone}</small>
                     </td>
-                    <td>
-                      {booking.event_start_date ? new Date(booking.event_start_date).toLocaleDateString() : '-'}
-                      <br />
-                      <small>{booking.event_duration_days} days</small>
-                    </td>
-                    <td>{booking.expected_students}</td>
-                    <td>{booking.estimated_distance_km?.toFixed(1)} km</td>
-                    <td>
-                      <span className={`status-badge ${booking.status}`}>
+                    <td data-label="Event Date">{new Date(booking.event_date).toLocaleDateString()}</td>
+                    <td data-label="Participants">{booking.participant_count}</td>
+                    <td data-label="Total Price" className="price">{formatPrice(booking.total_price)}</td>
+                    <td data-label="Status">
+                      <span className={`status-badge ${booking.status.toLowerCase()}`}>
                         {booking.status}
                       </span>
                     </td>
@@ -1360,7 +1336,7 @@ const AdminDashboard = () => {
       case 'users': return renderUsers();
       case 'memberships': return renderMemberships();
       case 'rentals': return renderRentals();
-      case 'college': return renderCollegeBookings();
+      case 'college': return renderCollegeEvents();
       case 'leaderboard': return renderGameLeaderboard();
       case 'analytics': return renderAnalytics();
       default: return renderDashboard();
