@@ -49,6 +49,16 @@ const InstagramPromoPage = () => {
           if (eligibilityResponse.promotion) {
             setActivePromotion(eligibilityResponse.promotion);
           }
+        } else {
+          // User not logged in - still check for active promotions to show info
+          try {
+            const promoResponse = await apiFetch('/api/instagram-promo/active');
+            if (promoResponse.success && promoResponse.promotions.length > 0) {
+              setActivePromotion(promoResponse.promotions[0]);
+            }
+          } catch (promoErr) {
+            console.error('Error fetching promotions:', promoErr);
+          }
         }
       } catch (err) {
         console.error('Auth check error:', err);
@@ -135,15 +145,91 @@ const InstagramPromoPage = () => {
     return (
       <div className="instagram-promo-page">
         <Navbar />
+        
+        <div className="promo-bg-effects">
+          <div className="promo-bg-orb promo-bg-orb-1"></div>
+          <div className="promo-bg-orb promo-bg-orb-2"></div>
+          <div className="promo-bg-orb promo-bg-orb-3"></div>
+        </div>
+
         <div className="container promo-container">
+          {/* Show promotion info even when not logged in */}
+          {activePromotion && (
+            <>
+              <motion.div 
+                className="promo-hero"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="promo-badge">
+                  <FiGift className="badge-icon" />
+                  Instagram Promotion
+                </div>
+                <h1 className="promo-title">
+                  <FiInstagram className="title-icon instagram-icon" />
+                  Win {activePromotion.discount_value} Minutes FREE Gaming!
+                </h1>
+                <p className="promo-subtitle">
+                  Follow us on Instagram and share with {activePromotion.required_friends_count} friends to claim your reward
+                </p>
+              </motion.div>
+
+              {/* How It Works Preview */}
+              <motion.div 
+                className="how-it-works-card"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                style={{ marginBottom: '2rem' }}
+              >
+                <h2><FiInfo className="card-icon" /> How It Works</h2>
+                <div className="steps">
+                  <div className="step">
+                    <div className="step-number">1</div>
+                    <div className="step-content">
+                      <h3>Login Required</h3>
+                      <p>You must be logged in to claim this promotion</p>
+                    </div>
+                  </div>
+                  
+                  <div className="step">
+                    <div className="step-number">2</div>
+                    <div className="step-content">
+                      <h3>Follow Us</h3>
+                      <p>Follow <strong>{activePromotion.instagram_handle}</strong> on Instagram</p>
+                    </div>
+                  </div>
+                  
+                  <div className="step">
+                    <div className="step-number">3</div>
+                    <div className="step-content">
+                      <h3>Share with Friends</h3>
+                      <p>Share with at least {activePromotion.required_friends_count} friends</p>
+                    </div>
+                  </div>
+                  
+                  <div className="step">
+                    <div className="step-number">4</div>
+                    <div className="step-content">
+                      <h3>Get FREE Gaming!</h3>
+                      <p>{activePromotion.discount_value} minutes FREE when you book</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+
+          {/* Login Required Card */}
           <motion.div 
             className="login-required-card"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: activePromotion ? 0.2 : 0 }}
           >
             <FiLock className="lock-icon" />
             <h2>Login Required</h2>
-            <p>You need to be logged in to access Instagram promotions and win free gaming time!</p>
+            <p>You need to be logged in to claim this promotion and win free gaming time!</p>
             <div className="button-group">
               <button className="btn-primary" onClick={() => navigate('/login')}>
                 Login
