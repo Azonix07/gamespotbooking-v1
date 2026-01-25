@@ -13,6 +13,7 @@ const BookingPage = lazy(() => import('./pages/BookingPage.jsx'));
 const RentalPage = lazy(() => import('./pages/RentalPage.jsx'));
 const CollegeSetupPage = lazy(() => import('./pages/CollegeSetupPage.jsx'));
 const DiscountGamePage = lazy(() => import('./pages/DiscountGamePage.jsx'));
+const InstagramPromoPage = lazy(() => import('./pages/InstagramPromoPage.jsx'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx'));
 const SignupPage = lazy(() => import('./pages/SignupPage.jsx'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage.jsx'));
@@ -94,6 +95,8 @@ function App() {
             <Route path="/rental" element={<RentalPage />} />
             <Route path="/college-setup" element={<CollegeSetupPage />} />
             <Route path="/discount-game" element={<DiscountGamePage />} />
+            <Route path="/win-free-game" element={<InstagramPromoPage />} />
+            <Route path="/instagram-promo" element={<InstagramPromoPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/updates" element={<UpdatesPage />} />
             <Route path="/login" element={<LoginPage />} />

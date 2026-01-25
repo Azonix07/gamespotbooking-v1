@@ -158,7 +158,7 @@ const Navbar = ({ showCenter = true }) => {
             </div>
             
             {/* Special Promo Tab - Always Visible */}
-            <div className="navbar-item discount-tab" onClick={() => navigate('/discount-game')}>
+            <div className="navbar-item discount-tab" onClick={() => navigate('/win-free-game')}>
               <span className="tab-text">Win Free Game</span>
               <FiTarget className="tab-bg-icon" />
             </div>
@@ -356,8 +356,8 @@ const Navbar = ({ showCenter = true }) => {
           
           {/* Special Promo */}
           <div 
-            className={`mobile-nav-item discount-item ${isActivePath('/discount-game') ? 'active' : ''}`}
-            onClick={() => handleMobileNavClick('/discount-game')}
+            className={`mobile-nav-item discount-item ${isActivePath('/win-free-game') ? 'active' : ''}`}
+            onClick={() => handleMobileNavClick('/win-free-game')}
           >
             <FiTarget className="nav-icon" />
             Win Free Game

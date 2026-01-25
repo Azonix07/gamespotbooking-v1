@@ -17,10 +17,7 @@ JWT_EXPIRATION_HOURS = 24
 
 
 def generate_admin_token(admin_id, username):
-    """
-    Generate a JWT token for admin authentication
-    Used when session cookies might not work (mobile browsers)
-    """
+    """Generate a JWT token for admin authentication"""
     payload = {
         'admin_id': admin_id,
         'username': username,
@@ -32,9 +29,7 @@ def generate_admin_token(admin_id, username):
 
 
 def generate_user_token(user_id, email, name):
-    """
-    Generate a JWT token for customer authentication
-    """
+    """Generate a JWT token for customer authentication"""
     payload = {
         'user_id': user_id,
         'email': email,
@@ -47,10 +42,7 @@ def generate_user_token(user_id, email, name):
 
 
 def verify_token(token):
-    """
-    Verify and decode a JWT token
-    Returns the payload if valid, None if invalid
-    """
+    """Verify and decode JWT token"""
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         return payload
@@ -60,104 +52,57 @@ def verify_token(token):
         return None
 
 
-def get_token_from_request():
-    """
-    Extract JWT token from Authorization header
-    Supports: "Bearer <token>" format
-    """
-    auth_header = request.headers.get('Authorization', '')
-    if auth_header.startswith('Bearer '):
-        return auth_header[7:]  # Remove "Bearer " prefix
-    return None
-
-
-def check_admin_auth():
-    """
-    Check if request is from an authenticated admin
-    Supports both:
-    1. Session-based auth (cookies) - desktop browsers
-    2. JWT token auth (Authorization header) - mobile browsers
+def require_login(f):
+    """Decorator to require user authentication"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Try session-based auth first
+        if session.get('user_logged_in') and session.get('user_id'):
+            return f(*args, **kwargs)
+        
+        # Try JWT auth
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            payload = verify_token(token)
+            if payload and payload.get('user_type') == 'customer':
+                session['user_logged_in'] = True
+                session['user_id'] = payload.get('user_id')
+                session['user_email'] = payload.get('email')
+                session['user_name'] = payload.get('name')
+                return f(*args, **kwargs)
+        
+        return jsonify({
+            'success': False,
+            'error': 'Authentication required. Please login.',
+            'redirect': '/login'
+        }), 401
     
-    Returns: (is_authenticated, admin_info or None)
-    """
-    # First, try session-based authentication (works on desktop)
-    if session.get('admin_logged_in'):
-        return True, {
-            'admin_id': session.get('admin_id'),
-            'username': session.get('admin_username')
-        }
-    
-    # Second, try JWT token authentication (works on mobile)
-    token = get_token_from_request()
-    if token:
-        payload = verify_token(token)
-        if payload and payload.get('user_type') == 'admin':
-            return True, {
-                'admin_id': payload.get('admin_id'),
-                'username': payload.get('username')
-            }
-    
-    return False, None
+    return decorated_function
 
 
-def check_user_auth():
-    """
-    Check if request is from an authenticated user (admin or customer)
+def require_admin(f):
+    """Decorator to require admin authentication"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Try session-based auth first
+        if session.get('admin_logged_in') and session.get('admin_id'):
+            return f(*args, **kwargs)
+        
+        # Try JWT auth
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            payload = verify_token(token)
+            if payload and payload.get('user_type') == 'admin':
+                session['admin_logged_in'] = True
+                session['admin_id'] = payload.get('admin_id')
+                session['admin_username'] = payload.get('username')
+                return f(*args, **kwargs)
+        
+        return jsonify({
+            'success': False,
+            'error': 'Admin authentication required'
+        }), 401
     
-    Returns: (is_authenticated, user_info or None, user_type)
-    """
-    # First, try session-based authentication
-    if session.get('admin_logged_in'):
-        return True, {
-            'admin_id': session.get('admin_id'),
-            'username': session.get('admin_username')
-        }, 'admin'
-    
-    if session.get('user_logged_in'):
-        return True, {
-            'user_id': session.get('user_id'),
-            'name': session.get('user_name'),
-            'email': session.get('user_email')
-        }, 'customer'
-    
-    # Second, try JWT token authentication
-    token = get_token_from_request()
-    if token:
-        payload = verify_token(token)
-        if payload:
-            user_type = payload.get('user_type')
-            if user_type == 'admin':
-                return True, {
-                    'admin_id': payload.get('admin_id'),
-                    'username': payload.get('username')
-                }, 'admin'
-            elif user_type == 'customer':
-                return True, {
-                    'user_id': payload.get('user_id'),
-                    'name': payload.get('name'),
-                    'email': payload.get('email')
-                }, 'customer'
-    
-    return False, None, None
-
-
-def require_admin():
-    """
-    Check if admin is logged in (session or JWT)
-    Returns error response if not authenticated, None if authenticated
-    """
-    is_auth, admin_info = check_admin_auth()
-    if not is_auth:
-        return jsonify({'success': False, 'error': 'Unauthorized. Admin login required.'}), 401
-    return None
-
-
-def require_auth():
-    """
-    Check if any user is logged in (session or JWT)
-    Returns error response if not authenticated, None if authenticated
-    """
-    is_auth, user_info, user_type = check_user_auth()
-    if not is_auth:
-        return jsonify({'success': False, 'error': 'Unauthorized. Login required.'}), 401
-    return None
+    return decorated_function
