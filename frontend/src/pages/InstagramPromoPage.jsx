@@ -54,34 +54,40 @@ const InstagramPromoPage = () => {
       
       console.log('[InstagramPromo] Auth loaded:', { isAuthenticated, user: user?.name });
       
+      // Always fetch the active promotions first (public endpoint)
+      let promoData = null;
       try {
-        if (isAuthenticated && user) {
-          // User is logged in - check eligibility
+        console.log('[InstagramPromo] Fetching active promotions...');
+        const promoResponse = await apiFetch('/api/instagram-promo/active');
+        console.log('[InstagramPromo] Active promotions response:', promoResponse);
+        if (promoResponse.success && promoResponse.promotions && promoResponse.promotions.length > 0) {
+          promoData = promoResponse.promotions[0];
+          setActivePromotion(promoData);
+        }
+      } catch (promoErr) {
+        console.error('[InstagramPromo] Error fetching active promotions:', promoErr);
+      }
+      
+      // If user is logged in, also check eligibility
+      if (isAuthenticated && user) {
+        try {
           console.log('[InstagramPromo] User is authenticated, checking eligibility...');
           const eligibilityResponse = await apiFetch('/api/instagram-promo/check-eligibility');
           console.log('[InstagramPromo] Eligibility response:', eligibilityResponse);
           setEligibility(eligibilityResponse);
           
+          // If eligibility has promotion data, use it (more specific to user)
           if (eligibilityResponse.promotion) {
             setActivePromotion(eligibilityResponse.promotion);
           }
-        } else {
-          // User not logged in - still fetch active promotions to show info
-          console.log('[InstagramPromo] User not authenticated, fetching active promotions...');
-          try {
-            const promoResponse = await apiFetch('/api/instagram-promo/active');
-            if (promoResponse.success && promoResponse.promotions.length > 0) {
-              setActivePromotion(promoResponse.promotions[0]);
-            }
-          } catch (promoErr) {
-            console.error('Error fetching promotions:', promoErr);
-          }
+        } catch (eligibilityErr) {
+          console.error('[InstagramPromo] Error checking eligibility:', eligibilityErr);
+          // Still have activePromotion from public endpoint, just no eligibility info
+          // User will see the promotion but may get error when trying to claim
         }
-      } catch (err) {
-        console.error('Error loading promotion data:', err);
-      } finally {
-        setLoading(false);
       }
+      
+      setLoading(false);
     };
 
     loadPromotionData();
