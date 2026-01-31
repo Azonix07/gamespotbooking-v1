@@ -3,27 +3,27 @@
 
 /* Variables */
 :root {
-  --rental-primary: #6366f1;
-  --rental-primary-dark: #4f46e5;
-  --rental-primary-light: #818cf8;
-  --rental-secondary: #8b5cf6;
+  --rental-primary: #ff6b35;
+  --rental-primary-dark: #ff5722;
+  --rental-primary-light: #ff9966;
+  --rental-secondary: #ffb84d;
   --rental-accent: #f97316;
   --rental-success: #10b981;
   --rental-warning: #f59e0b;
   --rental-error: #ef4444;
-  --rental-dark: #0f172a;
-  --rental-dark-light: #1e293b;
-  --rental-glass: rgba(255, 255, 255, 0.05);
-  --rental-glass-border: rgba(255, 255, 255, 0.1);
-  --rental-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  --rental-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  --rental-dark: #ffffff;
+  --rental-dark-light: #f8f9fa;
+  --rental-glass: rgba(255, 255, 255, 0.9);
+  --rental-glass-border: rgba(255, 107, 53, 0.2);
+  --rental-gradient: linear-gradient(135deg, #ff6b35 0%, #ffb84d 100%);
+  --rental-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
 /* Base */
 .rental-page {
   min-height: 100vh;
-  background: var(--rental-dark);
-  color: white;
+  background: linear-gradient(135deg, #ffffff 0%, #fff5f0 100%);
+  color: #212529;
   font-family: 'Inter', sans-serif;
   position: relative;
   overflow-x: hidden;
@@ -48,7 +48,7 @@
 .bg-orb-1 {
   width: 500px;
   height: 500px;
-  background: var(--rental-primary);
+  background: rgba(255, 107, 53, 0.15);
   top: -200px;
   right: -200px;
 }
@@ -56,7 +56,7 @@
 .bg-orb-2 {
   width: 400px;
   height: 400px;
-  background: var(--rental-secondary);
+  background: rgba(255, 153, 102, 0.12);
   bottom: -150px;
   left: -150px;
   animation-delay: -5s;
@@ -65,7 +65,7 @@
 .bg-orb-3 {
   width: 300px;
   height: 300px;
-  background: var(--rental-accent);
+  background: rgba(255, 184, 77, 0.1);
   top: 50%;
   left: 50%;
   animation-delay: -10s;
@@ -124,7 +124,7 @@
   font-size: 3.5rem;
   font-weight: 700;
   margin: 0 0 16px;
-  background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+  background: linear-gradient(135deg, #212529 0%, #495057 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -132,7 +132,7 @@
 
 .rental-subtitle {
   font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6c757d;
   max-width: 600px;
   margin: 0 auto;
 }
@@ -147,13 +147,14 @@
 
 /* Device Info Card */
 .device-info-card {
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--rental-glass-border);
   border-radius: 20px;
   padding: 24px;
   backdrop-filter: blur(20px);
   position: sticky;
   top: 100px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .device-image-container {
@@ -188,12 +189,13 @@
   font-weight: 700;
   margin: 0 0 12px;
   font-family: 'Space Grotesk', sans-serif;
+  color: #212529;
 }
 
 .device-description {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6c757d;
   margin-bottom: 24px;
 }
 
@@ -219,11 +221,12 @@
 
 /* Booking Section */
 .booking-section {
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--rental-glass-border);
   border-radius: 20px;
   padding: 32px;
   backdrop-filter: blur(20px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .section-title {
@@ -231,6 +234,7 @@
   font-weight: 700;
   margin: 0 0 32px;
   font-family: 'Space Grotesk', sans-serif;
+  color: #212529;
 }
 
 /* Packages Grid */
@@ -242,7 +246,7 @@
 }
 
 .package-card {
-  background: var(--rental-glass);
+  background: rgba(255, 255, 255, 0.7);
   border: 2px solid var(--rental-glass-border);
   border-radius: 16px;
   padding: 24px;
@@ -264,7 +268,7 @@
 .package-card:hover {
   border-color: var(--rental-primary);
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
 }
 
 .package-card:hover::before {
@@ -273,7 +277,7 @@
 
 .package-card.selected {
   border-color: var(--rental-primary);
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(255, 107, 53, 0.1);
 }
 
 .package-card.selected::before {
@@ -331,6 +335,7 @@
   font-size: 1.3rem;
   font-weight: 700;
   margin: 0;
+  color: #212529;
 }
 
 .package-price {
@@ -360,7 +365,7 @@
 .package-desc {
   text-align: center;
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6c757d;
   margin: 0 0 16px;
   position: relative;
   z-index: 1;
@@ -369,12 +374,13 @@
 .package-duration {
   text-align: center;
   padding: 8px 16px;
-  background: var(--rental-glass);
+  background: rgba(255, 107, 53, 0.1);
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
   position: relative;
   z-index: 1;
+  color: #495057;
 }
 
 .savings-badge {
@@ -419,10 +425,10 @@
 
 .device-tab {
   padding: 16px 32px;
-  background: var(--rental-glass);
+  background: rgba(255, 255, 255, 0.7);
   border: 2px solid var(--rental-glass-border);
   border-radius: 12px;
-  color: white;
+  color: #495057;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -436,14 +442,15 @@
 
 .device-tab:hover {
   border-color: var(--rental-primary-light);
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(255, 107, 53, 0.1);
   transform: translateY(-2px);
 }
 
 .device-tab.active {
   background: var(--rental-gradient);
   border-color: var(--rental-primary);
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+  color: white;
 }
 
 .device-tab svg {
@@ -455,7 +462,7 @@
   grid-column: 1 / -1;
   margin-top: 24px;
   padding: 24px;
-  background: var(--rental-glass);
+  background: rgba(255, 255, 255, 0.5);
   border: 2px solid var(--rental-glass-border);
   border-radius: 16px;
   text-align: center;
@@ -465,11 +472,11 @@
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 8px;
-  color: white;
+  color: #212529;
 }
 
 .extra-desc {
-  color: rgba(255, 255, 255, 0.6);
+  color: #6c757d;
   font-size: 0.9rem;
   margin-bottom: 20px;
 }
@@ -485,9 +492,9 @@
   width: 50px;
   height: 50px;
   border-radius: 12px;
-  background: var(--rental-glass);
+  background: rgba(255, 255, 255, 0.7);
   border: 2px solid var(--rental-glass-border);
-  color: white;
+  color: #495057;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
@@ -499,14 +506,15 @@
 
 .controller-btn:hover {
   border-color: var(--rental-primary-light);
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(255, 107, 53, 0.1);
   transform: translateY(-2px);
 }
 
 .controller-btn.active {
   background: var(--rental-gradient);
   border-color: var(--rental-primary);
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+  color: white;
 }
 
 /* Custom Duration */
@@ -546,7 +554,7 @@
 }
 
 .custom-package-card {
-  background: var(--rental-glass);
+  background: rgba(255, 255, 255, 0.7);
   border: 2px solid var(--rental-glass-border);
   border-radius: 16px;
   padding: 24px;
@@ -555,7 +563,7 @@
 
 .custom-package-card.active {
   border-color: var(--rental-primary);
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(255, 107, 53, 0.1);
 }
 
 .custom-header {
@@ -577,11 +585,12 @@
   font-size: 1.2rem;
   font-weight: 700;
   margin: 0 0 4px;
+  color: #212529;
 }
 
 .custom-subtitle {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: #6c757d;
   margin: 0;
 }
 
@@ -624,16 +633,16 @@
   font-size: 0.85rem;
   font-weight: 600;
   margin-bottom: 8px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #495057;
 }
 
 .date-input {
   width: 100%;
   padding: 12px 16px;
-  background: var(--rental-glass);
+  background: rgba(255, 255, 255, 0.9);
   border: 2px solid var(--rental-glass-border);
   border-radius: 10px;
-  color: white;
+  color: #212529;
   font-size: 0.95rem;
   font-family: inherit;
   transition: all 0.3s ease;
@@ -646,7 +655,7 @@
 .date-input:focus {
   outline: none;
   border-color: var(--rental-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
 }
 
 .date-input::-webkit-calendar-picker-indicator {
@@ -659,10 +668,10 @@
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.3);
   border-radius: 10px;
-  color: var(--rental-primary-light);
+  color: #ff6b35;
   font-weight: 600;
 }
 
@@ -672,7 +681,7 @@
 
 /* Price Summary */
 .price-summary {
-  background: var(--rental-glass);
+  background: rgba(255, 255, 255, 0.7);
   border: 2px solid var(--rental-glass-border);
   border-radius: 16px;
   padding: 24px;
@@ -688,7 +697,7 @@
 
 .summary-label {
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6c757d;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -698,6 +707,7 @@
   font-size: 1.1rem;
   font-weight: 700;
   font-family: 'Space Grotesk', sans-serif;
+  color: #212529;
 }
 
 .summary-row.savings {
@@ -723,12 +733,12 @@
 .summary-row.total .summary-label {
   font-size: 1.1rem;
   font-weight: 700;
-  color: white;
+  color: #212529;
 }
 
 .summary-row.total .summary-value {
   font-size: 1.8rem;
-  color: var(--rental-primary-light);
+  color: #ff6b35;
 }
 
 /* Buttons */
@@ -747,12 +757,12 @@
   justify-content: center;
   gap: 12px;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
 }
 
 .proceed-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 15px 40px rgba(255, 107, 53, 0.4);
 }
 
 .proceed-btn:disabled {
@@ -827,6 +837,7 @@
   font-weight: 700;
   margin: 0 0 24px;
   font-family: 'Space Grotesk', sans-serif;
+  color: #212529;
 }
 
 .booking-summary-mini {
@@ -872,7 +883,7 @@
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 8px;
-  color: rgba(255, 255, 255, 0.9);
+  color: #495057;
 }
 
 .label-icon {
@@ -882,10 +893,10 @@
 
 .form-input {
   padding: 14px 16px;
-  background: var(--rental-glass);
+  background: rgba(255, 255, 255, 0.9);
   border: 2px solid var(--rental-glass-border);
   border-radius: 10px;
-  color: white;
+  color: #212529;
   font-size: 0.95rem;
   font-family: inherit;
   transition: all 0.3s ease;
@@ -898,7 +909,7 @@
 .form-input:focus {
   outline: none;
   border-color: var(--rental-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
 }
 
 .form-input.textarea {
@@ -921,13 +932,13 @@
   justify-content: center;
   gap: 12px;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
   margin-top: 10px;
 }
 
 .submit-rental-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 15px 40px rgba(255, 107, 53, 0.4);
 }
 
 .submit-rental-btn:disabled {
@@ -951,7 +962,7 @@
 .terms-note {
   text-align: center;
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: #6c757d;
   margin: 0;
 }
 
@@ -969,7 +980,7 @@
 }
 
 .success-modal {
-  background: rgba(30, 41, 59, 0.95);
+  background: rgba(255, 255, 255, 0.98);
   border: 2px solid var(--rental-glass-border);
   border-radius: 24px;
   padding: 48px;
@@ -1043,11 +1054,12 @@
   font-weight: 700;
   margin: 0 0 8px;
   font-family: 'Space Grotesk', sans-serif;
+  color: #212529;
 }
 
 .success-subtitle {
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6c757d;
   margin: 0 0 32px;
 }
 
@@ -1056,7 +1068,7 @@
 }
 
 .detail-card {
-  background: var(--rental-glass);
+  background: rgba(255, 255, 255, 0.7);
   border: 1px solid var(--rental-glass-border);
   border-radius: 16px;
   padding: 24px;
@@ -1070,17 +1082,18 @@
 }
 
 .detail-label {
-  color: rgba(255, 255, 255, 0.6);
+  color: #6c757d;
   font-size: 0.9rem;
 }
 
 .detail-value {
   font-weight: 700;
   font-size: 1rem;
+  color: #212529;
 }
 
 .detail-value.highlight {
-  color: var(--rental-primary-light);
+  color: #ff6b35;
   font-size: 1.2rem;
 }
 
@@ -1116,7 +1129,7 @@
 
 .btn-success-action:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
 }
 
 /* Responsive */

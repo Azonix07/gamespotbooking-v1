@@ -1,9 +1,8 @@
 import React, { useState, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiCpu } from 'react-icons/fi';
+import { FiCpu, FiMenu, FiX, FiHome, FiGrid, FiAward, FiMonitor, FiMoreHorizontal, FiUser, FiLogOut, FiSettings } from 'react-icons/fi';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
-import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import '../styles/HomePage.css';
 import { useAuth } from "../context/AuthContext";
@@ -15,6 +14,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [showAIChat, setShowAIChat] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { user, isAdmin, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -42,7 +42,86 @@ const HomePage = () => {
       {/* Dark Overlay for better text readability */}
       <div className="hero-video-overlay"></div>
       
-      <Navbar showCenter={true} />
+      {/* Custom Header with Hamburger Menu */}
+      <div className="homepage-header">
+        <button 
+          className="hamburger-menu-btn"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Menu"
+        >
+          {menuOpen ? <FiX size={28} /> : <FiMenu size={28} />}
+        </button>
+        
+        <div className="header-right">
+          {user ? (
+            <div className="user-menu">
+              <button 
+                className="user-button"
+                onClick={() => navigate('/profile')}
+              >
+                <FiUser size={20} />
+                <span>{user.name}</span>
+              </button>
+            </div>
+          ) : (
+            <button 
+              className="login-button"
+              onClick={() => navigate('/login')}
+            >
+              <FiUser size={20} />
+              <span>Login</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Slide-out Menu */}
+      <div className={`slide-menu ${menuOpen ? 'menu-open' : ''}`}>
+        <div className="menu-content">
+          <div className="menu-item" onClick={() => { navigate('/'); setMenuOpen(false); }}>
+            <FiHome size={20} />
+            <span>Home</span>
+          </div>
+          <div className="menu-item" onClick={() => { navigate('/games'); setMenuOpen(false); }}>
+            <FiGrid size={20} />
+            <span>Games</span>
+          </div>
+          <div className="menu-item" onClick={() => { navigate('/membership'); setMenuOpen(false); }}>
+            <FiAward size={20} />
+            <span>Membership</span>
+          </div>
+          <div className="menu-item" onClick={() => { navigate('/rental'); setMenuOpen(false); }}>
+            <FiMonitor size={20} />
+            <span>Services</span>
+          </div>
+          <div className="menu-item" onClick={() => { navigate('/updates'); setMenuOpen(false); }}>
+            <FiMoreHorizontal size={20} />
+            <span>More</span>
+          </div>
+          
+          {user && (
+            <>
+              <div className="menu-divider"></div>
+              <div className="menu-item" onClick={() => { navigate('/profile'); setMenuOpen(false); }}>
+                <FiSettings size={20} />
+                <span>Profile</span>
+              </div>
+              <div className="menu-item" onClick={() => { handleLogout(); setMenuOpen(false); }}>
+                <FiLogOut size={20} />
+                <span>Logout</span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Menu Overlay */}
+      {menuOpen && (
+        <div 
+          className="menu-overlay"
+          onClick={() => setMenuOpen(false)}
+        ></div>
+      )}
       
       {/* Main Content - Centered Book Now Button */}
       <div className="hero-content">

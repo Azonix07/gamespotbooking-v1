@@ -1,8 +1,8 @@
 /* Instagram Promotion Page Styles */
 .instagram-promo-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  color: var(--white);
+  background: linear-gradient(135deg, #ffffff 0%, #fff5f0 100%);
+  color: #212529;
   position: relative;
   overflow-x: hidden;
 }
@@ -29,7 +29,7 @@
 .promo-bg-orb-1 {
   width: 600px;
   height: 600px;
-  background: linear-gradient(135deg, #E1306C, #833AB4);
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 153, 102, 0.1));
   top: -200px;
   right: -200px;
   animation-delay: 0s;
@@ -38,7 +38,7 @@
 .promo-bg-orb-2 {
   width: 400px;
   height: 400px;
-  background: linear-gradient(135deg, #405DE6, #5851DB);
+  background: linear-gradient(135deg, rgba(255, 153, 102, 0.12), rgba(255, 184, 77, 0.08));
   bottom: -100px;
   left: -100px;
   animation-delay: 7s;
@@ -47,7 +47,7 @@
 .promo-bg-orb-3 {
   width: 500px;
   height: 500px;
-  background: linear-gradient(135deg, #FD1D1D, #F77737);
+  background: linear-gradient(135deg, rgba(255, 184, 77, 0.1), rgba(255, 107, 53, 0.08));
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -81,8 +81,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1.5rem;
-  background: linear-gradient(135deg, rgba(225, 48, 108, 0.2), rgba(131, 58, 180, 0.2));
-  border: 1px solid rgba(225, 48, 108, 0.3);
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(255, 153, 102, 0.2));
+  border: 1px solid rgba(255, 107, 53, 0.3);
   border-radius: 50px;
   font-size: 0.9rem;
   font-weight: 600;
@@ -100,7 +100,7 @@
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 800;
   margin-bottom: 1rem;
-  background: linear-gradient(135deg, #E1306C, #833AB4, #5851DB);
+  background: linear-gradient(135deg, #ff6b35, #ffb84d, #ff9966);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -121,7 +121,7 @@
 
 .promo-subtitle {
   font-size: clamp(1rem, 2.5vw, 1.3rem);
-  color: var(--light-gray);
+  color: #6c757d;
   max-width: 700px;
   margin: 0 auto;
 }
@@ -193,11 +193,12 @@
 .claim-card,
 .login-required-card,
 .no-promo-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.15);
   border-radius: 20px;
   padding: 2rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .how-it-works-card h2,
@@ -208,11 +209,11 @@
   gap: 0.5rem;
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
-  color: var(--white);
+  color: #212529;
 }
 
 .card-icon {
-  color: var(--primary);
+  color: #ff6b35;
 }
 
 /* Steps */
@@ -244,11 +245,11 @@
 .step-content h3 {
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
-  color: var(--white);
+  color: #212529;
 }
 
 .step-content p {
-  color: var(--light-gray);
+  color: #6c757d;
   line-height: 1.6;
 }
 
@@ -283,10 +284,11 @@
 }
 
 .redemption-details {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 107, 53, 0.05);
   border-radius: 12px;
   padding: 1.5rem;
   margin: 1.5rem 0;
+  border: 1px solid rgba(255, 107, 53, 0.15);
 }
 
 .detail-row {
@@ -294,7 +296,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 107, 53, 0.1);
 }
 
 .detail-row:last-child {
@@ -302,18 +304,18 @@
 }
 
 .label {
-  color: var(--light-gray);
+  color: #6c757d;
   font-weight: 500;
 }
 
 .value {
-  color: var(--white);
+  color: #212529;
   font-weight: 600;
 }
 
 .value.code {
   font-family: 'Courier New', monospace;
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(255, 107, 53, 0.15);
   padding: 0.25rem 0.75rem;
   border-radius: 6px;
   font-size: 0.9rem;
@@ -346,14 +348,14 @@
   text-align: center;
   margin-top: 1.5rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 153, 102, 0.1));
+  border: 1px solid rgba(255, 107, 53, 0.3);
   border-radius: 12px;
 }
 
 .award-icon {
   font-size: 2.5rem;
-  color: var(--primary);
+  color: #ff6b35;
   margin-bottom: 0.5rem;
 }
 
@@ -378,7 +380,7 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: var(--white);
+  color: #212529;
 }
 
 .input-with-icon {
@@ -390,41 +392,41 @@
 .input-icon {
   position: absolute;
   left: 1rem;
-  color: var(--light-gray);
+  color: #6c757d;
   font-size: 1.2rem;
 }
 
 .input-with-icon input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 3rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 107, 53, 0.2);
   border-radius: 10px;
-  color: var(--white);
+  color: #212529;
   font-size: 1rem;
   transition: all 0.3s;
 }
 
 .input-with-icon input:focus {
   outline: none;
-  border-color: var(--primary);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: #ff6b35;
+  background: white;
 }
 
 .btn-add-friend {
   padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px dashed rgba(255, 107, 53, 0.3);
   border-radius: 8px;
-  color: var(--white);
+  color: #212529;
   cursor: pointer;
   transition: all 0.3s;
   font-size: 0.9rem;
 }
 
 .btn-add-friend:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--primary);
+  background: rgba(255, 107, 53, 0.15);
+  border-color: #ff6b35;
 }
 
 .terms {
@@ -435,7 +437,7 @@
   border: 1px solid rgba(251, 191, 36, 0.3);
   border-radius: 8px;
   font-size: 0.85rem;
-  color: var(--light-gray);
+  color: #6c757d;
 }
 
 .terms-icon {
@@ -465,13 +467,13 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: linear-gradient(135deg, #ff6b35, #ffb84d);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
 }
 
 .btn-primary:disabled {
@@ -480,13 +482,13 @@
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--white);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 107, 53, 0.1);
+  color: #495057;
+  border: 1px solid rgba(255, 107, 53, 0.2);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 107, 53, 0.15);
 }
 
 .btn-large {
@@ -506,7 +508,7 @@
 .lock-icon,
 .info-icon {
   font-size: 4rem;
-  color: var(--primary);
+  color: #ff6b35;
   margin-bottom: 1rem;
 }
 
@@ -514,11 +516,12 @@
 .no-promo-card h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
+  color: #212529;
 }
 
 .login-required-card p,
 .no-promo-card p {
-  color: var(--light-gray);
+  color: #6c757d;
   margin-bottom: 2rem;
   line-height: 1.6;
 }
@@ -532,8 +535,8 @@
 
 /* Terms Card */
 .terms-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 107, 53, 0.15);
   border-radius: 16px;
   padding: 2rem;
 }
@@ -541,7 +544,7 @@
 .terms-card h3 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: var(--white);
+  color: #212529;
 }
 
 .terms-card ul {
@@ -553,7 +556,7 @@
   padding: 0.75rem 0;
   padding-left: 1.5rem;
   position: relative;
-  color: var(--light-gray);
+  color: #6c757d;
   line-height: 1.6;
 }
 
@@ -561,7 +564,7 @@
   content: "✓";
   position: absolute;
   left: 0;
-  color: var(--primary);
+  color: #ff6b35;
   font-weight: bold;
 }
 

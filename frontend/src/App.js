@@ -22,6 +22,8 @@ const GamesPage = lazy(() => import('./pages/GamesPage.jsx'));
 const FeedbackPage = lazy(() => import('./pages/FeedbackPage.jsx'));
 const ContactPage = lazy(() => import('./pages/ContactPage.jsx'));
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage.jsx'));
+const InvitePage = lazy(() => import('./pages/InvitePage.jsx'));
+const GetOffersPage = lazy(() => import('./pages/GetOffersPage.jsx'));
 
 // Loading component for lazy-loaded pages
 const PageLoader = () => (
@@ -99,6 +101,8 @@ function App() {
             <Route path="/instagram-promo" element={<InstagramPromoPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/updates" element={<UpdatesPage />} />
+            <Route path="/invite" element={<InvitePage />} />
+            <Route path="/get-offers" element={<GetOffersPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
