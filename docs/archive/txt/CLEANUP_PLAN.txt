@@ -1,0 +1,64 @@
+===========================================
+🧹 CLEANUP PLAN - Files to Remove
+===========================================
+
+ROOT DIRECTORY - Documentation Files (50+ files):
+✅ Remove all excessive .md files except:
+   - Keep: README.md, PROJECT_OVERVIEW.md, ARCHITECTURE.md
+   - Remove: All other AI_*.md, MALAYALAM_*.md, etc.
+
+✅ Remove test/migration scripts:
+   - test_ai_booking.py
+   - test_ai_booking_quick.sh
+   - test_complete_booking.py
+   - test_selfhosted_ai.py
+   - test-malayalam-voice.html
+   - migrate_to_selfhosted.sh
+   - install_malayalam_ai.sh
+   - cleanup_unwanted.sh
+   - restart_backend.sh
+   - FINAL_AI_TEST.sh
+   - START_PREMIUM_AI.sh
+
+BACKEND_PYTHON DIRECTORY:
+✅ Remove test scripts:
+   - test_malayalam_voice.py
+   - test_voice_upgraded.py
+   
+✅ Remove setup scripts:
+   - install_voice_ai.sh
+   - setup_free_ai.sh
+   - setup_premium_ai.sh
+   - upgrade_ai_stack.sh
+   
+✅ Remove old requirement files:
+   - requirements_selfhosted.txt (keep requirements.txt)
+
+✅ Remove log files:
+   - nohup.out
+
+BACKEND_PYTHON/SERVICES:
+✅ Remove unused AI services:
+   - ai_assistant_selfhosted.py (using ai_assistant.py)
+   - mistral_ai_booking.py (old version)
+   - ollama_quick_action_service.py (unused)
+   - ollama_service.py (unused)
+   - selfhosted_llm_service.py (unused)
+   - simple_ai_booking.py (old version)
+   - piper_voice_service.py (using upgraded version)
+   - malayalam_voice_service.py (old - using upgraded)
+   
+✅ Keep these essential services:
+   - ai_assistant.py
+   - ai_context_engine.py
+   - ai_helpers.py
+   - ai_intelligence_engine.py
+   - ai_memory_system.py
+   - ai_recommendation_engine.py
+   - ai_system_prompts.py
+   - fast_ai_booking.py
+   - malayalam_voice_upgraded.py
+   - ps5_booking_state_machine.py
+   - voice_tts_service.py
+
+Total files to remove: ~60+ files

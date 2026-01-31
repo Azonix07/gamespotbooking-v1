@@ -1,0 +1,590 @@
+/* VoiceAIMalayalam.css - Malayalam Voice AI Styles */
+
+/* CSS Variables - Orange Theme for Malayalam */
+:root {
+  --voice-ml-bg: linear-gradient(135deg, #1a0f0f 0%, #2d1a1a 50%, #1a1010 100%);
+  --voice-ml-card-bg: rgba(45, 26, 26, 0.95);
+  --voice-ml-primary: #ff6b00;
+  --voice-ml-primary-light: #ff8533;
+  --voice-ml-secondary: #ff4500;
+  --voice-ml-accent: #ff7f50;
+  --voice-ml-success: #00cc00;
+  --voice-ml-text: #f8fafc;
+  --voice-ml-text-muted: #b8a89a;
+  --voice-ml-border: rgba(255, 107, 0, 0.3);
+  --voice-ml-border-light: rgba(255, 255, 255, 0.1);
+  --voice-ml-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --voice-ml-glow: 0 0 40px rgba(255, 107, 0, 0.4);
+}
+
+/* Overlay */
+.voice-malayalam-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+/* Main Container */
+.voice-malayalam-container {
+  background: var(--voice-ml-card-bg);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--voice-ml-border);
+  box-shadow: var(--voice-ml-shadow), var(--voice-ml-glow);
+  position: relative;
+}
+
+.voice-malayalam-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.voice-malayalam-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.voice-malayalam-container::-webkit-scrollbar-thumb {
+  background: var(--voice-ml-border);
+  border-radius: 3px;
+}
+
+/* Header */
+.voice-malayalam-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--voice-ml-border-light);
+  background: linear-gradient(180deg, rgba(255, 107, 0, 0.1) 0%, transparent 100%);
+}
+
+.voice-malayalam-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.voice-malayalam-header .header-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--voice-ml-primary), var(--voice-ml-secondary));
+  border-radius: 12px;
+  padding: 8px;
+  color: white;
+}
+
+.voice-malayalam-header .header-text h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--voice-ml-text);
+  margin: 0;
+  font-family: 'Noto Sans Malayalam', 'Space Grotesk', sans-serif;
+}
+
+.voice-malayalam-header .header-subtitle {
+  font-size: 0.75rem;
+  color: var(--voice-ml-text-muted);
+  font-weight: 500;
+}
+
+.voice-malayalam-header .header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.voice-malayalam-header .header-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--voice-ml-border-light);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--voice-ml-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.voice-malayalam-header .header-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--voice-ml-text);
+  border-color: var(--voice-ml-border);
+}
+
+.voice-malayalam-header .header-btn.close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #ef4444;
+}
+
+/* Settings Panel */
+.voice-malayalam-container .voice-settings-panel {
+  padding: 16px 24px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--voice-ml-border-light);
+  overflow: hidden;
+}
+
+.voice-malayalam-container .setting-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.voice-malayalam-container .setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.voice-malayalam-container .setting-item label {
+  font-size: 0.875rem;
+  color: var(--voice-ml-text-muted);
+  min-width: 60px;
+  font-family: 'Noto Sans Malayalam', sans-serif;
+}
+
+.voice-malayalam-container .setting-item input[type="range"] {
+  flex: 1;
+  height: 4px;
+  background: var(--voice-ml-border-light);
+  border-radius: 2px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.voice-malayalam-container .setting-item input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--voice-ml-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
+}
+
+.voice-malayalam-container .setting-item span {
+  font-size: 0.875rem;
+  color: var(--voice-ml-primary-light);
+  min-width: 40px;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* 3D Visualization */
+.voice-malayalam-container .voice-visualization {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 24px 20px;
+}
+
+.voice-malayalam-container .canvas-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-malayalam-container .canvas-container canvas {
+  border-radius: 50%;
+}
+
+.voice-malayalam-container .status-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  border: 2px solid var(--voice-ml-border);
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.voice-malayalam-container .canvas-container.listening .status-ring {
+  border-color: var(--voice-ml-success);
+  box-shadow: 0 0 30px rgba(0, 204, 0, 0.4);
+  animation: ml-pulse-ring 1.5s ease-in-out infinite;
+}
+
+.voice-malayalam-container .canvas-container.speaking .status-ring {
+  border-color: #0044cc;
+  box-shadow: 0 0 30px rgba(0, 68, 204, 0.4);
+  animation: ml-pulse-ring 1s ease-in-out infinite;
+}
+
+@keyframes ml-pulse-ring {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.8; }
+}
+
+.voice-malayalam-container .status-text {
+  font-size: 1rem;
+  color: var(--voice-ml-text-muted);
+  margin-top: 16px;
+  font-weight: 500;
+  font-family: 'Noto Sans Malayalam', sans-serif;
+}
+
+/* Transcript Box */
+.voice-malayalam-container .transcript-box {
+  margin: 0 24px 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(0, 204, 0, 0.15), rgba(0, 204, 0, 0.05));
+  border: 1px solid rgba(0, 204, 0, 0.3);
+  border-radius: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.voice-malayalam-container .transcript-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--voice-ml-success);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.voice-malayalam-container .transcript-box p {
+  margin: 0;
+  color: var(--voice-ml-text);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  font-family: 'Noto Sans Malayalam', sans-serif;
+}
+
+/* Response Box */
+.voice-malayalam-container .response-box {
+  margin: 0 24px 20px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.15), rgba(255, 69, 0, 0.1));
+  border: 1px solid var(--voice-ml-border);
+  border-radius: 16px;
+}
+
+.voice-malayalam-container .response-box p {
+  margin: 0;
+  color: var(--voice-ml-text);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* Mic Button Container */
+.voice-malayalam-container .mic-button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 24px 20px;
+}
+
+.voice-malayalam-container .main-mic-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--voice-ml-primary), var(--voice-ml-secondary));
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(255, 107, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.voice-malayalam-container .main-mic-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 50px rgba(255, 107, 0, 0.5);
+}
+
+.voice-malayalam-container .main-mic-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.voice-malayalam-container .main-mic-btn.listening {
+  background: linear-gradient(135deg, var(--voice-ml-success), #009900);
+  box-shadow: 0 10px 40px rgba(0, 204, 0, 0.4);
+  animation: ml-mic-pulse 1s ease-in-out infinite;
+}
+
+.voice-malayalam-container .main-mic-btn.speaking {
+  background: linear-gradient(135deg, #0044cc, #0033aa);
+  box-shadow: 0 10px 40px rgba(0, 68, 204, 0.4);
+}
+
+@keyframes ml-mic-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* Pulse Rings */
+.voice-malayalam-container .pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.voice-malayalam-container .main-mic-btn.listening .pulse-ring {
+  animation: ml-pulse-expand 1.5s ease-out infinite;
+}
+
+.voice-malayalam-container .main-mic-btn.listening .pulse-ring.delay-1 {
+  animation-delay: 0.5s;
+}
+
+.voice-malayalam-container .main-mic-btn.listening .pulse-ring.delay-2 {
+  animation-delay: 1s;
+}
+
+@keyframes ml-pulse-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+.voice-malayalam-container .mic-hint {
+  margin-top: 12px;
+  font-size: 0.875rem;
+  color: var(--voice-ml-text-muted);
+  text-align: center;
+  font-family: 'Noto Sans Malayalam', sans-serif;
+}
+
+/* Quick Actions Grid */
+.voice-malayalam-container .quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 24px 20px;
+}
+
+.voice-malayalam-container .quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--voice-ml-border-light);
+  border-radius: 12px;
+  color: var(--voice-ml-text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.voice-malayalam-container .quick-action-btn:hover {
+  background: rgba(255, 107, 0, 0.1);
+  border-color: var(--voice-ml-border);
+  color: var(--voice-ml-text);
+}
+
+.voice-malayalam-container .quick-action-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--voice-ml-primary-light);
+}
+
+.voice-malayalam-container .quick-action-btn span {
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: 'Noto Sans Malayalam', sans-serif;
+}
+
+/* Conversation History */
+.voice-malayalam-container .conversation-history {
+  padding: 0 24px 24px;
+}
+
+.voice-malayalam-container .conversation-history h4 {
+  font-size: 0.875rem;
+  color: var(--voice-ml-text-muted);
+  margin: 0 0 12px;
+  font-weight: 600;
+  font-family: 'Noto Sans Malayalam', sans-serif;
+}
+
+.voice-malayalam-container .history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.voice-malayalam-container .history-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.voice-malayalam-container .history-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.voice-malayalam-container .history-list::-webkit-scrollbar-thumb {
+  background: var(--voice-ml-border);
+  border-radius: 2px;
+}
+
+.voice-malayalam-container .history-item {
+  padding: 12px 14px;
+  border-radius: 12px;
+  position: relative;
+}
+
+.voice-malayalam-container .history-item.user {
+  background: linear-gradient(135deg, rgba(0, 204, 0, 0.1), rgba(0, 204, 0, 0.05));
+  border: 1px solid rgba(0, 204, 0, 0.2);
+  margin-left: 20px;
+}
+
+.voice-malayalam-container .history-item.ai {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.1), rgba(255, 69, 0, 0.05));
+  border: 1px solid rgba(255, 107, 0, 0.2);
+  margin-right: 20px;
+}
+
+.voice-malayalam-container .history-time {
+  font-size: 0.625rem;
+  color: var(--voice-ml-text-muted);
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  opacity: 0.7;
+}
+
+.voice-malayalam-container .history-item p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--voice-ml-text);
+  line-height: 1.5;
+  padding-right: 50px;
+  font-family: 'Noto Sans Malayalam', sans-serif;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .voice-malayalam-container {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .voice-malayalam-header {
+    padding: 16px 20px;
+  }
+
+  .voice-malayalam-header .header-text h2 {
+    font-size: 1.125rem;
+  }
+
+  .voice-malayalam-container .voice-visualization {
+    padding: 20px 20px 16px;
+  }
+
+  .voice-malayalam-container .canvas-container {
+    width: 240px;
+    height: 240px;
+  }
+
+  .voice-malayalam-container .status-ring {
+    width: 220px;
+    height: 220px;
+  }
+
+  .voice-malayalam-container .transcript-box,
+  .voice-malayalam-container .response-box {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  .voice-malayalam-container .quick-actions-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 0 20px 16px;
+  }
+
+  .voice-malayalam-container .quick-action-btn {
+    padding: 12px 6px;
+  }
+
+  .voice-malayalam-container .main-mic-btn {
+    width: 70px;
+    height: 70px;
+  }
+
+  .voice-malayalam-container .conversation-history {
+    padding: 0 20px 20px;
+  }
+}
+
+/* Animation Classes */
+.voice-malayalam-container .fade-in {
+  animation: mlFadeIn 0.3s ease;
+}
+
+@keyframes mlFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .voice-malayalam-container .main-mic-btn.listening,
+  .voice-malayalam-container .canvas-container.listening .status-ring,
+  .voice-malayalam-container .canvas-container.speaking .status-ring,
+  .voice-malayalam-container .pulse-ring {
+    animation: none;
+  }
+}
+
+/* Focus states */
+.voice-malayalam-header .header-btn:focus,
+.voice-malayalam-container .main-mic-btn:focus,
+.voice-malayalam-container .quick-action-btn:focus {
+  outline: 2px solid var(--voice-ml-primary);
+  outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .voice-malayalam-container {
+    border-width: 2px;
+  }
+  
+  .voice-malayalam-header .header-btn,
+  .voice-malayalam-container .quick-action-btn {
+    border-width: 2px;
+  }
+}

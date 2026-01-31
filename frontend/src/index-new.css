@@ -1,0 +1,22 @@
+/* ===================================
+   MAIN STYLESHEET - GameSpot Web
+   Import all modular CSS files
+   =================================== */
+
+/* Base Styles */
+@import './styles/variables.css';
+@import './styles/base.css';
+
+/* Shared Components */
+@import './styles/buttons.css';
+@import './styles/forms.css';
+@import './styles/modal.css';
+
+/* Component Styles */
+@import './styles/Navbar.css';
+
+/* Page Styles */
+@import './styles/HomePage.css';
+@import './styles/BookingPage.css';
+@import './styles/AdminLoginPage.css';
+@import './styles/AdminDashboard.css';

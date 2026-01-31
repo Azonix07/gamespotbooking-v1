@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎤 Malayalam Voice Comparison - Old vs Professional AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .voice-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            color: #333;
+            transition: transform 0.3s ease;
+        }
+
+        .voice-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .voice-card.old {
+            border: 3px solid #ff6b6b;
+        }
+
+        .voice-card.new {
+            border: 3px solid #51cf66;
+            background: linear-gradient(to bottom, #ffffff, #e7ffe7);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .icon {
+            font-size: 3em;
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .quality-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .old .quality-badge {
+            background: #ffe0e0;
+            color: #ff6b6b;
+        }
+
+        .new .quality-badge {
+            background: #d3ffd3;
+            color: #2f9e44;
+        }
+
+        .features {
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+
+        .feature {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature::before {
+            content: "•";
+            font-size: 1.5em;
+        }
+
+        .new .feature::before {
+            content: "✓";
+            color: #51cf66;
+            font-weight: bold;
+        }
+
+        .old .feature::before {
+            content: "✗";
+            color: #ff6b6b;
+        }
+
+        .test-button {
+            width: 100%;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .old .test-button {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+        }
+
+        .new .test-button {
+            background: linear-gradient(135deg, #51cf66, #37b24d);
+            color: white;
+        }
+
+        .test-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .test-button:active {
+            transform: scale(0.98);
+        }
+
+        .test-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .status.playing {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .test-text {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 1.1em;
+            color: #495057;
+            border-left: 4px solid #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Malayalam Voice AI Comparison</h1>
+        <p class="subtitle">Listen to the difference between old browser voice and new professional AI</p>
+
+        <div class="test-text">
+            Test Text: <strong>"നമസ്കാരം മച്ചാനെ! ഗെയിം സ്പോട്ടിലേക്ക് സ്വാഗതം! പിഎസ് ഫൈവ് ബുക്കിംഗ് ഒരു പത്തല്ലെ!"</strong>
+        </div>
+
+        <div class="comparison-grid">
+            <!-- OLD VOICE -->
+            <div class="voice-card old">
+                <div class="card-header">
+                    <div class="icon">❌</div>
+                    <div>
+                        <div class="card-title">Old Browser Voice</div>
+                        <div class="quality-badge">60% Quality</div>
+                    </div>
+                </div>
+                
+                <div class="features">
+                    <div class="feature">Robotic and unnatural</div>
+                    <div class="feature">Inconsistent across browsers</div>
+                    <div class="feature">No Indian accent</div>
+                    <div class="feature">Formal language only</div>
+                    <div class="feature">Limited Malayalam support</div>
+                </div>
+
+                <button class="test-button" onclick="testOldVoice()">
+                    🔊 Test Old Voice
+                </button>
+            </div>
+
+            <!-- NEW PROFESSIONAL VOICE -->
+            <div class="voice-card new">
+                <div class="card-header">
+                    <div class="icon">✨</div>
+                    <div>
+                        <div class="card-title">Professional AI Voice</div>
+                        <div class="quality-badge">90% Quality</div>
+                    </div>
+                </div>
+                
+                <div class="features">
+                    <div class="feature">Natural and human-like</div>
+                    <div class="feature">Consistent everywhere</div>
+                    <div class="feature">Indian Malayalam accent</div>
+                    <div class="feature">Colloquial language</div>
+                    <div class="feature">Professional quality</div>
+                </div>
+
+                <button class="test-button" onclick="testNewVoice()">
+                    🎵 Test Professional AI
+                </button>
+            </div>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const testText = "നമസ്കാരം മച്ചാനെ! ഗെയിം സ്പോട്ടിലേക്ക് സ്വാഗതം! പിഎസ് ഫൈവ് ബുക്കിംഗ് ഒരു പത്തല്ലെ!";
+        let currentAudio = null;
+
+        function showStatus(message, isPlaying = false) {
+            const status = document.getElementById('status');
+            status.innerHTML = message;
+            status.className = 'status' + (isPlaying ? ' playing' : '');
+        }
+
+        function stopCurrentAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            window.speechSynthesis.cancel();
+        }
+
+        function testOldVoice() {
+            stopCurrentAudio();
+            showStatus('🔊 Playing OLD Browser Voice (Robotic)...', true);
+
+            const utterance = new SpeechSynthesisUtterance(testText);
+            utterance.lang = 'ml-IN';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+
+            utterance.onend = () => {
+                showStatus('✅ Old voice finished. Notice how robotic it sounds?');
+            };
+
+            utterance.onerror = () => {
+                showStatus('❌ Old voice not available on this browser');
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        async function testNewVoice() {
+            stopCurrentAudio();
+            showStatus('🎵 Generating Professional AI Voice... <span class="loading"></span>', true);
+
+            try {
+                const response = await fetch('http://localhost:8000/api/voice-pro/speak', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: testText,
+                        language: 'ml',
+                        use_cache: true
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.audio_data) {
+                    showStatus('🎵 Playing PROFESSIONAL AI Voice (Natural)...', true);
+
+                    currentAudio = new Audio(`data:audio/mp3;base64,${data.audio_data}`);
+                    
+                    currentAudio.onended = () => {
+                        showStatus('✅ Professional AI voice finished. Notice the natural Indian Malayalam accent!');
+                        currentAudio = null;
+                    };
+
+                    currentAudio.onerror = (e) => {
+                        console.error('Audio error:', e);
+                        showStatus('❌ Audio playback error');
+                        currentAudio = null;
+                    };
+
+                    await currentAudio.play();
+
+                } else {
+                    showStatus('❌ Failed to generate speech: ' + (data.error || 'Unknown error'));
+                }
+
+            } catch (error) {
+                console.error('API error:', error);
+                showStatus('❌ Backend not running or error: ' + error.message);
+            }
+        }
+
+        // Initial message
+        showStatus('👆 Click the buttons above to compare the voices!');
+    </script>
+</body>
+</html>

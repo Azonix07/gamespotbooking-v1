@@ -1,0 +1,13 @@
+# Railway Configuration - Root Level
+# Note: Create separate services in Railway dashboard for backend and frontend
+# This file is for reference only
+
+# Backend Service (Python)
+# - Root directory: /backend
+# - Start command: gunicorn app:app
+# - Uses: backend/Dockerfile OR backend/nixpacks.toml
+
+# Frontend Service (Node.js)  
+# - Root directory: /frontend
+# - Build command: npm install && npm run build
+# - Start command: node server.js

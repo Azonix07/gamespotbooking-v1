@@ -1,0 +1,211 @@
+import React, { useState, Suspense, lazy } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FiCpu, FiMenu, FiX, FiHome, FiGrid, FiAward, FiMonitor, FiMoreHorizontal, FiUser, FiLogOut, FiSettings } from 'react-icons/fi';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
+import Footer from '../components/Footer';
+import '../styles/HomePage.css';
+import { useAuth } from "../context/AuthContext";
+
+// Lazy load AI Chat (only loads when needed)
+const AIChat = lazy(() => import('../components/AIChat'));
+
+const HomePage = () => {
+  const navigate = useNavigate();
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { user, isAdmin, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
+
+  return (
+    <div className="hero-container">
+      {/* Video Background with Poster Image for Faster Initial Load */}
+      <video 
+        className="hero-background-video"
+        autoPlay 
+        loop 
+        muted 
+        playsInline
+        preload="metadata"
+        poster="/assets/images/video-poster.jpg"
+        onLoadedData={() => setVideoLoaded(true)}
+      >
+        <source src="/assets/videos/background.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+      
+      {/* Dark Overlay for better text readability */}
+      <div className="hero-video-overlay"></div>
+      
+      {/* Custom Header with Hamburger Menu */}
+      <div className="homepage-header">
+        <button 
+          className="hamburger-menu-btn"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Menu"
+        >
+          {menuOpen ? <FiX size={28} /> : <FiMenu size={28} />}
+        </button>
+        
+        <div className="header-right">
+          {user ? (
+            <div className="user-menu">
+              <button 
+                className="user-button"
+                onClick={() => navigate('/profile')}
+              >
+                <FiUser size={20} />
+                <span>{user.name}</span>
+              </button>
+            </div>
+          ) : (
+            <button 
+              className="login-button"
+              onClick={() => navigate('/login')}
+            >
+              <FiUser size={20} />
+              <span>Login</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Slide-out Menu */}
+      <div className={`slide-menu ${menuOpen ? 'menu-open' : ''}`}>
+        <div className="menu-content">
+          <div className="menu-item" onClick={() => { navigate('/'); setMenuOpen(false); }}>
+            <FiHome size={20} />
+            <span>Home</span>
+          </div>
+          <div className="menu-item" onClick={() => { navigate('/games'); setMenuOpen(false); }}>
+            <FiGrid size={20} />
+            <span>Games</span>
+          </div>
+          <div className="menu-item" onClick={() => { navigate('/membership'); setMenuOpen(false); }}>
+            <FiAward size={20} />
+            <span>Membership</span>
+          </div>
+          <div className="menu-item" onClick={() => { navigate('/rental'); setMenuOpen(false); }}>
+            <FiMonitor size={20} />
+            <span>Services</span>
+          </div>
+          <div className="menu-item" onClick={() => { navigate('/updates'); setMenuOpen(false); }}>
+            <FiMoreHorizontal size={20} />
+            <span>More</span>
+          </div>
+          
+          {user && (
+            <>
+              <div className="menu-divider"></div>
+              <div className="menu-item" onClick={() => { navigate('/profile'); setMenuOpen(false); }}>
+                <FiSettings size={20} />
+                <span>Profile</span>
+              </div>
+              <div className="menu-item" onClick={() => { handleLogout(); setMenuOpen(false); }}>
+                <FiLogOut size={20} />
+                <span>Logout</span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Menu Overlay */}
+      {menuOpen && (
+        <div 
+          className="menu-overlay"
+          onClick={() => setMenuOpen(false)}
+        ></div>
+      )}
+      
+      {/* Main Content - Centered Book Now Button */}
+      <div className="hero-content">
+        {/* Logo Image with lazy loading */}
+        <LazyLoadImage
+          src="/assets/images/logo.png" 
+          alt="GameSpot Logo" 
+          className="hero-logo"
+          effect="blur"
+          threshold={100}
+        />
+        
+        <p className="hero-subtitle">
+          STEP INTO A NEXT-GEN GAMING LOUNGE EXPERIENCE
+        </p>
+        <p className="hero-subtitle2">
+          PLAY COMPETE AND ENJOY A PREMIUM GAMING SETUP
+        </p>
+
+        {user && (
+          <div className="welcome-banner">
+            <p style={{ margin: 0, color: 'var(--light-gray)' }}>
+              Welcome back, <strong style={{ color: 'var(--primary)' }}>{user.name}</strong>! 
+              {isAdmin && ' (Admin)'}
+            </p>
+          </div>
+        )}
+
+        {/* Main CTA - Book Now Button as DIV - Using CSS background for better performance */}
+        <div
+          onClick={() => navigate('/booking')}
+          className="cta-book-now-button"
+        >
+          BOOK NOW
+        </div>
+
+        {/* Console Icons with lazy loading */}
+        <div className="console-icons-container">
+          <LazyLoadImage
+            src="/assets/images/ps5Icon.png" 
+            alt="PlayStation 5" 
+            className="console-icon ps5-icon"
+            effect="opacity"
+            threshold={200}
+          />
+          <div className="console-separator">|</div>
+          <LazyLoadImage
+            src="/assets/images/xboxIcon.png" 
+            alt="Xbox" 
+            className="console-icon xbox-icon"
+            effect="opacity"
+            threshold={200}
+          />
+          <div className="console-separator">|</div>
+          <LazyLoadImage
+            src="/assets/images/metaIcon.png" 
+            alt="Meta" 
+            className="console-icon meta-icon"
+            effect="opacity"
+            threshold={200}
+          />
+        </div>
+      </div>
+
+      {/* AI Chat Robot Icon - Bottom Right Corner */}
+      <button
+        className="fab-button fab-ai-chat"
+        onClick={() => setShowAIChat(true)}
+        aria-label="Book with AI"
+        title="Book with AI"
+      >
+        <FiCpu className="fab-icon" />
+      </button>
+
+      {/* AI Chat Modal - Lazy loaded */}
+      {showAIChat && (
+        <Suspense fallback={<div>Loading AI...</div>}>
+          <AIChat onClose={() => setShowAIChat(false)} />
+        </Suspense>
+      )}
+
+      <Footer transparent={true} />
+    </div>
+  );
+};
+
+export default HomePage;

@@ -1,0 +1,310 @@
+{
+  "defaultResponse": "I'm your AI assistant for GameSpot! I can help you with bookings, pricing, games, and more. How can I assist you today?",
+  
+  "responses": {
+    "greeting": {
+      "keywords": ["hello", "hi", "hey", "good morning", "good evening", "greetings", "howdy", "sup", "what's up"],
+      "response": "Hello! Welcome to GameSpot Gaming Arena! I'm your AI assistant. I can help you book PS5 or Driving Simulator sessions, check pricing, answer questions about our games and services, or guide you through our facility features.  What would you like to know?"
+    },
+    
+    "pricing_general": {
+      "keywords": ["price", "cost", "how much", "rate", "charge", "pricing", "fees", "expensive"],
+      "response": "Our pricing is simple and affordable!  PS5 Gaming starts from ₹80 for 30 minutes for solo play, going up to ₹330 for 4 players for 2 hours. Driving Simulator is ₹120 for 30 minutes up to ₹250 for 2 hours solo experience. Which one interests you?"
+    },
+    
+    "pricing_ps5":  {
+      "keywords": ["ps5 price", "ps5 cost", "playstation price", "ps5 rate", "ps5 charge"],
+      "response": "Our PS5 pricing varies by player count.  For 1 player: ₹80 for 30 minutes, ₹120 for 1 hour, ₹150 for 1.5 hours, and ₹180 for 2 hours. For 2 players: ₹100 to ₹230. For 3 players: ₹130 to ₹280. For 4 players: ₹150 to ₹330. The more you play, the better value you get!"
+    },
+    
+    "pricing_driving": {
+      "keywords": ["driving price", "simulator price", "driving cost", "racing price", "car simulator price"],
+      "response": "Our Driving Simulator is a premium solo experience!  Pricing is ₹120 for 30 minutes, ₹170 for 1 hour, ₹200 for 1.5 hours, and ₹250 for 2 hours. It includes professional racing wheel with force feedback, hydraulic pedals, VR headset support, and multiple international race tracks!"
+    },
+    
+    "booking": {
+      "keywords":  ["book", "reserve", "booking", "reservation", "slot", "appointment", "schedule session"],
+      "response": "Booking with us is super easy! You can book directly on our website by clicking 'Book Now' button, or chat with our AI booking assistant for step-by-step guidance. We have PS5 gaming for 1 to 4 players and Driving Simulator for solo racing.  Which would you like to book?"
+    },
+    
+    "booking_process": {
+      "keywords": ["how to book", "booking process", "book how", "reservation process", "how do i book"],
+      "response":  "Our booking process is simple! First, choose between PS5 or Driving Simulator. Then select number of players, duration, date, and time slot. Enter your name and phone number, confirm your details, and you're done! Our AI assistant guides you through each step."
+    },
+    
+    "games": {
+      "keywords": ["games", "what games", "available games", "play", "titles", "game list"],
+      "response": "We have an amazing collection of PS5 games! EA Sports FC 24, Call of Duty Modern Warfare 3, Marvel's Spider-Man 2, GTA 5, Fortnite, Apex Legends, FIFA 23, Mortal Kombat 11, Gran Turismo 7, and Tekken 8. We have sports, action, adventure, racing, and fighting games.  What's your favorite genre?"
+    },
+    
+    "games_sports": {
+      "keywords": ["sports games", "fifa", "football", "fc 24", "soccer"],
+      "response": "We have the best sports titles! EA Sports FC 24 and FIFA 23 for football fans, and Gran Turismo 7 for racing enthusiasts. These games support multiplayer, so bring your friends for competitive matches!"
+    },
+    
+    "games_action": {
+      "keywords": ["action games", "shooting", "fps", "call of duty", "cod"],
+      "response": "For action lovers, we have Call of Duty Modern Warfare 3 for intense FPS combat, GTA 5 for open-world action-adventure, and Marvel's Spider-Man 2 for superhero action!  All with stunning PS5 graphics."
+    },
+    
+    "games_fighting": {
+      "keywords": ["fighting games", "mortal kombat", "tekken", "combat"],
+      "response": "Fighting game fans will love Mortal Kombat 11 and Tekken 8! Both support multiplayer for epic head-to-head battles. Perfect for settling scores with friends!"
+    },
+    
+    "games_battle_royale": {
+      "keywords": ["battle royale", "fortnite", "apex", "apex legends"],
+      "response": "We have the top battle royale games! Fortnite and Apex Legends, both free-to-play and incredibly fun with friends. Team up or go solo, build, shoot, and win!"
+    },
+    
+    "hours": {
+      "keywords": ["open", "hours", "timing", "close", "schedule", "when open", "time", "operating hours"],
+      "response": "We're open from 10 AM to 10 PM, 7 days a week! That's 12 hours of non-stop gaming every day. You can book hourly slots starting from 10 AM. Our last slot starts at 9 PM.  We're always ready for gamers!"
+    },
+    
+    "location": {
+      "keywords": ["where", "location", "address", "directions", "find you", "situated", "place"],
+      "response": "We're located at MG Road, Cyber City, Kochi, Kerala 682001. Easy to find - we're right next to Lulu Mall, opposite the Metro Station. Very accessible by public transport or personal vehicle.  Come visit us!"
+    },
+    
+    "directions": {
+      "keywords": ["how to reach", "directions", "navigate", "route", "way to reach"],
+      "response": "Getting to GameSpot is easy! We're on MG Road in Cyber City, Kochi.  If you're coming by metro, get off at the nearest station and we're right opposite.  By car, look for Lulu Mall - we're next door. Free parking available!"
+    },
+    
+    "amenities": {
+      "keywords": ["facilities", "amenities", "features", "what do you have", "services", "what's included"],
+      "response": "We offer premium gaming experience!  Fully air-conditioned gaming zones for comfort, ergonomic gaming chairs to prevent fatigue, blazing-fast 1 Gbps fiber internet, snacks and beverages counter for refreshments, free WiFi, clean restrooms, secure parking with CCTV, and sanitized equipment for safety!"
+    },
+    
+    "driving_simulator": {
+      "keywords": ["driving simulator", "racing", "car simulator", "driving", "race", "simulator details"],
+      "response": "Our Driving Simulator is top-tier! It features a full-size professional racing wheel with realistic force feedback, hydraulic pedal box with brake, throttle, and clutch, optional VR headset for complete immersion, choice of multiple international race tracks, realistic car physics and damage modeling, and a library of supercars and racing vehicles.  It's a solo experience designed for one person to get the full racing thrill!"
+    },
+    
+    "ps5_features": {
+      "keywords": ["ps5 features", "ps5 details", "playstation 5", "ps5 info", "ps5 specs"],
+      "response": "We have 3 premium PS5 stations, each supporting up to 4 players! Experience next-gen gaming with stunning 4K graphics at 60fps or 120fps, ultra-fast SSD for near-instant loading, DualSense controller with haptic feedback and adaptive triggers, 3D audio for immersive sound, and comfortable seating.  Perfect for solo play or multiplayer sessions with friends!"
+    },
+    
+    "multiplayer": {
+      "keywords":  ["multiplayer", "friends", "together", "group play", "co-op", "versus"],
+      "response": "Absolutely! PS5 supports up to 4 players on a single console. Perfect for playing with friends, family tournaments, or competitive gaming. Games like FIFA, COD, Fortnite, and Tekken are amazing in multiplayer mode.  Bring your squad!"
+    },
+    
+    "solo_gaming": {
+      "keywords":  ["solo", "alone", "single player", "by myself", "one person"],
+      "response": "Solo gaming is fantastic here! For PS5, we have incredible single-player experiences like Marvel's Spider-Man 2. Our Driving Simulator is exclusively a solo experience, designed for one person to fully immerse in realistic racing. Both options offer great value!"
+    },
+    
+    "snacks": {
+      "keywords": ["food", "snacks", "drinks", "beverages", "eat", "menu", "hungry", "thirsty"],
+      "response":  "We have a great snacks and beverages menu! Snacks include Lays Chips and Kurkure for ₹30, Chocolate Bars for ₹40, Cookies Pack for ₹35, Samosas (2 pieces) for ₹40, and Sandwiches for ₹60. For drinks, we have Water Bottles for ₹20, Soft Drinks for ₹25, Energy Drinks for ₹120, Coffee for ₹40, and Tea for ₹30.  Outside food is not permitted to keep our equipment clean!"
+    },
+    
+    "outside_food": {
+      "keywords": ["outside food", "bring food", "own food", "outside snacks"],
+      "response": "Sorry, outside food and drinks are not allowed in the gaming zones to keep our high-end equipment clean and safe for everyone. However, we have a great snacks and beverages counter with affordable prices!  You can purchase items before or during your session."
+    },
+    
+    "payment": {
+      "keywords": ["payment", "pay", "payment methods", "card", "upi", "cash", "how to pay"],
+      "response":  "We accept all convenient payment methods! You can pay by Cash, UPI like GPay, PhonePe, or Paytm, Credit or Debit Cards, and Net Banking. No advance payment is needed for booking. Pay when you arrive or after your session.  Easy and flexible!"
+    },
+    
+    "advance_payment": {
+      "keywords": ["advance payment", "prepay", "pay now", "online payment", "pay before"],
+      "response": "No advance payment is required! You can book your slot online and pay when you arrive at GameSpot. However, if you prefer to prepay, we accept UPI and card payments. Your booking is secured once confirmed!"
+    },
+    
+    "group": {
+      "keywords": ["group", "party", "birthday", "corporate", "event", "many people", "large group"],
+      "response": "We love hosting groups! For groups of 6 or more people, birthday parties, or corporate events, we offer special packages with custom pricing and exclusive arrangements. You can even book multiple PS5 stations simultaneously.  Please call us at +91-9876543210 to discuss your requirements and get a customized quote!"
+    },
+    
+    "birthday_party": {
+      "keywords": ["birthday", "birthday party", "celebrate birthday", "b'day"],
+      "response": "Celebrate your birthday at GameSpot! We offer special birthday packages for groups.  Book multiple gaming stations, bring your friends, enjoy gaming tournaments, and we'll make it memorable. Contact us to customize your birthday gaming party with special pricing!"
+    },
+    
+    "corporate_event": {
+      "keywords": ["corporate", "corporate event", "team building", "office party", "company"],
+      "response": "Looking for a unique corporate team-building activity? GameSpot is perfect! We host corporate events with gaming tournaments, team competitions, and multiplayer sessions. Great for employee engagement and team bonding. Contact us for corporate packages and bulk booking discounts!"
+    },
+    
+    "cancellation": {
+      "keywords": ["cancel", "cancellation", "refund", "reschedule", "change booking", "cancel policy"],
+      "response": "Our cancellation policy is fair and flexible! You can cancel or reschedule your booking up to 2 hours before your slot time by calling us at +91-9876543210. For prepaid bookings, refund details are available in-store. No-shows without prior cancellation will not be refunded.  We understand plans change!"
+    },
+    
+    "reschedule": {
+      "keywords": ["reschedule", "change time", "change date", "modify booking", "different time"],
+      "response": "Need to reschedule? No problem! You can change your booking date or time by calling us at least 2 hours before your original slot. We'll help you find a new convenient time. Your booking flexibility matters to us!"
+    },
+    
+    "age": {
+      "keywords": ["age limit", "kids", "children", "minor", "how old", "age restriction"],
+      "response": "Gaming is for everyone! All ages are welcome at GameSpot. Children under 12 years old must be accompanied by an adult guardian. We recommend age 8 and above for comfortable gameplay and understanding of controls. Family gaming sessions are encouraged!"
+    },
+    
+    "parking": {
+      "keywords": ["parking", "park", "vehicle", "bike", "car", "parking space"],
+      "response": "Yes, we have free parking! Both 2-wheeler and 4-wheeler parking is available for all our customers. Our parking area is secure with CCTV surveillance for your peace of mind. Park hassle-free and enjoy your gaming!"
+    },
+    
+    "safety": {
+      "keywords": ["safety", "safe", "secure", "security", "cctv", "sanitized"],
+      "response": "Your safety is our priority! We have CCTV security throughout the premises, secure parking, sanitized gaming equipment before each session, clean and hygienic restrooms, and a safe, well-lit environment. We maintain high cleanliness standards!"
+    },
+    
+    "membership": {
+      "keywords": ["membership", "member", "discount", "offer", "deal", "package", "subscription"],
+      "response": "We have awesome membership plans! Monthly and annual memberships are available with up to 20% discount on all bookings. Perfect for regular gamers who want maximum value. Contact us at +91-9876543210 for detailed membership pricing, benefits, and exclusive perks!"
+    },
+    
+    "discount": {
+      "keywords": ["discount", "offer", "deal", "promotion", "cheaper", "save money"],
+      "response": "We have several ways to save! Membership plans offer up to 20% discount.  Group bookings get special rates. Longer duration sessions have better per-hour value. For example, 2-hour bookings cost less per hour than 30-minute slots. Check our current offers!"
+    },
+    
+    "contact": {
+      "keywords": ["contact", "phone", "call", "number", "reach you", "email", "get in touch"],
+      "response": "We're always here to help! Call us at +91-9876543210 for bookings, inquiries, or assistance. Email us at bookings@gamespot.in for detailed questions. Visit us at MG Road, Cyber City, Kochi.  We respond quickly to all queries!"
+    },
+    
+    "wifi": {
+      "keywords": ["wifi", "internet", "connection", "online", "network"],
+      "response": "Yes!  We provide free high-speed WiFi to all customers. Our gaming stations are connected to blazing-fast 1 Gbps fiber internet for lag-free online gaming. You can also use our guest WiFi on your personal devices while you're here!"
+    },
+    
+    "air_conditioning": {
+      "keywords": ["ac", "air conditioning", "cool", "temperature", "climate"],
+      "response": "Our entire gaming arena is fully air-conditioned! We maintain a comfortable temperature year-round so you can game for hours without any discomfort. Cool environment, hot gaming action!"
+    },
+    
+    "chairs": {
+      "keywords": ["chairs", "seating", "comfortable", "gaming chair", "ergonomic"],
+      "response": "We use premium ergonomic gaming chairs designed for extended gaming sessions!  They provide excellent lumbar support, adjustable height and armrests, and comfortable cushioning. Game for hours without back pain or fatigue!"
+    },
+    
+    "duration": {
+      "keywords": ["duration", "how long", "session length", "play time", "booking time"],
+      "response": "We offer flexible durations! You can book for 30 minutes, 1 hour, 1.5 hours, or 2 hours.  Longer sessions provide better value per hour.  If you need more time during your session, subject to availability, we can extend it.  Choose what works best for you!"
+    },
+    
+    "advance_booking": {
+      "keywords": ["advance booking", "book ahead", "future booking", "how far ahead"],
+      "response": "You can book up to 30 days in advance! This is perfect for planning birthday parties, group events, or securing your favorite time slot on weekends. Early booking ensures you get exactly the date and time you want!"
+    },
+    
+    "walk_in": {
+      "keywords": ["walk in", "walk-in", "without booking", "no reservation", "directly come"],
+      "response": "Walk-ins are welcome! However, we recommend booking in advance to guarantee slot availability, especially during peak hours and weekends. If all slots are booked, you might have to wait.  Booking ahead ensures you don't miss out!"
+    },
+    
+    "weekend":  {
+      "keywords": ["weekend", "saturday", "sunday", "weekends", "sat sun"],
+      "response": "Weekends are our busiest time! We're open from 10 AM to 10 PM on both Saturdays and Sundays.  We strongly recommend booking in advance for weekends as slots fill up quickly.  Weekends are perfect for long gaming sessions with friends!"
+    },
+    
+    "weekday": {
+      "keywords":  ["weekday", "monday", "tuesday", "wednesday", "thursday", "friday"],
+      "response":  "Weekdays are great for gaming! We're open from 10 AM to 10 PM Monday through Friday. Weekdays often have better availability and are perfect if you prefer a quieter gaming environment. Same pricing, less crowd!"
+    },
+    
+    "vr": {
+      "keywords":  ["vr", "virtual reality", "vr headset", "vr gaming"],
+      "response": "Our Driving Simulator supports VR headset for ultimate immersion! Put on the VR headset and feel like you're actually inside the racing car. Experience realistic racing with 360-degree view, depth perception, and full immersion. It's an incredible experience!"
+    },
+    
+    "controllers": {
+      "keywords": ["controller", "joystick", "gamepad", "controls", "dualsense"],
+      "response":  "We use official PlayStation 5 DualSense controllers! These feature haptic feedback that makes you feel in-game actions, adaptive triggers that resist your input based on game context, built-in microphone, and excellent ergonomics. All controllers are sanitized before each session!"
+    },
+    
+    "tournaments": {
+      "keywords": ["tournament", "competition", "contest", "gaming tournament", "compete"],
+      "response": "Interested in tournaments? We occasionally host gaming tournaments for popular titles like FIFA, COD, and fighting games. Follow us on social media for announcements!  You can also organize private tournaments for your group. Contact us for details!"
+    },
+    
+    "experience": {
+      "keywords": ["experience", "first time", "never played", "new to gaming", "beginner"],
+      "response": "New to gaming? No problem! Our staff can help you get started with game selection and basic controls. We recommend starting with easier games or single-player experiences. PS5 controllers are intuitive, and you'll be gaming like a pro in no time!"
+    },
+    
+    "equipment": {
+      "keywords": ["equipment", "gaming setup", "gear", "hardware"],
+      "response": "We use top-tier equipment! PlayStation 5 consoles with 4K displays, official DualSense controllers, professional Logitech racing wheel for driving simulator, hydraulic pedals, VR headsets, premium gaming chairs, and surround sound systems. Professional-grade gaming experience!"
+    },
+    
+    "headphones": {
+      "keywords": ["headphones", "headset", "audio", "sound", "earphones"],
+      "response": "Yes, we provide gaming headsets for an immersive audio experience!  Especially recommended for first-person shooters and racing games where spatial audio gives you a competitive advantage. All headsets are sanitized before use!"
+    },
+    
+    "restroom": {
+      "keywords": ["restroom", "bathroom", "toilet", "washroom"],
+      "response": "We have clean and well-maintained restrooms available for all customers.  They're regularly cleaned and stocked.  Your comfort during long gaming sessions is important to us!"
+    },
+    
+    "combo": {
+      "keywords": ["combo", "ps5 and driving", "both games", "multiple games"],
+      "response": "You can book both PS5 and Driving Simulator in sequence if you want to try everything! This gives you variety in your gaming experience. Contact us to arrange back-to-back bookings or simultaneous bookings for groups!"
+    },
+    
+    "late_arrival": {
+      "keywords": ["late", "delay", "running late", "will be late", "delayed"],
+      "response": "We have a 15-minute grace period for late arrivals.  If you're running late, please call us at +91-9876543210 to inform us. We'll try our best to accommodate you, but your session will still end at the originally scheduled time to respect other bookings."
+    },
+    
+    "extension": {
+      "keywords": ["extend", "extension", "more time", "longer", "continue playing"],
+      "response": "Want to extend your session? Subject to availability, you can extend your gaming time.  Let our staff know before your session ends, and if the next slot is free, we'll extend it for you at the regular per-hour rate!"
+    },
+    
+    "gift":  {
+      "keywords": ["gift", "gift card", "voucher", "present", "gifting"],
+      "response": "Looking for the perfect gift for a gamer? We offer gift vouchers for gaming sessions! They're perfect for birthdays, celebrations, or any occasion. Contact us to purchase gift cards with custom amounts!"
+    },
+    
+    "cleanliness": {
+      "keywords": ["clean", "cleanliness", "hygiene", "sanitize", "hygienic"],
+      "response":  "Cleanliness is our top priority! All controllers, headsets, and chairs are thoroughly sanitized before each session. Gaming stations are regularly cleaned.  We maintain high hygiene standards.  We also have hand sanitizers available throughout the arena!"
+    },
+    
+    "photos": {
+      "keywords": ["photos", "pictures", "camera", "photography", "take photos"],
+      "response": "Feel free to take photos and videos during your gaming session! Share your GameSpot experience on social media and tag us. We love seeing our customers have fun!  Just be considerate of other customers' privacy."
+    },
+    
+    "recommendation": {
+      "keywords": ["recommend", "suggestion", "what should i", "which game", "advice"],
+      "response": "Need a game recommendation? For solo adventure, try Spider-Man 2. For competitive fun with friends, FIFA or Mortal Kombat are perfect. For intense action, Call of Duty.  For immersive racing alone, our Driving Simulator is unbeatable. What's your mood?"
+    },
+    
+    "thanks": {
+      "keywords": ["thank you", "thanks", "appreciate", "grateful", "thanks a lot"],
+      "response": "You're very welcome! It's my pleasure to help.  If you have any more questions about bookings, games, pricing, or anything else, feel free to ask anytime. Happy gaming at GameSpot!  🎮"
+    },
+    
+    "bye": {
+      "keywords": ["bye", "goodbye", "see you", "later", "gotta go", "farewell"],
+      "response": "Goodbye! Thanks for chatting with me.  We look forward to seeing you at GameSpot Gaming Arena. Have an amazing day and happy gaming! Feel free to come back anytime. See you soon! 🎮"
+    },
+    
+    "confused": {
+      "keywords": ["confused", "don't understand", "unclear", "what do you mean", "explain"],
+      "response": "No worries! Let me help clarify. You can ask me about:  booking process, game selection, pricing for PS5 or Driving Simulator, our location and hours, available facilities, payment methods, group packages, or any specific feature.  What would you like to know more about?"
+    },
+    
+    "best_deal": {
+      "keywords": ["best deal", "best price", "cheapest", "most affordable", "best value"],
+      "response": "For best value, longer duration bookings give you lower per-hour rates!  For example, 2-hour PS5 bookings cost less per hour than 30-minute sessions. Also, our membership plans offer up to 20% discount for regular gamers. Playing with more friends? The per-person cost in a 4-player session is quite economical!"
+    },
+    
+    "compare": {
+      "keywords": ["compare", "difference", "ps5 vs driving", "which is better", "versus"],
+      "response": "Both experiences are amazing but different! PS5 is versatile with many game genres and supports up to 4 players, perfect for groups. Prices start from ₹80.  Driving Simulator is a premium solo experience with professional racing equipment and VR support, starting from ₹120. PS5 for social gaming, Driving Simulator for immersive racing!"
+    }
+  }
+}

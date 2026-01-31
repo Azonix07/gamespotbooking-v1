@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Promo Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .loading { color: #3b82f6; }
+        pre {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        button {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #7c3aed;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Instagram Promotion API Test</h1>
+    
+    <div class="test-card">
+        <h2>Test 1: Check Active Promotions API</h2>
+        <button onclick="testActivePromo()">Run Test</button>
+        <div id="test1-result"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Test 2: Check Tables Exist</h2>
+        <button onclick="testTablesExist()">Run Test</button>
+        <div id="test2-result"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Test 3: Full Page Data</h2>
+        <button onclick="testFullPage()">Run Test</button>
+        <div id="test3-result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://gamespotbooking-v1-production.up.railway.app';
+
+        async function testActivePromo() {
+            const result = document.getElementById('test1-result');
+            result.innerHTML = '<p class="loading">⏳ Testing...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/instagram-promo/active`);
+                const data = await response.json();
+                
+                if (data.success && data.promotions && data.promotions.length > 0) {
+                    const promo = data.promotions[0];
+                    result.innerHTML = `
+                        <p class="success">✅ SUCCESS! Promotion found!</p>
+                        <pre>${JSON.stringify(promo, null, 2)}</pre>
+                        <p><strong>Campaign:</strong> ${promo.campaign_name}</p>
+                        <p><strong>Discount:</strong> ${promo.discount_value} minutes</p>
+                        <p><strong>Instagram:</strong> ${promo.instagram_handle}</p>
+                        <p><strong>Friends Required:</strong> ${promo.required_friends_count}</p>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <p class="error">❌ No promotions found</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `
+                    <p class="error">❌ Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testTablesExist() {
+            const result = document.getElementById('test2-result');
+            result.innerHTML = '<p class="loading">⏳ Testing...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/check-instagram-tables`);
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <p class="${data.status === 'ready' ? 'success' : 'error'}">
+                        ${data.status === 'ready' ? '✅' : '⚠️'} Status: ${data.status}
+                    </p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <p class="error">❌ Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testFullPage() {
+            const result = document.getElementById('test3-result');
+            result.innerHTML = '<p class="loading">⏳ Testing complete page flow...</p>';
+            
+            let output = '';
+            
+            // Test 1: Active promotions
+            try {
+                const response1 = await fetch(`${API_URL}/api/instagram-promo/active`);
+                const data1 = await response1.json();
+                output += '<h3>✅ API /api/instagram-promo/active</h3>';
+                output += `<pre>${JSON.stringify(data1, null, 2)}</pre>`;
+            } catch (error) {
+                output += `<h3>❌ API Error</h3><p>${error.message}</p>`;
+            }
+            
+            // Test 2: Frontend URL
+            output += '<h3>Frontend Should Load From:</h3>';
+            output += `<p><a href="https://gamespotbooking-v1-production.up.railway.app/win-free-game" target="_blank">
+                https://gamespotbooking-v1-production.up.railway.app/win-free-game
+            </a></p>`;
+            
+            result.innerHTML = output;
+        }
+
+        // Auto-run all tests on load
+        window.onload = () => {
+            testActivePromo();
+            testTablesExist();
+        };
+    </script>
+</body>
+</html>
