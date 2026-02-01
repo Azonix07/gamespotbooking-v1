@@ -19,11 +19,21 @@ class SMSService:
         self.twilio_token = os.getenv('TWILIO_AUTH_TOKEN')
         self.twilio_phone = os.getenv('TWILIO_PHONE_NUMBER')
         
-        # Determine which service to use (priority order)
-        if self.twilio_whatsapp_number and self.twilio_sid and self.twilio_token:
+        # Determine which service to use (priority: Twilio SMS > WhatsApp > Fast2SMS)
+        if self.twilio_sid and self.twilio_token and self.twilio_phone:
+            self.provider = 'twilio'
+            self.enabled = True
+            print("[SMS] ✅ Twilio SMS initialized - Ready to send OTP")
+            try:
+                from twilio.rest import Client
+                self.twilio_client = Client(self.twilio_sid, self.twilio_token)
+            except Exception as e:
+                self.enabled = False
+                print(f"[SMS] ⚠️ Twilio initialization failed: {str(e)}")
+        elif self.twilio_whatsapp_number and self.twilio_sid and self.twilio_token:
             self.provider = 'whatsapp'
             self.enabled = True
-            print("[SMS] ✅ WhatsApp (Twilio) initialized - No DLT needed!")
+            print("[SMS] ✅ WhatsApp (Twilio) initialized")
             try:
                 from twilio.rest import Client
                 self.twilio_client = Client(self.twilio_sid, self.twilio_token)
@@ -34,20 +44,10 @@ class SMSService:
             self.provider = 'fast2sms'
             self.enabled = True
             print("[SMS] ✅ Fast2SMS initialized (India) - Requires DLT")
-        elif self.twilio_sid and self.twilio_token and self.twilio_phone:
-            self.provider = 'twilio'
-            self.enabled = True
-            print("[SMS] ✅ Twilio SMS initialized (International)")
-            try:
-                from twilio.rest import Client
-                self.twilio_client = Client(self.twilio_sid, self.twilio_token)
-            except Exception as e:
-                self.enabled = False
-                print(f"[SMS] ⚠️ Twilio initialization failed: {str(e)}")
         else:
             self.provider = None
             self.enabled = False
-            print("[SMS] ⚠️ No SMS/WhatsApp provider configured - OTP will be shown in popup")
+            print("[SMS] ⚠️ No SMS provider configured")
     
     def send_otp_whatsapp(self, phone, otp):
         """Send OTP via WhatsApp (Twilio)"""
@@ -144,23 +144,21 @@ class SMSService:
             tuple: (success: bool, message: str)
         """
         if not self.enabled:
-            # Development mode - log OTP
-            print(f'[SMS] 📱 DEV MODE - OTP for {phone}: {otp}')
-            return True, 'No messaging service configured - OTP shown in popup'
+            print(f'[SMS] ❌ No SMS provider configured - OTP cannot be sent')
+            return False, 'SMS service not configured'
         
-        # Send via configured provider (priority: WhatsApp > Fast2SMS > Twilio SMS)
-        if self.provider == 'whatsapp':
+        # Send via configured provider (priority: Twilio SMS > WhatsApp > Fast2SMS)
+        if self.provider == 'twilio':
+            success, message = self.send_otp_twilio(phone, otp)
+        elif self.provider == 'whatsapp':
             success, message = self.send_otp_whatsapp(phone, otp)
         elif self.provider == 'fast2sms':
             success, message = self.send_otp_fast2sms(phone, otp)
-        elif self.provider == 'twilio':
-            success, message = self.send_otp_twilio(phone, otp)
         else:
             success, message = False, 'No messaging provider available'
         
-        # Fallback: Log OTP if SMS fails
         if not success:
-            print(f'[SMS] 📱 FALLBACK - OTP for {phone}: {otp}')
+            print(f'[SMS] ❌ Failed to send OTP to {phone}: {message}')
         
         return success, message
 

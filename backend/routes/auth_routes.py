@@ -374,25 +374,21 @@ def send_otp():
             'attempts': 0
         }
         
-        # Send OTP via SMS/WhatsApp
+        # Send OTP via SMS
         success, message = sms_service.send_otp(phone, otp)
         
         if not success:
-            # SMS/WhatsApp failed but OTP is stored
-            print(f'[OTP] ⚠️ Message delivery failed, OTP available for {phone}')
+            return jsonify({
+                'success': False,
+                'error': 'Failed to send OTP. Please check your phone number and try again.'
+            }), 500
         
-        # Include OTP in response (will be hidden when messaging service is configured)
-        response_data = {
+        # Return success without OTP (sent via SMS only)
+        return jsonify({
             'success': True,
-            'message': 'OTP sent successfully',
+            'message': 'OTP sent successfully to your mobile number',
             'phone': phone
-        }
-        
-        # Add OTP to response if no messaging service configured
-        if not sms_service.enabled:
-            response_data['otp'] = otp
-        
-        return jsonify(response_data)
+        })
         
     except Exception as e:
         print(f'[OTP] Error sending OTP: {str(e)}')
