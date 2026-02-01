@@ -81,6 +81,50 @@ def require_login(f):
     return decorated_function
 
 
+def require_auth(f):
+    """
+    Decorator to require user authentication and pass user info to the function
+    Works with both session-based and JWT authentication
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user = None
+        
+        # Try session-based auth first
+        if session.get('user_logged_in') and session.get('user_id'):
+            user = {
+                'id': session.get('user_id'),
+                'email': session.get('user_email'),
+                'name': session.get('user_name'),
+                'user_type': 'customer'
+            }
+        else:
+            # Try JWT auth
+            auth_header = request.headers.get('Authorization')
+            if auth_header and auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+                payload = verify_token(token)
+                if payload and payload.get('user_type') == 'customer':
+                    user = {
+                        'id': payload.get('user_id'),
+                        'email': payload.get('email'),
+                        'name': payload.get('name'),
+                        'user_type': 'customer'
+                    }
+        
+        if not user:
+            return jsonify({
+                'success': False,
+                'error': 'Authentication required. Please login.',
+                'redirect': '/login'
+            }), 401
+        
+        # Pass user info to the decorated function
+        return f(user, *args, **kwargs)
+    
+    return decorated_function
+
+
 def check_admin_auth():
     """
     Check if request is from an authenticated admin
