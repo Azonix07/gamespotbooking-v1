@@ -15,6 +15,8 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/LoginPage.css';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com';
+const APPLE_CLIENT_ID = process.env.REACT_APP_APPLE_CLIENT_ID || 'com.gamespot.booking';
+const APPLE_REDIRECT_URI = process.env.REACT_APP_APPLE_REDIRECT_URI || window.location.origin;
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -31,6 +33,29 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+
+  // Load Apple Sign In SDK
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      if (window.AppleID) {
+        window.AppleID.auth.init({
+          clientId: APPLE_CLIENT_ID,
+          scope: 'name email',
+          redirectURI: APPLE_REDIRECT_URI,
+          usePopup: true
+        });
+      }
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   // OTP timer countdown
   useEffect(() => {
@@ -178,7 +203,59 @@ const LoginPage = () => {
   };
 
   const handleAppleLogin = async () => {
-    setError('Apple Sign In will be available soon!');
+    try {
+      setLoading(true);
+      setError(null);
+      
+      if (!window.AppleID) {
+        setError('Apple Sign In is not available. Please try again.');
+        return;
+      }
+
+      // Trigger Apple Sign In
+      const response = await window.AppleID.auth.signIn();
+      
+      console.log('Apple Sign In response:', response);
+      
+      // Send to backend
+      const apiResponse = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/auth/apple-login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          id_token: response.authorization.id_token,
+          user: response.user // Only available on first sign-in
+        }),
+        credentials: 'include'
+      });
+      
+      const data = await apiResponse.json();
+      
+      if (data.success) {
+        setSuccess('Login successful! Redirecting...');
+        
+        // Set auth state directly from Apple response
+        setAuthState(data.user, data.userType || 'customer');
+        
+        setTimeout(() => {
+          const from = location.state?.from?.pathname || '/';
+          navigate(from, { replace: true });
+        }, 500);
+      } else {
+        setError(data.error || 'Apple login failed');
+      }
+    } catch (err) {
+      console.error('Apple login error:', err);
+      if (err.error === 'popup_closed_by_user') {
+        // User closed the popup, don't show error
+        setLoading(false);
+        return;
+      }
+      setError('Apple login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
