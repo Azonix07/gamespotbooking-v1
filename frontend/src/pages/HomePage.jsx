@@ -135,10 +135,10 @@ const HomePage = () => {
         />
         
         <p className="hero-subtitle">
-          STEP INTO A NEXT-GEN GAMING LOUNGE EXPERIENCE
+          Experience Next-Generation Gaming
         </p>
         <p className="hero-subtitle2">
-          PLAY COMPETE AND ENJOY A PREMIUM GAMING SETUP
+          Premium Consoles • Professional Setup • Ultimate Entertainment
         </p>
 
         {user && (
