@@ -92,7 +92,10 @@ def handle_bookings():
             })
             
         except Exception as e:
-            return jsonify({'success': False, 'error': str(e)}), 500
+            print(f"Error in handle_bookings GET: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'success': False, 'error': f'Database error: {str(e)}'}), 500
         finally:
             if cursor:
                 cursor.close()

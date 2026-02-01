@@ -107,8 +107,23 @@ def check_admin_auth():
     return False, None
 
 
-def require_admin(f):
-    """Decorator to require admin authentication"""
+def require_admin():
+    """
+    Check admin authentication and return error response if not authenticated.
+    Use this function directly in route handlers (not as decorator).
+    Returns error response tuple if not authenticated, None if authenticated.
+    """
+    is_auth, admin_info = check_admin_auth()
+    if not is_auth:
+        return jsonify({
+            'success': False,
+            'error': 'Admin authentication required'
+        }), 401
+    return None
+
+
+def require_admin_decorator(f):
+    """Decorator to require admin authentication (alternative usage)"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         is_auth, admin_info = check_admin_auth()

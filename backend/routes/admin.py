@@ -161,7 +161,10 @@ def get_all_users():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        print(f"Error in get_all_users: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': f'Database error: {str(e)}'}), 500
         
     finally:
         if cursor:
@@ -223,7 +226,10 @@ def get_all_memberships():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        print(f"Error in get_all_memberships: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': f'Database error: {str(e)}'}), 500
         
     finally:
         if cursor:
@@ -306,7 +312,10 @@ def get_dashboard_stats():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        print(f"Error in get_dashboard_stats: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': f'Database error: {str(e)}'}), 500
         
     finally:
         if cursor:
