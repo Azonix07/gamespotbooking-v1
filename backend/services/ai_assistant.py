@@ -12,11 +12,11 @@ from typing import Dict, List, Optional, Tuple
 try:
     from services.fast_ai_booking import fast_ai
     FAST_AI_ENABLED = True
-    print("✅ Fast AI active (INSTANT, SIMPLE, CLEAR BUTTONS)")
+    print("[OK] Fast AI active (INSTANT, SIMPLE, CLEAR BUTTONS)")
 except ImportError:
     FAST_AI_ENABLED = False
     fast_ai = None
-    print("⚠️ Fast AI not found - system error")
+    print("[WARNING] Fast AI not found - system error")
 
 # Import context and state management
 try:
