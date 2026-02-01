@@ -1,8 +1,12 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './context/AuthContext';
 import { getTheme } from './services/api';
 import usePageTracking from './hooks/usePageTracking';
+
+// Google OAuth Client ID
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
 // Eager load critical pages for fast access
 import HomePage from './pages/HomePage.jsx';
@@ -87,35 +91,37 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <Router>
-        <PageTracker />
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/booking" element={<BookingPage />} />
-            <Route path="/rental" element={<RentalPage />} />
-            <Route path="/college-setup" element={<CollegeSetupPage />} />
-            <Route path="/discount-game" element={<DiscountGamePage />} />
-            <Route path="/win-free-game" element={<InstagramPromoPage />} />
-            <Route path="/instagram-promo" element={<InstagramPromoPage />} />
-            <Route path="/games" element={<GamesPage />} />
-            <Route path="/updates" element={<UpdatesPage />} />
-            <Route path="/invite" element={<InvitePage />} />
-            <Route path="/get-offers" element={<GetOffersPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/membership" element={<MembershipPlansPage />} />
-            <Route path="/feedback" element={<FeedbackPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            {/* Redirect old admin login to new unified login */}
-            <Route path="/admin/login" element={<Navigate to="/login" replace />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          </Routes>
-        </Suspense>
-      </Router>
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <Router>
+          <PageTracker />
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/booking" element={<BookingPage />} />
+              <Route path="/rental" element={<RentalPage />} />
+              <Route path="/college-setup" element={<CollegeSetupPage />} />
+              <Route path="/discount-game" element={<DiscountGamePage />} />
+              <Route path="/win-free-game" element={<InstagramPromoPage />} />
+              <Route path="/instagram-promo" element={<InstagramPromoPage />} />
+              <Route path="/games" element={<GamesPage />} />
+              <Route path="/updates" element={<UpdatesPage />} />
+              <Route path="/invite" element={<InvitePage />} />
+              <Route path="/get-offers" element={<GetOffersPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/membership" element={<MembershipPlansPage />} />
+              <Route path="/feedback" element={<FeedbackPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              {/* Redirect old admin login to new unified login */}
+              <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            </Routes>
+          </Suspense>
+        </Router>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 
