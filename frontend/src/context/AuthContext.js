@@ -272,6 +272,37 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  // Set auth state directly (for OAuth/OTP login)
+  const setAuthState = useCallback((userData, userType = 'customer') => {
+    console.log('[AuthContext] Setting auth state directly:', { userData, userType });
+    
+    // Mark this as a recent login
+    recentLoginTimestamp = Date.now();
+    
+    // Set auth state immediately
+    if (userType === 'admin') {
+      setIsAdmin(true);
+      setUser({ name: userData.name || userData.username || 'Admin', ...userData });
+    } else {
+      setIsAdmin(false);
+      setUser(userData);
+    }
+    setIsAuthenticated(true);
+    
+    // Store in localStorage
+    try {
+      localStorage.setItem('gamespot_logged_in', 'true');
+      localStorage.setItem('gamespot_user_type', userType);
+    } catch (e) {
+      console.log('[AuthContext] localStorage not available');
+    }
+    
+    // Update cache time
+    lastCheckTimeRef.current = Date.now();
+    
+    console.log('[AuthContext] Auth state set successfully');
+  }, []);
+
   const value = {
     user,
     isAdmin,
@@ -282,6 +313,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     signup,
+    setAuthState, // Add this new function
     // Helper to clear any auth errors
     clearError: () => setError(null)
   };

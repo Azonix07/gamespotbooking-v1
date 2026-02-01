@@ -19,7 +19,7 @@ const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '377614306435
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isAdmin, login, loading: authLoading } = useAuth();
+  const { isAuthenticated, isAdmin, setAuthState, loading: authLoading } = useAuth();
   
   // OTP Login fields
   const [phone, setPhone] = useState('');
@@ -120,8 +120,8 @@ const LoginPage = () => {
       if (data.success) {
         setSuccess('Login successful! Redirecting...');
         
-        // Use login context to set state
-        await login(phone, 'OTP_LOGIN', data);
+        // Set auth state directly from OTP response
+        setAuthState(data.user, data.userType || 'customer');
         
         setTimeout(() => {
           const from = location.state?.from?.pathname || '/';
@@ -158,7 +158,9 @@ const LoginPage = () => {
       
       if (data.success) {
         setSuccess('Login successful! Redirecting...');
-        await login(data.user.email, 'GOOGLE_LOGIN', data);
+        
+        // Set auth state directly from Google response
+        setAuthState(data.user, data.userType || 'customer');
         
         setTimeout(() => {
           const from = location.state?.from?.pathname || '/';
