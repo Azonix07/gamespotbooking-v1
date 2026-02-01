@@ -524,7 +524,7 @@ def google_login():
         idinfo = id_token.verify_oauth2_token(
             credential, 
             google_requests.Request(),
-            '548928058829-ovjmhhl8n4rcl6e9ij8c88bpqc5sldms.apps.googleusercontent.com'
+            '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com'
         )
         
         # Extract user info
