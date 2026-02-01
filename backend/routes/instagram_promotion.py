@@ -5,7 +5,7 @@ Handles Instagram follow/share promotions, redemptions, and verification
 
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
-from middleware.auth import require_login, require_admin
+from middleware.auth import require_login, require_admin_decorator as require_admin
 from datetime import datetime, timedelta
 import secrets
 import string
