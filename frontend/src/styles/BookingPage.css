@@ -1,61 +1,3 @@
-/* --- Compact, Horizontal, Scrollable Time Slot Grid --- */
-.time-slots-scroll-wrapper {
-  max-width: 100%;
-  overflow-x: visible;
-  overflow-y: visible;
-  padding-bottom: 4px;
-  margin-bottom: 4px;
-}
-
-.time-slots-grid.compact-horizontal {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-start;
-}
-
-.time-slot {
-  min-width: 100px;
-  max-width: 120px;
-  flex: 0 0 calc(20% - 8px);
-  margin-bottom: 0;
-  margin-right: 0;
-  padding: 12px 8px;
-}
-
-@media (max-width: 1200px) {
-  .time-slot {
-    flex: 0 0 calc(25% - 8px);
-  }
-}
-
-@media (max-width: 900px) {
-  .time-slot {
-    flex: 0 0 calc(33.333% - 8px);
-  }
-}
-
-@media (max-width: 600px) {
-  .time-slots-grid.compact-horizontal {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .time-slot {
-    min-width: 0;
-    max-width: none;
-    flex: none;
-    padding: 14px 8px;
-    font-size: 0.9rem;
-    border-radius: 12px;
-    min-height: 64px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
 /* BookingPage.css - Modern Redesign */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
@@ -855,7 +797,7 @@
 .status-label {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #e2e8f0;
+  color: #000000;
 }
 
 /* Time slots container with padding */
@@ -1062,8 +1004,8 @@
 .time-slot.available:hover:not(:disabled) {
   background: rgba(16, 185, 129, 0.1);
   border-color: var(--booking-success);
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  /* Removed transform to keep consistent height */
 }
 
 /* Partial Slot - Yellow/Orange theme */
@@ -1124,19 +1066,18 @@
   border-color: var(--booking-primary) !important;
   background: rgba(255, 107, 53, 0.15) !important;
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15), 0 4px 15px rgba(255, 107, 53, 0.25);
-  transform: translateY(-2px);
+  /* Removed transform to prevent height change on selection */
 }
 
 .time-slot.selected::after {
   content: '✓';
   position: absolute;
-  bottom: auto;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  font-size: 1rem;
+  top: 4px;
+  right: 4px;
+  font-size: 0.7rem;
   color: var(--booking-primary);
   text-decoration: none;
+  line-height: 1;
 }
 
 .slot-time {
@@ -2194,4 +2135,1082 @@
   padding-bottom: 120px;
 }
 
-/* Mobile Overrides are handled in mobile-responsive.css, but we setup base structure here */
+/* ============================================
+   COMPREHENSIVE MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Tablet Breakpoint: 768px - 1024px */
+@media (max-width: 1024px) {
+  .booking-container {
+    padding: 80px 16px 140px;
+  }
+
+  .booking-card {
+    padding: 20px;
+  }
+
+  .steps-container {
+    gap: 6px;
+    padding: 0 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .step-item {
+    padding: 10px 14px;
+  }
+
+  .step-connector {
+    flex: 0 0 30px;
+  }
+
+  .checkout-layout-v2 {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .devices-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+}
+
+/* Mobile Breakpoint: 480px - 768px */
+@media (max-width: 768px) {
+  /* Page Layout */
+  .booking-page {
+    overflow-x: hidden;
+  }
+
+  .booking-container {
+    padding: 70px 12px 130px;
+    max-width: 100%;
+  }
+
+  /* Hero Section */
+  .booking-hero {
+    margin-bottom: 24px;
+  }
+
+  .hero-badge {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+
+  .booking-title {
+    font-size: 1.6rem;
+    line-height: 1.2;
+  }
+
+  .booking-subtitle {
+    font-size: 0.95rem;
+  }
+
+  /* Progress Steps - Compact */
+  .steps-container {
+    gap: 4px;
+    padding: 0 8px;
+    margin-bottom: 16px;
+  }
+
+  .step-item {
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+
+  .step-content {
+    display: none; /* Hide text on mobile, show only numbers */
+  }
+
+  .step-item.active .step-content {
+    display: flex; /* Show text only for active step */
+  }
+
+  .step-label {
+    font-size: 0.8rem;
+  }
+
+  .step-desc {
+    display: none;
+  }
+
+  .step-connector {
+    flex: 0 0 20px;
+  }
+
+  /* Booking Card */
+  .booking-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 12px;
+  }
+
+  .card-header.with-back {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .back-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
+  }
+
+  .card-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .card-title {
+    font-size: 1.15rem;
+  }
+
+  .card-subtitle {
+    font-size: 0.8rem;
+  }
+
+  /* Header Session Info */
+  .header-session-info {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 8px;
+    gap: 8px;
+  }
+
+  .session-badge {
+    padding: 8px 12px;
+    border-radius: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .badge-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .badge-label {
+    font-size: 0.6rem;
+  }
+
+  .badge-value {
+    font-size: 0.85rem;
+  }
+
+  /* Time Slots Header */
+  .time-slots-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .header-left {
+    gap: 10px;
+  }
+
+  .header-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+  }
+
+  .header-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .header-title {
+    font-size: 1rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.75rem;
+  }
+
+  /* Header Date Picker */
+  .header-date-picker {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+
+  .date-input-compact {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  .selected-date-badge {
+    padding: 8px 14px;
+    min-width: 65px;
+  }
+
+  .badge-day {
+    font-size: 0.6rem;
+  }
+
+  .badge-date {
+    font-size: 1.2rem;
+  }
+
+  .badge-month {
+    font-size: 0.65rem;
+  }
+
+  /* Slot Status Legend */
+  .slot-status-legend {
+    padding: 8px 12px;
+    gap: 12px;
+    justify-content: center;
+    border-radius: 10px;
+  }
+
+  .legend-item {
+    gap: 5px;
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .status-label {
+    font-size: 0.75rem;
+  }
+
+  /* Time Slots Grid - COMPACT for Mobile */
+  .time-slots-scroll-wrapper {
+    padding: 12px;
+  }
+
+  .time-slots-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .time-slots-grid.compact-horizontal {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .time-slot {
+    min-width: 0;
+    max-width: none;
+    flex: none;
+    padding: 8px 4px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+    min-height: 44px;
+  }
+
+  .time-slot::before {
+    top: 4px;
+    right: 4px;
+    width: 5px;
+    height: 5px;
+  }
+
+  .time-slot.selected::after {
+    top: 3px;
+    right: 3px;
+    font-size: 0.6rem;
+  }
+
+  .time-slot.full::after {
+    font-size: 0.45rem;
+    bottom: 3px;
+  }
+
+  .slot-time {
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .slot-capacity {
+    font-size: 0.6rem;
+    gap: 2px;
+  }
+
+  /* Devices Section */
+  .devices-section {
+    margin-top: 4px;
+  }
+
+  .devices-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .device-card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .device-header {
+    gap: 12px;
+  }
+
+  .device-icon-wrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+  }
+
+  .device-name {
+    font-size: 0.95rem;
+  }
+
+  .device-unit {
+    font-size: 0.75rem;
+  }
+
+  .expand-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Player Buttons - Mobile */
+  .player-buttons {
+    padding: 4px;
+    border-radius: 12px;
+    gap: 4px;
+    margin-top: 12px;
+  }
+
+  .player-btn {
+    padding: 8px 0;
+    border-radius: 10px;
+    font-size: 0.85rem;
+  }
+
+  /* Duration Buttons - Mobile */
+  .duration-buttons {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .duration-btn {
+    padding: 8px 2px;
+    border-radius: 10px;
+  }
+
+  .duration-btn .dur-value {
+    font-size: 1.1rem;
+  }
+
+  .duration-btn .dur-unit {
+    font-size: 0.55rem;
+  }
+
+  /* Option Groups */
+  .option-group {
+    margin-top: 14px;
+  }
+
+  .option-label {
+    font-size: 0.7rem;
+    margin-bottom: 6px;
+  }
+
+  /* Checkout Layout V2 - Mobile Stack */
+  .checkout-layout-v2 {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .checkout-form-v2 {
+    padding: 20px;
+    border-radius: 18px;
+  }
+
+  .form-title-v2 {
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+  }
+
+  .user-profile-card {
+    padding: 16px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    gap: 12px;
+  }
+
+  .profile-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+
+  .profile-greeting {
+    font-size: 0.75rem;
+  }
+
+  .profile-name {
+    font-size: 1.05rem;
+  }
+
+  .form-group-v2 {
+    margin-bottom: 16px;
+  }
+
+  .form-label-v2 {
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+  }
+
+  .input-wrapper-v2 {
+    height: 50px;
+  }
+
+  .input-icon-v2 {
+    left: 14px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .form-input-v2 {
+    padding: 14px 16px 14px 48px;
+    font-size: 0.95rem;
+    height: 50px;
+    border-radius: 12px;
+  }
+
+  /* Summary Card V2 - Mobile */
+  .summary-card-v2 {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .summary-title-v2 {
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+
+  .summary-item-v2 {
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .summary-icon-v2 {
+    font-size: 1rem;
+    padding: 8px;
+    border-radius: 10px;
+  }
+
+  .summary-label-v2 {
+    font-size: 0.65rem;
+  }
+
+  .summary-value-v2 {
+    font-size: 0.95rem;
+  }
+
+  .items-list-v2 {
+    gap: 10px;
+  }
+
+  .item-row-v2 {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .item-icon-v2 {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    margin-right: 10px;
+    font-size: 0.95rem;
+  }
+
+  .item-name-v2 {
+    font-size: 0.85rem;
+  }
+
+  .item-meta-v2 {
+    font-size: 0.7rem;
+  }
+
+  .item-price-v2 {
+    font-size: 0.9rem;
+  }
+
+  .summary-total-v2 {
+    padding: 16px;
+    border-radius: 12px;
+    margin-top: 16px;
+  }
+
+  .total-amount-v2 {
+    font-size: 1.6rem;
+  }
+
+  /* Submit Section */
+  .submit-section {
+    margin-top: 20px;
+  }
+
+  .submit-btn-v2 {
+    padding: 14px;
+    font-size: 1rem;
+    border-radius: 12px;
+  }
+
+  /* Price Footer V2 - Mobile */
+  .price-footer-v2 {
+    width: calc(100% - 24px);
+    min-width: auto;
+    bottom: 12px;
+    padding: 10px 10px 10px 18px;
+    gap: 16px;
+    border-radius: 18px;
+  }
+
+  .price-info-container {
+    gap: 10px;
+  }
+
+  .price-label-simple {
+    font-size: 0.7rem;
+  }
+
+  .total-price-display {
+    font-size: 1.25rem;
+  }
+
+  .action-btn-pill {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 50px;
+  }
+
+  /* Fixed Footer - Mobile */
+  .pf-fixed-footer {
+    padding: 0 12px 12px;
+  }
+
+  .pf-container {
+    min-width: auto;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    gap: 16px;
+  }
+
+  .pf-label {
+    font-size: 0.65rem;
+  }
+
+  .pf-amount {
+    font-size: 1.4rem;
+  }
+
+  .pf-next-btn {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    gap: 8px;
+  }
+
+  /* Mini Price Pill - Mobile */
+  .mini-price-pill {
+    padding: 6px 6px 6px 16px;
+    min-height: 48px;
+    gap: 10px;
+    border-radius: 40px;
+  }
+
+  .mini-price-label {
+    font-size: 0.6rem;
+  }
+
+  .mini-price-amount {
+    font-size: 1.05rem;
+  }
+
+  .mini-continue-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+
+  /* Alerts - Mobile */
+  .alert {
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
+  .alert-icon {
+    font-size: 1rem;
+  }
+
+  .alert strong {
+    font-size: 0.85rem;
+  }
+
+  .alert p {
+    font-size: 0.8rem;
+  }
+}
+
+/* Small Mobile Breakpoint: < 480px */
+@media (max-width: 480px) {
+  .booking-container {
+    padding: 65px 8px 120px;
+  }
+
+  .booking-hero {
+    margin-bottom: 16px;
+  }
+
+  .hero-badge {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
+  .booking-title {
+    font-size: 1.35rem;
+  }
+
+  .booking-subtitle {
+    font-size: 0.85rem;
+  }
+
+  /* Steps - Icon Only */
+  .steps-container {
+    gap: 2px;
+    margin-bottom: 12px;
+  }
+
+  .step-item {
+    padding: 6px 10px;
+  }
+
+  .step-number {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+
+  .step-content {
+    display: none !important; /* Force hide on small screens */
+  }
+
+  .step-connector {
+    flex: 0 0 12px;
+  }
+
+  .connector-line {
+    height: 1px;
+  }
+
+  /* Booking Card */
+  .booking-card {
+    padding: 12px;
+    border-radius: 14px;
+    border-width: 1px;
+  }
+
+  .card-header {
+    gap: 10px;
+    padding-bottom: 10px;
+  }
+
+  .card-icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 10px;
+  }
+
+  .card-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .card-title {
+    font-size: 1.05rem;
+  }
+
+  .card-subtitle {
+    font-size: 0.75rem;
+  }
+
+  /* Time Slots - Ultra Compact */
+  .time-slots-header {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .header-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+
+  .header-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .header-title {
+    font-size: 0.9rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.7rem;
+  }
+
+  .slot-status-legend {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .status-label {
+    font-size: 0.65rem;
+  }
+
+  /* Time Slots - 4 Column Grid */
+  .time-slots-scroll-wrapper {
+    padding: 8px;
+  }
+
+  .time-slots-grid,
+  .time-slots-grid.compact-horizontal {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+  }
+
+  .time-slot {
+    padding: 6px 3px;
+    border-radius: 6px;
+    min-height: 38px;
+    border-width: 1px;
+  }
+
+  .time-slot::before {
+    top: 3px;
+    right: 3px;
+    width: 4px;
+    height: 4px;
+  }
+
+  .slot-time {
+    font-size: 0.65rem;
+  }
+
+  .slot-capacity {
+    font-size: 0.55rem;
+  }
+
+  .time-slot.full::after {
+    font-size: 0.4rem;
+    bottom: 2px;
+  }
+
+  /* Session Badges */
+  .header-session-info {
+    gap: 6px;
+  }
+
+  .session-badge {
+    padding: 6px 10px;
+    border-radius: 8px;
+  }
+
+  .badge-label {
+    font-size: 0.55rem;
+  }
+
+  .badge-value {
+    font-size: 0.75rem;
+  }
+
+  /* Device Cards */
+  .devices-grid {
+    gap: 10px;
+  }
+
+  .device-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .device-icon-wrapper {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+  }
+
+  .device-name {
+    font-size: 0.9rem;
+  }
+
+  .device-unit {
+    font-size: 0.7rem;
+  }
+
+  /* Player & Duration Buttons */
+  .player-buttons {
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .player-btn {
+    padding: 7px 0;
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+
+  .duration-buttons {
+    gap: 5px;
+  }
+
+  .duration-btn {
+    padding: 7px 2px;
+    border-radius: 8px;
+  }
+
+  .duration-btn .dur-value {
+    font-size: 1rem;
+  }
+
+  .duration-btn .dur-unit {
+    font-size: 0.5rem;
+  }
+
+  /* Checkout Form */
+  .checkout-form-v2 {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .form-title-v2 {
+    font-size: 1.2rem;
+  }
+
+  .user-profile-card {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .profile-avatar {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+
+  .profile-name {
+    font-size: 0.95rem;
+  }
+
+  .form-input-v2 {
+    padding: 12px 14px 12px 42px;
+    font-size: 0.9rem;
+    height: 46px;
+    border-radius: 10px;
+  }
+
+  .input-wrapper-v2 {
+    height: 46px;
+  }
+
+  .input-icon-v2 {
+    left: 12px;
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Summary Card */
+  .summary-card-v2 {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .summary-title-v2 {
+    font-size: 1.1rem;
+  }
+
+  .item-row-v2 {
+    padding: 8px;
+  }
+
+  .item-icon-v2 {
+    width: 28px;
+    height: 28px;
+    margin-right: 8px;
+  }
+
+  .item-name-v2 {
+    font-size: 0.8rem;
+  }
+
+  .item-meta-v2 {
+    font-size: 0.65rem;
+  }
+
+  .total-amount-v2 {
+    font-size: 1.4rem;
+  }
+
+  .submit-btn-v2 {
+    padding: 12px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+  }
+
+  /* Fixed Footer */
+  .pf-fixed-footer {
+    padding: 0 8px 8px;
+  }
+
+  .pf-container {
+    padding: 10px 12px;
+    border-radius: 14px;
+    gap: 12px;
+  }
+
+  .pf-amount {
+    font-size: 1.25rem;
+  }
+
+  .pf-next-btn {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+  }
+
+  /* Price Footer V2 */
+  .price-footer-v2 {
+    width: calc(100% - 16px);
+    bottom: 8px;
+    padding: 8px 8px 8px 14px;
+    gap: 12px;
+    border-radius: 14px;
+  }
+
+  .total-price-display {
+    font-size: 1.15rem;
+  }
+
+  .action-btn-pill {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Extra Small Screens: < 360px */
+@media (max-width: 360px) {
+  .booking-container {
+    padding: 60px 6px 110px;
+  }
+
+  .booking-title {
+    font-size: 1.2rem;
+  }
+
+  .booking-card {
+    padding: 10px;
+  }
+
+  .time-slots-grid,
+  .time-slots-grid.compact-horizontal {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+
+  .time-slot {
+    padding: 6px 2px;
+    min-height: 36px;
+  }
+
+  .slot-time {
+    font-size: 0.6rem;
+  }
+
+  .duration-buttons {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .duration-btn {
+    padding: 10px 4px;
+  }
+
+  .pf-container {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .pf-next-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Landscape Mode Adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+  .booking-container {
+    padding-top: 60px;
+  }
+
+  .time-slots-grid,
+  .time-slots-grid.compact-horizontal {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .devices-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pf-container {
+    max-width: 600px;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .time-slot {
+    min-height: 48px;
+  }
+
+  .player-btn,
+  .duration-btn {
+    min-height: 44px;
+  }
+
+  .action-btn-pill,
+  .pf-next-btn,
+  .submit-btn-v2 {
+    min-height: 48px;
+  }
+}
