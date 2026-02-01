@@ -12,6 +12,7 @@ from services.auth_service import (
     reset_password_with_token,
     send_reset_email
 )
+from services.sms_service import sms_service
 from routes.admin import verify_php_password
 from config.database import get_db_connection
 from middleware.auth import generate_admin_token, generate_user_token
@@ -373,13 +374,12 @@ def send_otp():
             'attempts': 0
         }
         
-        # In production, send SMS via Twilio/AWS SNS
-        # For now, we'll log it
-        print(f'[OTP] Generated OTP for {phone}: {otp}')
+        # Send OTP via SMS (Twilio)
+        success, message = sms_service.send_otp(phone, otp)
         
-        # In production, OTP should be sent via SMS (Twilio, AWS SNS, etc.)
-        # For now, print to backend logs only
-        print(f'[OTP] OTP for {phone}: {otp}')  # Check Railway backend logs for OTP
+        if not success:
+            # SMS failed but OTP is stored and logged
+            print(f'[OTP] ⚠️ SMS delivery failed, OTP logged for {phone}')
         
         return jsonify({
             'success': True,

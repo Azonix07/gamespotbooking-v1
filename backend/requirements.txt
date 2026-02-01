@@ -17,6 +17,9 @@ google-auth==2.25.2
 google-auth-oauthlib==1.2.0
 requests==2.31.0
 
+# SMS
+twilio==8.11.0
+
 # Environment Variables
 python-dotenv==1.0.0
 
