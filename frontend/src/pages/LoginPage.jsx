@@ -14,7 +14,7 @@ import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import '../styles/LoginPage.css';
 
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '548928058829-your-client-id.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com';
 
 const LoginPage = () => {
   const navigate = useNavigate();
