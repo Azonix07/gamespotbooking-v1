@@ -377,10 +377,13 @@ def send_otp():
         # For now, we'll log it
         print(f'[OTP] Generated OTP for {phone}: {otp}')
         
+        # In production, OTP should be sent via SMS (Twilio, AWS SNS, etc.)
+        # For now, print to backend logs only
+        print(f'[OTP] OTP for {phone}: {otp}')  # Check Railway backend logs for OTP
+        
         return jsonify({
             'success': True,
             'message': 'OTP sent successfully',
-            'otp': otp,  # TODO: Remove in production
             'phone': phone
         })
         
@@ -518,7 +521,7 @@ def google_login():
         idinfo = id_token.verify_oauth2_token(
             credential, 
             google_requests.Request(),
-            '298002512298-3fqml6u7o0t6smr3m0kebpv4cdl397k2.apps.googleusercontent.com'  # Replace with your actual client ID
+            '548928058829-ovjmhhl8n4rcl6e9ij8c88bpqc5sldms.apps.googleusercontent.com'
         )
         
         # Extract user info
