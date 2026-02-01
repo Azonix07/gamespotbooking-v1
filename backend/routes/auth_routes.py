@@ -374,20 +374,25 @@ def send_otp():
             'attempts': 0
         }
         
-        # Send OTP via SMS (Twilio)
+        # Send OTP via SMS/WhatsApp
         success, message = sms_service.send_otp(phone, otp)
         
         if not success:
-            # SMS failed but OTP is stored and logged
-            print(f'[OTP] ⚠️ SMS delivery failed, OTP logged for {phone}')
+            # SMS/WhatsApp failed but OTP is stored
+            print(f'[OTP] ⚠️ Message delivery failed, OTP available for {phone}')
         
-        # TEMPORARY: Show OTP in response for testing (remove in production)
-        return jsonify({
+        # Include OTP in response (will be hidden when messaging service is configured)
+        response_data = {
             'success': True,
             'message': 'OTP sent successfully',
-            'phone': phone,
-            'otp': otp  # DEVELOPMENT ONLY - shows OTP in response for testing
-        })
+            'phone': phone
+        }
+        
+        # Add OTP to response if no messaging service configured
+        if not sms_service.enabled:
+            response_data['otp'] = otp
+        
+        return jsonify(response_data)
         
     except Exception as e:
         print(f'[OTP] Error sending OTP: {str(e)}')

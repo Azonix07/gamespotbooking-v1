@@ -78,10 +78,11 @@ const LoginPage = () => {
       if (data.success) {
         setOtpSent(true);
         setOtpTimer(300); // 5 minutes
-        setSuccess(`OTP sent to your mobile number!`);
-        // TEMPORARY: Show OTP for testing (will be removed when SMS is configured)
+        // Show OTP if provided in response
         if (data.otp) {
-          alert(`Your OTP is: ${data.otp}\n\n(This is for testing. Real SMS will be configured later.)`);
+          setSuccess(`OTP: ${data.otp} - Check your phone for verification code`);
+        } else {
+          setSuccess(`OTP sent to your mobile number!`);
         }
       } else {
         setError(data.error || 'Failed to send OTP');
