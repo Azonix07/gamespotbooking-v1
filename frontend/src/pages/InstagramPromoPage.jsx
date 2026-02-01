@@ -108,6 +108,20 @@ const InstagramPromoPage = () => {
         return;
       }
 
+      // Confirm Instagram sharing
+      const confirmMsg = (
+        `Before claiming, please confirm:\n\n` +
+        `✓ You have followed @${activePromotion.instagram_handle}\n` +
+        `✓ You have shared our Instagram page with these friends:\n` +
+        validFriends.map((f, i) => `  ${i + 1}. @${f}`).join('\n') +
+        `\n\nHave you completed these steps?`
+      );
+      
+      if (!window.confirm(confirmMsg)) {
+        setSubmitting(false);
+        return;
+      }
+
       // Submit claim
       const response = await apiFetch('/api/instagram-promo/claim', {
         method: 'POST',
@@ -123,6 +137,9 @@ const InstagramPromoPage = () => {
         try {
           const promoResponse = await apiFetch('/api/promo/generate', {
             method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
               type: 'instagram',
               bonus_minutes: activePromotion.discount_value,
@@ -132,13 +149,26 @@ const InstagramPromoPage = () => {
           });
 
           if (promoResponse.success) {
-            setSuccessMessage(`Congratulations! You've claimed ${activePromotion.discount_value} minutes of FREE gaming! Your promo code: ${promoResponse.promo_code.code}. Use this code when booking to get your free minutes!`);
+            setSuccessMessage(
+              `🎉 Congratulations! You've claimed ${activePromotion.discount_value} minutes of FREE gaming!\n\n` +
+              `Your promo code: ${promoResponse.promo_code.code}\n\n` +
+              `Use this code when booking to get your free minutes!`
+            );
           } else {
-            setSuccessMessage(`Congratulations! You've claimed ${activePromotion.discount_value} minutes of FREE gaming! Your redemption code: ${response.redemption.redemption_code}`);
+            console.error('Promo generation failed:', promoResponse);
+            setSuccessMessage(
+              `✅ Congratulations! You've claimed ${activePromotion.discount_value} minutes of FREE gaming!\n\n` +
+              `Your redemption code: ${response.redemption.redemption_code}\n\n` +
+              `(Promo code generation failed, but your claim is saved)`
+            );
           }
         } catch (promoErr) {
           console.error('Error generating promo code:', promoErr);
-          setSuccessMessage(`Congratulations! You've claimed ${activePromotion.discount_value} minutes of FREE gaming! Your redemption code: ${response.redemption.redemption_code}`);
+          setSuccessMessage(
+            `✅ Congratulations! You've claimed ${activePromotion.discount_value} minutes of FREE gaming!\n\n` +
+            `Your redemption code: ${response.redemption.redemption_code}\n\n` +
+            `(Promo code generation failed, but your claim is saved)`
+          );
         }
         
         setShowClaimForm(false);
@@ -244,7 +274,7 @@ const InstagramPromoPage = () => {
                     <div className="step-number">3</div>
                     <div className="step-content">
                       <h3>Share with Friends</h3>
-                      <p>Share with at least {activePromotion.required_friends_count} friends</p>
+                      <p>Share with at least {activePromotion.required_friends_count} friends via Instagram DM or Story</p>
                     </div>
                   </div>
                   

@@ -31,11 +31,15 @@ def generate_promo_code(user):
     cursor = None
     
     try:
+        print(f'[Promo Code] Generate request from user: {user}')
+        
         data = request.get_json() or {}
         code_type = data.get('type', 'invite')
         bonus_minutes = data.get('bonus_minutes', 30)
         max_uses = data.get('max_uses', 1)
         expires_days = data.get('expires_days', 90)
+        
+        print(f'[Promo Code] Type: {code_type}, Bonus: {bonus_minutes}, Max uses: {max_uses}')
         
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -65,6 +69,8 @@ def generate_promo_code(user):
         conn.commit()
         code_id = cursor.lastrowid
         
+        print(f'[Promo Code] Successfully generated: {code} (ID: {code_id})')
+        
         return jsonify({
             'success': True,
             'promo_code': {
@@ -80,10 +86,13 @@ def generate_promo_code(user):
     except Exception as e:
         if conn:
             conn.rollback()
-        print(f'Error generating promo code: {str(e)}')
+        print(f'[Promo Code] Error generating promo code: {str(e)}')
         import traceback
         traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({
+            'success': False, 
+            'error': f'Failed to generate promo code: {str(e)}'
+        }), 500
         
     finally:
         if cursor:
