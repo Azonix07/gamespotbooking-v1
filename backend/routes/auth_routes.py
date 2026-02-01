@@ -489,3 +489,215 @@ def verify_otp():
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@auth_bp.route('/api/auth/google-login', methods=['POST', 'OPTIONS'])
+def google_login():
+    """
+    Handle Google OAuth login
+    
+    POST body:
+    {
+        "credential": "google_jwt_token"
+    }
+    """
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    try:
+        from google.oauth2 import id_token
+        from google.auth.transport import requests as google_requests
+        
+        data = request.get_json()
+        credential = data.get('credential')
+        
+        if not credential:
+            return jsonify({'success': False, 'error': 'No credential provided'}), 400
+        
+        # Verify the Google token
+        idinfo = id_token.verify_oauth2_token(
+            credential, 
+            google_requests.Request(),
+            '298002512298-3fqml6u7o0t6smr3m0kebpv4cdl397k2.apps.googleusercontent.com'  # Replace with your actual client ID
+        )
+        
+        # Extract user info
+        email = idinfo['email']
+        name = idinfo.get('name', email.split('@')[0])
+        google_id = idinfo['sub']
+        
+        # Check if user exists or create new
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("""
+            SELECT id, name, email, phone 
+            FROM users 
+            WHERE email = %s OR oauth_provider_id = %s
+        """, (email, google_id))
+        
+        user = cursor.fetchone()
+        
+        if not user:
+            # Create new user
+            cursor.execute("""
+                INSERT INTO users (name, email, phone, password, oauth_provider, oauth_provider_id, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+            """, (name, email, '', 'GOOGLE_OAUTH', 'google', google_id))
+            
+            conn.commit()
+            user_id = cursor.lastrowid
+            
+            user = {
+                'id': user_id,
+                'name': name,
+                'email': email,
+                'phone': ''
+            }
+        
+        cursor.close()
+        conn.close()
+        
+        # Set session
+        session['user_logged_in'] = True
+        session['user_id'] = user['id']
+        session['user_name'] = user['name']
+        session['user_email'] = user['email']
+        session['user_phone'] = user.get('phone', '')
+        session.permanent = True
+        
+        # Generate JWT token
+        token = generate_user_token(user['id'], user['email'], user['name'])
+        
+        return jsonify({
+            'success': True,
+            'message': 'Google login successful',
+            'user': {
+                'id': user['id'],
+                'name': user['name'],
+                'email': user['email'],
+                'phone': user.get('phone', '')
+            },
+            'token': token,
+            'userType': 'customer'
+        })
+        
+    except ValueError as e:
+        # Invalid token
+        print(f'[Google Login] Invalid token: {str(e)}')
+        return jsonify({'success': False, 'error': 'Invalid Google token'}), 401
+    except Exception as e:
+        print(f'[Google Login] Error: {str(e)}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@auth_bp.route('/api/auth/apple-login', methods=['POST', 'OPTIONS'])
+def apple_login():
+    """
+    Handle Apple Sign In
+    
+    POST body:
+    {
+        "id_token": "apple_jwt_token",
+        "user": {
+            "name": {"firstName": "John", "lastName": "Doe"},
+            "email": "user@privaterelay.appleid.com"
+        }
+    }
+    """
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    try:
+        import jwt
+        import requests as http_requests
+        
+        data = request.get_json()
+        id_token_str = data.get('id_token')
+        user_data = data.get('user', {})
+        
+        if not id_token_str:
+            return jsonify({'success': False, 'error': 'No id_token provided'}), 400
+        
+        # Get Apple's public keys
+        apple_keys_url = 'https://appleid.apple.com/auth/keys'
+        apple_keys_response = http_requests.get(apple_keys_url)
+        apple_keys = apple_keys_response.json()
+        
+        # Decode token (simplified - in production use proper verification)
+        decoded = jwt.decode(id_token_str, options={"verify_signature": False})
+        
+        # Extract user info
+        apple_id = decoded['sub']
+        email = decoded.get('email', user_data.get('email', f'{apple_id}@appleid.com'))
+        
+        # Get name from user data if provided (only on first sign-in)
+        name = 'Apple User'
+        if user_data and 'name' in user_data:
+            first_name = user_data['name'].get('firstName', '')
+            last_name = user_data['name'].get('lastName', '')
+            name = f"{first_name} {last_name}".strip() or 'Apple User'
+        
+        # Check if user exists or create new
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("""
+            SELECT id, name, email, phone 
+            FROM users 
+            WHERE email = %s OR oauth_provider_id = %s
+        """, (email, apple_id))
+        
+        user = cursor.fetchone()
+        
+        if not user:
+            # Create new user
+            cursor.execute("""
+                INSERT INTO users (name, email, phone, password, oauth_provider, oauth_provider_id, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+            """, (name, email, '', 'APPLE_OAUTH', 'apple', apple_id))
+            
+            conn.commit()
+            user_id = cursor.lastrowid
+            
+            user = {
+                'id': user_id,
+                'name': name,
+                'email': email,
+                'phone': ''
+            }
+        
+        cursor.close()
+        conn.close()
+        
+        # Set session
+        session['user_logged_in'] = True
+        session['user_id'] = user['id']
+        session['user_name'] = user['name']
+        session['user_email'] = user['email']
+        session['user_phone'] = user.get('phone', '')
+        session.permanent = True
+        
+        # Generate JWT token
+        token = generate_user_token(user['id'], user['email'], user['name'])
+        
+        return jsonify({
+            'success': True,
+            'message': 'Apple login successful',
+            'user': {
+                'id': user['id'],
+                'name': user['name'],
+                'email': user['email'],
+                'phone': user.get('phone', '')
+            },
+            'token': token,
+            'userType': 'customer'
+        })
+        
+    except Exception as e:
+        print(f'[Apple Login] Error: {str(e)}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500

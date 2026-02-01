@@ -12,6 +12,11 @@ Werkzeug==3.0.1
 bcrypt==4.1.2
 PyJWT==2.8.0
 
+# OAuth
+google-auth==2.25.2
+google-auth-oauthlib==1.2.0
+requests==2.31.0
+
 # Environment Variables
 python-dotenv==1.0.0
 
