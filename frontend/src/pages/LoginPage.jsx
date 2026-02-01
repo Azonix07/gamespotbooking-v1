@@ -24,7 +24,14 @@ const LoginPage = () => {
   // Tab state
   const [activeTab, setActiveTab] = useState('login');
   
-  // Login fields
+  // OTP Login fields
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [userName, setUserName] = useState(''); // For new users
+  
+  // Old login fields (keep for admin)
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   
@@ -42,6 +49,14 @@ const LoginPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // OTP timer countdown
+  useEffect(() => {
+    if (otpTimer > 0) {
+      const timer = setTimeout(() => setOtpTimer(otpTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [otpTimer]);
+
   // Redirect if already authenticated
   useEffect(() => {
     // Don't redirect if we're in the middle of submitting
@@ -55,6 +70,91 @@ const LoginPage = () => {
       }
     }
   }, [isAuthenticated, isAdmin, authLoading, navigate, location.state, isSubmitting]);
+
+  const handleSendOTP = async (e) => {
+    e.preventDefault();
+    
+    if (!phone || phone.length < 10) {
+      setError('Please enter a valid 10-digit mobile number');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/auth/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phone }),
+        credentials: 'include'
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setOtpSent(true);
+        setOtpTimer(300); // 5 minutes
+        setSuccess(`OTP sent to ${phone}. Check console for OTP: ${data.otp}`);
+        console.log('OTP:', data.otp); // For testing
+      } else {
+        setError(data.error || 'Failed to send OTP');
+      }
+    } catch (err) {
+      setError('Failed to send OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    
+    if (!otp || otp.length !== 6) {
+      setError('Please enter the 6-digit OTP');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/auth/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          phone, 
+          otp,
+          name: userName || 'Guest'
+        }),
+        credentials: 'include'
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess('Login successful! Redirecting...');
+        
+        // Use the login function from context to set authentication state
+        await login(phone, 'OTP_LOGIN', data);
+        
+        setTimeout(() => {
+          const from = location.state?.from?.pathname || '/';
+          navigate(from, { replace: true });
+        }, 500);
+      } else {
+        setError(data.error || 'Invalid OTP');
+      }
+    } catch (err) {
+      setError('Failed to verify OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -218,79 +318,120 @@ const LoginPage = () => {
 
           {/* Login Form */}
           {activeTab === 'login' && (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP}>
               <h2 className="form-title">Welcome Back!</h2>
-              <p className="form-subtitle">Login to access your account</p>
+              <p className="form-subtitle">Login with your mobile number</p>
 
               <div className="form-group">
-                <label htmlFor="identifier" className="form-label">
-                  Email or Username
+                <label htmlFor="phone" className="form-label">
+                  Mobile Number
                 </label>
                 <div className="input-wrapper">
-                  <FiMail className="input-icon" />
+                  <FiPhone className="input-icon" />
                   <input
-                    id="identifier"
-                    type="text"
+                    id="phone"
+                    type="tel"
                     className="form-input"
-                    placeholder="Enter your email or username"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="Enter 10-digit mobile number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                     required
-                    autoComplete="username"
+                    disabled={otpSent}
+                    autoComplete="tel"
                   />
                 </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="password" className="form-label">
-                  Password
-                </label>
-                <div className="input-wrapper">
-                  <FiLock className="input-icon" />
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    className="form-input"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label="Toggle password visibility"
-                  >
-                    {showPassword ? <FiEyeOff /> : <FiEye />}
-                  </button>
-                </div>
-              </div>
+              {otpSent && (
+                <>
+                  <div className="form-group">
+                    <label htmlFor="otp" className="form-label">
+                      Enter OTP
+                    </label>
+                    <div className="input-wrapper">
+                      <FiLock className="input-icon" />
+                      <input
+                        id="otp"
+                        type="text"
+                        className="form-input"
+                        placeholder="Enter 6-digit OTP"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        required
+                        autoComplete="one-time-code"
+                      />
+                    </div>
+                    <div className="otp-timer">
+                      {otpTimer > 0 ? (
+                        <span>OTP expires in {Math.floor(otpTimer / 60)}:{(otpTimer % 60).toString().padStart(2, '0')}</span>
+                      ) : (
+                        <button 
+                          type="button" 
+                          className="form-link"
+                          onClick={() => {
+                            setOtpSent(false);
+                            setOtp('');
+                          }}
+                        >
+                          Resend OTP
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="userName" className="form-label">
+                      Your Name (for new users)
+                    </label>
+                    <div className="input-wrapper">
+                      <FiUser className="input-icon" />
+                      <input
+                        id="userName"
+                        type="text"
+                        className="form-input"
+                        placeholder="Enter your name (optional)"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                        autoComplete="name"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               <button 
                 type="submit" 
                 className="btn-primary"
-                disabled={loading}
+                disabled={loading || (otpSent && otp.length !== 6)}
               >
                 {loading ? (
                   <>
                     <div className="loading-spinner"></div>
-                    Logging in...
+                    {otpSent ? 'Verifying...' : 'Sending OTP...'}
                   </>
                 ) : (
                   <>
                     <FiLogIn />
-                    Login
+                    {otpSent ? 'Verify & Login' : 'Send OTP'}
                   </>
                 )}
               </button>
 
-              <div className="text-center">
-                <Link to="/forgot-password" className="form-link">
-                  Forgot Password?
-                </Link>
-              </div>
+              {otpSent && (
+                <div className="text-center">
+                  <button 
+                    type="button" 
+                    className="form-link"
+                    onClick={() => {
+                      setOtpSent(false);
+                      setOtp('');
+                      setPhone('');
+                    }}
+                  >
+                    Change Mobile Number
+                  </button>
+                </div>
+              )}
             </form>
           )}
 

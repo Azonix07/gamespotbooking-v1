@@ -341,3 +341,151 @@ def get_current_user():
         })
     else:
         return jsonify({'success': False, 'error': 'User not found'}), 404
+
+
+# OTP-based Login System
+import random
+import time
+
+# In-memory OTP storage (for production, use Redis or database)
+otp_storage = {}
+
+@auth_bp.route('/api/auth/send-otp', methods=['POST', 'OPTIONS'])
+def send_otp():
+    """Send OTP to mobile number"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    try:
+        data = request.get_json()
+        phone = data.get('phone', '').strip()
+        
+        if not phone or len(phone) < 10:
+            return jsonify({'success': False, 'error': 'Valid phone number is required'}), 400
+        
+        # Generate 6-digit OTP
+        otp = str(random.randint(100000, 999999))
+        
+        # Store OTP with expiry (5 minutes)
+        otp_storage[phone] = {
+            'otp': otp,
+            'expires_at': time.time() + 300,  # 5 minutes
+            'attempts': 0
+        }
+        
+        # In production, send SMS via Twilio/AWS SNS
+        # For now, we'll log it
+        print(f'[OTP] Generated OTP for {phone}: {otp}')
+        
+        return jsonify({
+            'success': True,
+            'message': 'OTP sent successfully',
+            'otp': otp,  # TODO: Remove in production
+            'phone': phone
+        })
+        
+    except Exception as e:
+        print(f'[OTP] Error sending OTP: {str(e)}')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@auth_bp.route('/api/auth/verify-otp', methods=['POST', 'OPTIONS'])
+def verify_otp():
+    """Verify OTP and login user"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    try:
+        data = request.get_json()
+        phone = data.get('phone', '').strip()
+        otp = data.get('otp', '').strip()
+        name = data.get('name', '').strip()  # Optional for new users
+        
+        if not phone or not otp:
+            return jsonify({'success': False, 'error': 'Phone and OTP are required'}), 400
+        
+        # Check if OTP exists and is valid
+        stored_data = otp_storage.get(phone)
+        
+        if not stored_data:
+            return jsonify({'success': False, 'error': 'OTP not found or expired'}), 400
+        
+        # Check expiry
+        if time.time() > stored_data['expires_at']:
+            del otp_storage[phone]
+            return jsonify({'success': False, 'error': 'OTP expired'}), 400
+        
+        # Check attempts
+        if stored_data['attempts'] >= 3:
+            del otp_storage[phone]
+            return jsonify({'success': False, 'error': 'Too many attempts. Please request a new OTP'}), 400
+        
+        # Verify OTP
+        if stored_data['otp'] != otp:
+            stored_data['attempts'] += 1
+            return jsonify({'success': False, 'error': 'Invalid OTP'}), 400
+        
+        # OTP verified - clear it
+        del otp_storage[phone]
+        
+        # Check if user exists
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute('SELECT * FROM users WHERE phone = %s', (phone,))
+        user = cursor.fetchone()
+        
+        if not user:
+            # Create new user
+            if not name:
+                cursor.close()
+                conn.close()
+                return jsonify({'success': False, 'error': 'Name is required for new users'}), 400
+            
+            email = f'{phone}@gamespot.local'  # Generate dummy email
+            cursor.execute(
+                'INSERT INTO users (name, email, phone, password_hash) VALUES (%s, %s, %s, %s)',
+                (name, email, phone, 'OTP_LOGIN')  # Dummy password for OTP users
+            )
+            conn.commit()
+            user_id = cursor.lastrowid
+            
+            user = {
+                'id': user_id,
+                'name': name,
+                'email': email,
+                'phone': phone
+            }
+        
+        cursor.close()
+        conn.close()
+        
+        # Set session
+        session['user_logged_in'] = True
+        session['user_id'] = user['id']
+        session['user_name'] = user['name']
+        session['user_email'] = user['email']
+        session['user_phone'] = user['phone']
+        session.permanent = True
+        
+        # Generate JWT token
+        token = generate_user_token(user['id'], user['email'], user['name'])
+        
+        return jsonify({
+            'success': True,
+            'message': 'Login successful',
+            'user': {
+                'id': user['id'],
+                'name': user['name'],
+                'email': user['email'],
+                'phone': user['phone']
+            },
+            'token': token,
+            'userType': 'customer'
+        })
+        
+    except Exception as e:
+        print(f'[OTP] Error verifying OTP: {str(e)}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500

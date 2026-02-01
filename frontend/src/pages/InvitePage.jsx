@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaWhatsapp, FaInstagram, FaGamepad, FaGift } from 'react-icons/fa';
-import { apiFetch } from '../services/apiClient';
-import { useAuth } from '../context/AuthContext';
 import '../styles/InvitePage.css';
 
 function InvitePage() {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
-  const [generatedCode, setGeneratedCode] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const handleWhatsAppClick = () => {
     window.open('https://wa.me/917012125919', '_blank');
@@ -23,69 +18,9 @@ function InvitePage() {
     navigate('/');
   };
 
-  const handleGetOffersClick = async () => {
-    if (!isAuthenticated) {
-      alert('Please login first to generate your promo code!');
-      navigate('/login');
-      return;
-    }
-
-    // Confirm Instagram sharing
-    const confirmed = window.confirm(
-      'To get your FREE promo code:\n\n' +
-      '1. Follow @gamespot_kdlr on Instagram\n' +
-      '2. Share our page with 2+ friends via Instagram DM\n' +
-      '3. Click OK to generate your code\n\n' +
-      'Have you completed steps 1 & 2?'
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    // Generate a promo code for the user
-    setLoading(true);
-    try {
-      const response = await apiFetch('/api/promo/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          type: 'invite',
-          bonus_minutes: 30,
-          max_uses: 1,
-          expires_days: 90
-        })
-      });
-
-      if (response.success) {
-        setGeneratedCode(response.promo_code);
-        alert(
-          `✅ SUCCESS! Your exclusive promo code:\n\n` +
-          `${response.promo_code.code}\n\n` +
-          `Get ${response.promo_code.bonus_minutes} minutes FREE!\n` +
-          `Use this code when booking.\n\n` +
-          `⏰ Valid for 90 days`
-        );
-      } else {
-        const errorMsg = response.error || 'Failed to generate promo code';
-        alert(`❌ Error: ${errorMsg}\n\nPlease make sure you are logged in and try again.`);
-        console.error('Promo generation failed:', response);
-      }
-    } catch (err) {
-      console.error('Error generating promo code:', err);
-      alert(
-        '❌ Failed to generate promo code.\n\n' +
-        'Possible reasons:\n' +
-        '• Not logged in\n' +
-        '• Network connection issue\n' +
-        '• Server error\n\n' +
-        'Please login and try again.'
-      );
-    } finally {
-      setLoading(false);
-    }
+  const handleGetOffersClick = () => {
+    // Redirect to get-offers page (Instagram promo page)
+    navigate('/get-offers');
   };
 
   return (
