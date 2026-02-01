@@ -381,10 +381,12 @@ def send_otp():
             # SMS failed but OTP is stored and logged
             print(f'[OTP] ⚠️ SMS delivery failed, OTP logged for {phone}')
         
+        # TEMPORARY: Show OTP in response for testing (remove in production)
         return jsonify({
             'success': True,
             'message': 'OTP sent successfully',
-            'phone': phone
+            'phone': phone,
+            'otp': otp  # DEVELOPMENT ONLY - shows OTP in response for testing
         })
         
     except Exception as e:

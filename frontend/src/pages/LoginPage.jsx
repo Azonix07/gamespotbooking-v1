@@ -79,8 +79,10 @@ const LoginPage = () => {
         setOtpSent(true);
         setOtpTimer(300); // 5 minutes
         setSuccess(`OTP sent to your mobile number!`);
-        // Note: In production, OTP is sent via SMS. Check your phone.
-        // In development: Check Railway backend logs for OTP
+        // TEMPORARY: Show OTP for testing (will be removed when SMS is configured)
+        if (data.otp) {
+          alert(`Your OTP is: ${data.otp}\n\n(This is for testing. Real SMS will be configured later.)`);
+        }
       } else {
         setError(data.error || 'Failed to send OTP');
       }
