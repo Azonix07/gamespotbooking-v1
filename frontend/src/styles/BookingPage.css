@@ -1305,14 +1305,20 @@
   font-size: 1.05rem;
   margin: 0 0 2px;
   letter-spacing: -0.01em;
-  color: var(--booking-gray-900) !important;
+  color: #212529 !important;
 }
 
 .device-unit {
   font-size: 0.8rem;
   font-weight: 400;
-  color: var(--booking-gray-500) !important;
+  color: #6c757d !important;
   display: block;
+}
+
+/* Additional specificity for device names and units */
+h4.device-name,
+span.device-unit {
+  color: #212529 !important;
 }
 
 /* Compact Player Buttons - Segmented Control Style */
