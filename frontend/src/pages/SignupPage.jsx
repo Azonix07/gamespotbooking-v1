@@ -1,21 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { 
+  FiUser,
+  FiMail, 
+  FiLock, 
+  FiUserPlus,
+  FiAlertCircle,
+  FiCheckCircle,
+  FiEye,
+  FiEyeOff
+} from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
-import '../styles/AdminLoginPage.css';  // Reuse existing styles
+import '../styles/LoginPage.css';
+
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com';
 
 const SignupPage = () => {
   const navigate = useNavigate();
-  const { signup, isAuthenticated, loading: authLoading } = useAuth();
+  const { signup, setAuthState, isAuthenticated, loading: authLoading } = useAuth();
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
     password: '',
     confirmPassword: ''
   });
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -44,22 +59,9 @@ const SignupPage = () => {
       return false;
     }
     
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setError('Please enter a valid email');
-      return false;
-    }
-    
-    if (!formData.phone.trim()) {
-      setError('Phone number is required');
-      return false;
-    }
-    
-    // Basic phone validation (10 digits)
-    const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(formData.phone.replace(/\D/g, ''))) {
-      setError('Please enter a valid 10-digit phone number');
       return false;
     }
     
@@ -100,237 +102,254 @@ const SignupPage = () => {
       const result = await signup(formData);
       
       if (result.success) {
-        // Auto-logged in after signup
-        navigate('/', { replace: true, state: { message: 'Account created successfully!' } });
+        setSuccess('Account created successfully! Redirecting...');
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
       } else {
-        setError(result.error || 'Signup failed');
+        setError(result.error || 'Signup failed. Please try again.');
       }
-      
     } catch (err) {
-      setError(err.message || 'Signup failed. Please try again.');
+      setError('An error occurred. Please try again.');
       console.error('Signup error:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/auth/google-login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          credential: credentialResponse.credential 
+        }),
+        credentials: 'include'
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess('Account created successfully! Redirecting...');
+        
+        // Set auth state directly from Google response
+        setAuthState(data.user, data.userType || 'customer');
+        
+        setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 500);
+      } else {
+        setError(data.error || 'Google signup failed');
+      }
+    } catch (err) {
+      setError('Google signup failed. Please try again.');
+      console.error('Google signup error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--dark)' }}>
-      <Navbar showCenter={false} />
-      <div className="container">
-        <div className="card" style={{ maxWidth: '500px', margin: '4rem auto' }}>
-          <h2 className="card-title" style={{ textAlign: 'center' }}>
-            ✨ Create Account
-          </h2>
-          
-          {error && (
-            <div style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              padding: '1rem',
-              borderRadius: '0.5rem',
-              marginBottom: '1.5rem',
-              color: '#ef4444'
-            }}>
-              ❌ {error}
-            </div>
-          )}
-          
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label">Full Name *</label>
-              <input
-                type="text"
-                name="name"
-                className="form-control"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                placeholder="Enter your full name"
-                autoComplete="name"
-                autoFocus
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Email *</label>
-              <input
-                type="email"
-                name="email"
-                className="form-control"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                placeholder="Enter your email"
-                autoComplete="email"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Phone Number *</label>
-              <input
-                type="tel"
-                name="phone"
-                className="form-control"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-                placeholder="10-digit phone number"
-                autoComplete="tel"
-                maxLength="10"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Password *</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  className="form-control"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  placeholder="Minimum 6 characters"
-                  autoComplete="new-password"
-                  style={{ paddingRight: '3rem' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    position: 'absolute',
-                    right: '0.75rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--light-gray)',
-                    cursor: 'pointer',
-                    padding: '0.25rem',
-                    fontSize: '1.2rem'
-                  }}
-                >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
-                </button>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <div className="login-page">
+        <Navbar />
+        
+        <div className="login-container">
+          <div className="login-card">
+            <h2 className="form-title">Create Account</h2>
+            <p className="form-subtitle">Sign up to get started</p>
+
+            {error && (
+              <div className="alert alert-error">
+                <FiAlertCircle className="alert-icon" />
+                <span>{error}</span>
               </div>
-              {formData.password && (
-                <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ 
-                    flex: 1, 
-                    height: '4px', 
-                    background: 'var(--medium-gray)', 
-                    borderRadius: '2px',
-                    overflow: 'hidden'
-                  }}>
-                    <div style={{
-                      width: `${(formData.password.length / 12) * 100}%`,
-                      height: '100%',
-                      background: passwordStrength.color,
-                      transition: 'all 0.3s'
-                    }} />
-                  </div>
-                  <span style={{ 
-                    fontSize: '0.85rem', 
-                    color: passwordStrength.color,
-                    fontWeight: 'bold'
-                  }}>
-                    {passwordStrength.text}
-                  </span>
+            )}
+
+            {success && (
+              <div className="alert alert-success">
+                <FiCheckCircle className="alert-icon" />
+                <span>{success}</span>
+              </div>
+            )}
+
+            {/* Signup Form */}
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="name" className="form-label">
+                  Full Name
+                </label>
+                <div className="input-wrapper">
+                  <FiUser className="input-icon" />
+                  <input
+                    id="name"
+                    type="text"
+                    name="name"
+                    className="form-input"
+                    placeholder="Enter your full name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    autoComplete="name"
+                  />
                 </div>
-              )}
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Confirm Password *</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  name="confirmPassword"
-                  className="form-control"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                  placeholder="Re-enter password"
-                  autoComplete="new-password"
-                  style={{ paddingRight: '3rem' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  style={{
-                    position: 'absolute',
-                    right: '0.75rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--light-gray)',
-                    cursor: 'pointer',
-                    padding: '0.25rem',
-                    fontSize: '1.2rem'
-                  }}
-                >
-                  {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-                </button>
               </div>
-              {formData.confirmPassword && (
-                <small style={{ 
-                  color: formData.password === formData.confirmPassword ? '#22c55e' : '#ef4444',
-                  fontSize: '0.85rem',
-                  marginTop: '0.25rem',
-                  display: 'block'
-                }}>
-                  {formData.password === formData.confirmPassword ? '✓ Passwords match' : '✗ Passwords do not match'}
-                </small>
-              )}
-            </div>
-            
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-              <button
-                type="submit"
-                className="btn btn-primary"
+
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Email Address
+                </label>
+                <div className="input-wrapper">
+                  <FiMail className="input-icon" />
+                  <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    className="form-input"
+                    placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">
+                  Password
+                </label>
+                <div className="input-wrapper">
+                  <FiLock className="input-icon" />
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    className="form-input"
+                    placeholder="Create a password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#6c757d'
+                    }}
+                  >
+                    {showPassword ? <FiEyeOff /> : <FiEye />}
+                  </button>
+                </div>
+                {formData.password && (
+                  <small style={{ color: passwordStrength.color, fontSize: '0.85rem' }}>
+                    Password strength: {passwordStrength.text}
+                  </small>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="confirmPassword" className="form-label">
+                  Confirm Password
+                </label>
+                <div className="input-wrapper">
+                  <FiLock className="input-icon" />
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    className="form-input"
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#6c757d'
+                    }}
+                  >
+                    {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+                  </button>
+                </div>
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn-primary"
                 disabled={loading}
-                style={{ flex: 1 }}
               >
-                {loading ? '🔄 Creating account...' : '✨ Create Account'}
+                {loading ? (
+                  <>
+                    <div className="loading-spinner"></div>
+                    Creating account...
+                  </>
+                ) : (
+                  <>
+                    <FiUserPlus />
+                    Sign Up
+                  </>
+                )}
               </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => navigate('/login')}
-                disabled={loading}
-              >
-                Cancel
-              </button>
+            </form>
+
+            {/* Divider */}
+            <div className="divider">
+              <span>OR</span>
             </div>
-          </form>
-          
-          <div style={{ 
-            marginTop: '2rem', 
-            padding: '1.5rem', 
-            background: 'rgba(99, 102, 241, 0.05)', 
-            borderRadius: '0.5rem',
-            border: '1px solid rgba(99, 102, 241, 0.2)',
-            textAlign: 'center'
-          }}>
-            <p style={{ margin: 0, color: 'var(--light-gray)' }}>
-              Already have an account?{' '}
-              <Link 
-                to="/login" 
-                style={{ 
-                  color: 'var(--primary)', 
-                  textDecoration: 'none', 
-                  fontWeight: 'bold' 
-                }}
-              >
-                Login here
-              </Link>
-            </p>
+
+            {/* Google Signup Button */}
+            <div className="social-login">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Google signup failed')}
+                size="large"
+                text="signup_with"
+                shape="rectangular"
+                logo_alignment="left"
+                width="100%"
+              />
+            </div>
+
+            {/* Login Link */}
+            <div className="text-center" style={{marginTop: '1.5rem'}}>
+              <p style={{color: '#6c757d'}}>
+                Already have an account?{' '}
+                <Link to="/login" className="form-link">
+                  Login here
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </GoogleOAuthProvider>
   );
 };
 

@@ -1,69 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { 
-  FiPhone, 
+  FiMail, 
   FiLock, 
-  FiUser,
   FiLogIn,
   FiAlertCircle,
   FiCheckCircle
 } from 'react-icons/fi';
-import { FaGoogle, FaApple } from 'react-icons/fa';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import '../styles/LoginPage.css';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com';
-const APPLE_CLIENT_ID = process.env.REACT_APP_APPLE_CLIENT_ID || 'com.gamespot.booking';
-const APPLE_REDIRECT_URI = process.env.REACT_APP_APPLE_REDIRECT_URI || window.location.origin;
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isAdmin, setAuthState, loading: authLoading } = useAuth();
+  const { isAuthenticated, isAdmin, login, setAuthState, loading: authLoading } = useAuth();
   
-  // OTP Login fields
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpTimer, setOtpTimer] = useState(0);
-  const [userName, setUserName] = useState('');
+  // Email/Password Login fields
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-
-  // Load Apple Sign In SDK
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      if (window.AppleID) {
-        window.AppleID.auth.init({
-          clientId: APPLE_CLIENT_ID,
-          scope: 'name email',
-          redirectURI: APPLE_REDIRECT_URI,
-          usePopup: true
-        });
-      }
-    };
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
-  // OTP timer countdown
-  useEffect(() => {
-    if (otpTimer > 0) {
-      const timer = setTimeout(() => setOtpTimer(otpTimer - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [otpTimer]);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -77,11 +39,11 @@ const LoginPage = () => {
     }
   }, [isAuthenticated, isAdmin, authLoading, navigate, location.state]);
 
-  const handleSendOTP = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     
-    if (!phone || phone.length < 10) {
-      setError('Please enter a valid 10-digit mobile number');
+    if (!email || !password) {
+      setError('Please enter both email and password');
       return;
     }
     
@@ -89,75 +51,24 @@ const LoginPage = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/auth/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phone }),
-        credentials: 'include'
-      });
+      const result = await login(email, password);
       
-      const data = await response.json();
-      
-      if (data.success) {
-        setOtpSent(true);
-        setOtpTimer(300); // 5 minutes
-        setSuccess('OTP sent successfully! Please check your SMS.');
-      } else {
-        setError(data.error || 'Failed to send OTP');
-      }
-    } catch (err) {
-      setError('Failed to send OTP. Please try again.');
-      console.error('OTP send error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault();
-    
-    if (!otp || otp.length !== 6) {
-      setError('Please enter the 6-digit OTP');
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/auth/verify-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          phone, 
-          otp,
-          name: userName || 'User'
-        }),
-        credentials: 'include'
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
+      if (result.success) {
         setSuccess('Login successful! Redirecting...');
-        
-        // Set auth state directly from OTP response
-        setAuthState(data.user, data.userType || 'customer');
-        
         setTimeout(() => {
           const from = location.state?.from?.pathname || '/';
-          navigate(from, { replace: true });
+          if (result.userType === 'admin') {
+            navigate('/admin/dashboard', { replace: true });
+          } else {
+            navigate(from, { replace: true });
+          }
         }, 500);
       } else {
-        setError(data.error || 'Invalid OTP');
+        setError(result.error || 'Login failed. Please check your credentials.');
       }
     } catch (err) {
-      setError('Failed to verify OTP. Please try again.');
-      console.error('OTP verify error:', err);
+      setError('Login failed. Please try again.');
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
@@ -202,62 +113,6 @@ const LoginPage = () => {
     }
   };
 
-  const handleAppleLogin = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      if (!window.AppleID) {
-        setError('Apple Sign In is not available. Please try again.');
-        return;
-      }
-
-      // Trigger Apple Sign In
-      const response = await window.AppleID.auth.signIn();
-      
-      console.log('Apple Sign In response:', response);
-      
-      // Send to backend
-      const apiResponse = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/auth/apple-login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          id_token: response.authorization.id_token,
-          user: response.user // Only available on first sign-in
-        }),
-        credentials: 'include'
-      });
-      
-      const data = await apiResponse.json();
-      
-      if (data.success) {
-        setSuccess('Login successful! Redirecting...');
-        
-        // Set auth state directly from Apple response
-        setAuthState(data.user, data.userType || 'customer');
-        
-        setTimeout(() => {
-          const from = location.state?.from?.pathname || '/';
-          navigate(from, { replace: true });
-        }, 500);
-      } else {
-        setError(data.error || 'Apple login failed');
-      }
-    } catch (err) {
-      console.error('Apple login error:', err);
-      if (err.error === 'popup_closed_by_user') {
-        // User closed the popup, don't show error
-        setLoading(false);
-        return;
-      }
-      setError('Apple login failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <div className="login-page">
@@ -282,119 +137,63 @@ const LoginPage = () => {
               </div>
             )}
 
-            {/* OTP Login Form */}
-            <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP}>
+            {/* Email/Password Login Form */}
+            <form onSubmit={handleLogin}>
               <div className="form-group">
-                <label htmlFor="phone" className="form-label">
-                  Mobile Number
+                <label htmlFor="email" className="form-label">
+                  Email Address
                 </label>
                 <div className="input-wrapper">
-                  <FiPhone className="input-icon" />
+                  <FiMail className="input-icon" />
                   <input
-                    id="phone"
-                    type="tel"
+                    id="email"
+                    type="email"
                     className="form-input"
-                    placeholder="Enter 10-digit mobile number"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
-                    disabled={otpSent}
-                    autoComplete="tel"
+                    autoComplete="email"
                   />
                 </div>
               </div>
 
-              {otpSent && (
-                <>
-                  <div className="form-group">
-                    <label htmlFor="otp" className="form-label">
-                      Enter OTP
-                    </label>
-                    <div className="input-wrapper">
-                      <FiLock className="input-icon" />
-                      <input
-                        id="otp"
-                        type="text"
-                        className="form-input"
-                        placeholder="Enter 6-digit OTP"
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        required
-                        autoComplete="one-time-code"
-                      />
-                    </div>
-                    <div className="otp-timer">
-                      {otpTimer > 0 ? (
-                        <span>OTP expires in {Math.floor(otpTimer / 60)}:{(otpTimer % 60).toString().padStart(2, '0')}</span>
-                      ) : (
-                        <button 
-                          type="button" 
-                          className="form-link"
-                          onClick={() => {
-                            setOtpSent(false);
-                            setOtp('');
-                          }}
-                        >
-                          Resend OTP
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="userName" className="form-label">
-                      Your Name
-                    </label>
-                    <div className="input-wrapper">
-                      <FiUser className="input-icon" />
-                      <input
-                        id="userName"
-                        type="text"
-                        className="form-input"
-                        placeholder="Enter your name"
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
-                        autoComplete="name"
-                      />
-                    </div>
-                    <small style={{color: '#6c757d', fontSize: '0.85rem'}}>Required for new users</small>
-                  </div>
-                </>
-              )}
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">
+                  Password
+                </label>
+                <div className="input-wrapper">
+                  <FiLock className="input-icon" />
+                  <input
+                    id="password"
+                    type="password"
+                    className="form-input"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                  />
+                </div>
+              </div>
 
               <button 
                 type="submit" 
                 className="btn-primary"
-                disabled={loading || (otpSent && otp.length !== 6)}
+                disabled={loading}
               >
                 {loading ? (
                   <>
                     <div className="loading-spinner"></div>
-                    {otpSent ? 'Verifying...' : 'Sending OTP...'}
+                    Logging in...
                   </>
                 ) : (
                   <>
                     <FiLogIn />
-                    {otpSent ? 'Verify & Login' : 'Send OTP'}
+                    Login
                   </>
                 )}
               </button>
-
-              {otpSent && (
-                <div className="text-center" style={{marginTop: '1rem'}}>
-                  <button 
-                    type="button" 
-                    className="form-link"
-                    onClick={() => {
-                      setOtpSent(false);
-                      setOtp('');
-                      setPhone('');
-                    }}
-                  >
-                    Change Mobile Number
-                  </button>
-                </div>
-              )}
             </form>
 
             {/* Divider */}
@@ -402,28 +201,27 @@ const LoginPage = () => {
               <span>OR</span>
             </div>
 
-            {/* Social Login Buttons */}
+            {/* Google Login Button */}
             <div className="social-login">
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={() => setError('Google login failed')}
-                useOneTap
                 size="large"
                 text="continue_with"
                 shape="rectangular"
                 logo_alignment="left"
                 width="100%"
               />
-              
-              <button 
-                type="button"
-                className="apple-login-btn"
-                onClick={handleAppleLogin}
-                disabled={loading}
-              >
-                <FaApple style={{fontSize: '1.5rem'}} />
-                Continue with Apple
-              </button>
+            </div>
+
+            {/* Sign Up Link */}
+            <div className="text-center" style={{marginTop: '1.5rem'}}>
+              <p style={{color: '#6c757d'}}>
+                Don't have an account?{' '}
+                <Link to="/signup" className="form-link">
+                  Sign up here
+                </Link>
+              </p>
             </div>
           </div>
         </div>
