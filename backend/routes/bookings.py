@@ -199,10 +199,13 @@ def handle_bookings():
                         raise Exception(f"Driving Simulator is not available for time slot {slot}")
             
             # Insert booking
+            bonus_minutes = data.get('bonus_minutes', 0)
+            promo_code_id = data.get('promo_code_id')
+            
             query = """
                 INSERT INTO bookings 
-                (customer_name, customer_phone, booking_date, start_time, duration_minutes, total_price, driving_after_ps5)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (customer_name, customer_phone, booking_date, start_time, duration_minutes, total_price, driving_after_ps5, bonus_minutes, promo_code_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             
             cursor.execute(query, (
@@ -212,7 +215,9 @@ def handle_bookings():
                 start_time + ':00',
                 duration_minutes,
                 total_price,
-                1 if driving_after_ps5 else 0
+                1 if driving_after_ps5 else 0,
+                bonus_minutes,
+                promo_code_id
             ))
             
             booking_id = cursor.lastrowid
@@ -243,6 +248,18 @@ def handle_bookings():
                 cursor.execute(query, (booking_id, price))
             
             conn.commit()
+            
+            # Mark promo code as used if applicable
+            if promo_code_id:
+                try:
+                    cursor.execute('''
+                        UPDATE promo_codes
+                        SET current_uses = current_uses + 1
+                        WHERE id = %s
+                    ''', (promo_code_id,))
+                    conn.commit()
+                except Exception as promo_err:
+                    print(f'Warning: Failed to update promo code usage: {str(promo_err)}')
             
             return jsonify({
                 'success': True,

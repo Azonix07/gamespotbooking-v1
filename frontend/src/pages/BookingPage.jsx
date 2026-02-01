@@ -39,6 +39,14 @@ const BookingPage = () => {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   
+  // Promo code state
+  const [promoCode, setPromoCode] = useState('');
+  const [promoCodeData, setPromoCodeData] = useState(null);
+  const [promoCodeError, setPromoCodeError] = useState('');
+  const [promoCodeSuccess, setPromoCodeSuccess] = useState('');
+  const [applyingPromoCode, setApplyingPromoCode] = useState(false);
+  const [bonusMinutes, setBonusMinutes] = useState(0);
+  
   // New state for step-based flow
   const [currentStep, setCurrentStep] = useState(1); // 1: Date/Time, 2: Device Selection, 3: Details
   const [expandedPS5, setExpandedPS5] = useState(null); // Track which PS5 card is expanded
@@ -378,6 +386,51 @@ const BookingPage = () => {
     setPs5Bookings(updated);
   };
 
+  const handleApplyPromoCode = async () => {
+    if (!promoCode.trim()) {
+      setPromoCodeError('Please enter a promo code');
+      return;
+    }
+
+    setApplyingPromoCode(true);
+    setPromoCodeError('');
+    setPromoCodeSuccess('');
+
+    try {
+      const response = await apiFetch('/api/promo/validate', {
+        method: 'POST',
+        body: JSON.stringify({ code: promoCode.trim().toUpperCase() })
+      });
+
+      if (response.success && response.valid) {
+        setPromoCodeData(response.promo_code);
+        setBonusMinutes(response.promo_code.bonus_minutes);
+        setPromoCodeSuccess(`Promo code applied! You'll get ${response.promo_code.bonus_minutes} additional minutes FREE!`);
+        setPromoCodeError('');
+      } else {
+        setPromoCodeError(response.error || 'Invalid promo code');
+        setPromoCodeData(null);
+        setBonusMinutes(0);
+        setPromoCodeSuccess('');
+      }
+    } catch (err) {
+      setPromoCodeError('Failed to validate promo code');
+      setPromoCodeData(null);
+      setBonusMinutes(0);
+      setPromoCodeSuccess('');
+    } finally {
+      setApplyingPromoCode(false);
+    }
+  };
+
+  const handleRemovePromoCode = () => {
+    setPromoCode('');
+    setPromoCodeData(null);
+    setBonusMinutes(0);
+    setPromoCodeError('');
+    setPromoCodeSuccess('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -418,7 +471,9 @@ const BookingPage = () => {
           ps5_bookings: [ps5],
           driving_sim: false,
           driving_after_ps5: false,
-          total_price: priceResponse.total_price
+          total_price: priceResponse.total_price,
+          bonus_minutes: bonusMinutes,
+          promo_code_id: promoCodeData?.id || null
         };
         allBookings.push(createBooking(bookingData));
       }
@@ -452,7 +507,9 @@ const BookingPage = () => {
           ps5_bookings: [],
           driving_sim: true,
           driving_after_ps5: drivingSim.afterPS5 && ps5Bookings.length > 0,
-          total_price: priceResponse.total_price
+          total_price: priceResponse.total_price,
+          bonus_minutes: bonusMinutes,
+          promo_code_id: promoCodeData?.id || null
         };
         allBookings.push(createBooking(bookingData));
       }
@@ -551,6 +608,12 @@ const BookingPage = () => {
                     <span className="detail-label">Total Amount</span>
                     <span className="detail-value price">{formatPrice(price)}</span>
                   </div>
+                  {bonusMinutes > 0 && (
+                    <div className="detail-row bonus-minutes">
+                      <span className="detail-label">🎁 Bonus Time</span>
+                      <span className="detail-value bonus">+{bonusMinutes} minutes FREE!</span>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -1156,6 +1219,59 @@ const BookingPage = () => {
                           />
                         </div>
                       </div>
+                    </div>
+                    
+                    {/* Promo Code Section */}
+                    <div className="form-section-v2 promo-code-section">
+                      <h3 className="section-subtitle">Have a Promo Code?</h3>
+                      <div className="promo-code-input-group">
+                        <div className="form-group-v2" style={{ flex: 1 }}>
+                          <div className="input-wrapper-v2">
+                            <FiTag className="input-icon-v2" />
+                            <input
+                              id="promoCode"
+                              type="text"
+                              className="form-input-v2"
+                              value={promoCode}
+                              onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                              placeholder="Enter promo code"
+                              disabled={!!promoCodeData}
+                            />
+                          </div>
+                        </div>
+                        {!promoCodeData ? (
+                          <button
+                            type="button"
+                            className="btn-apply-promo"
+                            onClick={handleApplyPromoCode}
+                            disabled={applyingPromoCode || !promoCode.trim()}
+                          >
+                            {applyingPromoCode ? 'Applying...' : 'Apply'}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn-remove-promo"
+                            onClick={handleRemovePromoCode}
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      
+                      {promoCodeError && (
+                        <div className="promo-code-error">
+                          <span className="alert-icon">⚠️</span>
+                          <span>{promoCodeError}</span>
+                        </div>
+                      )}
+                      
+                      {promoCodeSuccess && (
+                        <div className="promo-code-success">
+                          <FiCheck className="success-icon" />
+                          <span>{promoCodeSuccess}</span>
+                        </div>
+                      )}
                     </div>
                     
                     {error && (

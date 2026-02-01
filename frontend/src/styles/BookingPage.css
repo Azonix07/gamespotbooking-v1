@@ -3220,3 +3220,127 @@ span.device-unit {
     min-height: 48px;
   }
 }
+/* ============================================
+   PROMO CODE SECTION
+   ============================================ */
+.promo-code-section {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(255, 153, 102, 0.05) 100%);
+  border-radius: var(--booking-radius);
+  border: 2px dashed var(--booking-primary);
+}
+
+.section-subtitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--booking-gray-800);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.promo-code-input-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.btn-apply-promo,
+.btn-remove-promo {
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: var(--booking-transition);
+  white-space: nowrap;
+  min-width: 100px;
+  height: 52px;
+}
+
+.btn-apply-promo {
+  background: var(--booking-gradient);
+  color: white;
+  box-shadow: var(--booking-shadow);
+}
+
+.btn-apply-promo:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--booking-shadow-lg);
+}
+
+.btn-apply-promo:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-remove-promo {
+  background: var(--booking-error);
+  color: white;
+  box-shadow: var(--booking-shadow);
+}
+
+.btn-remove-promo:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: var(--booking-shadow-lg);
+}
+
+.promo-code-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+  font-size: 0.9rem;
+}
+
+.promo-code-success {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #d1fae5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  color: #065f46;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.promo-code-success .success-icon {
+  color: var(--booking-success);
+  font-size: 1.2rem;
+}
+
+.promo-code-error .alert-icon {
+  font-size: 1.2rem;
+}
+
+/* Bonus Minutes Styling in Success Modal */
+.detail-row.bonus-minutes {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
+.detail-row.bonus-minutes .detail-label {
+  color: #065f46;
+  font-size: 0.95rem;
+}
+
+.detail-row.bonus-minutes .detail-value.bonus {
+  color: #059669;
+  font-size: 1.1rem;
+  font-weight: 700;
+}

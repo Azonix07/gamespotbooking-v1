@@ -119,7 +119,28 @@ const InstagramPromoPage = () => {
       });
 
       if (response.success) {
-        setSuccessMessage(`Congratulations! You've claimed ${activePromotion.discount_value} minutes of FREE gaming! Your redemption code: ${response.redemption.redemption_code}`);
+        // Generate a promo code for this user
+        try {
+          const promoResponse = await apiFetch('/api/promo/generate', {
+            method: 'POST',
+            body: JSON.stringify({
+              type: 'instagram',
+              bonus_minutes: activePromotion.discount_value,
+              max_uses: 1,
+              expires_days: 90
+            })
+          });
+
+          if (promoResponse.success) {
+            setSuccessMessage(`Congratulations! You've claimed ${activePromotion.discount_value} minutes of FREE gaming! Your promo code: ${promoResponse.promo_code.code}. Use this code when booking to get your free minutes!`);
+          } else {
+            setSuccessMessage(`Congratulations! You've claimed ${activePromotion.discount_value} minutes of FREE gaming! Your redemption code: ${response.redemption.redemption_code}`);
+          }
+        } catch (promoErr) {
+          console.error('Error generating promo code:', promoErr);
+          setSuccessMessage(`Congratulations! You've claimed ${activePromotion.discount_value} minutes of FREE gaming! Your redemption code: ${response.redemption.redemption_code}`);
+        }
+        
         setShowClaimForm(false);
         
         // Refresh eligibility

@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaWhatsapp, FaInstagram, FaGamepad, FaGift } from 'react-icons/fa';
+import { apiFetch } from '../services/apiClient';
+import { useAuth } from '../context/AuthContext';
 import '../styles/InvitePage.css';
 
 function InvitePage() {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+  const [generatedCode, setGeneratedCode] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleWhatsAppClick = () => {
     window.open('https://wa.me/917012125919', '_blank');
@@ -18,8 +23,38 @@ function InvitePage() {
     navigate('/');
   };
 
-  const handleGetOffersClick = () => {
-    navigate('/get-offers');
+  const handleGetOffersClick = async () => {
+    if (!isAuthenticated) {
+      // Redirect to login if not authenticated
+      navigate('/login');
+      return;
+    }
+
+    // Generate a promo code for the user
+    setLoading(true);
+    try {
+      const response = await apiFetch('/api/promo/generate', {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'invite',
+          bonus_minutes: 30,
+          max_uses: 1,
+          expires_days: 90
+        })
+      });
+
+      if (response.success) {
+        setGeneratedCode(response.promo_code);
+        alert(`Your exclusive promo code: ${response.promo_code.code}\n\nGet ${response.promo_code.bonus_minutes} minutes FREE!\nUse this code when booking.`);
+      } else {
+        alert('Failed to generate promo code. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error generating promo code:', err);
+      alert('Failed to generate promo code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
