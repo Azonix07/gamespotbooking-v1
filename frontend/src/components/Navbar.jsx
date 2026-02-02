@@ -199,26 +199,39 @@ const Navbar = ({ showCenter = true }) => {
                     className="profile-dropdown-item"
                     onClick={() => {
                       setShowProfileDropdown(false);
-                      navigate(isAdmin ? '/admin/dashboard' : '/membership');
+                      navigate(isAdmin ? '/admin/dashboard' : '/profile');
                     }}
                   >
                     <span className="profile-dropdown-icon-small">
-                      {isAdmin ? <FiSettings /> : <FiCreditCard />}
+                      {isAdmin ? <FiSettings /> : <FiUser />}
                     </span>
-                    {isAdmin ? 'Dashboard' : 'Membership'}
+                    {isAdmin ? 'Dashboard' : 'My Profile'}
                   </button>
                   
                   {!isAdmin && (
-                    <button 
-                      className="profile-dropdown-item"
-                      onClick={() => {
-                        setShowProfileDropdown(false);
-                        navigate('/booking');
-                      }}
-                    >
-                      <span className="profile-dropdown-icon-small"><FiCalendar /></span>
-                      My Bookings
-                    </button>
+                    <>
+                      <button 
+                        className="profile-dropdown-item"
+                        onClick={() => {
+                          setShowProfileDropdown(false);
+                          navigate('/membership');
+                        }}
+                      >
+                        <span className="profile-dropdown-icon-small"><FiCreditCard /></span>
+                        Membership
+                      </button>
+                      
+                      <button 
+                        className="profile-dropdown-item"
+                        onClick={() => {
+                          setShowProfileDropdown(false);
+                          navigate('/booking');
+                        }}
+                      >
+                        <span className="profile-dropdown-icon-small"><FiCalendar /></span>
+                        My Bookings
+                      </button>
+                    </>
                   )}
                   
                   <div className="profile-dropdown-divider"></div>

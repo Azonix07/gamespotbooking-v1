@@ -34,6 +34,7 @@ from routes.game_leaderboard import game_leaderboard_bp  # Game leaderboard and 
 from routes.instagram_promotion import instagram_promo_bp  # Instagram promotions
 from routes.setup_promo import setup_bp  # One-time setup for Instagram promotions
 from routes.promo_codes import promo_bp  # Promo codes system
+from routes.user_routes import user_bp  # User profile and rewards system
 
 # Create Flask app
 app = Flask(__name__)
@@ -86,6 +87,10 @@ app.register_blueprint(game_leaderboard_bp)  # Game leaderboard and winners
 app.register_blueprint(instagram_promo_bp)  # Instagram promotions
 app.register_blueprint(setup_bp)  # One-time setup for Instagram promotions
 app.register_blueprint(promo_bp)  # Promo codes system
+app.register_blueprint(user_bp)  # User profile and rewards system
+
+# Create uploads directory for profile pictures
+os.makedirs('static/uploads/profiles', exist_ok=True)
 
 # Health check endpoint
 @app.route('/health', methods=['GET'])

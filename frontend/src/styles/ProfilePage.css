@@ -1,0 +1,462 @@
+.profile-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0f1e 0%, #1e293b 50%, #312e81 100%);
+  padding-top: 80px;
+}
+
+.profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #fff;
+}
+
+.profile-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.profile-header p {
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 2rem;
+}
+
+.profile-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  color: #fff;
+}
+
+.header-icon {
+  font-size: 1.5rem;
+  color: #6366f1;
+}
+
+.card-header h2 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+/* Profile Picture */
+.profile-picture-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.profile-picture {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.profile-picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6366f1;
+}
+
+.upload-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(99, 102, 241, 0.9);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  opacity: 0;
+}
+
+.profile-picture:hover .upload-overlay {
+  opacity: 1;
+}
+
+.upload-hint {
+  margin-top: 0.5rem;
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.upload-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Detail Rows */
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+}
+
+.detail-icon {
+  font-size: 1.25rem;
+  color: #6366f1;
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-label {
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.detail-value {
+  font-size: 1rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Rewards Card */
+.rewards-card {
+  max-height: fit-content;
+}
+
+.points-display {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+  border-radius: 16px;
+}
+
+.points-circle {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+}
+
+.points-circle svg {
+  color: #6366f1;
+}
+
+.points-circle h3 {
+  font-size: 2.5rem;
+  margin: 0;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.points-circle p {
+  margin: 0;
+  color: #94a3b8;
+}
+
+.points-info {
+  margin-top: 1rem;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+/* Reward Sections */
+.reward-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+.reward-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.reward-icon {
+  font-size: 1.5rem;
+}
+
+.reward-icon.instagram {
+  color: #e1306c;
+}
+
+.reward-header h3 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.reward-content {
+  color: #cbd5e1;
+}
+
+.reward-content p {
+  margin-bottom: 1rem;
+}
+
+.reward-content strong {
+  color: #6366f1;
+}
+
+/* Progress Bar */
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin-bottom: 1rem;
+}
+
+.reward-claimed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  color: #22c55e;
+  font-weight: 500;
+}
+
+/* Redemption Options */
+.redemption-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.redemption-card {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.redemption-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.redemption-card.premium {
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+}
+
+.redemption-icon {
+  font-size: 2rem;
+  color: #6366f1;
+  margin-bottom: 0.5rem;
+}
+
+.redemption-card h4 {
+  color: #fff;
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.redemption-desc {
+  color: #94a3b8;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.redemption-cost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 8px;
+  color: #6366f1;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.redemption-cost.premium {
+  background: rgba(139, 92, 246, 0.2);
+  color: #8b5cf6;
+}
+
+/* Info Box */
+.info-box {
+  padding: 1.5rem;
+  background: rgba(99, 102, 241, 0.1);
+  border-left: 4px solid #6366f1;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.info-box h4 {
+  color: #fff;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.info-box ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #cbd5e1;
+}
+
+.info-box li {
+  margin-bottom: 0.5rem;
+}
+
+/* Buttons */
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+.btn-secondary {
+  background: rgba(99, 102, 241, 0.2);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.5);
+}
+
+.btn-secondary:hover {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+.btn-disabled {
+  background: rgba(255, 255, 255, 0.05);
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* Alerts */
+.alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.alert-error {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.alert-success {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #fff;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(99, 102, 241, 0.2);
+  border-top: 3px solid #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .redemption-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .profile-container {
+    padding: 1rem;
+  }
+  
+  .profile-header h1 {
+    font-size: 2rem;
+  }
+}

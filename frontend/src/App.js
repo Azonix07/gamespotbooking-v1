@@ -28,6 +28,7 @@ const ContactPage = lazy(() => import('./pages/ContactPage.jsx'));
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage.jsx'));
 const InvitePage = lazy(() => import('./pages/InvitePage.jsx'));
 const GetOffersPage = lazy(() => import('./pages/GetOffersPage.jsx'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage.jsx'));
 
 // Loading component for lazy-loaded pages
 const PageLoader = () => (
@@ -114,6 +115,7 @@ function App() {
               <Route path="/membership" element={<MembershipPlansPage />} />
               <Route path="/feedback" element={<FeedbackPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
               {/* Redirect old admin login to new unified login */}
               <Route path="/admin/login" element={<Navigate to="/login" replace />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
