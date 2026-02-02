@@ -15,6 +15,9 @@ load_dotenv()
 # Import configuration
 from config.database import init_db_pool
 
+# Import migration
+from migrate_rewards import run_rewards_migration
+
 # Import routes
 from routes.slots import slots_bp
 from routes.pricing import pricing_bp
@@ -67,6 +70,12 @@ def add_cors_headers(response):
 
 # Initialize database connection pool
 init_db_pool()
+
+# Auto-run rewards system migration
+run_rewards_migration()
+
+# Create uploads directory for profile pictures
+os.makedirs('static/uploads/profiles', exist_ok=True)
 
 # Register blueprints
 app.register_blueprint(slots_bp)
