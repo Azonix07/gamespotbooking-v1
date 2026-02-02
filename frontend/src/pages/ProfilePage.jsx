@@ -10,7 +10,7 @@ import {
   FiTrendingUp,
   FiInstagram,
   FiClock,
-  FiGamepad
+  FiMonitor
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
@@ -320,7 +320,7 @@ const ProfilePage = () => {
               <div className="redemption-options">
                 {/* PS5 Extra Hour */}
                 <div className="redemption-card">
-                  <FiGamepad className="redemption-icon" />
+                  <FiMonitor className="redemption-icon" />
                   <h4>1 Hour Extra PS5 Time</h4>
                   <p className="redemption-desc">Min booking: ₹300</p>
                   <div className="redemption-cost">
@@ -342,7 +342,7 @@ const ProfilePage = () => {
 
                 {/* VR Free Day */}
                 <div className="redemption-card premium">
-                  <FiGamepad className="redemption-icon" />
+                  <FiMonitor className="redemption-icon" />
                   <h4>1 Day VR Rental FREE</h4>
                   <p className="redemption-desc">Take home for 24 hours</p>
                   <div className="redemption-cost premium">
