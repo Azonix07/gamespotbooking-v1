@@ -3,8 +3,8 @@ User Profile and Rewards Routes
 """
 
 from flask import Blueprint, request, jsonify, session
-from ..database.db import get_db_connection
-from ..middleware.auth import require_auth
+from config.database import get_db_connection
+from middleware.auth import require_auth
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
