@@ -24,6 +24,7 @@ const ProfilePage = () => {
   
   const [profileData, setProfileData] = useState(null);
   const [rewards, setRewards] = useState(null);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -58,6 +59,7 @@ const ProfilePage = () => {
         if (data.success) {
           setProfileData(data.profile);
           setRewards(data.rewards);
+          setBookings(data.bookings || []);
         } else {
           setError(data.error || 'Failed to load profile. Please run the database migration.');
         }
@@ -434,6 +436,59 @@ const ProfilePage = () => {
                   </div>
 
                 </div>
+              </div>
+
+              {/* Booking History */}
+              <div className="profile-card">
+                <h3 className="card-title">
+                  <FiClock /> My Booking History
+                </h3>
+                
+                {bookings.length === 0 ? (
+                  <div className="no-bookings">
+                    <p>No bookings yet. Start gaming to earn points!</p>
+                    <button className="btn-primary" onClick={() => navigate('/booking')}>
+                      Book Now
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bookings-list">
+                    {bookings.map((booking) => (
+                      <div key={booking.id} className={`booking-item status-${booking.status}`}>
+                        <div className="booking-header-row">
+                          <div className="booking-date-time">
+                            <FiClock className="booking-icon" />
+                            <div>
+                              <div className="booking-date">{new Date(booking.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                              <div className="booking-time">{booking.time} • {booking.duration} mins</div>
+                            </div>
+                          </div>
+                          <div className="booking-status-badge">
+                            {booking.status === 'completed' && <FiCheckCircle />}
+                            {booking.status}
+                          </div>
+                        </div>
+                        
+                        <div className="booking-devices">
+                          {booking.devices.map((device, idx) => (
+                            <span key={idx} className="device-tag">
+                              <FiMonitor /> {device.type === 'ps5' ? `PS5 #${device.number}` : 'Driving Sim'} ({device.players} {device.players > 1 ? 'players' : 'player'})
+                            </span>
+                          ))}
+                        </div>
+                        
+                        <div className="booking-footer-row">
+                          <div className="booking-price">₹{booking.price.toFixed(2)}</div>
+                          {booking.points_earned > 0 && (
+                            <div className="booking-points-earned">
+                              <FiStar className="points-star-small" /> +{booking.points_earned} points earned
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
             </div>

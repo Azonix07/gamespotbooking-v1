@@ -21,7 +21,7 @@ def allowed_file(filename):
 @user_bp.route('/api/user/profile', methods=['GET'])
 @require_auth
 def get_profile():
-    """Get user profile and rewards data"""
+    """Get user profile, rewards data, and booking history"""
     try:
         user_id = session.get('user_id')
         
@@ -48,13 +48,65 @@ def get_profile():
             'free_playtime_minutes': profile['free_playtime_minutes'] or 0
         }
         
+        # Get user's booking history
+        cursor.execute("""
+            SELECT 
+                b.id,
+                b.booking_date,
+                b.start_time,
+                b.duration_minutes,
+                b.total_price,
+                b.status,
+                b.driving_after_ps5,
+                b.points_awarded,
+                b.created_at,
+                GROUP_CONCAT(
+                    CONCAT(bd.device_type, ':', COALESCE(bd.device_number, 'NA'), ':', bd.player_count)
+                    SEPARATOR '|'
+                ) as devices
+            FROM bookings b
+            LEFT JOIN booking_devices bd ON b.id = bd.booking_id
+            WHERE b.user_id = %s
+            GROUP BY b.id
+            ORDER BY b.booking_date DESC, b.start_time DESC
+            LIMIT 50
+        """, (user_id,))
+        
+        bookings = cursor.fetchall()
+        
+        # Format bookings data
+        formatted_bookings = []
+        for booking in bookings:
+            devices_list = []
+            if booking['devices']:
+                for device_str in booking['devices'].split('|'):
+                    parts = device_str.split(':')
+                    devices_list.append({
+                        'type': parts[0],
+                        'number': None if parts[1] == 'NA' else int(parts[1]),
+                        'players': int(parts[2])
+                    })
+            
+            formatted_bookings.append({
+                'id': booking['id'],
+                'date': booking['booking_date'].strftime('%Y-%m-%d'),
+                'time': str(booking['start_time']),
+                'duration': booking['duration_minutes'],
+                'price': float(booking['total_price']),
+                'status': booking['status'],
+                'devices': devices_list,
+                'points_earned': int(booking['total_price'] * 0.50) if booking['points_awarded'] else 0,
+                'created_at': booking['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+            })
+        
         cursor.close()
         conn.close()
         
         return jsonify({
             'success': True,
             'profile': profile,
-            'rewards': rewards
+            'rewards': rewards,
+            'bookings': formatted_bookings
         })
         
     except Exception as e:
