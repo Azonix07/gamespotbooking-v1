@@ -228,7 +228,7 @@ def redeem_reward():
                 'value': '1_hour_ps5'
             },
             'vr_free_day': {
-                'points_required': 2000,
+                'points_required': 3000,
                 'description': '1 day VR rental free',
                 'action': 'voucher',
                 'value': '1_day_vr'
@@ -311,9 +311,9 @@ def redeem_reward():
 
 # Function to award points after booking (called from booking routes)
 def award_booking_points(user_id, booking_amount):
-    """Award points to user after successful booking (2% of amount)"""
+    """Award points to user after successful booking (50% of amount)"""
     try:
-        points_earned = int(booking_amount * 0.02)  # 2% of booking amount
+        points_earned = int(booking_amount * 0.50)  # 50% of booking amount
         
         if points_earned == 0:
             return

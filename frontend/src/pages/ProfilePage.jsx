@@ -10,7 +10,9 @@ import {
   FiTrendingUp,
   FiInstagram,
   FiClock,
-  FiMonitor
+  FiMonitor,
+  FiCheckCircle,
+  FiStar
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
@@ -39,9 +41,17 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
+        setError(null);
         const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/user/profile`, {
-          credentials: 'include'
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          }
         });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
         const data = await response.json();
         
@@ -49,26 +59,25 @@ const ProfilePage = () => {
           setProfileData(data.profile);
           setRewards(data.rewards);
         } else {
-          setError('Failed to load profile');
+          setError(data.error || 'Failed to load profile. Please run the database migration.');
         }
       } catch (err) {
         console.error('Profile fetch error:', err);
-        setError('Failed to load profile');
+        setError('Unable to load profile. Please ensure the database migration has been run.');
       } finally {
         setLoading(false);
       }
     };
 
-    if (isAuthenticated) {
+    if (isAuthenticated && !authLoading) {
       fetchProfile();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading]);
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file
     if (!file.type.startsWith('image/')) {
       setError('Please select an image file');
       return;
@@ -88,15 +97,15 @@ const ProfilePage = () => {
 
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/user/profile-picture`, {
         method: 'POST',
-        body: formData,
-        credentials: 'include'
+        credentials: 'include',
+        body: formData
       });
 
       const data = await response.json();
 
       if (data.success) {
-        setSuccess('Profile picture updated!');
         setProfileData({ ...profileData, profile_picture: data.profile_picture });
+        setSuccess('Profile picture updated successfully!');
         setTimeout(() => setSuccess(null), 3000);
       } else {
         setError(data.error || 'Failed to upload image');
@@ -112,23 +121,26 @@ const ProfilePage = () => {
   const handleInstagramShare = async () => {
     try {
       setError(null);
-      
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/rewards/instagram-share`, {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       const data = await response.json();
 
       if (data.success) {
-        setSuccess(data.message);
         setRewards(data.rewards);
+        setSuccess(data.message);
         setTimeout(() => setSuccess(null), 3000);
       } else {
         setError(data.error);
+        setTimeout(() => setError(null), 3000);
       }
     } catch (err) {
-      console.error('Share tracking error:', err);
+      console.error('Instagram share error:', err);
       setError('Failed to track share');
     }
   };
@@ -136,24 +148,24 @@ const ProfilePage = () => {
   const handleRedeemReward = async (rewardType) => {
     try {
       setError(null);
-      
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/rewards/redeem`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ reward_type: rewardType }),
-        credentials: 'include'
+        body: JSON.stringify({ reward_type: rewardType })
       });
 
       const data = await response.json();
 
       if (data.success) {
-        setSuccess(data.message);
         setRewards(data.rewards);
-        setTimeout(() => setSuccess(null), 3000);
+        setSuccess(data.message);
+        setTimeout(() => setSuccess(null), 5000);
       } else {
         setError(data.error);
+        setTimeout(() => setError(null), 3000);
       }
     } catch (err) {
       console.error('Redeem error:', err);
@@ -161,223 +173,274 @@ const ProfilePage = () => {
     }
   };
 
-  if (loading || authLoading) {
+  if (authLoading || loading) {
     return (
-      <div className="profile-page">
+      <>
         <Navbar />
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading profile...</p>
+        <div className="profile-page-new">
+          <div className="profile-loading">
+            <div className="spinner"></div>
+            <p>Loading your profile...</p>
+          </div>
         </div>
-      </div>
+      </>
+    );
+  }
+
+  if (error && !profileData) {
+    return (
+      <>
+        <Navbar />
+        <div className="profile-page-new">
+          <div className="profile-error">
+            <h2>⚠️ Profile Not Available</h2>
+            <p>{error}</p>
+            <button className="btn-primary" onClick={() => navigate('/')}>Go Home</button>
+          </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="profile-page">
+    <>
       <Navbar />
-      
-      <div className="profile-container">
-        <div className="profile-header">
-          <h1>My Profile</h1>
-          <p>Manage your account and rewards</p>
-        </div>
-
-        {error && (
-          <div className="alert alert-error">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="alert alert-success">
-            {success}
-          </div>
-        )}
-
-        <div className="profile-grid">
-          {/* Personal Details Card */}
-          <div className="profile-card">
-            <div className="card-header">
-              <FiUser className="header-icon" />
-              <h2>Personal Details</h2>
+      <div className="profile-page-new">
+        <div className="profile-container-new">
+          
+          {/* Alert Messages */}
+          {error && (
+            <div className="alert alert-error">
+              <span>⚠️ {error}</span>
             </div>
+          )}
+          
+          {success && (
+            <div className="alert alert-success">
+              <FiCheckCircle /> {success}
+            </div>
+          )}
 
-            <div className="profile-picture-section">
-              <div className="profile-picture">
-                {profileData?.profile_picture ? (
-                  <img src={profileData.profile_picture} alt="Profile" />
-                ) : (
-                  <div className="profile-placeholder">
-                    <FiUser size={48} />
+          <div className="profile-grid">
+            
+            {/* Left Sidebar - Profile Info */}
+            <div className="profile-sidebar">
+              
+              {/* Profile Picture Card */}
+              <div className="profile-card profile-pic-card">
+                <div className="profile-picture-wrapper">
+                  <div className="profile-picture-large">
+                    {profileData?.profile_picture ? (
+                      <img 
+                        src={`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/${profileData.profile_picture}`} 
+                        alt="Profile" 
+                      />
+                    ) : (
+                      <div className="profile-avatar-large">
+                        {profileData?.name?.charAt(0).toUpperCase() || 'U'}
+                      </div>
+                    )}
+                    <label className="camera-overlay" htmlFor="profile-upload">
+                      {uploadingImage ? (
+                        <div className="spinner-small"></div>
+                      ) : (
+                        <FiCamera size={24} />
+                      )}
+                    </label>
+                    <input
+                      type="file"
+                      id="profile-upload"
+                      accept="image/*"
+                      onChange={handleProfilePictureUpload}
+                      style={{ display: 'none' }}
+                    />
                   </div>
-                )}
-                <label htmlFor="profile-upload" className="upload-overlay">
-                  <FiCamera size={24} />
-                  <input
-                    id="profile-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleProfilePictureUpload}
-                    disabled={uploadingImage}
-                    style={{ display: 'none' }}
-                  />
-                </label>
-                {uploadingImage && <div className="upload-spinner"></div>}
-              </div>
-              <p className="upload-hint">Click to upload photo</p>
-            </div>
-
-            <div className="detail-row">
-              <FiUser className="detail-icon" />
-              <div className="detail-content">
-                <span className="detail-label">Name</span>
-                <span className="detail-value">{profileData?.name || 'N/A'}</span>
-              </div>
-            </div>
-
-            <div className="detail-row">
-              <FiMail className="detail-icon" />
-              <div className="detail-content">
-                <span className="detail-label">Email</span>
-                <span className="detail-value">{profileData?.email || 'N/A'}</span>
-              </div>
-            </div>
-
-            <div className="detail-row">
-              <FiPhone className="detail-icon" />
-              <div className="detail-content">
-                <span className="detail-label">Phone</span>
-                <span className="detail-value">{profileData?.phone || 'Not provided'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Rewards Card */}
-          <div className="profile-card rewards-card">
-            <div className="card-header">
-              <FiAward className="header-icon" />
-              <h2>Rewards & Points</h2>
-            </div>
-
-            {/* Points Display */}
-            <div className="points-display">
-              <div className="points-circle">
-                <FiTrendingUp size={32} />
-                <h3>{rewards?.gamespot_points || 0}</h3>
-                <p>GameSpot Points</p>
-              </div>
-              <p className="points-info">
-                Earn points with every booking and redeem for amazing rewards!
-              </p>
-            </div>
-
-            {/* Instagram Share Reward */}
-            <div className="reward-section">
-              <div className="reward-header">
-                <FiInstagram className="reward-icon instagram" />
-                <h3>Instagram Share Reward</h3>
-              </div>
-              <div className="reward-content">
-                <p>Share GameSpot to 5 friends on Instagram and get <strong>30 minutes free playtime!</strong></p>
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{width: `${Math.min((rewards?.instagram_shares || 0) / 5 * 100, 100)}%`}}
-                  ></div>
                 </div>
-                <p className="progress-text">{rewards?.instagram_shares || 0} / 5 shares</p>
+                <div className="profile-info-text">
+                  <h2>{profileData?.name}</h2>
+                  <p className="profile-member-since">
+                    Member since {new Date(profileData?.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Contact Details Card */}
+              <div className="profile-card">
+                <h3 className="card-title">
+                  <FiUser /> Personal Information
+                </h3>
+                <div className="detail-item">
+                  <FiMail className="detail-icon" />
+                  <div className="detail-content">
+                    <span className="detail-label">Email Address</span>
+                    <span className="detail-value">{profileData?.email}</span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <FiPhone className="detail-icon" />
+                  <div className="detail-content">
+                    <span className="detail-label">Phone Number</span>
+                    <span className="detail-value">{profileData?.phone || 'Not provided'}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Content - Rewards */}
+            <div className="profile-content">
+              
+              {/* GameSpot Points Card - Flipkart Style */}
+              <div className="profile-card points-card-flipkart">
+                <div className="points-header-flipkart">
+                  <div className="points-icon-wrapper">
+                    <FiStar className="points-star-icon" />
+                  </div>
+                  <div className="points-info">
+                    <h3>GameSpot SuperCoins</h3>
+                    <p className="points-subtitle">Earn 50% of your booking amount as points</p>
+                  </div>
+                </div>
                 
-                {rewards?.instagram_shares >= 5 && rewards?.free_playtime_minutes === 0 ? (
+                <div className="points-balance-flipkart">
+                  <div className="points-circle-flipkart">
+                    <div className="points-number">{rewards?.gamespot_points || 0}</div>
+                    <div className="points-label">Points</div>
+                  </div>
+                  <div className="points-value-info">
+                    <div className="points-worth">
+                      <span className="rupee-symbol">₹</span>{rewards?.gamespot_points || 0}
+                    </div>
+                    <span className="points-worth-label">Worth in rewards</span>
+                  </div>
+                </div>
+
+                <div className="points-info-box">
+                  <FiTrendingUp className="info-icon" />
+                  <div className="info-text">
+                    <p><strong>How to earn points:</strong></p>
+                    <ul>
+                      <li>Book games & earn 50% as points (e.g., ₹100 booking = 50 points)</li>
+                      <li>Share on Instagram & get 30 minutes FREE!</li>
+                      <li>Redeem points for exclusive rewards</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Instagram Share Reward */}
+              <div className="profile-card instagram-card">
+                <div className="card-header-flex">
+                  <div>
+                    <h3 className="card-title">
+                      <FiInstagram /> Instagram Share Reward
+                    </h3>
+                    <p className="card-subtitle">Share to 5 friends & get 30 minutes FREE playtime!</p>
+                  </div>
                   <button 
-                    className="btn-primary btn-small"
+                    className="btn-instagram"
+                    onClick={handleInstagramShare}
+                    disabled={rewards?.instagram_shares >= 5}
+                  >
+                    <FiInstagram /> Track Share
+                  </button>
+                </div>
+                
+                <div className="share-progress">
+                  <div className="progress-stats">
+                    <span className="progress-count">{rewards?.instagram_shares || 0}/5 Shares</span>
+                    {rewards?.instagram_shares >= 5 && (
+                      <span className="progress-complete">
+                        <FiCheckCircle /> Complete!
+                      </span>
+                    )}
+                  </div>
+                  <div className="progress-bar-track">
+                    <div 
+                      className="progress-bar-fill" 
+                      style={{ width: `${((rewards?.instagram_shares || 0) / 5) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {rewards?.instagram_shares >= 5 && (
+                  <button 
+                    className="btn-claim-reward"
                     onClick={() => handleRedeemReward('instagram_free_time')}
                   >
-                    <FiGift /> Claim Reward
-                  </button>
-                ) : rewards?.free_playtime_minutes > 0 ? (
-                  <div className="reward-claimed">
-                    <FiClock /> {rewards.free_playtime_minutes} mins free time available!
-                  </div>
-                ) : (
-                  <button 
-                    className="btn-secondary btn-small"
-                    onClick={handleInstagramShare}
-                  >
-                    <FiInstagram /> I Shared on Instagram
+                    <FiGift /> Claim 30 Minutes Free Playtime
                   </button>
                 )}
               </div>
-            </div>
 
-            {/* Points Redemption */}
-            <div className="reward-section">
-              <div className="reward-header">
-                <FiGift className="reward-icon" />
-                <h3>Redeem Points</h3>
-              </div>
-              
-              <div className="redemption-options">
-                {/* PS5 Extra Hour */}
-                <div className="redemption-card">
-                  <FiMonitor className="redemption-icon" />
-                  <h4>1 Hour Extra PS5 Time</h4>
-                  <p className="redemption-desc">Min booking: ₹300</p>
-                  <div className="redemption-cost">
-                    <FiAward /> 500 Points
+              {/* Rewards Redemption */}
+              <div className="profile-card">
+                <h3 className="card-title">
+                  <FiGift /> Redeem Your Points
+                </h3>
+                
+                <div className="redemption-grid">
+                  
+                  {/* PS5 Extra Hour */}
+                  <div className="redemption-card-new">
+                    <div className="redemption-header">
+                      <FiMonitor className="redemption-icon-new" />
+                      <span className="redemption-badge">Popular</span>
+                    </div>
+                    <h4>1 Hour Extra PS5 Time</h4>
+                    <p className="redemption-desc">Valid on bookings above ₹300</p>
+                    <div className="redemption-points">
+                      <FiAward className="points-icon-small" />
+                      <span className="points-cost">500 Points</span>
+                    </div>
+                    {rewards?.gamespot_points >= 500 ? (
+                      <button 
+                        className="btn-redeem"
+                        onClick={() => handleRedeemReward('ps5_extra_hour')}
+                      >
+                        Redeem Now
+                      </button>
+                    ) : (
+                      <button className="btn-redeem-disabled" disabled>
+                        Need {500 - (rewards?.gamespot_points || 0)} more points
+                      </button>
+                    )}
                   </div>
-                  {rewards?.gamespot_points >= 500 ? (
-                    <button 
-                      className="btn-primary btn-small"
-                      onClick={() => handleRedeemReward('ps5_extra_hour')}
-                    >
-                      Redeem Now
-                    </button>
-                  ) : (
-                    <button className="btn-disabled btn-small" disabled>
-                      Need {500 - (rewards?.gamespot_points || 0)} more points
-                    </button>
-                  )}
-                </div>
 
-                {/* VR Free Day */}
-                <div className="redemption-card premium">
-                  <FiMonitor className="redemption-icon" />
-                  <h4>1 Day VR Rental FREE</h4>
-                  <p className="redemption-desc">Take home for 24 hours</p>
-                  <div className="redemption-cost premium">
-                    <FiAward /> 2000 Points
+                  {/* VR Free Day */}
+                  <div className="redemption-card-new premium-card">
+                    <div className="redemption-header">
+                      <FiMonitor className="redemption-icon-new" />
+                      <span className="redemption-badge premium-badge">Premium</span>
+                    </div>
+                    <h4>1 Day VR Rental FREE</h4>
+                    <p className="redemption-desc">Take home for 24 hours</p>
+                    <div className="redemption-points">
+                      <FiAward className="points-icon-small" />
+                      <span className="points-cost">3000 Points</span>
+                    </div>
+                    {rewards?.gamespot_points >= 3000 ? (
+                      <button 
+                        className="btn-redeem premium-btn"
+                        onClick={() => handleRedeemReward('vr_free_day')}
+                      >
+                        Redeem Now
+                      </button>
+                    ) : (
+                      <button className="btn-redeem-disabled" disabled>
+                        Need {3000 - (rewards?.gamespot_points || 0)} more points
+                      </button>
+                    )}
                   </div>
-                  {rewards?.gamespot_points >= 2000 ? (
-                    <button 
-                      className="btn-primary btn-small"
-                      onClick={() => handleRedeemReward('vr_free_day')}
-                    >
-                      Redeem Now
-                    </button>
-                  ) : (
-                    <button className="btn-disabled btn-small" disabled>
-                      Need {2000 - (rewards?.gamespot_points || 0)} more points
-                    </button>
-                  )}
+
                 </div>
               </div>
-            </div>
 
-            {/* How to Earn Points */}
-            <div className="info-box">
-              <h4>How to Earn Points?</h4>
-              <ul>
-                <li>Earn 2% of booking amount as points</li>
-                <li>Book ₹500 = Get 10 points</li>
-                <li>Book ₹1000 = Get 20 points</li>
-                <li>Points never expire!</li>
-              </ul>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
