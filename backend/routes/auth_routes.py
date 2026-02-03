@@ -661,7 +661,7 @@ def apple_login():
         if not user:
             # Create new user
             cursor.execute("""
-                INSERT INTO users (name, email, phone, password, oauth_provider, oauth_provider_id, created_at)
+                INSERT INTO users (name, email, phone, password_hash, oauth_provider, oauth_provider_id, created_at)
                 VALUES (%s, %s, %s, %s, %s, %s, NOW())
             """, (name, email, '', 'APPLE_OAUTH', 'apple', apple_id))
             
