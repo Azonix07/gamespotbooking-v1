@@ -1198,7 +1198,6 @@ const BookingPage = () => {
                             onChange={(e) => setCustomerName(e.target.value)}
                             required
                             placeholder="e.g., John Doe"
-                            readOnly={isLoggedIn}
                           />
                         </div>
                       </div>
@@ -1215,7 +1214,6 @@ const BookingPage = () => {
                             onChange={(e) => setCustomerPhone(e.target.value)}
                             required
                             placeholder="e.g., 9876543210"
-                            readOnly={isLoggedIn}
                           />
                         </div>
                       </div>
