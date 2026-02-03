@@ -33,22 +33,27 @@ def init_db_pool():
         password = os.getenv("MYSQLPASSWORD")
         database = os.getenv("MYSQLDATABASE", "railway")
 
-        # Debug logging
-        print(f"🔍 Database Config:")
-        print(f"   Host: {host if host else 'NOT SET'}")
-        print(f"   Port: {port}")
-        print(f"   User: {user}")
-        print(f"   Password: {'***' if password else 'NOT SET'}")
-        print(f"   Database: {database}")
+        # Debug logging - force flush to stderr
+        import sys
+        sys.stderr.write("=" * 60 + "\n")
+        sys.stderr.write("🔍 DATABASE CONFIG:\n")
+        sys.stderr.write(f"   Host: {host if host else 'NOT SET'}\n")
+        sys.stderr.write(f"   Port: {port}\n")
+        sys.stderr.write(f"   User: {user}\n")
+        sys.stderr.write(f"   Password: {'***' if password else 'NOT SET'}\n")
+        sys.stderr.write(f"   Database: {database}\n")
+        sys.stderr.write("=" * 60 + "\n")
+        sys.stderr.flush()
 
         # Validate required variables
         if not host or not password:
-            print("❌ Missing required environment variables:")
+            sys.stderr.write("❌ MISSING REQUIRED ENVIRONMENT VARIABLES:\n")
             if not host:
-                print("   - MYSQLHOST is not set")
+                sys.stderr.write("   - MYSQLHOST is not set\n")
             if not password:
-                print("   - MYSQLPASSWORD is not set")
-            print("⚠️ Database connection pool NOT initialized")
+                sys.stderr.write("   - MYSQLPASSWORD is not set\n")
+            sys.stderr.write("⚠️ Database connection pool NOT initialized\n")
+            sys.stderr.flush()
             connection_pool = None
             return
 
@@ -71,13 +76,16 @@ def init_db_pool():
             **db_config
         )
 
-        print(f"✅ Database connection pool initialized (size: {POOL_SIZE})")
+        sys.stderr.write(f"✅ DATABASE CONNECTION POOL INITIALIZED (size: {POOL_SIZE})\n")
+        sys.stderr.flush()
 
     except mysql.connector.Error as err:
-        print(f"❌ Database connection failed: {err}")
+        sys.stderr.write(f"❌ DATABASE CONNECTION FAILED: {err}\n")
+        sys.stderr.flush()
         connection_pool = None
     except Exception as e:
-        print(f"❌ Unexpected error initializing database: {e}")
+        sys.stderr.write(f"❌ UNEXPECTED ERROR INITIALIZING DATABASE: {e}\n")
+        sys.stderr.flush()
         connection_pool = None
 
 
