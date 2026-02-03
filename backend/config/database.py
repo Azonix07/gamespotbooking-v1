@@ -26,28 +26,43 @@ def init_db_pool():
     global connection_pool
 
     try:
+        # Get environment variables
+        host = os.getenv("MYSQLHOST")
+        port = os.getenv("MYSQLPORT", "3306")
+        user = os.getenv("MYSQLUSER", "root")
+        password = os.getenv("MYSQLPASSWORD")
+        database = os.getenv("MYSQLDATABASE", "railway")
+
+        # Debug logging
+        print(f"🔍 Database Config:")
+        print(f"   Host: {host if host else 'NOT SET'}")
+        print(f"   Port: {port}")
+        print(f"   User: {user}")
+        print(f"   Password: {'***' if password else 'NOT SET'}")
+        print(f"   Database: {database}")
+
+        # Validate required variables
+        if not host or not password:
+            print("❌ Missing required environment variables:")
+            if not host:
+                print("   - MYSQLHOST is not set")
+            if not password:
+                print("   - MYSQLPASSWORD is not set")
+            print("⚠️ Database connection pool NOT initialized")
+            connection_pool = None
+            return
+
         db_config = {
-            "host": os.getenv("MYSQLHOST"),
-            "port": int(os.getenv("MYSQLPORT", 3306)),
-            "user": os.getenv("MYSQLUSER"),
-            "password": os.getenv("MYSQLPASSWORD"),
-            "database": os.getenv("MYSQLDATABASE"),
+            "host": host,
+            "port": int(port),
+            "user": user,
+            "password": password,
+            "database": database,
             "charset": "utf8mb4",
             "autocommit": False,
             "connect_timeout": 10,
             "connection_timeout": 10,
         }
-
-        # Remove empty values
-        db_config = {k: v for k, v in db_config.items() if v}
-
-        if not all(
-            key in db_config
-            for key in ("host", "user", "password", "database")
-        ):
-            print("⚠️ MySQL environment variables not fully set")
-            connection_pool = None
-            return
 
         connection_pool = pooling.MySQLConnectionPool(
             pool_name="gamespot_pool",
@@ -59,7 +74,10 @@ def init_db_pool():
         print(f"✅ Database connection pool initialized (size: {POOL_SIZE})")
 
     except mysql.connector.Error as err:
-        print(f"⚠️ Database connection failed: {err}")
+        print(f"❌ Database connection failed: {err}")
+        connection_pool = None
+    except Exception as e:
+        print(f"❌ Unexpected error initializing database: {e}")
         connection_pool = None
 
 
