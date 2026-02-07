@@ -642,6 +642,8 @@ def google_login():
     if request.method == 'OPTIONS':
         return '', 200
     
+    conn = None
+    cursor = None
     try:
         from google.oauth2 import id_token
         from google.auth.transport import requests as google_requests
@@ -660,29 +662,54 @@ def google_login():
             google_client_id
         )
         
-        # Extract user info
+        # Extract user info from Google
         email = idinfo['email']
         name = idinfo.get('name', email.split('@')[0])
         google_id = idinfo['sub']
         
-        # Check if user exists or create new
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        cursor.execute("""
-            SELECT id, name, email, phone 
-            FROM users 
-            WHERE email = %s OR oauth_provider_id = %s
-        """, (email, google_id))
+        # Check if oauth_provider_id column exists
+        has_oauth_cols = False
+        try:
+            cursor.execute("""
+                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'oauth_provider_id'
+            """)
+            has_oauth_cols = cursor.fetchone() is not None
+        except Exception:
+            pass
         
-        user = cursor.fetchone()
+        # Look up the user — try oauth_provider_id first, then email
+        user = None
+        if has_oauth_cols:
+            cursor.execute("""
+                SELECT id, name, email, phone 
+                FROM users 
+                WHERE email = %s OR oauth_provider_id = %s
+            """, (email, google_id))
+            user = cursor.fetchone()
+        else:
+            cursor.execute("""
+                SELECT id, name, email, phone 
+                FROM users 
+                WHERE email = %s
+            """, (email,))
+            user = cursor.fetchone()
         
         if not user:
             # Create new user
-            cursor.execute("""
-                INSERT INTO users (name, email, phone, password_hash, oauth_provider, oauth_provider_id, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, NOW())
-            """, (name, email, '', 'GOOGLE_OAUTH', 'google', google_id))
+            if has_oauth_cols:
+                cursor.execute("""
+                    INSERT INTO users (name, email, phone, password_hash, oauth_provider, oauth_provider_id, created_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, NOW())
+                """, (name, email, '', 'GOOGLE_OAUTH', 'google', google_id))
+            else:
+                cursor.execute("""
+                    INSERT INTO users (name, email, phone, password_hash, created_at)
+                    VALUES (%s, %s, %s, %s, NOW())
+                """, (name, email, '', 'GOOGLE_OAUTH'))
             
             conn.commit()
             user_id = cursor.lastrowid
@@ -693,11 +720,20 @@ def google_login():
                 'email': email,
                 'phone': ''
             }
-        
-        cursor.close()
-        conn.close()
+        else:
+            # Existing user — update oauth columns if they exist and aren't set yet
+            if has_oauth_cols:
+                try:
+                    cursor.execute("""
+                        UPDATE users SET oauth_provider = 'google', oauth_provider_id = %s
+                        WHERE id = %s AND (oauth_provider_id IS NULL OR oauth_provider_id = '')
+                    """, (google_id, user['id']))
+                    conn.commit()
+                except Exception:
+                    pass
         
         # Set session
+        session.clear()
         session['user_logged_in'] = True
         session['user_id'] = user['id']
         session['user_name'] = user['name']
@@ -705,10 +741,20 @@ def google_login():
         session['user_phone'] = user.get('phone', '')
         session.permanent = True
         
+        # Link guest bookings by email (Google users may not have phone)
+        try:
+            from services.auth_service import link_guest_bookings_on_login
+            phone = user.get('phone', '')
+            if phone:
+                link_guest_bookings_on_login(user['id'], phone)
+        except Exception:
+            pass
+        
         # Generate JWT token
         token = generate_user_token(user['id'], user['email'], user['name'])
+        refresh_token = generate_refresh_token(user['id'], 'customer')
         
-        return jsonify({
+        response = jsonify({
             'success': True,
             'message': 'Google login successful',
             'user': {
@@ -718,8 +764,18 @@ def google_login():
                 'phone': user.get('phone', '')
             },
             'token': token,
+            'user_type': 'customer',
             'userType': 'customer'
         })
+        
+        # Set refresh token as HttpOnly cookie
+        response.set_cookie(
+            'refresh_token', refresh_token,
+            httponly=True, secure=True, samesite='None',
+            max_age=7*24*60*60, path='/api/auth'
+        )
+        
+        return response
         
     except ValueError as e:
         # Invalid token
@@ -727,7 +783,14 @@ def google_login():
         return jsonify({'success': False, 'error': 'Invalid Google token'}), 401
     except Exception as e:
         sys.stderr.write(f"[Google Login] Error: {e}\n")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': 'Google login failed. Please try again.'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 
 @auth_bp.route('/api/auth/apple-login', methods=['POST', 'OPTIONS'])

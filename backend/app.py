@@ -385,9 +385,24 @@ def create_missing_tables():
             except Exception:
                 pass  # Column already exists, skip silently
         
-        # Add index on customer_phone for fast phone-based lookups
+        # Auto-add missing columns to users table (for Google/Apple OAuth + rewards)
+        user_alter_statements = [
+            "ALTER TABLE users ADD COLUMN oauth_provider VARCHAR(50) NULL",
+            "ALTER TABLE users ADD COLUMN oauth_provider_id VARCHAR(255) NULL",
+            "ALTER TABLE users ADD COLUMN gamespot_points INT DEFAULT 0",
+        ]
+        for sql in user_alter_statements:
+            try:
+                cursor.execute(sql)
+                conn.commit()
+                print(f"✅ Added missing user column: {sql}")
+            except Exception:
+                pass  # Column already exists, skip silently
+        
+        # Add indexes for fast lookups
         index_statements = [
             "CREATE INDEX idx_customer_phone ON bookings (customer_phone)",
+            "CREATE INDEX idx_oauth_provider_id ON users (oauth_provider_id)",
         ]
         for sql in index_statements:
             try:

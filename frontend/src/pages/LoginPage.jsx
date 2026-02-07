@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import { apiFetch, setAccessToken } from '../services/apiClient';
 import '../styles/LoginPage.css';
 
 const LoginPage = () => {
@@ -78,38 +79,27 @@ const LoginPage = () => {
       setLoading(true);
       setError(null);
       
-      const API_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
-      
-      // Get existing JWT token for auth header
-      const token = localStorage.getItem('gamespot_auth_token');
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      
-      const response = await fetch(`${API_URL}/api/auth/google-login`, {
+      const data = await apiFetch('/api/auth/google-login', {
         method: 'POST',
-        headers,
         body: JSON.stringify({ 
           credential: credentialResponse.credential 
-        }),
-        credentials: 'include'
+        })
       });
-      
-      const data = await response.json();
       
       if (data.success) {
         setSuccess('Login successful! Redirecting...');
         
-        // Store JWT token for mobile browsers
+        // Store JWT token in memory + localStorage via setAccessToken
         if (data.token) {
+          setAccessToken(data.token);
           try {
-            localStorage.setItem('gamespot_auth_token', data.token);
             localStorage.setItem('gamespot_logged_in', 'true');
-            localStorage.setItem('gamespot_user_type', data.userType || 'customer');
+            localStorage.setItem('gamespot_user_type', data.user_type || data.userType || 'customer');
           } catch (e) {}
         }
         
         // Set auth state directly from Google response
-        setAuthState(data.user, data.userType || 'customer');
+        setAuthState(data.user, data.user_type || data.userType || 'customer');
         
         setTimeout(() => {
           const from = location.state?.from?.pathname || '/';
@@ -119,7 +109,7 @@ const LoginPage = () => {
         setError(data.error || 'Google login failed');
       }
     } catch (err) {
-      setError('Google login failed. Please try again.');
+      setError(err.message || 'Google login failed. Please try again.');
       console.error('Google login error:', err);
     } finally {
       setLoading(false);
