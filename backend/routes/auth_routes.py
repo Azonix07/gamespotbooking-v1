@@ -5,7 +5,6 @@ Handles user signup, login, logout, password reset
 
 import sys
 import os
-import random
 import time
 from flask import Blueprint, request, jsonify, session
 from services.auth_service import (
@@ -14,7 +13,9 @@ from services.auth_service import (
     get_user_by_id,
     create_reset_token,
     reset_password_with_token,
-    send_reset_email
+    send_reset_email,
+    create_phone_otp,
+    verify_phone_otp_and_reset
 )
 from services.sms_service import sms_service
 from routes.admin import verify_php_password
@@ -24,9 +25,6 @@ from middleware.rate_limiter import auth_rate_limit
 from utils.sanitizer import validate_email, validate_phone, validate_name, validate_password, sanitize, is_sql_injection, is_xss_attempt
 
 auth_bp = Blueprint('auth', __name__)
-
-# In-memory OTP storage (for production, use Redis or database)
-otp_storage = {}
 
 
 @auth_bp.route('/api/auth/signup', methods=['POST', 'OPTIONS'])
@@ -381,12 +379,8 @@ def check_session():
 @auth_rate_limit(max_attempts=3, window_seconds=600)
 def forgot_password():
     """
-    Request password reset
-    
-    POST body:
-    {
-        "email": "user@example.com"
-    }
+    Request password reset via email link.
+    Always returns generic success message (no user enumeration).
     """
     if request.method == 'OPTIONS':
         return '', 200
@@ -400,25 +394,29 @@ def forgot_password():
         
         result = create_reset_token(email)
         
-        email_sent = False
         if result['success'] and 'token' in result:
-            # Send reset email
-            email_sent = send_reset_email(
-                email=email,
-                token=result['token'],
-                user_name=result['user']['name']
-            )
+            # Send reset email (best-effort — don't reveal success/failure)
+            try:
+                send_reset_email(
+                    email=email,
+                    token=result['token'],
+                    user_name=result['user']['name']
+                )
+            except Exception as email_err:
+                sys.stderr.write(f"[ForgotPassword] Email send error: {email_err}\n")
         
-        # Return success — indicate if email was actually sent
+        # Always return generic success (no user enumeration)
         return jsonify({
             'success': True,
-            'message': 'If the email exists, a reset link will be sent',
-            'email_sent': email_sent
+            'message': 'If an account exists with this email, a password reset link has been sent.'
         })
         
     except Exception as e:
         sys.stderr.write(f"[ForgotPassword] Error: {e}\n")
-        return jsonify({'success': True, 'message': 'If the email exists, a reset link will be sent', 'email_sent': False})
+        return jsonify({
+            'success': True,
+            'message': 'If an account exists with this email, a password reset link has been sent.'
+        })
 
 
 @auth_bp.route('/api/auth/reset-password', methods=['POST', 'OPTIONS'])
@@ -494,13 +492,12 @@ def get_current_user():
 def forgot_password_otp():
     """
     Send OTP to phone number for password reset.
-    Only works if the phone number is registered.
+    Uses MySQL-backed storage with SHA-256 hashed OTPs.
+    Always returns generic success message (no user enumeration).
     """
     if request.method == 'OPTIONS':
         return '', 200
 
-    conn = None
-    cursor = None
     try:
         data = request.get_json()
         phone = data.get('phone', '').strip()
@@ -508,46 +505,29 @@ def forgot_password_otp():
         if not phone or len(phone) < 10:
             return jsonify({'success': False, 'error': 'Valid phone number is required'}), 400
 
-        # Strip non-digit chars for matching
-        phone_digits = phone.replace('+', '').replace(' ', '').replace('-', '')
+        # Generate OTP & store hashed in DB (auth_service handles everything)
+        result = create_phone_otp(phone)
 
-        # Check if a user exists with this phone
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        if not result['success']:
+            return jsonify({'success': False, 'error': 'Failed to send OTP. Please try again.'}), 500
 
-        cursor.execute('SELECT id, name, phone FROM users WHERE phone = %s', (phone_digits,))
-        user = cursor.fetchone()
-
-        if not user and len(phone_digits) > 10:
-            last10 = phone_digits[-10:]
-            cursor.execute('SELECT id, name, phone FROM users WHERE phone LIKE %s', (f'%{last10}',))
-            user = cursor.fetchone()
-
-        if not user:
-            # Don't reveal if phone exists
+        if not result.get('found'):
+            # No user found — return generic success (no enumeration)
             return jsonify({
                 'success': True,
                 'message': 'If an account exists with this number, an OTP has been sent'
             })
 
-        # Generate 6-digit OTP
-        otp = str(random.randint(100000, 999999))
+        raw_otp = result['otp']
+        user = result['user']
         actual_phone = user['phone']
 
-        # Store OTP with purpose=reset and user_id
-        otp_storage[f"reset_{actual_phone}"] = {
-            'otp': otp,
-            'user_id': user['id'],
-            'expires_at': time.time() + 300,  # 5 minutes
-            'attempts': 0
-        }
-
-        # Send OTP via SMS
+        # Try sending OTP via SMS
         sms_sent = False
         email_sent = False
 
         if sms_service.enabled:
-            success_sent, message = sms_service.send_otp(actual_phone, otp)
+            success_sent, message = sms_service.send_otp(actual_phone, raw_otp)
             if success_sent:
                 sms_sent = True
             else:
@@ -557,14 +537,11 @@ def forgot_password_otp():
         if not sms_sent:
             try:
                 from services.email_service import email_service
-                # Look up user's email
-                cursor.execute('SELECT email FROM users WHERE id = %s', (user['id'],))
-                user_row = cursor.fetchone()
-                user_email = user_row.get('email', '') if user_row else ''
+                user_email = user.get('email', '')
 
                 if email_service.enabled and user_email and '@' in user_email and not user_email.endswith('@gamespot.local'):
                     success_email, msg = email_service.send_otp_email(
-                        user_email, otp, user['name'], purpose='password reset'
+                        user_email, raw_otp, user['name'], purpose='password reset'
                     )
                     if success_email:
                         email_sent = True
@@ -574,31 +551,29 @@ def forgot_password_otp():
             except Exception as email_err:
                 sys.stderr.write(f"[ForgotPasswordOTP] Email fallback error: {email_err}\n")
 
-        # Always log OTP to server stderr (visible in Railway logs)
-        sys.stderr.write(f"[ForgotPasswordOTP] OTP for {actual_phone}: {otp}\n")
+        # Log OTP to server stderr (visible in Railway logs for debugging)
+        sys.stderr.write(f"[ForgotPasswordOTP] OTP for ***{actual_phone[-4:]}: {raw_otp}\n")
 
-        # Build response message
+        # Build response — indicate delivery method but not user existence
         if sms_sent:
             resp_msg = 'OTP sent to your phone number'
+            delivery = 'sms'
         elif email_sent:
             resp_msg = 'OTP sent to your registered email address (SMS unavailable)'
+            delivery = 'email'
         else:
             resp_msg = 'If an account exists with this number, an OTP has been sent'
+            delivery = 'pending'
 
         return jsonify({
             'success': True,
             'message': resp_msg,
-            'delivery': 'sms' if sms_sent else ('email' if email_sent else 'pending')
+            'delivery': delivery
         })
 
     except Exception as e:
         sys.stderr.write(f"[ForgotPasswordOTP] Error: {e}\n")
         return jsonify({'success': False, 'error': 'Failed to send OTP. Please try again.'}), 500
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
 
 
 @auth_bp.route('/api/auth/reset-password-otp', methods=['POST', 'OPTIONS'])
@@ -606,6 +581,7 @@ def forgot_password_otp():
 def reset_password_otp():
     """
     Verify OTP and reset password.
+    Uses MySQL-backed OTP verification with SHA-256 hashing.
     
     POST body:
     {
@@ -618,8 +594,6 @@ def reset_password_otp():
     if request.method == 'OPTIONS':
         return '', 200
 
-    conn = None
-    cursor = None
     try:
         data = request.get_json()
         phone = data.get('phone', '').strip()
@@ -636,76 +610,29 @@ def reset_password_otp():
         if len(password) < 6:
             return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
 
-        # Strip non-digit chars
-        phone_digits = phone.replace('+', '').replace(' ', '').replace('-', '')
+        # Verify OTP & reset password (auth_service handles everything)
+        result = verify_phone_otp_and_reset(phone, otp, password)
 
-        # Look up stored OTP — try exact match and last-10-digits
-        stored_data = otp_storage.get(f"reset_{phone_digits}")
-        if not stored_data and len(phone_digits) > 10:
-            last10 = phone_digits[-10:]
-            # Search all reset keys for a match
-            for key, val in list(otp_storage.items()):
-                if key.startswith('reset_') and key.endswith(last10):
-                    stored_data = val
-                    break
-
-        if not stored_data:
-            return jsonify({'success': False, 'error': 'OTP not found or expired. Please request a new one.'}), 400
-
-        # Check expiry
-        if time.time() > stored_data['expires_at']:
-            # Clean up
-            for key in [k for k in otp_storage if k.startswith('reset_') and str(stored_data.get('user_id', '')) in str(otp_storage[k].get('user_id', ''))]:
-                del otp_storage[key]
-            return jsonify({'success': False, 'error': 'OTP expired. Please request a new one.'}), 400
-
-        # Check attempts
-        if stored_data['attempts'] >= 3:
-            return jsonify({'success': False, 'error': 'Too many attempts. Please request a new OTP.'}), 400
-
-        # Verify OTP
-        if stored_data['otp'] != otp:
-            stored_data['attempts'] += 1
-            remaining = 3 - stored_data['attempts']
-            return jsonify({'success': False, 'error': f'Invalid OTP. {remaining} attempts remaining.'}), 400
-
-        # OTP verified — reset the password
-        user_id = stored_data['user_id']
-
-        from services.auth_service import hash_password
-        password_hash = hash_password(password)
-
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            'UPDATE users SET password_hash = %s, reset_token = NULL, reset_token_expiry = NULL WHERE id = %s',
-            (password_hash, user_id)
-        )
-        conn.commit()
-
-        # Clean up OTP
-        for key in [k for k in list(otp_storage.keys()) if k.startswith('reset_')]:
-            if otp_storage[key].get('user_id') == user_id:
-                del otp_storage[key]
-
-        return jsonify({
-            'success': True,
-            'message': 'Password reset successful! You can now login with your new password.'
-        })
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
 
     except Exception as e:
         sys.stderr.write(f"[ResetPasswordOTP] Error: {e}\n")
         return jsonify({'success': False, 'error': 'Password reset failed. Please try again.'}), 500
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
 
 
 # ============================================================
 # OTP-based Login System
+# (Login OTPs use in-memory storage — acceptable since login
+#  OTPs are short-lived and non-critical vs password resets)
 # ============================================================
+
+import secrets as _secrets
+
+# In-memory storage for LOGIN OTPs only (not password resets)
+_login_otp_storage = {}
 
 @auth_bp.route('/api/auth/send-otp', methods=['POST', 'OPTIONS'])
 def send_otp():
@@ -720,11 +647,11 @@ def send_otp():
         if not phone or len(phone) < 10:
             return jsonify({'success': False, 'error': 'Valid phone number is required'}), 400
         
-        # Generate 6-digit OTP
-        otp = str(random.randint(100000, 999999))
+        # Generate cryptographically secure 6-digit OTP
+        otp = str(_secrets.randbelow(900000) + 100000)
         
         # Store OTP with expiry (5 minutes)
-        otp_storage[phone] = {
+        _login_otp_storage[phone] = {
             'otp': otp,
             'expires_at': time.time() + 300,  # 5 minutes
             'attempts': 0
@@ -767,19 +694,19 @@ def verify_otp():
             return jsonify({'success': False, 'error': 'Phone and OTP are required'}), 400
         
         # Check if OTP exists and is valid
-        stored_data = otp_storage.get(phone)
+        stored_data = _login_otp_storage.get(phone)
         
         if not stored_data:
             return jsonify({'success': False, 'error': 'OTP not found or expired'}), 400
         
         # Check expiry
         if time.time() > stored_data['expires_at']:
-            del otp_storage[phone]
+            del _login_otp_storage[phone]
             return jsonify({'success': False, 'error': 'OTP expired'}), 400
         
         # Check attempts
         if stored_data['attempts'] >= 3:
-            del otp_storage[phone]
+            del _login_otp_storage[phone]
             return jsonify({'success': False, 'error': 'Too many attempts. Please request a new OTP'}), 400
         
         # Verify OTP
@@ -788,7 +715,7 @@ def verify_otp():
             return jsonify({'success': False, 'error': 'Invalid OTP'}), 400
         
         # OTP verified - clear it
-        del otp_storage[phone]
+        del _login_otp_storage[phone]
         
         # Check if user exists
         conn = get_db_connection()

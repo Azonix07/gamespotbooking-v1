@@ -411,6 +411,33 @@ def create_missing_tables():
                 print(f"✅ Added index: {sql}")
             except Exception:
                 pass  # Index already exists, skip silently
+
+        # ============================================================
+        # PASSWORD RESETS TABLE — MySQL-backed OTP + token storage
+        # Replaces the broken in-memory otp_storage dict that was lost
+        # on every Railway redeploy/restart.
+        # ============================================================
+        try:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS password_resets (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    user_id INT NOT NULL,
+                    reset_type ENUM('email','phone') NOT NULL COMMENT 'email = token link, phone = 6-digit OTP',
+                    token_hash VARCHAR(64) NOT NULL COMMENT 'SHA-256 hash of token/OTP — never store plaintext',
+                    expires_at TIMESTAMP NOT NULL,
+                    attempts INT DEFAULT 0 COMMENT 'Failed verification attempts (max 3)',
+                    used BOOLEAN DEFAULT FALSE COMMENT 'Single-use: TRUE after successful reset',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_pr_user (user_id),
+                    INDEX idx_pr_hash (token_hash),
+                    INDEX idx_pr_expires (expires_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """)
+            conn.commit()
+            print("✅ password_resets table verified")
+        except Exception as e:
+            print(f"⚠️  password_resets table: {e}")
+
         
     except Exception as e:
         print(f"⚠️  Table creation error: {e}")

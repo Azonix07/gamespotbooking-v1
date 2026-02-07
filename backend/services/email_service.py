@@ -4,10 +4,10 @@ Sends emails via SMTP (Gmail, Outlook, or any SMTP provider)
 
 Required environment variables:
   SMTP_HOST      - SMTP server (default: smtp.gmail.com)
-  SMTP_PORT      - SMTP port (default: 587)
+  SMTP_PORT      - SMTP port (default: 587 for TLS, 465 for SSL)
   SMTP_EMAIL     - Sender email address
   SMTP_PASSWORD  - App password (NOT your regular password)
-  FRONTEND_URL   - Frontend URL for links (default: https://gamespotweb-production.up.railway.app)
+  FRONTEND_URL   - Frontend URL for links
 
 For Gmail:
   1. Go to https://myaccount.google.com/apppasswords
@@ -20,6 +20,10 @@ import sys
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+
+
+# Connection timeout to prevent request hanging if SMTP is unreachable
+SMTP_TIMEOUT_SECONDS = 15
 
 
 class EmailService:
@@ -35,20 +39,33 @@ class EmailService:
 
         if self.smtp_email and self.smtp_password:
             self.enabled = True
-            print(f"[Email] ✅ SMTP configured: {self.smtp_host}:{self.smtp_port} from {self.smtp_email}")
+            sys.stderr.write(f"[Email] ✅ SMTP configured: {self.smtp_host}:{self.smtp_port} from {self.smtp_email}\n")
         else:
             self.enabled = False
-            print("[Email] ⚠️ SMTP not configured (set SMTP_EMAIL + SMTP_PASSWORD env vars)")
+            sys.stderr.write("[Email] ⚠️ SMTP not configured (set SMTP_EMAIL + SMTP_PASSWORD env vars)\n")
+
+    def _get_smtp_connection(self):
+        """
+        Create SMTP connection with correct TLS/SSL handling.
+        Port 465 = implicit SSL (SMTP_SSL), Port 587 = STARTTLS, others = try STARTTLS.
+        """
+        if self.smtp_port == 465:
+            server = smtplib.SMTP_SSL(self.smtp_host, self.smtp_port, timeout=SMTP_TIMEOUT_SECONDS)
+        else:
+            server = smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=SMTP_TIMEOUT_SECONDS)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+        server.login(self.smtp_email, self.smtp_password)
+        return server
 
     def send_email(self, to_email, subject, html_body, text_body=None):
         """
         Send an email via SMTP.
-
-        Returns:
-            tuple: (success: bool, message: str)
+        Returns: tuple (success: bool, message: str)
         """
         if not self.enabled:
-            sys.stderr.write(f"[Email] ❌ Cannot send — SMTP not configured\n")
+            sys.stderr.write("[Email] ❌ Cannot send — SMTP not configured\n")
             return False, 'Email service not configured'
 
         try:
@@ -57,26 +74,25 @@ class EmailService:
             msg['To'] = to_email
             msg['Subject'] = subject
 
-            # Plain text fallback
             if text_body:
                 msg.attach(MIMEText(text_body, 'plain'))
-
-            # HTML body
             msg.attach(MIMEText(html_body, 'html'))
 
-            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
-                server.ehlo()
-                server.starttls()
-                server.ehlo()
-                server.login(self.smtp_email, self.smtp_password)
+            with self._get_smtp_connection() as server:
                 server.sendmail(self.smtp_email, to_email, msg.as_string())
 
             sys.stderr.write(f"[Email] ✅ Sent to {to_email}: {subject}\n")
             return True, 'Email sent successfully'
 
         except smtplib.SMTPAuthenticationError as e:
-            sys.stderr.write(f"[Email] ❌ Auth failed: {e}\n")
+            sys.stderr.write(f"[Email] ❌ SMTP auth failed: {e}\n")
             return False, 'SMTP authentication failed — check SMTP_EMAIL and SMTP_PASSWORD'
+        except smtplib.SMTPConnectError as e:
+            sys.stderr.write(f"[Email] ❌ SMTP connect failed: {e}\n")
+            return False, 'Cannot connect to SMTP server'
+        except TimeoutError:
+            sys.stderr.write(f"[Email] ❌ SMTP timeout after {SMTP_TIMEOUT_SECONDS}s\n")
+            return False, 'SMTP connection timed out'
         except Exception as e:
             sys.stderr.write(f"[Email] ❌ Send failed: {e}\n")
             return False, f'Email send failed: {str(e)}'
@@ -174,7 +190,7 @@ If you didn't request this, you can safely ignore this email.
         Returns:
             tuple: (success: bool, message: str)
         """
-        subject = f"Your GameSpot Verification Code: {otp}"
+        subject = "Your GameSpot Verification Code"
 
         html_body = f"""
 <!DOCTYPE html>

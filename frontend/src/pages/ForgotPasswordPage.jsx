@@ -71,11 +71,7 @@ const ForgotPasswordPage = () => {
       });
 
       setStep('email-sent');
-      if (data.email_sent) {
-        setSuccess('A password reset link has been sent to your email.');
-      } else {
-        setSuccess('If an account exists with this email, a reset link will be sent. Please also check your spam folder.');
-      }
+      setSuccess('If an account exists with this email, a password reset link has been sent. Please check your inbox and spam folder.');
     } catch (err) {
       setError(err.message || 'Failed to send reset email. Please try again.');
     } finally {
