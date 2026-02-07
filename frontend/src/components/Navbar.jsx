@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiUser, FiHome, FiGrid, FiPackage, FiPhone, FiGift, FiMessageSquare, FiCalendar, FiBell, FiX, FiAward, FiTarget, FiStar, FiMonitor, FiBook, FiMail, FiLogOut, FiSettings, FiCreditCard } from 'react-icons/fi';
+import { FiUser, FiHome, FiGrid, FiPhone, FiMessageSquare, FiCalendar, FiBell, FiX, FiAward, FiMonitor, FiBook, FiLogOut, FiSettings, FiCreditCard } from 'react-icons/fi';
 import '../styles/Navbar.css';
 import { useAuth } from '../context/AuthContext';
 
@@ -157,11 +157,6 @@ const Navbar = ({ showCenter = true }) => {
               </div>
             </div>
             
-            {/* Special Promo Tab - Always Visible */}
-            <div className="navbar-item discount-tab" onClick={() => navigate('/win-free-game')}>
-              <span className="tab-text">Win Free Game</span>
-              <FiTarget className="tab-bg-icon" />
-            </div>
           </div>
         )}
         
@@ -365,16 +360,6 @@ const Navbar = ({ showCenter = true }) => {
             Contact Us
           </div>
 
-          <div className="mobile-nav-divider"></div>
-          
-          {/* Special Promo */}
-          <div 
-            className={`mobile-nav-item discount-item ${isActivePath('/win-free-game') ? 'active' : ''}`}
-            onClick={() => handleMobileNavClick('/win-free-game')}
-          >
-            <FiTarget className="nav-icon" />
-            Win Free Game
-          </div>
         </div>
       </div>
     </>

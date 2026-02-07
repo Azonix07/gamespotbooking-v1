@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiCpu, FiMenu, FiX, FiHome, FiGrid, FiAward, FiMonitor, FiMoreHorizontal, FiUser, FiLogOut, FiSettings, FiCalendar, FiBook, FiMessageSquare, FiBell, FiPhone, FiTarget, FiGift, FiMail, FiCreditCard, FiChevronRight } from 'react-icons/fi';
+import { FiCpu, FiMenu, FiX, FiHome, FiGrid, FiAward, FiMonitor, FiUser, FiLogOut, FiSettings, FiCalendar, FiBook, FiMessageSquare, FiBell, FiPhone, FiGift, FiCreditCard, FiChevronRight } from 'react-icons/fi';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import Footer from '../components/Footer';
@@ -196,27 +196,11 @@ const HomePage = () => {
           {/* Offers & Promos */}
           <div className="slide-menu-section">
             <div className="slide-menu-section-title">Offers & Promos</div>
-            <div className={`slide-menu-item promo-item ${isActivePath('/win-free-game') ? 'active' : ''}`} onClick={() => handleMenuNav('/win-free-game')}>
-              <div className="slide-menu-item-icon promo-icon"><FiTarget size={20} /></div>
-              <div className="slide-menu-item-text">
-                <span className="slide-menu-item-label">Win Free Game</span>
-                <span className="slide-menu-item-desc">Participate & win prizes</span>
-              </div>
-              <FiChevronRight className="slide-menu-item-arrow" />
-            </div>
             <div className={`slide-menu-item ${isActivePath('/get-offers') ? 'active' : ''}`} onClick={() => handleMenuNav('/get-offers')}>
-              <div className="slide-menu-item-icon"><FiGift size={20} /></div>
+              <div className="slide-menu-item-icon promo-icon"><FiGift size={20} /></div>
               <div className="slide-menu-item-text">
                 <span className="slide-menu-item-label">Get Offers</span>
                 <span className="slide-menu-item-desc">Exclusive deals & discounts</span>
-              </div>
-              <FiChevronRight className="slide-menu-item-arrow" />
-            </div>
-            <div className={`slide-menu-item ${isActivePath('/invite') ? 'active' : ''}`} onClick={() => handleMenuNav('/invite')}>
-              <div className="slide-menu-item-icon"><FiMail size={20} /></div>
-              <div className="slide-menu-item-text">
-                <span className="slide-menu-item-label">Invite Friends</span>
-                <span className="slide-menu-item-desc">Refer & earn rewards</span>
               </div>
               <FiChevronRight className="slide-menu-item-arrow" />
             </div>

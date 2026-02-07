@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -7,13 +7,15 @@ import {
   FiMonitor, FiCamera, FiTrendingUp, FiAward, FiClock,
   FiChevronRight, FiInfo, FiZap, FiStar, FiLoader, FiSend,
   FiChevronLeft, FiHeart, FiMessageCircle, FiThumbsUp,
-  FiGrid, FiList, FiFilter, FiSearch, FiDisc, FiBox
+  FiGrid, FiList, FiFilter, FiSearch, FiDisc, FiBox,
+  FiNavigation, FiTarget
 } from 'react-icons/fi';
 import { IoGameController, IoCarSport } from 'react-icons/io5';
 import { TbDeviceVisionPro } from 'react-icons/tb';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { getToday } from '../utils/helpers';
+import useFreePlaces, { haversineDistance, getFreeMapUrl, getOSMLink, getDirectionsUrl } from '../hooks/useFreePlaces';
 import '../styles/CollegeSetupPage.css';
 
 // GameSpot Kodungallur Location
@@ -182,8 +184,20 @@ const stats = {
 const CollegeSetupPage = () => {
   const navigate = useNavigate();
   
+  // Free College Autocomplete — OpenStreetMap Nominatim (no API key needed!)
+  const {
+    isLoaded: placesLoaded,
+    suggestions: placeSuggestions,
+    isSearching: placesSearching,
+    searchPlaces,
+    getPlaceDetails,
+    clearSuggestions
+  } = useFreePlaces({ country: 'in' });
+  
   // Refs
   const bookingRef = useRef(null);
+  const collegeInputRef = useRef(null);
+  const suggestionsRef = useRef(null);
   
   // State - View & Navigation
   const [activeTab, setActiveTab] = useState('showcase');
@@ -197,11 +211,16 @@ const CollegeSetupPage = () => {
   const [contactPerson, setContactPerson] = useState('');
   const [phone, setPhone] = useState('');
   const [location, setLocation] = useState('');
-  const [distance, setDistance] = useState(10);
+  const [distance, setDistance] = useState(0);
+  const [distanceAuto, setDistanceAuto] = useState(false);
+  const [selectedPlaceCoords, setSelectedPlaceCoords] = useState(null);
+  const [selectedPlaceDetails, setSelectedPlaceDetails] = useState(null);
   const [startDate, setStartDate] = useState(getToday());
   const [endDate, setEndDate] = useState('');
   const [numberOfDays, setNumberOfDays] = useState(1);
   const [additionalNotes, setAdditionalNotes] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
   
   // State - Equipment Selection
   const [ps5Count, setPs5Count] = useState(4);
@@ -251,6 +270,72 @@ const CollegeSetupPage = () => {
     }, 5000);
     return () => clearInterval(timer);
   }, []);
+  
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(e.target) &&
+        collegeInputRef.current &&
+        !collegeInputRef.current.contains(e.target)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  
+  // Handle college name input change — triggers autocomplete
+  const handleCollegeNameChange = useCallback(
+    (value) => {
+      setCollegeName(value);
+      setDistanceAuto(false);
+      setSelectedPlaceCoords(null);
+      setSelectedPlaceDetails(null);
+      if (value.length >= 2) {
+        searchPlaces(value);
+        setShowSuggestions(true);
+      } else {
+        clearSuggestions();
+        setShowSuggestions(false);
+      }
+    },
+    [searchPlaces, clearSuggestions]
+  );
+  
+  // Handle place selection from suggestions
+  const handlePlaceSelect = useCallback(
+    async (suggestion) => {
+      setCollegeName(suggestion.mainText);
+      setShowSuggestions(false);
+      clearSuggestions();
+      
+      // Get place details — pass full suggestion (Nominatim already has lat/lng/address)
+      const details = await getPlaceDetails(suggestion.placeId, suggestion);
+      if (details) {
+        // Build a clean location string
+        const locationParts = [details.city, details.district, details.state].filter(Boolean);
+        setLocation(locationParts.length > 0 ? locationParts.join(', ') : details.address);
+        setSelectedPlaceCoords({ lat: details.lat, lng: details.lng });
+        setSelectedPlaceDetails(details);
+        
+        // Auto-calculate distance from GameSpot Kodungallur
+        if (details.lat && details.lng) {
+          const dist = haversineDistance(
+            GAMESPOT_LOCATION.lat,
+            GAMESPOT_LOCATION.lng,
+            details.lat,
+            details.lng
+          );
+          setDistance(dist);
+          setDistanceAuto(true);
+        }
+      }
+    },
+    [getPlaceDetails, clearSuggestions]
+  );
   
   // Get all testimonials
   const getAllTestimonials = () => {
@@ -667,15 +752,183 @@ const CollegeSetupPage = () => {
                   </h3>
                   
                   <div className="form-grid">
-                    <div className="form-group">
-                      <label><FiPackage /> College Name *</label>
-                      <input
-                        type="text"
-                        value={collegeName}
-                        onChange={(e) => setCollegeName(e.target.value)}
-                        placeholder="e.g., Christ College"
-                        required
-                      />
+                    <div className="form-group full-width college-autocomplete-wrap">
+                      <label><FiSearch /> College / Institution Name *</label>
+                      <div className={`autocomplete-container ${inputFocused ? 'focused' : ''} ${selectedPlaceDetails ? 'has-selection' : ''}`}>
+                        <div className="autocomplete-input-row">
+                          <FiSearch className="autocomplete-input-icon" />
+                          <input
+                            ref={collegeInputRef}
+                            type="text"
+                            value={collegeName}
+                            onChange={(e) => handleCollegeNameChange(e.target.value)}
+                            onFocus={() => {
+                              setInputFocused(true);
+                              if (placeSuggestions.length > 0) setShowSuggestions(true);
+                            }}
+                            onBlur={() => setInputFocused(false)}
+                            placeholder={placesLoaded ? "Search any college, university, school in India..." : "e.g., Christ College, Irinjalakuda"}
+                            required
+                            autoComplete="off"
+                            className="autocomplete-input"
+                          />
+                          {placesSearching && (
+                            <span className="autocomplete-spinner">
+                              <FiLoader className="spin" />
+                            </span>
+                          )}
+                          {collegeName && !placesSearching && (
+                            <button 
+                              type="button" 
+                              className="autocomplete-clear"
+                              onClick={() => {
+                                setCollegeName('');
+                                setLocation('');
+                                setDistance(0);
+                                setDistanceAuto(false);
+                                setSelectedPlaceCoords(null);
+                                setSelectedPlaceDetails(null);
+                                clearSuggestions();
+                                setShowSuggestions(false);
+                                collegeInputRef.current?.focus();
+                              }}
+                            >
+                              <FiX />
+                            </button>
+                          )}
+                        </div>
+                        {placesLoaded && (
+                          <div className="autocomplete-powered-strip">
+                            <FiMapPin /> Powered by OpenStreetMap — free, no API key needed
+                          </div>
+                        )}
+                        
+                        {/* Suggestions Dropdown */}
+                        {showSuggestions && placeSuggestions.length > 0 && (
+                          <div className="autocomplete-dropdown" ref={suggestionsRef}>
+                            <div className="autocomplete-dropdown-header">
+                              <FiMapPin /> Suggestions
+                              <span className="autocomplete-result-count">{placeSuggestions.length} results</span>
+                            </div>
+                            {placeSuggestions.map((s, idx) => (
+                              <div
+                                key={s.placeId || idx}
+                                className="autocomplete-item"
+                                onClick={() => handlePlaceSelect(s)}
+                              >
+                                <div className={`autocomplete-item-icon-wrap ${s.placeType === 'university' ? 'type-university' : s.placeType === 'college' ? 'type-college' : s.placeType === 'school' ? 'type-school' : ''}`}>
+                                  <FiMapPin className="autocomplete-item-icon" />
+                                </div>
+                                <div className="autocomplete-item-text">
+                                  <div className="autocomplete-main-row">
+                                    <span className="autocomplete-main">{s.mainText}</span>
+                                    {s.placeType && s.placeType !== 'place' && (
+                                      <span className={`autocomplete-type-badge badge-${s.placeType}`}>
+                                        {s.placeType}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="autocomplete-secondary">{s.secondaryText}</span>
+                                </div>
+                                <FiChevronRight className="autocomplete-item-arrow" />
+                              </div>
+                            ))}
+                            <div className="autocomplete-footer">
+                              <span className="osm-attribution">© OpenStreetMap contributors</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* No results message */}
+                        {showSuggestions && !placesSearching && placeSuggestions.length === 0 && collegeName.length >= 2 && placesLoaded && (
+                          <div className="autocomplete-dropdown" ref={suggestionsRef}>
+                            <div className="autocomplete-no-results">
+                              <FiSearch />
+                              <p>No colleges found for "<strong>{collegeName}</strong>"</p>
+                              <span>Try a different name or check spelling</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Selected Place Preview Card */}
+                      {selectedPlaceDetails && (
+                        <div className="place-preview-card">
+                          <div className="place-preview-content">
+                            <div className="place-preview-info">
+                              <div className="place-preview-name">
+                                <FiCheck className="place-check-icon" />
+                                <span>{selectedPlaceDetails.name}</span>
+                                {selectedPlaceDetails.placeType && selectedPlaceDetails.placeType !== 'place' && (
+                                  <span className={`autocomplete-type-badge badge-${selectedPlaceDetails.placeType}`}>
+                                    {selectedPlaceDetails.placeType}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="place-preview-address">
+                                <FiMapPin /> {selectedPlaceDetails.city && selectedPlaceDetails.state 
+                                  ? `${selectedPlaceDetails.city}${selectedPlaceDetails.district ? ', ' + selectedPlaceDetails.district : ''}, ${selectedPlaceDetails.state}${selectedPlaceDetails.pincode ? ' - ' + selectedPlaceDetails.pincode : ''}`
+                                  : selectedPlaceDetails.address
+                                }
+                              </div>
+                              <div className="place-preview-links">
+                                {selectedPlaceDetails.osmLink && (
+                                  <a 
+                                    href={selectedPlaceDetails.osmLink} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="place-preview-link"
+                                  >
+                                    <FiMapPin /> View on Map
+                                  </a>
+                                )}
+                                {selectedPlaceCoords && (
+                                  <a 
+                                    href={getDirectionsUrl(GAMESPOT_LOCATION.lat, GAMESPOT_LOCATION.lng, selectedPlaceCoords.lat, selectedPlaceCoords.lng)} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="place-preview-link directions"
+                                  >
+                                    <FiNavigation /> Get Directions
+                                  </a>
+                                )}
+                                {selectedPlaceDetails.website && (
+                                  <a 
+                                    href={selectedPlaceDetails.website} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="place-preview-link"
+                                  >
+                                    <FiInfo /> Website
+                                  </a>
+                                )}
+                              </div>
+                              {distanceAuto && (
+                                <div className="place-preview-distance">
+                                  <FiNavigation />
+                                  <span><strong>{distance} km</strong> from GameSpot Kodungallur</span>
+                                  <span className="place-transport-cost">• Transport: ₹{Math.round(distance * 15 * 2)}</span>
+                                </div>
+                              )}
+                            </div>
+                            {selectedPlaceDetails.mapUrl && (
+                              <div className="place-preview-map">
+                                <a href={selectedPlaceDetails.osmLink || '#'} target="_blank" rel="noopener noreferrer">
+                                  <img 
+                                    src={selectedPlaceDetails.mapUrl} 
+                                    alt="College location map"
+                                    className="place-map-image"
+                                    loading="lazy"
+                                  />
+                                  <div className="place-map-overlay">
+                                    <FiMapPin /> Click to open map
+                                  </div>
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="form-group">
@@ -683,21 +936,63 @@ const CollegeSetupPage = () => {
                       <input
                         type="text"
                         value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        placeholder="City, District"
+                        onChange={(e) => {
+                          setLocation(e.target.value);
+                          if (distanceAuto) {
+                            setDistanceAuto(false);
+                            setSelectedPlaceDetails(null);
+                          }
+                        }}
+                        placeholder={distanceAuto ? "Auto-filled ✓" : "City, District, State"}
                         required
+                        className={distanceAuto ? 'auto-filled' : ''}
                       />
                     </div>
                     
-                    <div className="form-group full-width">
-                      <label><FiTruck /> Distance from Kodungallur (km)</label>
-                      <input
-                        type="number"
-                        value={distance}
-                        onChange={(e) => setDistance(Number(e.target.value))}
-                        min="1"
-                        max="500"
-                      />
+                    <div className="form-group">
+                      <label>
+                        <FiTruck /> Distance from Kodungallur
+                        {distanceAuto && (
+                          <span className="distance-auto-badge">
+                            <FiNavigation /> Auto
+                          </span>
+                        )}
+                      </label>
+                      <div className={`distance-display ${distanceAuto ? 'auto' : ''}`}>
+                        {distanceAuto ? (
+                          <>
+                            <div className="distance-visual">
+                              <div className="distance-from">
+                                <FiTarget /> GameSpot
+                              </div>
+                              <div className="distance-line">
+                                <div className="distance-line-inner"></div>
+                                <span className="distance-km">{distance} km</span>
+                              </div>
+                              <div className="distance-to">
+                                <FiMapPin /> {collegeName.substring(0, 18)}{collegeName.length > 18 ? '…' : ''}
+                              </div>
+                            </div>
+                            <div className="distance-cost-preview">
+                              🚚 Transport estimate: <strong>₹{Math.round(distance * 15 * 2).toLocaleString()}</strong> ({distance} km × ₹15 × 2 trips)
+                            </div>
+                          </>
+                        ) : (
+                          <input
+                            type="number"
+                            value={distance}
+                            onChange={(e) => setDistance(Number(e.target.value))}
+                            min="1"
+                            max="500"
+                            placeholder="Enter distance in km"
+                          />
+                        )}
+                      </div>
+                      {!distanceAuto && distance === 0 && (
+                        <span className="distance-hint">
+                          <FiInfo /> Type a college name above to auto-calculate distance — powered by OpenStreetMap (free)
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1130,6 +1425,38 @@ const CollegeSetupPage = () => {
                   )}
                 </button>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Success Modal */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="success-modal"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <div className="success-icon">
+                <FiCheck />
+              </div>
+              <h2>Booking Request Sent!</h2>
+              <p>We'll get back to you within 24 hours with a detailed quote.</p>
+              <div className="booking-ref">
+                <strong>{bookingId}</strong>
+              </div>
+              <p className="success-note">Save this reference for your records.</p>
+              <button onClick={() => { setShowSuccess(false); setActiveTab('showcase'); }}>
+                <FiCheck /> Done
+              </button>
             </motion.div>
           </motion.div>
         )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
 import { 
   FiUser,
   FiMail, 
@@ -14,8 +14,6 @@ import {
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import '../styles/LoginPage.css';
-
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com';
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -169,7 +167,6 @@ const SignupPage = () => {
   };
 
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <div className="login-page">
         <Navbar />
         
@@ -342,6 +339,8 @@ const SignupPage = () => {
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={() => setError('Google signup failed')}
+                useOneTap={false}
+                ux_mode="popup"
                 size="large"
                 text="signup_with"
                 shape="rectangular"
@@ -362,7 +361,6 @@ const SignupPage = () => {
           </div>
         </div>
       </div>
-    </GoogleOAuthProvider>
   );
 };
 
