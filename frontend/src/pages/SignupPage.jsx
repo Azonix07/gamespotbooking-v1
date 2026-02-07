@@ -34,12 +34,12 @@ const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but not right after a signup)
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (!authLoading && isAuthenticated && !success) {
       navigate('/', { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, authLoading, navigate, success]);
 
   const handleChange = (e) => {
     setFormData({
@@ -109,6 +109,7 @@ const SignupPage = () => {
     try {
       setLoading(true);
       setError(null);
+      setSuccess(null);
       
       const result = await signup(formData);
       
@@ -116,13 +117,12 @@ const SignupPage = () => {
         setSuccess('Account created successfully! Redirecting...');
         setTimeout(() => {
           navigate('/', { replace: true });
-        }, 1000);
+        }, 1500);
       } else {
         setError(result.error || 'Signup failed. Please try again.');
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
-      console.error('Signup error:', err);
+      setError(err.message || 'An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }

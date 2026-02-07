@@ -25,9 +25,9 @@ const LoginPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but not right after login)
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (!authLoading && isAuthenticated && !success) {
       if (isAdmin) {
         navigate('/admin/dashboard', { replace: true });
       } else {
@@ -35,7 +35,7 @@ const LoginPage = () => {
         navigate(from, { replace: true });
       }
     }
-  }, [isAuthenticated, isAdmin, authLoading, navigate, location.state]);
+  }, [isAuthenticated, isAdmin, authLoading, navigate, location.state, success]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
