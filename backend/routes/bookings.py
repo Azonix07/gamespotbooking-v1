@@ -151,8 +151,8 @@ def handle_bookings():
             except Exception:
                 has_promo_columns = False
             
-            # Start transaction
-            conn.start_transaction()
+            # Note: autocommit=False in pool config means we're already in a transaction.
+            # conn.commit() / conn.rollback() handle the transaction boundaries.
             
             # Check availability for all affected slots
             affected_slots = get_affected_slots(start_time, duration_minutes)
@@ -349,8 +349,6 @@ def handle_bookings():
             
             if not booking:
                 return jsonify({'success': False, 'error': 'Booking not found'}), 404
-            
-            conn.start_transaction()
             
             # Update only provided fields
             updates = []

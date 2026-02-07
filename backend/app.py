@@ -398,72 +398,7 @@ create_missing_tables()
 # Health check endpoint
 @app.route('/health', methods=['GET'])
 def health_check():
-    return {'status': 'healthy', 'message': 'GameSpot Python Backend is running', 'version': 'v2.2-debug'}, 200
-
-# Debug: Test database booking insert
-@app.route('/api/test-booking-debug', methods=['POST'])
-def test_booking_debug():
-    """Temporary debug endpoint to trace booking errors"""
-    import traceback as tb
-    steps = []
-    conn = None
-    cursor = None
-    try:
-        steps.append('1. Got request')
-        data = request.get_json()
-        steps.append(f'2. Parsed JSON: {bool(data)}')
-        
-        from config.database import get_db_connection
-        conn = get_db_connection()
-        steps.append('3. Got DB connection')
-        
-        cursor = conn.cursor(dictionary=True)
-        steps.append('4. Got cursor')
-        
-        # Check bookings table columns
-        cursor.execute("DESCRIBE bookings")
-        columns = [row['Field'] for row in cursor.fetchall()]
-        steps.append(f'5. Bookings columns: {columns}')
-        
-        # Try a simple insert
-        conn.start_transaction()
-        steps.append('6. Started transaction')
-        
-        if 'bonus_minutes' in columns:
-            cursor.execute("""
-                INSERT INTO bookings (customer_name, customer_phone, booking_date, start_time, duration_minutes, total_price, driving_after_ps5, bonus_minutes)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, ('DEBUG TEST', '0000000000', '2026-12-31', '09:00:00', 60, 0, 0, 0))
-        else:
-            cursor.execute("""
-                INSERT INTO bookings (customer_name, customer_phone, booking_date, start_time, duration_minutes, total_price, driving_after_ps5)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, ('DEBUG TEST', '0000000000', '2026-12-31', '09:00:00', 60, 0, 0))
-        steps.append('7. Insert succeeded')
-        
-        booking_id = cursor.lastrowid
-        steps.append(f'8. Got booking_id: {booking_id}')
-        
-        # Rollback - don't actually save
-        conn.rollback()
-        steps.append('9. Rolled back (test only)')
-        
-        return jsonify({'success': True, 'steps': steps}), 200
-        
-    except Exception as e:
-        if conn:
-            try: conn.rollback()
-            except: pass
-        steps.append(f'ERROR: {str(e)}')
-        steps.append(f'TRACEBACK: {tb.format_exc()}')
-        return jsonify({'success': False, 'steps': steps}), 200  # Return 200 to avoid 500 handler
-    finally:
-        if cursor:
-            try: cursor.close()
-            except: pass
-        if conn:
-            try: conn.close()
-            except: pass
+    return {'status': 'healthy', 'message': 'GameSpot Python Backend is running', 'version': 'v2.3-txn-fix'}, 200
 
 # Root endpoint - minimal info (don't expose API structure)
 @app.route('/', methods=['GET'])
