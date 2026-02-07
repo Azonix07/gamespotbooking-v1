@@ -5,6 +5,8 @@ Handles user signup, login, logout, password reset
 
 import sys
 import os
+import random
+import time
 from flask import Blueprint, request, jsonify, session
 from services.auth_service import (
     register_user,
@@ -22,6 +24,9 @@ from middleware.rate_limiter import auth_rate_limit
 from utils.sanitizer import validate_email, validate_phone, validate_name, validate_password, sanitize, is_sql_injection, is_xss_attempt
 
 auth_bp = Blueprint('auth', __name__)
+
+# In-memory OTP storage (for production, use Redis or database)
+otp_storage = {}
 
 
 @auth_bp.route('/api/auth/signup', methods=['POST', 'OPTIONS'])
@@ -478,12 +483,192 @@ def get_current_user():
         return jsonify({'success': False, 'error': 'User not found'}), 404
 
 
-# OTP-based Login System
-import random
-import time
+# ============================================================
+# PASSWORD RESET VIA PHONE OTP
+# ============================================================
 
-# In-memory OTP storage (for production, use Redis or database)
-otp_storage = {}
+@auth_bp.route('/api/auth/forgot-password-otp', methods=['POST', 'OPTIONS'])
+@auth_rate_limit(max_attempts=5, window_seconds=300)
+def forgot_password_otp():
+    """
+    Send OTP to phone number for password reset.
+    Only works if the phone number is registered.
+    """
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    conn = None
+    cursor = None
+    try:
+        data = request.get_json()
+        phone = data.get('phone', '').strip()
+
+        if not phone or len(phone) < 10:
+            return jsonify({'success': False, 'error': 'Valid phone number is required'}), 400
+
+        # Strip non-digit chars for matching
+        phone_digits = phone.replace('+', '').replace(' ', '').replace('-', '')
+
+        # Check if a user exists with this phone
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute('SELECT id, name, phone FROM users WHERE phone = %s', (phone_digits,))
+        user = cursor.fetchone()
+
+        if not user and len(phone_digits) > 10:
+            last10 = phone_digits[-10:]
+            cursor.execute('SELECT id, name, phone FROM users WHERE phone LIKE %s', (f'%{last10}',))
+            user = cursor.fetchone()
+
+        if not user:
+            # Don't reveal if phone exists
+            return jsonify({
+                'success': True,
+                'message': 'If an account exists with this number, an OTP has been sent'
+            })
+
+        # Generate 6-digit OTP
+        otp = str(random.randint(100000, 999999))
+        actual_phone = user['phone']
+
+        # Store OTP with purpose=reset and user_id
+        otp_storage[f"reset_{actual_phone}"] = {
+            'otp': otp,
+            'user_id': user['id'],
+            'expires_at': time.time() + 300,  # 5 minutes
+            'attempts': 0
+        }
+
+        # Send OTP via SMS
+        success_sent, message = sms_service.send_otp(actual_phone, otp)
+
+        if not success_sent:
+            sys.stderr.write(f"[ForgotPasswordOTP] SMS send failed: {message}\n")
+            # Still return success (don't reveal account exists)
+            # In dev mode, print OTP to console
+            sys.stderr.write(f"[ForgotPasswordOTP] DEV OTP for {actual_phone}: {otp}\n")
+
+        return jsonify({
+            'success': True,
+            'message': 'If an account exists with this number, an OTP has been sent'
+        })
+
+    except Exception as e:
+        sys.stderr.write(f"[ForgotPasswordOTP] Error: {e}\n")
+        return jsonify({'success': False, 'error': 'Failed to send OTP. Please try again.'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@auth_bp.route('/api/auth/reset-password-otp', methods=['POST', 'OPTIONS'])
+@auth_rate_limit(max_attempts=5, window_seconds=600)
+def reset_password_otp():
+    """
+    Verify OTP and reset password.
+    
+    POST body:
+    {
+        "phone": "9876543210",
+        "otp": "123456",
+        "password": "newpassword",
+        "confirmPassword": "newpassword"
+    }
+    """
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    conn = None
+    cursor = None
+    try:
+        data = request.get_json()
+        phone = data.get('phone', '').strip()
+        otp = data.get('otp', '').strip()
+        password = data.get('password', '')
+        confirm_password = data.get('confirmPassword', '')
+
+        if not all([phone, otp, password, confirm_password]):
+            return jsonify({'success': False, 'error': 'All fields are required'}), 400
+
+        if password != confirm_password:
+            return jsonify({'success': False, 'error': 'Passwords do not match'}), 400
+
+        if len(password) < 6:
+            return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
+
+        # Strip non-digit chars
+        phone_digits = phone.replace('+', '').replace(' ', '').replace('-', '')
+
+        # Look up stored OTP — try exact match and last-10-digits
+        stored_data = otp_storage.get(f"reset_{phone_digits}")
+        if not stored_data and len(phone_digits) > 10:
+            last10 = phone_digits[-10:]
+            # Search all reset keys for a match
+            for key, val in list(otp_storage.items()):
+                if key.startswith('reset_') and key.endswith(last10):
+                    stored_data = val
+                    break
+
+        if not stored_data:
+            return jsonify({'success': False, 'error': 'OTP not found or expired. Please request a new one.'}), 400
+
+        # Check expiry
+        if time.time() > stored_data['expires_at']:
+            # Clean up
+            for key in [k for k in otp_storage if k.startswith('reset_') and str(stored_data.get('user_id', '')) in str(otp_storage[k].get('user_id', ''))]:
+                del otp_storage[key]
+            return jsonify({'success': False, 'error': 'OTP expired. Please request a new one.'}), 400
+
+        # Check attempts
+        if stored_data['attempts'] >= 3:
+            return jsonify({'success': False, 'error': 'Too many attempts. Please request a new OTP.'}), 400
+
+        # Verify OTP
+        if stored_data['otp'] != otp:
+            stored_data['attempts'] += 1
+            remaining = 3 - stored_data['attempts']
+            return jsonify({'success': False, 'error': f'Invalid OTP. {remaining} attempts remaining.'}), 400
+
+        # OTP verified — reset the password
+        user_id = stored_data['user_id']
+
+        from services.auth_service import hash_password
+        password_hash = hash_password(password)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            'UPDATE users SET password_hash = %s, reset_token = NULL, reset_token_expiry = NULL WHERE id = %s',
+            (password_hash, user_id)
+        )
+        conn.commit()
+
+        # Clean up OTP
+        for key in [k for k in list(otp_storage.keys()) if k.startswith('reset_')]:
+            if otp_storage[key].get('user_id') == user_id:
+                del otp_storage[key]
+
+        return jsonify({
+            'success': True,
+            'message': 'Password reset successful! You can now login with your new password.'
+        })
+
+    except Exception as e:
+        sys.stderr.write(f"[ResetPasswordOTP] Error: {e}\n")
+        return jsonify({'success': False, 'error': 'Password reset failed. Please try again.'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+# ============================================================
+# OTP-based Login System
+# ============================================================
 
 @auth_bp.route('/api/auth/send-otp', methods=['POST', 'OPTIONS'])
 def send_otp():
