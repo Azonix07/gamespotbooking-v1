@@ -85,61 +85,6 @@ def signup():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-# TEMPORARY DEBUG: Check admin_users table (remove after fixing)
-@auth_bp.route('/api/auth/debug-admin', methods=['GET'])
-def debug_admin():
-    """Temporary endpoint to debug admin login issues - REMOVE AFTER FIX"""
-    conn = None
-    cursor = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        
-        # Check what's in admin_users
-        cursor.execute('SELECT id, username, LEFT(password_hash, 30) as hash_prefix, LENGTH(password_hash) as hash_len FROM admin_users')
-        admins = cursor.fetchall()
-        
-        # Check table columns
-        cursor.execute('DESCRIBE admin_users')
-        columns = cursor.fetchall()
-        
-        # Test password verification
-        import bcrypt
-        test_password = '9645136006'
-        test_hash = '$2b$12$98Li8bi7umLkDpvZdMWXxuczmYDKKKexeTk8xRwOv3JUQ48BA93uy'
-        local_verify = bcrypt.checkpw(test_password.encode('utf-8'), test_hash.encode('utf-8'))
-        
-        # If admin exists, try verifying against actual DB hash
-        db_verify = False
-        db_hash_prefix = ''
-        if admins:
-            actual_hash = None
-            cursor.execute('SELECT password_hash FROM admin_users WHERE username = %s', ('admin',))
-            row = cursor.fetchone()
-            if row:
-                actual_hash = row['password_hash']
-                db_hash_prefix = actual_hash[:40]
-                try:
-                    hash_bytes = actual_hash.replace('$2y$', '$2b$').encode('utf-8')
-                    db_verify = bcrypt.checkpw(test_password.encode('utf-8'), hash_bytes)
-                except Exception as e:
-                    db_verify = str(e)
-        
-        return jsonify({
-            'admins': admins,
-            'columns': [c['Field'] for c in columns],
-            'local_hash_verify': local_verify,
-            'db_hash_verify': db_verify,
-            'db_hash_prefix': db_hash_prefix,
-            'expected_hash_prefix': test_hash[:40]
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)})
-    finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
-
-
 @auth_bp.route('/api/auth/login', methods=['POST', 'OPTIONS'])
 @auth_rate_limit(max_attempts=10, window_seconds=300)
 def login():

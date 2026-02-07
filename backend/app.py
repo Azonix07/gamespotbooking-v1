@@ -159,7 +159,74 @@ app.register_blueprint(user_bp)  # User profile and rewards system
 # Create uploads directory for profile pictures
 os.makedirs('static/uploads/profiles', exist_ok=True)
 
-# Health check endpoint
+# ============================================================
+# FIX ADMIN PASSWORD ON STARTUP
+# The Railway database has a different hash than expected.
+# This ensures the admin password is always correct.
+# ============================================================
+def fix_admin_credentials():
+    """Ensure admin user exists with correct password hash and email"""
+    import bcrypt
+    conn = None
+    cursor = None
+    try:
+        from config.database import get_db_connection
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Generate correct hash for password 9645136006
+        correct_password = '9645136006'
+        correct_hash = bcrypt.hashpw(correct_password.encode('utf-8'), bcrypt.gensalt(rounds=12)).decode('utf-8')
+        
+        # Check if admin user exists
+        cursor.execute('SELECT id, username FROM admin_users WHERE username = %s', ('admin',))
+        admin = cursor.fetchone()
+        
+        if admin:
+            # Update password hash to correct one
+            cursor.execute('UPDATE admin_users SET password_hash = %s WHERE username = %s', (correct_hash, 'admin'))
+            conn.commit()
+            print("✅ Admin password hash updated successfully")
+        else:
+            # Insert admin user
+            cursor.execute(
+                'INSERT INTO admin_users (username, password_hash) VALUES (%s, %s)',
+                ('admin', correct_hash)
+            )
+            conn.commit()
+            print("✅ Admin user created successfully")
+        
+        # Try to add email column if it doesn't exist
+        try:
+            cursor.execute("SELECT email FROM admin_users LIMIT 1")
+            cursor.fetchone()
+            # Column exists, update email
+            cursor.execute("UPDATE admin_users SET email = %s WHERE username = %s", ('admin@gamespot.in', 'admin'))
+            conn.commit()
+            print("✅ Admin email set to admin@gamespot.in")
+        except Exception:
+            try:
+                cursor.execute("ALTER TABLE admin_users ADD COLUMN email VARCHAR(255) UNIQUE NULL")
+                conn.commit()
+                cursor.execute("UPDATE admin_users SET email = %s WHERE username = %s", ('admin@gamespot.in', 'admin'))
+                conn.commit()
+                print("✅ Email column added and admin email set")
+            except Exception as e2:
+                print(f"⚠️  Could not add email column: {e2}")
+        
+    except Exception as e:
+        print(f"⚠️  Admin credential fix error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            try:
+                conn.close()
+            except:
+                pass
+
+# Run the fix on startup
+fix_admin_credentials()
 @app.route('/health', methods=['GET'])
 def health_check():
     return {'status': 'healthy', 'message': 'GameSpot Python Backend is running'}, 200
