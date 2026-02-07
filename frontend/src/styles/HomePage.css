@@ -479,6 +479,7 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  background: #0f172a; /* Instant dark background while video loads */
 }
 
 /* Video Background */
@@ -489,7 +490,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: -2;
+  z-index: 0;
 }
 
 /* Dark Overlay for better text/content visibility */
@@ -500,7 +501,7 @@
   right: 0;
   bottom: 0;
   background: rgba(15, 23, 42, 0.7); /* Dark overlay with 70% opacity */
-  z-index: -1;
+  z-index: 1;
 }
 
 .hero-background {
@@ -510,7 +511,7 @@
   right: 0;
   bottom: 0;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #312e81 100%);
-  z-index: -1;
+  z-index: 0;
 }
 
 .hero-content {
@@ -522,7 +523,7 @@
   text-align: center;
   padding: var(--spacing-lg);
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .cta-book-now-button {
@@ -714,13 +715,12 @@
   line-height: 1;
 }
 
-/* Logo Image */
+/* Logo Image — LCP element: no animation delay, must be visible instantly */
 .hero-logo {
   max-width: 400px;
   width: 100%;
   height: auto;
   margin-bottom: var(--spacing-md);
-  animation: fadeInScale 0.8s ease-out;
   filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
   transition: transform 0.3s ease;
 }

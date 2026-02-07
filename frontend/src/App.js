@@ -68,23 +68,23 @@ const PageTracker = () => {
 };
 
 function App() {
-  // Load and apply site theme on app initialization
+  // Load and apply site theme — use cached theme FIRST, then update from API
   useEffect(() => {
+    // Step 1: Apply cached theme immediately (no network wait)
+    const cachedTheme = localStorage.getItem('siteTheme') || 'theme-purple';
+    document.body.className = cachedTheme;
+
+    // Step 2: Update from API in background (non-blocking)
     const loadTheme = async () => {
       try {
-        // Try to get theme from API (database)
         const response = await getTheme();
         const theme = response.theme;
-        
-        // Apply theme to body
-        document.body.className = theme;
-        
-        // Store in localStorage for offline/fast loading
-        localStorage.setItem('siteTheme', theme);
+        if (theme && theme !== cachedTheme) {
+          document.body.className = theme;
+          localStorage.setItem('siteTheme', theme);
+        }
       } catch (err) {
-        // If API fails, try localStorage
-        const cachedTheme = localStorage.getItem('siteTheme') || 'theme-purple';
-        document.body.className = cachedTheme;
+        // Already using cached theme, ignore error
       }
     };
 

@@ -1,8 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FiCpu, FiMenu, FiX, FiHome, FiGrid, FiAward, FiMonitor, FiUser, FiLogOut, FiSettings, FiCalendar, FiBook, FiMessageSquare, FiBell, FiPhone, FiGift, FiCreditCard, FiChevronRight } from 'react-icons/fi';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
 import Footer from '../components/Footer';
 import '../styles/HomePage.css';
 import { useAuth } from "../context/AuthContext";
@@ -47,7 +45,7 @@ const HomePage = () => {
 
   return (
     <div className="hero-container">
-      {/* Video Background with Poster Image for Faster Initial Load */}
+      {/* Video Background */}
       <video 
         className="hero-background-video"
         autoPlay 
@@ -55,7 +53,6 @@ const HomePage = () => {
         muted 
         playsInline
         preload="metadata"
-        poster="/assets/images/video-poster.jpg"
         onLoadedData={() => setVideoLoaded(true)}
       >
         <source src="/assets/videos/background.mp4" type="video/mp4" />
@@ -287,13 +284,15 @@ const HomePage = () => {
       
       {/* Main Content - Centered Book Now Button */}
       <div className="hero-content">
-        {/* Logo Image with lazy loading */}
-        <LazyLoadImage
+        {/* Logo — LCP element: native img, no lazy loading, highest priority */}
+        <img
           src="/assets/images/logo.png" 
           alt="GameSpot Logo" 
           className="hero-logo"
-          effect="blur"
-          threshold={100}
+          fetchPriority="high"
+          decoding="async"
+          width="400"
+          height="75"
         />
         
         <p className="hero-subtitle">
@@ -320,30 +319,30 @@ const HomePage = () => {
           BOOK NOW
         </div>
 
-        {/* Console Icons with lazy loading */}
+        {/* Console Icons */}
         <div className="console-icons-container">
-          <LazyLoadImage
+          <img
             src="/assets/images/ps5Icon.png" 
             alt="PlayStation 5" 
             className="console-icon ps5-icon"
-            effect="opacity"
-            threshold={200}
+            loading="lazy"
+            decoding="async"
           />
           <div className="console-separator">|</div>
-          <LazyLoadImage
+          <img
             src="/assets/images/xboxIcon.png" 
             alt="Xbox" 
             className="console-icon xbox-icon"
-            effect="opacity"
-            threshold={200}
+            loading="lazy"
+            decoding="async"
           />
           <div className="console-separator">|</div>
-          <LazyLoadImage
+          <img
             src="/assets/images/metaIcon.png" 
             alt="Meta" 
             className="console-icon meta-icon"
-            effect="opacity"
-            threshold={200}
+            loading="lazy"
+            decoding="async"
           />
         </div>
       </div>

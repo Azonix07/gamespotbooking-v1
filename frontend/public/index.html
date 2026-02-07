@@ -15,15 +15,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://gamespotbooking-v1-production.up.railway.app" />
     
-    <!-- Preload critical assets -->
-    <link rel="preload" href="/assets/images/logo.png" as="image" />
-    <link rel="preload" href="/assets/videos/background.mp4" as="video" type="video/mp4" />
+    <!-- Preload critical LCP image only — no video preload (23MB would block everything) -->
+    <link rel="preload" href="/assets/images/logo.png" as="image" fetchpriority="high" />
     
     <!-- DNS prefetch for faster API calls -->
     <link rel="dns-prefetch" href="https://gamespotbooking-v1-production.up.railway.app" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root" style="background:#0f172a;min-height:100vh"></div>
   </body>
 </html>
