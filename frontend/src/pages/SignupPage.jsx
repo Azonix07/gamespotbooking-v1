@@ -172,8 +172,10 @@ const SignupPage = () => {
         
         <div className="login-container">
           <div className="login-card">
-            <h2 className="form-title">Create Account</h2>
-            <p className="form-subtitle">Sign up to get started</p>
+            <div className="login-header">
+              <h2 className="form-title">Create Account</h2>
+              <p className="form-subtitle">Sign up to get started</p>
+            </div>
 
             {error && (
               <div className="alert alert-error">
@@ -336,22 +338,24 @@ const SignupPage = () => {
 
             {/* Google Signup Button */}
             <div className="social-login">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setError('Google signup failed')}
-                useOneTap={false}
-                ux_mode="popup"
-                size="large"
-                text="signup_with"
-                shape="rectangular"
-                logo_alignment="left"
-                width="100%"
-              />
+              <div className="google-btn-wrapper">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setError('Google signup failed')}
+                  useOneTap={false}
+                  size="large"
+                  text="signup_with"
+                  shape="rectangular"
+                  logo_alignment="left"
+                  width={340}
+                  itp_support
+                />
+              </div>
             </div>
 
             {/* Login Link */}
-            <div className="text-center" style={{marginTop: '1.5rem'}}>
-              <p style={{color: '#6c757d'}}>
+            <div className="signup-prompt">
+              <p>
                 Already have an account?{' '}
                 <Link to="/login" className="form-link">
                   Login here

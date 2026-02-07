@@ -131,8 +131,10 @@ const LoginPage = () => {
         
         <div className="login-container">
           <div className="login-card">
-            <h2 className="form-title">Welcome to GameSpot!</h2>
-            <p className="form-subtitle">Login to continue</p>
+            <div className="login-header">
+              <h2 className="form-title">Welcome Back!</h2>
+              <p className="form-subtitle">Sign in to your GameSpot account</p>
+            </div>
 
             {error && (
               <div className="alert alert-error">
@@ -186,6 +188,11 @@ const LoginPage = () => {
                     autoComplete="current-password"
                   />
                 </div>
+                <div className="forgot-password-row">
+                  <Link to="/forgot-password" className="forgot-link">
+                    Forgot password?
+                  </Link>
+                </div>
               </div>
 
               <button 
@@ -214,22 +221,24 @@ const LoginPage = () => {
 
             {/* Google Login Button */}
             <div className="social-login">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setError('Google login failed')}
-                useOneTap={false}
-                ux_mode="popup"
-                size="large"
-                text="continue_with"
-                shape="rectangular"
-                logo_alignment="left"
-                width="100%"
-              />
+              <div className="google-btn-wrapper">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setError('Google login failed')}
+                  useOneTap={false}
+                  size="large"
+                  text="continue_with"
+                  shape="rectangular"
+                  logo_alignment="left"
+                  width={340}
+                  itp_support
+                />
+              </div>
             </div>
 
             {/* Sign Up Link */}
-            <div className="text-center" style={{marginTop: '1.5rem'}}>
-              <p style={{color: '#6c757d'}}>
+            <div className="signup-prompt">
+              <p>
                 Don't have an account?{' '}
                 <Link to="/signup" className="form-link">
                   Sign up here
