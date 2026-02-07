@@ -5,7 +5,6 @@ Handles college event and gaming setup requests
 
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
-from middleware.auth import require_login
 from datetime import datetime
 import re
 import math
@@ -37,7 +36,6 @@ GAMESPOT_LAT = 10.2167
 GAMESPOT_LNG = 76.2000
 
 @college_bp.route('/api/college-bookings', methods=['GET', 'POST', 'OPTIONS'])
-@require_login
 def handle_college_bookings():
     """Handle college booking operations"""
     
@@ -356,7 +354,6 @@ def handle_college_bookings():
                 conn.close()
 
 @college_bp.route('/api/college-bookings/<int:booking_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
-@require_login
 def handle_college_booking_by_id(booking_id):
     """Handle individual college booking operations"""
     
@@ -554,7 +551,6 @@ def get_college_stats():
             conn.close()
 
 @college_bp.route('/api/college-bookings/<int:booking_id>/media', methods=['POST', 'OPTIONS'])
-@require_login
 def add_college_media(booking_id):
     """Add media (photos/videos) to college booking (admin only)"""
     
@@ -652,7 +648,6 @@ def ensure_college_reviews_table(cursor):
     ''')
 
 @college_bp.route('/api/college-reviews', methods=['GET', 'POST', 'OPTIONS'])
-@require_login
 def handle_college_reviews():
     """Handle college reviews operations"""
     
@@ -791,7 +786,6 @@ def handle_college_reviews():
 
 
 @college_bp.route('/api/college-reviews/<int:review_id>', methods=['DELETE', 'OPTIONS'])
-@require_login
 def delete_college_review(review_id):
     """Delete a college review"""
     

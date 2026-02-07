@@ -107,20 +107,20 @@ function App() {
               <Route path="/discount-game" element={<DiscountGamePage />} />
               <Route path="/win-free-game" element={<InstagramPromoPage />} />
               <Route path="/instagram-promo" element={<InstagramPromoPage />} />
+              <Route path="/booking" element={<BookingPage />} />
+              <Route path="/rental" element={<RentalPage />} />
+              <Route path="/college-setup" element={<CollegeSetupPage />} />
+              <Route path="/feedback" element={<FeedbackPage />} />
+              <Route path="/get-offers" element={<GetOffersPage />} />
+              <Route path="/invite" element={<InvitePage />} />
 
               {/* ========== AUTH PAGES (Redirect if already logged in) ========== */}
               <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
               <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
               <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute>} />
 
-              {/* ========== PROTECTED ROUTES (Login required) ========== */}
-              <Route path="/booking" element={<ProtectedRoute><BookingPage /></ProtectedRoute>} />
-              <Route path="/rental" element={<ProtectedRoute><RentalPage /></ProtectedRoute>} />
-              <Route path="/college-setup" element={<ProtectedRoute><CollegeSetupPage /></ProtectedRoute>} />
+              {/* ========== PROTECTED ROUTES (Login required for account features) ========== */}
               <Route path="/membership" element={<ProtectedRoute><MembershipPlansPage /></ProtectedRoute>} />
-              <Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
-              <Route path="/get-offers" element={<ProtectedRoute><GetOffersPage /></ProtectedRoute>} />
-              <Route path="/invite" element={<ProtectedRoute><InvitePage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
               {/* ========== ADMIN ROUTES (Admin login required) ========== */}

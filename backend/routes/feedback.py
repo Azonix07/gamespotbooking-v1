@@ -2,12 +2,10 @@ from flask import Blueprint, request, jsonify, session
 from datetime import datetime
 import mysql.connector
 from config.database import get_db_connection
-from middleware.auth import require_login
 
 feedback_bp = Blueprint('feedback', __name__)
 
 @feedback_bp.route('/api/feedback/submit', methods=['POST'])
-@require_login
 def submit_feedback():
     """Submit user feedback/suggestion"""
     try:
