@@ -14,6 +14,12 @@ from utils.helpers import (
     calculate_driving_price
 )
 import mysql.connector
+import sys
+
+
+class BookingError(Exception):
+    """Custom exception for booking business-logic errors (safe to show to users)"""
+    pass
 
 bookings_bp = Blueprint('bookings', __name__)
 
@@ -159,7 +165,7 @@ def handle_bookings():
                         result = cursor.fetchone()
                         
                         if result['count'] > 0:
-                            raise Exception(f"PS5 Unit {device_number} is not available for the selected time slot")
+                            raise BookingError(f"PS5 Unit {device_number} is not available for the selected time slot")
                     
                     # Check total PS5 player limit (max 10 players at any time)
                     new_total_players = sum(ps5['player_count'] for ps5 in ps5_bookings)
@@ -179,7 +185,7 @@ def handle_bookings():
                     existing_players = int(result['total_players'] or 0)
                     
                     if existing_players + new_total_players > 10:
-                        raise Exception(f"Total PS5 players would exceed maximum of 10 for time slot {slot}")
+                        raise BookingError(f"Total PS5 players would exceed maximum of 10 for time slot {slot}")
                 
                 # Check driving simulator availability
                 if driving_sim:
@@ -197,7 +203,7 @@ def handle_bookings():
                     result = cursor.fetchone()
                     
                     if result['count'] > 0:
-                        raise Exception(f"Driving Simulator is not available for time slot {slot}")
+                        raise BookingError(f"Driving Simulator is not available for time slot {slot}")
             
             # Insert booking
             bonus_minutes = data.get('bonus_minutes', 0)
@@ -268,10 +274,15 @@ def handle_bookings():
                 'message': 'Booking created successfully'
             }), 201
             
+        except BookingError as e:
+            if conn:
+                conn.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 400
         except Exception as e:
             if conn:
                 conn.rollback()
-            return jsonify({'success': False, 'error': 'An error occurred'}), 400
+            sys.stderr.write(f"[Booking POST] Unexpected error: {e}\n")
+            return jsonify({'success': False, 'error': 'An error occurred while creating the booking'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -338,6 +349,7 @@ def handle_bookings():
         except Exception as e:
             if conn:
                 conn.rollback()
+            sys.stderr.write(f"[Booking PUT] Unexpected error: {e}\n")
             return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
@@ -372,6 +384,7 @@ def handle_bookings():
             })
             
         except Exception as e:
+            sys.stderr.write(f"[Booking DELETE] Unexpected error: {e}\n")
             return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:

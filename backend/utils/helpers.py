@@ -91,7 +91,11 @@ def validate_booking_data(data: Dict[str, Any]) -> List[str]:
         errors.append('Start time is required')
     
     # Duration
-    if data.get('duration_minutes') not in [30, 60, 90, 120]:
+    try:
+        duration_val = int(data.get('duration_minutes', 0))
+    except (TypeError, ValueError):
+        duration_val = 0
+    if duration_val not in [30, 60, 90, 120]:
         errors.append('Invalid duration. Must be 30, 60, 90, or 120 minutes')
     
     # At least one device must be booked
