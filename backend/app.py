@@ -369,6 +369,19 @@ def create_missing_tables():
         conn.commit()
         print(f"✅ Database tables verified ({created} CREATE IF NOT EXISTS statements executed)")
         
+        # Auto-add missing columns to bookings table (from promo_codes migration)
+        alter_statements = [
+            "ALTER TABLE bookings ADD COLUMN bonus_minutes INT DEFAULT 0",
+            "ALTER TABLE bookings ADD COLUMN promo_code_id INT NULL",
+        ]
+        for sql in alter_statements:
+            try:
+                cursor.execute(sql)
+                conn.commit()
+                print(f"✅ Added missing column: {sql}")
+            except Exception:
+                pass  # Column already exists, skip silently
+        
     except Exception as e:
         print(f"⚠️  Table creation error: {e}")
     finally:

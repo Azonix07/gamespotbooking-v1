@@ -15,6 +15,7 @@ from utils.helpers import (
 )
 import mysql.connector
 import sys
+import traceback
 
 
 class BookingError(Exception):
@@ -135,6 +136,18 @@ def handle_bookings():
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
             
+            # Check if bonus_minutes/promo_code_id columns exist (before transaction)
+            has_promo_columns = True
+            try:
+                cursor.execute("""
+                    SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'bonus_minutes'
+                """)
+                if not cursor.fetchone():
+                    has_promo_columns = False
+            except Exception:
+                has_promo_columns = False
+            
             # Start transaction
             conn.start_transaction()
             
@@ -209,23 +222,40 @@ def handle_bookings():
             bonus_minutes = data.get('bonus_minutes', 0)
             promo_code_id = data.get('promo_code_id')
             
-            query = """
-                INSERT INTO bookings 
-                (customer_name, customer_phone, booking_date, start_time, duration_minutes, total_price, driving_after_ps5, bonus_minutes, promo_code_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            
-            cursor.execute(query, (
-                customer_name,
-                customer_phone,
-                booking_date,
-                start_time + ':00',
-                duration_minutes,
-                total_price,
-                1 if driving_after_ps5 else 0,
-                bonus_minutes,
-                promo_code_id
-            ))
+            if has_promo_columns:
+                query = """
+                    INSERT INTO bookings 
+                    (customer_name, customer_phone, booking_date, start_time, duration_minutes, total_price, driving_after_ps5, bonus_minutes, promo_code_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                
+                cursor.execute(query, (
+                    customer_name,
+                    customer_phone,
+                    booking_date,
+                    start_time + ':00',
+                    duration_minutes,
+                    total_price,
+                    1 if driving_after_ps5 else 0,
+                    bonus_minutes,
+                    promo_code_id
+                ))
+            else:
+                query = """
+                    INSERT INTO bookings 
+                    (customer_name, customer_phone, booking_date, start_time, duration_minutes, total_price, driving_after_ps5)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
+                
+                cursor.execute(query, (
+                    customer_name,
+                    customer_phone,
+                    booking_date,
+                    start_time + ':00',
+                    duration_minutes,
+                    total_price,
+                    1 if driving_after_ps5 else 0
+                ))
             
             booking_id = cursor.lastrowid
             
@@ -282,6 +312,7 @@ def handle_bookings():
             if conn:
                 conn.rollback()
             sys.stderr.write(f"[Booking POST] Unexpected error: {e}\n")
+            sys.stderr.write(f"[Booking POST] Traceback:\n{traceback.format_exc()}\n")
             return jsonify({'success': False, 'error': 'An error occurred while creating the booking'}), 500
         finally:
             if cursor:
