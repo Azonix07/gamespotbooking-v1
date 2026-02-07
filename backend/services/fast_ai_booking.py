@@ -1007,12 +1007,15 @@ class FastAIBooking:
                     break
             
             # Check if it's a valid name (not a command/keyword)
-            invalid_words = ['hi', 'hello', 'yes', 'no', 'ps5', 'driving', 'hour', 
+            # Use whole-word matching to avoid blocking names like "Amol" (contains "am"), "Noel" (contains "no")
+            invalid_words = {'hi', 'hello', 'yes', 'no', 'ps5', 'driving', 'hour', 
                            'today', 'tomorrow', 'help', 'book', 'cancel', 'ok',
-                           'pm', 'am', 'player', 'minute', 'price', 'cost']
+                           'pm', 'am', 'player', 'minute', 'price', 'cost', 'booking'}
             
-            if len(cleaned_msg.split()) <= 4:  # Names are usually 1-4 words
-                if not any(word in cleaned_msg.lower() for word in invalid_words):
+            name_words = cleaned_msg.lower().split()
+            if len(name_words) <= 4 and len(name_words) >= 1:  # Names are usually 1-4 words
+                # Only reject if ALL words are invalid keywords (single keyword = not a name)
+                if not all(word in invalid_words for word in name_words):
                     if any(c.isalpha() for c in cleaned_msg):
                         # Capitalize properly
                         state['name'] = ' '.join(word.capitalize() for word in cleaned_msg.split())
@@ -1152,6 +1155,10 @@ class FastAIBooking:
         # After time check - availability confirmed - THIS WAS THE BUG!
         if step == 'check_availability':
             return random.choice(self.dialogue['availability_confirmed']) + " May I have your name to complete the booking?"
+        
+        # Ask for name
+        if step == 'name':
+            return "May I have your name to complete the booking? 😊"
         
         # After name - ask for phone
         if step == 'phone':
