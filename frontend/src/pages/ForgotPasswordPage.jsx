@@ -39,6 +39,7 @@ const ForgotPasswordPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [countdown, setCountdown] = useState(0);
+  const [otpDelivery, setOtpDelivery] = useState('sms'); // 'sms' or 'email'
 
   // Check if URL has a reset token (email link flow)
   useEffect(() => {
@@ -64,13 +65,17 @@ const ForgotPasswordPage = () => {
       setError(null);
       setSuccess(null);
 
-      await apiFetch('/api/auth/forgot-password', {
+      const data = await apiFetch('/api/auth/forgot-password', {
         method: 'POST',
         body: JSON.stringify({ email })
       });
 
       setStep('email-sent');
-      setSuccess('If an account exists with this email, a reset link has been sent.');
+      if (data.email_sent) {
+        setSuccess('A password reset link has been sent to your email.');
+      } else {
+        setSuccess('If an account exists with this email, a reset link will be sent. Please also check your spam folder.');
+      }
     } catch (err) {
       setError(err.message || 'Failed to send reset email. Please try again.');
     } finally {
@@ -93,7 +98,14 @@ const ForgotPasswordPage = () => {
 
       if (data.success) {
         setStep('otp-sent');
-        setSuccess('OTP sent! Check your phone for a 6-digit code.');
+        setOtpDelivery(data.delivery || 'sms');
+        if (data.delivery === 'email') {
+          setSuccess('OTP sent to your registered email address. Check your inbox!');
+        } else if (data.delivery === 'sms') {
+          setSuccess('OTP sent! Check your phone for a 6-digit code.');
+        } else {
+          setSuccess('If an account exists, an OTP has been sent.');
+        }
         setCountdown(60);
       } else {
         setError(data.error || 'Failed to send OTP');
@@ -504,7 +516,12 @@ const ForgotPasswordPage = () => {
                 color: '#c2410c'
               }}>
                 <FiShield size={16} />
-                <span>OTP sent to <strong>{phone}</strong></span>
+                <span>
+                  {otpDelivery === 'email'
+                    ? <>OTP sent to your <strong>email</strong>. Check your inbox!</>
+                    : <>OTP sent to <strong>{phone}</strong></>
+                  }
+                </span>
               </div>
 
               {/* OTP Input */}

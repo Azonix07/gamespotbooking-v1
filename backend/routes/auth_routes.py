@@ -400,23 +400,25 @@ def forgot_password():
         
         result = create_reset_token(email)
         
+        email_sent = False
         if result['success'] and 'token' in result:
             # Send reset email
-            send_reset_email(
+            email_sent = send_reset_email(
                 email=email,
                 token=result['token'],
                 user_name=result['user']['name']
             )
         
-        # Always return success (don't reveal if email exists)
+        # Return success — indicate if email was actually sent
         return jsonify({
             'success': True,
-            'message': 'If the email exists, a reset link will be sent'
+            'message': 'If the email exists, a reset link will be sent',
+            'email_sent': email_sent
         })
         
     except Exception as e:
         sys.stderr.write(f"[ForgotPassword] Error: {e}\n")
-        return jsonify({'success': True, 'message': 'If the email exists, a reset link will be sent'})
+        return jsonify({'success': True, 'message': 'If the email exists, a reset link will be sent', 'email_sent': False})
 
 
 @auth_bp.route('/api/auth/reset-password', methods=['POST', 'OPTIONS'])
@@ -541,17 +543,52 @@ def forgot_password_otp():
         }
 
         # Send OTP via SMS
-        success_sent, message = sms_service.send_otp(actual_phone, otp)
+        sms_sent = False
+        email_sent = False
 
-        if not success_sent:
-            sys.stderr.write(f"[ForgotPasswordOTP] SMS send failed: {message}\n")
-            # Still return success (don't reveal account exists)
-            # In dev mode, print OTP to console
-            sys.stderr.write(f"[ForgotPasswordOTP] DEV OTP for {actual_phone}: {otp}\n")
+        if sms_service.enabled:
+            success_sent, message = sms_service.send_otp(actual_phone, otp)
+            if success_sent:
+                sms_sent = True
+            else:
+                sys.stderr.write(f"[ForgotPasswordOTP] SMS send failed: {message}\n")
+
+        # Fallback: send OTP via email if SMS didn't work
+        if not sms_sent:
+            try:
+                from services.email_service import email_service
+                # Look up user's email
+                cursor.execute('SELECT email FROM users WHERE id = %s', (user['id'],))
+                user_row = cursor.fetchone()
+                user_email = user_row.get('email', '') if user_row else ''
+
+                if email_service.enabled and user_email and '@' in user_email and not user_email.endswith('@gamespot.local'):
+                    success_email, msg = email_service.send_otp_email(
+                        user_email, otp, user['name'], purpose='password reset'
+                    )
+                    if success_email:
+                        email_sent = True
+                        sys.stderr.write(f"[ForgotPasswordOTP] OTP sent via email to {user_email}\n")
+                    else:
+                        sys.stderr.write(f"[ForgotPasswordOTP] Email fallback failed: {msg}\n")
+            except Exception as email_err:
+                sys.stderr.write(f"[ForgotPasswordOTP] Email fallback error: {email_err}\n")
+
+        # Always log OTP to server stderr (visible in Railway logs)
+        sys.stderr.write(f"[ForgotPasswordOTP] OTP for {actual_phone}: {otp}\n")
+
+        # Build response message
+        if sms_sent:
+            resp_msg = 'OTP sent to your phone number'
+        elif email_sent:
+            resp_msg = 'OTP sent to your registered email address (SMS unavailable)'
+        else:
+            resp_msg = 'If an account exists with this number, an OTP has been sent'
 
         return jsonify({
             'success': True,
-            'message': 'If an account exists with this number, an OTP has been sent'
+            'message': resp_msg,
+            'delivery': 'sms' if sms_sent else ('email' if email_sent else 'pending')
         })
 
     except Exception as e:

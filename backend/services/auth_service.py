@@ -482,12 +482,8 @@ def reset_password_with_token(token: str, new_password: str) -> Dict[str, Any]:
 
 def send_reset_email(email: str, token: str, user_name: str) -> bool:
     """
-    Send password reset email to user
-    
-    NOTE: This is a placeholder. In production, integrate with:
-    - SendGrid
-    - Amazon SES
-    - SMTP server
+    Send password reset email to user via SMTP.
+    Falls back to console logging if SMTP is not configured.
     
     Args:
         email: User's email
@@ -497,34 +493,35 @@ def send_reset_email(email: str, token: str, user_name: str) -> bool:
     Returns:
         True if email sent successfully, False otherwise
     """
-    # For now, just print to console (development mode)
-    reset_link = f"http://localhost:3000/reset-password?token={token}"
-    
-    print("\n" + "="*80)
-    print("📧 PASSWORD RESET EMAIL (Development Mode)")
-    print("="*80)
-    print(f"To: {email}")
-    print(f"Subject: Password Reset Request - GameSpot")
-    print("-"*80)
-    print(f"Hi {user_name},")
-    print()
-    print("You requested to reset your password. Click the link below to reset:")
-    print()
-    print(f"  {reset_link}")
-    print()
-    print("This link will expire in 24 hours.")
-    print()
-    print("If you didn't request this, please ignore this email.")
-    print()
-    print("GameSpot Team")
-    print("="*80 + "\n")
-    
-    # TODO: Replace with actual email sending in production
-    # import smtplib
-    # from email.mime.text import MIMEText
-    # ...
-    
-    return True
+    import sys
+
+    try:
+        from services.email_service import email_service
+
+        if email_service.enabled:
+            success, message = email_service.send_password_reset(email, token, user_name)
+            if success:
+                return True
+            else:
+                sys.stderr.write(f"[ResetEmail] SMTP failed: {message}, falling back to console\n")
+        else:
+            sys.stderr.write("[ResetEmail] SMTP not configured, logging to console\n")
+    except Exception as e:
+        sys.stderr.write(f"[ResetEmail] Email service error: {e}\n")
+
+    # Fallback: log to console (visible in Railway logs)
+    import os
+    frontend_url = os.getenv('FRONTEND_URL', 'https://gamespotweb-production.up.railway.app')
+    reset_link = f"{frontend_url}/reset-password?token={token}"
+
+    sys.stderr.write("\n" + "="*80 + "\n")
+    sys.stderr.write("📧 PASSWORD RESET EMAIL (Console Fallback)\n")
+    sys.stderr.write("="*80 + "\n")
+    sys.stderr.write(f"To: {email}\n")
+    sys.stderr.write(f"Reset Link: {reset_link}\n")
+    sys.stderr.write("="*80 + "\n\n")
+
+    return False
 
 
 # Export functions
