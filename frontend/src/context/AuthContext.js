@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }) => {
       
       const data = await apiFetch('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ username: identifier, password })
+        body: JSON.stringify({ username: identifier, email: identifier, password })
       });
       
       if (data.success) {
@@ -210,10 +210,13 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user || { name: formData.name, email: formData.email });
         setIsAuthenticated(true);
         
-        // Store login indicator in localStorage for mobile persistence
+        // Store login indicator and JWT token in localStorage for mobile persistence
         try {
           localStorage.setItem('gamespot_logged_in', 'true');
           localStorage.setItem('gamespot_user_type', 'customer');
+          if (data.token) {
+            localStorage.setItem('gamespot_auth_token', data.token);
+          }
         } catch (e) {}
         
         // Update cache time to prevent immediate re-checking

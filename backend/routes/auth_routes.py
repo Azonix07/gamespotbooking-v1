@@ -66,7 +66,18 @@ def signup():
             session['user_email'] = result['user']['email']
             session.permanent = True
             
-            return jsonify(result), 201
+            # Generate JWT token (for mobile browsers without cookies)
+            token = generate_user_token(
+                result['user']['id'],
+                result['user']['email'],
+                result['user']['name']
+            )
+            
+            return jsonify({
+                **result,
+                'user_type': 'customer',
+                'token': token
+            }), 201
         else:
             return jsonify(result), 400
         

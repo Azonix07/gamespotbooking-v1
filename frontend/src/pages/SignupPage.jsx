@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { 
   FiUser,
-  FiMail, 
+  FiMail,
+  FiPhone,
   FiLock, 
   FiUserPlus,
   FiAlertCircle,
@@ -22,6 +23,7 @@ const SignupPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: ''
   });
@@ -60,6 +62,17 @@ const SignupPage = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setError('Please enter a valid email');
+      return false;
+    }
+
+    if (!formData.phone.trim()) {
+      setError('Phone number is required');
+      return false;
+    }
+
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
+      setError('Please enter a valid 10-digit phone number');
       return false;
     }
     
@@ -102,8 +115,8 @@ const SignupPage = () => {
       if (result.success) {
         setSuccess('Account created successfully! Redirecting...');
         setTimeout(() => {
-          navigate('/login');
-        }, 1500);
+          navigate('/', { replace: true });
+        }, 1000);
       } else {
         setError(result.error || 'Signup failed. Please try again.');
       }
@@ -229,6 +242,26 @@ const SignupPage = () => {
                     onChange={handleChange}
                     required
                     autoComplete="email"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="phone" className="form-label">
+                  Phone Number
+                </label>
+                <div className="input-wrapper">
+                  <FiPhone className="input-icon" />
+                  <input
+                    id="phone"
+                    type="tel"
+                    name="phone"
+                    className="form-input"
+                    placeholder="Enter your phone number"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    required
+                    autoComplete="tel"
                   />
                 </div>
               </div>
