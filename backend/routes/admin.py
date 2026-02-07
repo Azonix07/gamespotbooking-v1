@@ -52,9 +52,9 @@ def handle_admin():
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
             
-            # Get admin user
-            query = 'SELECT * FROM admin_users WHERE username = %s'
-            cursor.execute(query, (username,))
+            # Get admin user (check both username and email)
+            query = 'SELECT * FROM admin_users WHERE username = %s OR email = %s'
+            cursor.execute(query, (username, username))
             admin = cursor.fetchone()
             
             if not admin or not verify_php_password(password, admin['password_hash']):

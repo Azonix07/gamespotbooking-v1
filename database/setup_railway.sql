@@ -6,6 +6,7 @@
 CREATE TABLE IF NOT EXISTS admin_users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NULL,
     password_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -266,9 +267,9 @@ CREATE TABLE IF NOT EXISTS site_settings (
 -- DEFAULT DATA
 -- ============================================================================
 
--- Insert default admin (password: 9645136006)
-INSERT INTO admin_users (username, password_hash) 
-SELECT 'admin', '$2b$12$98Li8bi7umLkDpvZdMWXxuczmYDKKKexeTk8xRwOv3JUQ48BA93uy'
+-- Insert default admin (email: admin@gamespot.in, password: 9645136006)
+INSERT INTO admin_users (username, email, password_hash) 
+SELECT 'admin', 'admin@gamespot.in', '$2b$12$98Li8bi7umLkDpvZdMWXxuczmYDKKKexeTk8xRwOv3JUQ48BA93uy'
 WHERE NOT EXISTS (SELECT 1 FROM admin_users WHERE username = 'admin');
 
 -- Insert default theme
