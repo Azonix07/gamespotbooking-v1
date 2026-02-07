@@ -14,6 +14,7 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import { apiFetch, setAccessToken } from '../services/apiClient';
 import '../styles/LoginPage.css';
 
 const SignupPage = () => {
@@ -133,37 +134,27 @@ const SignupPage = () => {
       setLoading(true);
       setError(null);
       
-      const API_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
-      
-      const token = localStorage.getItem('gamespot_auth_token');
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      
-      const response = await fetch(`${API_URL}/api/auth/google-login`, {
+      const data = await apiFetch('/api/auth/google-login', {
         method: 'POST',
-        headers,
         body: JSON.stringify({ 
           credential: credentialResponse.credential 
-        }),
-        credentials: 'include'
+        })
       });
-      
-      const data = await response.json();
       
       if (data.success) {
         setSuccess('Account created successfully! Redirecting...');
         
-        // Store JWT token for mobile browsers
+        // Store JWT token properly
         if (data.token) {
+          setAccessToken(data.token);
           try {
-            localStorage.setItem('gamespot_auth_token', data.token);
             localStorage.setItem('gamespot_logged_in', 'true');
-            localStorage.setItem('gamespot_user_type', data.userType || 'customer');
+            localStorage.setItem('gamespot_user_type', data.user_type || data.userType || 'customer');
           } catch (e) {}
         }
         
         // Set auth state directly from Google response
-        setAuthState(data.user, data.userType || 'customer');
+        setAuthState(data.user, data.user_type || data.userType || 'customer');
         
         setTimeout(() => {
           navigate('/', { replace: true });
@@ -172,7 +163,7 @@ const SignupPage = () => {
         setError(data.error || 'Google signup failed');
       }
     } catch (err) {
-      setError('Google signup failed. Please try again.');
+      setError(err.message || 'Google signup failed. Please try again.');
       console.error('Google signup error:', err);
     } finally {
       setLoading(false);
