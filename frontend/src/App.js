@@ -2,6 +2,7 @@ import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute, AdminRoute, PublicOnlyRoute } from './components/ProtectedRoute';
 import { getTheme } from './services/api';
 import usePageTracking from './hooks/usePageTracking';
 import HomePage from './pages/HomePage.jsx';
@@ -98,27 +99,36 @@ function App() {
           <PageTracker />
           <Suspense fallback={<PageLoader />}>
             <Routes>
+              {/* ========== PUBLIC ROUTES (No auth required) ========== */}
               <Route path="/" element={<HomePage />} />
-              <Route path="/booking" element={<BookingPage />} />
-              <Route path="/rental" element={<RentalPage />} />
-              <Route path="/college-setup" element={<CollegeSetupPage />} />
+              <Route path="/games" element={<GamesPage />} />
+              <Route path="/updates" element={<UpdatesPage />} />
+              <Route path="/contact" element={<ContactPage />} />
               <Route path="/discount-game" element={<DiscountGamePage />} />
               <Route path="/win-free-game" element={<InstagramPromoPage />} />
               <Route path="/instagram-promo" element={<InstagramPromoPage />} />
-              <Route path="/games" element={<GamesPage />} />
-              <Route path="/updates" element={<UpdatesPage />} />
-              <Route path="/invite" element={<InvitePage />} />
-              <Route path="/get-offers" element={<GetOffersPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/membership" element={<MembershipPlansPage />} />
-              <Route path="/feedback" element={<FeedbackPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              {/* Redirect old admin login to new unified login */}
+
+              {/* ========== AUTH PAGES (Redirect if already logged in) ========== */}
+              <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
+              <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
+              <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute>} />
+
+              {/* ========== PROTECTED ROUTES (Login required) ========== */}
+              <Route path="/booking" element={<ProtectedRoute><BookingPage /></ProtectedRoute>} />
+              <Route path="/rental" element={<ProtectedRoute><RentalPage /></ProtectedRoute>} />
+              <Route path="/college-setup" element={<ProtectedRoute><CollegeSetupPage /></ProtectedRoute>} />
+              <Route path="/membership" element={<ProtectedRoute><MembershipPlansPage /></ProtectedRoute>} />
+              <Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
+              <Route path="/get-offers" element={<ProtectedRoute><GetOffersPage /></ProtectedRoute>} />
+              <Route path="/invite" element={<ProtectedRoute><InvitePage /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+
+              {/* ========== ADMIN ROUTES (Admin login required) ========== */}
               <Route path="/admin/login" element={<Navigate to="/login" replace />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+
+              {/* ========== CATCH-ALL (404 → Home) ========== */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
         </Router>

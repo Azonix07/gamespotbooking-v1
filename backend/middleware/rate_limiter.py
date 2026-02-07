@@ -1,6 +1,6 @@
 """
-Rate Limiter Middleware for AI Endpoints
-Prevents spam and abuse of AI chat service
+Rate Limiter Middleware
+Prevents spam and abuse of API endpoints
 """
 
 from flask import request, jsonify
@@ -9,9 +9,93 @@ from datetime import datetime, timedelta
 import hashlib
 from collections import defaultdict
 
-# In-memory rate limit store (use Redis in production for scalability)
+# In-memory rate limit stores (use Redis in production for scalability)
 rate_limit_store = defaultdict(list)
 ip_rate_limit_store = defaultdict(list)
+auth_rate_limit_store = defaultdict(list)  # Separate store for auth endpoints
+general_rate_limit_store = defaultdict(list)  # General API rate limiting
+
+
+def auth_rate_limit(max_attempts=5, window_seconds=300):
+    """
+    Rate limiter specifically for auth endpoints (login, signup, password reset)
+    More strict to prevent brute-force attacks.
+    
+    Args:
+        max_attempts (int): Max attempts per IP within window (default 5)
+        window_seconds (int): Time window in seconds (default 5 minutes)
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            # Skip rate limiting for OPTIONS preflight
+            if request.method == 'OPTIONS':
+                return f(*args, **kwargs)
+            
+            client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+            if client_ip and ',' in client_ip:
+                client_ip = client_ip.split(',')[0].strip()
+            
+            current_time = datetime.now()
+            cutoff_time = current_time - timedelta(seconds=window_seconds)
+            
+            # Clean old entries
+            auth_rate_limit_store[client_ip] = [
+                t for t in auth_rate_limit_store[client_ip] if t > cutoff_time
+            ]
+            
+            if len(auth_rate_limit_store[client_ip]) >= max_attempts:
+                return jsonify({
+                    'success': False,
+                    'error': 'Too many attempts. Please try again later.',
+                    'retry_after': window_seconds
+                }), 429
+            
+            auth_rate_limit_store[client_ip].append(current_time)
+            return f(*args, **kwargs)
+        
+        return decorated_function
+    return decorator
+
+
+def general_api_rate_limit(max_requests=60, window_seconds=60):
+    """
+    General rate limiter for all API endpoints.
+    Prevents abuse from a single IP.
+    
+    Args:
+        max_requests (int): Max requests per IP within window (default 60/min)
+        window_seconds (int): Time window in seconds (default 60)
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if request.method == 'OPTIONS':
+                return f(*args, **kwargs)
+            
+            client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+            if client_ip and ',' in client_ip:
+                client_ip = client_ip.split(',')[0].strip()
+            
+            current_time = datetime.now()
+            cutoff_time = current_time - timedelta(seconds=window_seconds)
+            
+            general_rate_limit_store[client_ip] = [
+                t for t in general_rate_limit_store[client_ip] if t > cutoff_time
+            ]
+            
+            if len(general_rate_limit_store[client_ip]) >= max_requests:
+                return jsonify({
+                    'success': False,
+                    'error': 'Rate limit exceeded. Please slow down.',
+                    'retry_after': window_seconds
+                }), 429
+            
+            general_rate_limit_store[client_ip].append(current_time)
+            return f(*args, **kwargs)
+        
+        return decorated_function
+    return decorator
 
 def rate_limit(max_requests=20, window_seconds=60, per_ip_limit=100, per_ip_window=3600):
     """

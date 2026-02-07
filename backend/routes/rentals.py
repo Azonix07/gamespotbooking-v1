@@ -5,6 +5,7 @@ Handles VR and PS5 rental booking operations
 
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
+from middleware.auth import require_login
 from datetime import datetime, timedelta
 import re
 
@@ -21,6 +22,7 @@ def validate_email(email):
     return re.match(pattern, email)
 
 @rentals_bp.route('/api/rentals', methods=['GET', 'POST', 'OPTIONS'])
+@require_login
 def handle_rentals():
     """Handle rental booking operations"""
     
@@ -326,6 +328,7 @@ def handle_rentals():
                 conn.close()
 
 @rentals_bp.route('/api/rentals/<int:rental_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
+@require_login
 def handle_rental_by_id(rental_id):
     """Handle individual rental booking operations"""
     

@@ -42,30 +42,76 @@ from routes.user_routes import user_bp  # User profile and rewards system
 # Create Flask app
 app = Flask(__name__)
 
-# Configuration
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'gamespot-secret-key-change-in-production')
+# ============================================================
+# SECURITY CONFIGURATION
+# ============================================================
+
+# Ensure SECRET_KEY is set from environment (no weak default in production)
+secret_key = os.getenv('SECRET_KEY')
+if not secret_key or secret_key == 'gamespot-secret-key-change-in-production':
+    import secrets
+    secret_key = secrets.token_hex(32)
+    if os.getenv('RAILWAY_ENVIRONMENT'):
+        print("⚠️  WARNING: SECRET_KEY not set! Using random key (sessions won't persist across restarts)")
+
+app.config['SECRET_KEY'] = secret_key
 app.config['SESSION_COOKIE_NAME'] = 'gamespot_session'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin cookies
 app.config['SESSION_COOKIE_SECURE'] = True  # Required when SameSite=None
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 app.config['SESSION_COOKIE_DOMAIN'] = None  # Let browser handle domain automatically
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload size
 
-# CORS Configuration - Allow React dev server, Mobile app, and Production
+# Allowed origins (whitelist instead of wildcard)
+ALLOWED_ORIGINS = [
+    'https://gamespot.in',
+    'https://www.gamespot.in',
+    'https://gamespotbooking-v1-production.up.railway.app',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173',
+]
+
+# Add custom origins from environment
+custom_origins = os.getenv('ALLOWED_ORIGINS', '')
+if custom_origins:
+    ALLOWED_ORIGINS.extend([o.strip() for o in custom_origins.split(',') if o.strip()])
+
+# CORS Configuration - Restricted to allowed origins
 CORS(app, 
+     origins=ALLOWED_ORIGINS,
      supports_credentials=True,
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
-# Add after_request handler to properly set CORS headers for credentials
+# Add after_request handler for security headers
 @app.after_request
-def add_cors_headers(response):
+def add_security_headers(response):
     origin = request.headers.get('Origin')
-    if origin:
+    
+    # CORS: Only allow whitelisted origins
+    if origin and origin in ALLOWED_ORIGINS:
         response.headers['Access-Control-Allow-Origin'] = origin
         response.headers['Access-Control-Allow-Credentials'] = 'true'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    
+    # Security headers
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = 'camera=(), microphone=(self), geolocation=()'
+    
+    # Remove server identification header
+    response.headers.pop('Server', None)
+    
+    # Strict-Transport-Security for production
+    if os.getenv('RAILWAY_ENVIRONMENT') or request.is_secure:
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    
     return response
 
 # Initialize database connection pool

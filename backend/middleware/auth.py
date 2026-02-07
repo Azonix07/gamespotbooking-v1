@@ -6,12 +6,19 @@ Falls back to session-based auth for desktop browsers
 
 import jwt
 import os
+import secrets
 from datetime import datetime, timedelta
 from flask import request, session, jsonify
 from functools import wraps
 
-# JWT Configuration
-JWT_SECRET = os.getenv('SECRET_KEY', 'gamespot-secret-key-change-in-production')
+# JWT Configuration - Use separate JWT_SECRET or fall back to SECRET_KEY
+_jwt_secret = os.getenv('JWT_SECRET') or os.getenv('SECRET_KEY')
+if not _jwt_secret or _jwt_secret == 'gamespot-secret-key-change-in-production':
+    _jwt_secret = secrets.token_hex(32)
+    if os.getenv('RAILWAY_ENVIRONMENT'):
+        print("⚠️  WARNING: JWT_SECRET not set! Using random key (tokens won't persist across restarts)")
+
+JWT_SECRET = _jwt_secret
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 24
 
@@ -56,6 +63,10 @@ def require_login(f):
     """Decorator to require user authentication"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Allow CORS preflight through without auth
+        if request.method == 'OPTIONS':
+            return f(*args, **kwargs)
+        
         # Try session-based auth first
         if session.get('user_logged_in') and session.get('user_id'):
             return f(*args, **kwargs)
@@ -88,6 +99,10 @@ def require_auth(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Allow CORS preflight through without auth
+        if request.method == 'OPTIONS':
+            return '', 200
+        
         user = None
         
         # Try session-based auth first
@@ -175,6 +190,10 @@ def require_admin_decorator(f):
     """Decorator to require admin authentication (alternative usage)"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Allow CORS preflight through without auth
+        if request.method == 'OPTIONS':
+            return '', 200
+        
         is_auth, admin_info = check_admin_auth()
         if not is_auth:
             return jsonify({

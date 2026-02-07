@@ -6,15 +6,9 @@ Handles membership plans, subscriptions, and status checks
 from flask import Blueprint, request, jsonify, session
 from datetime import date, timedelta
 from config.database import get_db_connection
+from middleware.auth import require_login
 
 membership_bp = Blueprint('membership', __name__)
-
-
-def require_customer_login():
-    """Check if customer is logged in"""
-    if not session.get('user_logged_in'):
-        return jsonify({'success': False, 'error': 'Please login to continue'}), 401
-    return None
 
 
 @membership_bp.route('/api/membership/plans', methods=['GET', 'OPTIONS'])
@@ -97,6 +91,7 @@ def get_plans():
 
 
 @membership_bp.route('/api/membership/subscribe', methods=['POST', 'OPTIONS'])
+@require_login
 def subscribe():
     """
     Subscribe to a membership plan
@@ -108,11 +103,6 @@ def subscribe():
     """
     if request.method == 'OPTIONS':
         return '', 200
-    
-    # Check authentication
-    auth_check = require_customer_login()
-    if auth_check:
-        return auth_check
     
     conn = None
     cursor = None
@@ -195,6 +185,7 @@ def subscribe():
 
 
 @membership_bp.route('/api/membership/status', methods=['GET', 'OPTIONS'])
+@require_login
 def get_status():
     """
     Get user's current membership status
@@ -216,11 +207,6 @@ def get_status():
     """
     if request.method == 'OPTIONS':
         return '', 200
-    
-    # Check authentication
-    auth_check = require_customer_login()
-    if auth_check:
-        return auth_check
     
     conn = None
     cursor = None
@@ -279,6 +265,7 @@ def get_status():
 
 
 @membership_bp.route('/api/membership/cancel', methods=['POST', 'OPTIONS'])
+@require_login
 def cancel_membership():
     """
     Cancel user's active membership
@@ -288,11 +275,6 @@ def cancel_membership():
     """
     if request.method == 'OPTIONS':
         return '', 200
-    
-    # Check authentication
-    auth_check = require_customer_login()
-    if auth_check:
-        return auth_check
     
     conn = None
     cursor = None
@@ -346,17 +328,13 @@ def cancel_membership():
 
 
 @membership_bp.route('/api/membership/history', methods=['GET', 'OPTIONS'])
+@require_login
 def get_history():
     """
     Get user's membership history (all past and current memberships)
     """
     if request.method == 'OPTIONS':
         return '', 200
-    
-    # Check authentication
-    auth_check = require_customer_login()
-    if auth_check:
-        return auth_check
     
     conn = None
     cursor = None

@@ -45,6 +45,27 @@ export const apiFetch = async (path, options = {}) => {
 
   const data = await response.json().catch(() => ({}));
 
+  // Handle 401 Unauthorized - clear stale auth state
+  if (response.status === 401) {
+    // Clear stored token if it's expired/invalid
+    try {
+      localStorage.removeItem('gamespot_auth_token');
+    } catch (e) { /* ignore */ }
+    
+    // Redirect to login if on a protected page (not already on login/signup)
+    const currentPath = window.location.pathname;
+    const publicPaths = ['/', '/login', '/signup', '/forgot-password', '/contact', '/games', '/updates', '/discount-game', '/win-free-game', '/instagram-promo'];
+    if (!publicPaths.includes(currentPath) && data.redirect) {
+      window.location.href = '/login';
+      return data;
+    }
+  }
+
+  // Handle 429 Too Many Requests - rate limited
+  if (response.status === 429) {
+    throw new Error(data.error || 'Too many requests. Please try again later.');
+  }
+
   if (!response.ok) {
     throw new Error(data.error || "API request failed");
   }

@@ -16,11 +16,13 @@ from services.sms_service import sms_service
 from routes.admin import verify_php_password
 from config.database import get_db_connection
 from middleware.auth import generate_admin_token, generate_user_token
+from middleware.rate_limiter import auth_rate_limit
 
 auth_bp = Blueprint('auth', __name__)
 
 
 @auth_bp.route('/api/auth/signup', methods=['POST', 'OPTIONS'])
+@auth_rate_limit(max_attempts=5, window_seconds=300)
 def signup():
     """
     Register a new user
@@ -73,6 +75,7 @@ def signup():
 
 
 @auth_bp.route('/api/auth/login', methods=['POST', 'OPTIONS'])
+@auth_rate_limit(max_attempts=10, window_seconds=300)
 def login():
     """
     Unified login for both admin and customers
@@ -276,6 +279,7 @@ def check_session():
 
 
 @auth_bp.route('/api/auth/forgot-password', methods=['POST', 'OPTIONS'])
+@auth_rate_limit(max_attempts=3, window_seconds=600)
 def forgot_password():
     """
     Request password reset
@@ -316,6 +320,7 @@ def forgot_password():
 
 
 @auth_bp.route('/api/auth/reset-password', methods=['POST', 'OPTIONS'])
+@auth_rate_limit(max_attempts=5, window_seconds=600)
 def reset_password():
     """
     Reset password with token
