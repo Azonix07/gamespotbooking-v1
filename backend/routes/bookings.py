@@ -5,7 +5,7 @@ Handles creating, reading, updating, and deleting bookings
 
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
-from middleware.auth import require_admin
+from middleware.auth import require_admin, verify_token
 from middleware.rate_limiter import rate_limit
 from utils.helpers import (
     validate_booking_data, 
@@ -27,6 +27,27 @@ bookings_bp = Blueprint('bookings', __name__)
 
 # Note: require_admin is now imported from middleware.auth
 # It supports both session-based and JWT token authentication
+
+
+def _get_current_user_id():
+    """
+    Try to identify the logged-in user from session or JWT token.
+    Returns user_id (int) if authenticated, None otherwise.
+    This is optional — bookings work for guests too.
+    """
+    # 1. Check session (desktop browsers with cookies)
+    if session.get('user_logged_in') and session.get('user_id'):
+        return session.get('user_id')
+    
+    # 2. Check JWT token (mobile browsers without cookies)
+    auth_header = request.headers.get('Authorization', '')
+    if auth_header.startswith('Bearer ') and len(auth_header) > 7:
+        token = auth_header[7:].strip()
+        payload = verify_token(token)
+        if payload and payload.get('user_type') == 'customer' and payload.get('user_id'):
+            return payload.get('user_id')
+    
+    return None
 
 @bookings_bp.route('/api/bookings.php', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 def handle_bookings():
@@ -221,11 +242,75 @@ def handle_bookings():
                     if result['count'] > 0:
                         raise BookingError(f"Driving Simulator is not available for time slot {slot}")
             
+            # Detect logged-in user (optional — guests can book too)
+            current_user_id = _get_current_user_id()
+            
+            # If not logged in via session/JWT, try to find user by phone number
+            if not current_user_id:
+                try:
+                    cursor.execute(
+                        "SELECT id FROM users WHERE phone = %s LIMIT 1",
+                        (customer_phone,)
+                    )
+                    matched_user = cursor.fetchone()
+                    if matched_user:
+                        current_user_id = matched_user['id']
+                except Exception:
+                    pass  # Not critical — proceed as guest
+            
+            # Check if user_id column exists in bookings table
+            has_user_id_column = True
+            try:
+                cursor.execute("""
+                    SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'user_id'
+                """)
+                if not cursor.fetchone():
+                    has_user_id_column = False
+            except Exception:
+                has_user_id_column = False
+            
             # Insert booking
             bonus_minutes = data.get('bonus_minutes', 0)
             promo_code_id = data.get('promo_code_id')
             
-            if has_promo_columns:
+            if has_promo_columns and has_user_id_column:
+                query = """
+                    INSERT INTO bookings 
+                    (customer_name, customer_phone, booking_date, start_time, duration_minutes, total_price, driving_after_ps5, bonus_minutes, promo_code_id, user_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                
+                cursor.execute(query, (
+                    customer_name,
+                    customer_phone,
+                    booking_date,
+                    start_time + ':00',
+                    duration_minutes,
+                    total_price,
+                    1 if driving_after_ps5 else 0,
+                    bonus_minutes,
+                    promo_code_id,
+                    current_user_id  # NULL for guests, user_id for logged-in users
+                ))
+            elif has_user_id_column:
+                query = """
+                    INSERT INTO bookings 
+                    (customer_name, customer_phone, booking_date, start_time, duration_minutes, total_price, driving_after_ps5, user_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                
+                cursor.execute(query, (
+                    customer_name,
+                    customer_phone,
+                    booking_date,
+                    start_time + ':00',
+                    duration_minutes,
+                    total_price,
+                    1 if driving_after_ps5 else 0,
+                    current_user_id
+                ))
+            elif has_promo_columns:
                 query = """
                     INSERT INTO bookings 
                     (customer_name, customer_phone, booking_date, start_time, duration_minutes, total_price, driving_after_ps5, bonus_minutes, promo_code_id)
@@ -300,6 +385,26 @@ def handle_bookings():
                     conn.commit()
                 except Exception as promo_err:
                     print(f'Warning: Failed to update promo code usage: {str(promo_err)}')
+            
+            # Award points to logged-in user (50% of booking amount)
+            if current_user_id and total_price > 0:
+                try:
+                    from routes.user_routes import award_booking_points
+                    award_booking_points(current_user_id, total_price)
+                    
+                    # Mark booking as points_awarded
+                    try:
+                        cursor.execute(
+                            "UPDATE bookings SET points_awarded = TRUE WHERE id = %s",
+                            (booking_id,)
+                        )
+                        conn.commit()
+                    except Exception:
+                        pass  # points_awarded column might not exist
+                    
+                    sys.stderr.write(f"[Booking] Points awarded to user {current_user_id} for booking #{booking_id}\n")
+                except Exception as pts_err:
+                    sys.stderr.write(f"[Booking] Points award failed (non-critical): {pts_err}\n")
             
             return jsonify({
                 'success': True,

@@ -213,6 +213,13 @@ def login():
             session['user_phone'] = result['user']['phone']
             session.permanent = True
             
+            # Link any unclaimed guest bookings to this user (by phone number)
+            try:
+                from services.auth_service import link_guest_bookings_on_login
+                link_guest_bookings_on_login(result['user']['id'], result['user'].get('phone', ''))
+            except Exception as link_err:
+                sys.stderr.write(f"[Login] Non-critical: guest booking link failed: {link_err}\n")
+            
             # Generate JWT token (for mobile browsers without cookies)
             token = generate_user_token(
                 result['user']['id'],

@@ -373,6 +373,9 @@ def create_missing_tables():
         alter_statements = [
             "ALTER TABLE bookings ADD COLUMN bonus_minutes INT DEFAULT 0",
             "ALTER TABLE bookings ADD COLUMN promo_code_id INT NULL",
+            "ALTER TABLE bookings ADD COLUMN user_id INT NULL",
+            "ALTER TABLE bookings ADD COLUMN status ENUM('pending','confirmed','completed','cancelled') DEFAULT 'confirmed'",
+            "ALTER TABLE bookings ADD COLUMN points_awarded BOOLEAN DEFAULT FALSE",
         ]
         for sql in alter_statements:
             try:
@@ -381,6 +384,18 @@ def create_missing_tables():
                 print(f"✅ Added missing column: {sql}")
             except Exception:
                 pass  # Column already exists, skip silently
+        
+        # Add index on customer_phone for fast phone-based lookups
+        index_statements = [
+            "CREATE INDEX idx_customer_phone ON bookings (customer_phone)",
+        ]
+        for sql in index_statements:
+            try:
+                cursor.execute(sql)
+                conn.commit()
+                print(f"✅ Added index: {sql}")
+            except Exception:
+                pass  # Index already exists, skip silently
         
     except Exception as e:
         print(f"⚠️  Table creation error: {e}")

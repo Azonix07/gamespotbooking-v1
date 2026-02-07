@@ -48,7 +48,12 @@ def get_profile(user):
             'free_playtime_minutes': profile['free_playtime_minutes'] or 0
         }
         
+        # Get user's phone for matching guest bookings
+        user_phone = profile.get('phone', '')
+        
         # Get user's booking history
+        # Match by BOTH user_id AND customer_phone (to include guest bookings
+        # made with this phone number before or after account creation)
         cursor.execute("""
             SELECT 
                 b.id,
@@ -66,11 +71,11 @@ def get_profile(user):
                 ) as devices
             FROM bookings b
             LEFT JOIN booking_devices bd ON b.id = bd.booking_id
-            WHERE b.user_id = %s
+            WHERE b.user_id = %s OR (b.user_id IS NULL AND b.customer_phone = %s)
             GROUP BY b.id
             ORDER BY b.booking_date DESC, b.start_time DESC
             LIMIT 50
-        """, (user_id,))
+        """, (user_id, user_phone))
         
         bookings = cursor.fetchall()
         

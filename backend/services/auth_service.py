@@ -86,6 +86,17 @@ def register_user(name: str, email: str, phone: str, password: str) -> Dict[str,
         
         user_id = cursor.lastrowid
         
+        # ============================================================
+        # LINK PAST GUEST BOOKINGS TO THIS NEW USER
+        # If they booked as a guest with this phone number before
+        # signing up, claim those bookings and award retroactive points
+        # ============================================================
+        try:
+            _link_guest_bookings_to_user(cursor, conn, user_id, phone)
+        except Exception as link_err:
+            import sys
+            sys.stderr.write(f"[Signup] Non-critical: failed to link guest bookings: {link_err}\n")
+        
         return {
             'success': True,
             'message': 'Registration successful',
@@ -103,6 +114,112 @@ def register_user(name: str, email: str, phone: str, password: str) -> Dict[str,
             return {'success': False, 'error': 'Email already registered'}
         return {'success': False, 'error': f'Registration failed: {error_msg}'}
         
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+def _link_guest_bookings_to_user(cursor, conn, user_id, phone):
+    """
+    Link all past guest bookings (user_id IS NULL) that match this
+    phone number to the newly registered user. Also retroactively
+    award points for those bookings.
+    """
+    import sys
+    
+    # Check if user_id column exists in bookings
+    try:
+        cursor.execute("""
+            SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'user_id'
+        """)
+        if not cursor.fetchone():
+            sys.stderr.write("[Signup] bookings.user_id column not found, skipping guest linking\n")
+            return
+    except Exception:
+        return
+    
+    # Find all guest bookings with this phone number
+    cursor.execute("""
+        SELECT id, total_price, points_awarded
+        FROM bookings
+        WHERE customer_phone = %s AND user_id IS NULL
+    """, (phone,))
+    guest_bookings = cursor.fetchall()
+    
+    if not guest_bookings:
+        return
+    
+    # Link all guest bookings to this user
+    cursor.execute("""
+        UPDATE bookings
+        SET user_id = %s
+        WHERE customer_phone = %s AND user_id IS NULL
+    """, (user_id, phone))
+    
+    linked_count = cursor.rowcount
+    
+    # Retroactively award points for un-awarded bookings
+    total_points = 0
+    for booking in guest_bookings:
+        if not booking.get('points_awarded'):
+            points = int(float(booking['total_price']) * 0.50)
+            if points > 0:
+                total_points += points
+                
+                # Record in points_history
+                try:
+                    cursor.execute("""
+                        INSERT INTO points_history (user_id, booking_id, points_earned, points_type, booking_amount)
+                        VALUES (%s, %s, %s, 'booking', %s)
+                    """, (user_id, booking['id'], points, float(booking['total_price'])))
+                except Exception:
+                    pass  # points_history table might not exist
+                
+                # Mark booking as points_awarded
+                try:
+                    cursor.execute(
+                        "UPDATE bookings SET points_awarded = TRUE WHERE id = %s",
+                        (booking['id'],)
+                    )
+                except Exception:
+                    pass  # points_awarded column might not exist
+    
+    # Add total points to user
+    if total_points > 0:
+        cursor.execute("""
+            UPDATE users SET gamespot_points = gamespot_points + %s WHERE id = %s
+        """, (total_points, user_id))
+    
+    conn.commit()
+    
+    sys.stderr.write(
+        f"[Signup] Linked {linked_count} guest bookings to user {user_id} (phone: {phone}). "
+        f"Retroactive points: {total_points}\n"
+    )
+
+
+def link_guest_bookings_on_login(user_id, phone):
+    """
+    Called on every login — link any NEW guest bookings (user_id IS NULL)
+    that match this user's phone number. This catches bookings made
+    when the user wasn't logged in (e.g., booked from a different device).
+    Uses its own DB connection so it's independent from the login flow.
+    """
+    if not phone:
+        return
+    
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        _link_guest_bookings_to_user(cursor, conn, user_id, phone)
+    except Exception as e:
+        import sys
+        sys.stderr.write(f"[Login Link] Error linking guest bookings: {e}\n")
     finally:
         if cursor:
             cursor.close()
@@ -391,5 +508,6 @@ __all__ = [
     'get_user_by_id',
     'create_reset_token',
     'reset_password_with_token',
-    'send_reset_email'
+    'send_reset_email',
+    'link_guest_bookings_on_login',
 ]
