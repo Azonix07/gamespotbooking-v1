@@ -97,28 +97,30 @@ class FastAIBooking:
         """Initialize with complete GameSpot business knowledge"""
         
         # ====================
-        # GAMESPOT PRICING (₹)
+        # GAMESPOT PRICING (₹) - Matches backend/utils/helpers.py
         # ====================
         self.pricing = {
             'ps5': {
-                1: {'30min': 80, '1hour': 120, '1.5hour': 150, '2hour': 180},   # 1 player
-                2: {'30min': 100, '1hour':  150, '1.5hour': 190, '2hour': 230},  # 2 players
-                3: {'30min': 130, '1hour': 180, '1.5hour': 230, '2hour': 280},  # 3 players
-                4: {'30min': 150, '1hour': 210, '1.5hour': 270, '2hour': 330}   # 4 players (max)
+                1: {'30min': 70, '1hour': 130, '1.5hour': 170, '2hour': 210},   # 1 player
+                2: {'30min': 90, '1hour': 150, '1.5hour': 200, '2hour': 240},   # 2 players
+                3: {'30min': 90, '1hour': 150, '1.5hour': 200, '2hour': 240},   # 3 players (same as 2)
+                4: {'30min': 150, '1hour': 210, '1.5hour': 270, '2hour': 300}   # 4 players (max)
             },
             'driving': {
-                1: {'30min': 120, '1hour': 170, '1.5hour': 200, '2hour': 250}   # Solo only
+                1: {'30min': 100, '1hour': 170, '1.5hour': 200, '2hour': 200}   # Solo only
             }
         }
         
         # ====================
         # BUSINESS HOURS
         # ====================
-        self. business_hours = {
-            'open': '10:00',
+        self.business_hours = {
+            'open': '09:00',
             'close': '22:00',
-            'slots': ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', 
-                     '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']
+            'slots': ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+                      '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+                      '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+                      '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30']
         }
         
         # ====================
@@ -174,10 +176,11 @@ class FastAIBooking:
         # ====================
         self.location = {
             'name': 'GameSpot Gaming Arena',
-            'address': 'MG Road, Cyber City, Kochi, Kerala 682001',
-            'phone': '+91-9876543210',
-            'email': 'bookings@gamespot.in',
-            'landmark': 'Next to Lulu Mall, opposite Metro Station',
+            'address': 'Kodungallur, Thrissur, Kerala',
+            'phone': '+91-9645136006',
+            'email': 'admin@gamespot.in',
+            'landmark': 'Kodungallur, Thrissur District',
+            'coordinates': {'lat': 10.2167, 'lng': 76.2000},
             'features': [
                 'Fully Air Conditioned gaming zones',
                 'Premium ergonomic gaming chairs',
@@ -222,33 +225,135 @@ class FastAIBooking:
             },
             'parking': {
                 'question': 'Is parking available?',
-                'answer': '🅿️ Yes!  We have free parking for both 2-wheelers and 4-wheelers.  Our parking is secure with CCTV surveillance.',
-                'keywords': ['parking', 'park', 'vehicle', 'bike', 'car']
+                'answer': '🅿️ Yes! We have free parking for both 2-wheelers and 4-wheelers. Our parking is secure with CCTV surveillance.',
+                'keywords': ['parking', 'park', 'vehicle', 'bike', 'car parking']
             },
             'cancellation': {
                 'question': 'What is your cancellation policy?',
-                'answer': '🔄 You can cancel or reschedule your booking up to 2 hours before your slot. Call us for cancellations.  No-shows will not be refunded.',
+                'answer': '🔄 You can cancel or reschedule your booking up to 2 hours before your slot. Call us at +91-9645136006 for cancellations. No-shows will not be refunded.',
                 'keywords': ['cancel', 'reschedule', 'refund', 'change booking']
             },
-            'age':  {
+            'age': {
                 'question': 'Is there an age limit?',
-                'answer': '👶 All ages welcome! Children under 12 must be accompanied by an adult.  We recommend age 8+ for comfortable gameplay.',
+                'answer': '👶 All ages welcome! Children under 12 must be accompanied by an adult. We recommend age 8+ for comfortable gameplay.',
                 'keywords': ['age', 'kid', 'child', 'children', 'minor']
             },
             'group': {
                 'question': 'Do you offer group packages?',
-                'answer': '🎉 Yes! For groups of 6+ people, birthday parties, or corporate events, we offer special packages. Call us for custom pricing! ',
-                'keywords': ['group', 'party', 'birthday', 'corporate', 'event', 'bulk']
+                'answer': '🎉 Yes! For groups of 6+ people, birthday parties, or corporate events, we offer special packages. Call us at +91-9645136006 for custom pricing!',
+                'keywords': ['group', 'party', 'birthday', 'corporate', 'event', 'bulk', 'team']
             },
             'outside_food': {
                 'question': 'Can we bring outside food?',
-                'answer': '🍕 Outside food is not allowed in gaming zones to keep equipment clean.  However, we have a great snacks menu available! ',
+                'answer': '🍕 Outside food is not allowed in gaming zones to keep equipment clean. However, we have a great snacks menu available!',
                 'keywords': ['food', 'outside food', 'eat', 'bring food']
             },
             'membership': {
                 'question': 'Do you have membership plans?',
-                'answer': '⭐ Yes! Monthly and annual memberships are available with up to 20% discount. Contact us for details.',
-                'keywords': ['membership', 'member', 'discount', 'offer', 'deal']
+                'answer': '⭐ **GameSpot Membership Plans:**\n\n'
+                         '🥉 **Monthly Plan** - ₹299/month\n'
+                         '   • 30 days validity\n'
+                         '   • **10% discount** on all bookings\n\n'
+                         '🥈 **Quarterly Plan** - ₹799/quarter ⭐ Most Popular!\n'
+                         '   • 90 days validity\n'
+                         '   • **15% discount** on all bookings\n\n'
+                         '🥇 **Annual Plan** - ₹2,499/year\n'
+                         '   • 365 days validity\n'
+                         '   • **20% discount** on all bookings\n\n'
+                         'Sign up on our website at the Membership page! Discounts apply automatically to all your bookings.',
+                'keywords': ['membership', 'member', 'discount', 'offer', 'deal', 'plan', 'subscribe', 'subscription', 'annual', 'monthly', 'quarterly']
+            },
+            'rental': {
+                'question': 'Do you offer rental services?',
+                'answer': '🎮 **GameSpot Rental Service:**\n\n'
+                         '**PS5 Console Rental:**\n'
+                         '• Daily: ₹400/day\n'
+                         '• Weekly: ₹2,400/week (₹343/day)\n\n'
+                         '**VR Headset Rental (Meta Quest 3):**\n'
+                         '• Daily: ₹350/day\n'
+                         '• Weekly: ₹2,100/week (₹300/day)\n'
+                         '• Monthly: ₹7,500/month (₹250/day)\n\n'
+                         '**Extra Controllers:** ₹50/day each\n\n'
+                         '📦 Home delivery available! Visit our Rental page on the website to book.',
+                'keywords': ['rental', 'rent', 'borrow', 'take home', 'home delivery', 'deliver', 'vr rent', 'ps5 rent', 'quest', 'meta quest']
+            },
+            'college': {
+                'question': 'Do you provide gaming setup for college events?',
+                'answer': '🎓 **College Event Gaming Setup:**\n\n'
+                         'We bring the gaming experience to your college!\n\n'
+                         '**Equipment Available:**\n'
+                         '• PS5 Gaming Station: ₹400/day (max 4 units)\n'
+                         '• VR Headset Zone: ₹800/day (max 2 units)\n'
+                         '• Driving Simulator: ₹1,500/day (1 unit)\n\n'
+                         '**What\'s Included:**\n'
+                         '• Full setup and teardown\n'
+                         '• Technical support throughout the event\n'
+                         '• Transport (₹15/km from Kodungallur)\n\n'
+                         'Book through our College Setup page on the website!',
+                'keywords': ['college', 'university', 'campus', 'fest', 'college event', 'setup', 'college setup', 'techfest', 'cultural fest']
+            },
+            'website': {
+                'question': 'What can I do on the website?',
+                'answer': '🌐 **GameSpot Website Features:**\n\n'
+                         '• 🎮 **Book Sessions** - Reserve PS5 or Driving Simulator slots\n'
+                         '• 📦 **Rent Equipment** - Rent PS5 or VR headset for home\n'
+                         '• 🎓 **College Setup** - Book gaming setup for college events\n'
+                         '• ⭐ **Membership** - Join for discounts up to 20%\n'
+                         '• 🎲 **Games Catalog** - Browse all available games\n'
+                         '• 📰 **Updates** - Latest news and announcements\n'
+                         '• 📞 **Contact Us** - Get in touch with us\n'
+                         '• 💬 **Feedback** - Share your experience\n'
+                         '• 👤 **Profile** - Manage your account and bookings\n'
+                         '• 🎁 **Offers** - Check out ongoing promotions',
+                'keywords': ['website', 'features', 'what can', 'pages', 'navigate', 'sections', 'options']
+            },
+            'offers': {
+                'question': 'Are there any current offers?',
+                'answer': '🎁 **Current GameSpot Offers:**\n\n'
+                         '• 🏷️ **Membership Discounts** - Up to 20% off on all bookings\n'
+                         '• 📸 **Instagram Promo** - Follow us for special promo codes\n'
+                         '• 🎮 **Discount Game** - Play our spin wheel to win discounts!\n'
+                         '• 👥 **Invite Friends** - Earn rewards by inviting friends\n\n'
+                         'Check the Offers page on our website for the latest deals!',
+                'keywords': ['offer', 'promo', 'promotion', 'coupon', 'code', 'instagram', 'invite', 'referral', 'discount code', 'spin wheel']
+            },
+            'contact': {
+                'question': 'How can I contact GameSpot?',
+                'answer': '📞 **Contact GameSpot:**\n\n'
+                         '• 📱 Phone: +91-9645136006\n'
+                         '• 📧 Email: admin@gamespot.in\n'
+                         '• 📍 Location: Kodungallur, Thrissur, Kerala\n'
+                         '• 🕒 Hours: 9:00 AM - 10:00 PM (7 days a week)\n\n'
+                         'You can also use the Contact page on our website or chat with me here!',
+                'keywords': ['contact', 'phone', 'call', 'email', 'reach', 'number', 'whatsapp']
+            },
+            'devices': {
+                'question': 'What gaming equipment do you have?',
+                'answer': '🎮 **GameSpot Equipment:**\n\n'
+                         '**PS5 Gaming Stations (3 units):**\n'
+                         '• Latest PlayStation 5 consoles\n'
+                         '• Up to 4 players per station\n'
+                         '• 10+ popular game titles\n'
+                         '• Premium controllers and headsets\n\n'
+                         '**Driving Simulator (1 unit):**\n'
+                         '• Professional racing wheel with force feedback\n'
+                         '• Hydraulic pedals (brake, throttle, clutch)\n'
+                         '• VR headset support for immersive experience\n'
+                         '• Multiple international race tracks\n'
+                         '• Realistic car physics and damage model\n'
+                         '• Choice of supercars and racing vehicles\n\n'
+                         '**VR Equipment (for rental):**\n'
+                         '• Meta Quest 3 standalone VR headset',
+                'keywords': ['device', 'equipment', 'station', 'console', 'vr', 'headset', 'meta quest', 'controller', 'wheel', 'pedal', 'setup']
+            },
+            'feedback': {
+                'question': 'How can I give feedback?',
+                'answer': '💬 We love hearing from our customers! You can share your feedback through:\n\n'
+                         '• Our **Feedback page** on the website\n'
+                         '• Call us at +91-9645136006\n'
+                         '• Email us at admin@gamespot.in\n\n'
+                         'Your feedback helps us improve! ⭐',
+                'keywords': ['feedback', 'review', 'complaint', 'suggest', 'suggestion', 'improve', 'experience', 'rate', 'rating']
             }
         }
         
@@ -295,9 +400,9 @@ class FastAIBooking:
         if self._is_cancel_request(cleaned_message, booking_state):
             return self._handle_cancellation(booking_state)
         
-        # Handle help/info requests (but not if we're in the middle of booking flow)
+        # Handle help/info requests (allow at any step before confirmation)
         current_step = self._get_step(booking_state)
-        if self._is_info_request(cleaned_message) and current_step in ['game', 'players']: 
+        if self._is_info_request(cleaned_message) and current_step in ['game', 'players', 'duration', 'date', 'time']:
             return self._handle_info_request(cleaned_message, booking_state)
         
         # Handle state change requests (user wants to modify previous input)
@@ -436,7 +541,15 @@ class FastAIBooking:
             'games', 'what games', 'available',
             'help', 'info', 'information',
             'faq', 'question', 'snacks', 'menu',
-            'parking', 'payment', 'cancel policy'
+            'parking', 'payment', 'cancel policy',
+            'membership', 'member', 'subscribe', 'plan',
+            'rental', 'rent', 'borrow', 'take home', 'deliver',
+            'college', 'campus', 'fest', 'college event', 'college setup',
+            'offer', 'promo', 'promotion', 'coupon', 'discount code',
+            'contact', 'phone', 'call', 'email', 'number',
+            'device', 'equipment', 'station', 'console', 'vr', 'headset', 'meta quest',
+            'feedback', 'review', 'complaint', 'suggest',
+            'website', 'features', 'pages', 'navigate'
         ]
         return any(keyword in msg_lower for keyword in info_keywords)
     
@@ -459,12 +572,13 @@ class FastAIBooking:
         if any(word in msg_lower for word in ['price', 'cost', 'how much', 'rate', 'charge', 'fee']):
             reply = "💰 **GameSpot Pricing:**\n\n"
             reply += "**PS5 Gaming:**\n"
-            reply += "• 1 Player: ₹80 (30min) - ₹180 (2hrs)\n"
-            reply += "• 2 Players: ₹100 (30min) - ₹230 (2hrs)\n"
-            reply += "• 3 Players: ₹130 (30min) - ₹280 (2hrs)\n"
-            reply += "• 4 Players: ₹150 (30min) - ₹330 (2hrs)\n\n"
+            reply += "• 1 Player: ₹70 (30min) | ₹130 (1hr) | ₹170 (1.5hr) | ₹210 (2hr)\n"
+            reply += "• 2 Players: ₹90 (30min) | ₹150 (1hr) | ₹200 (1.5hr) | ₹240 (2hr)\n"
+            reply += "• 3 Players: ₹90 (30min) | ₹150 (1hr) | ₹200 (1.5hr) | ₹240 (2hr)\n"
+            reply += "• 4 Players: ₹150 (30min) | ₹210 (1hr) | ₹270 (1.5hr) | ₹300 (2hr)\n\n"
             reply += "**Driving Simulator:**\n"
-            reply += "• Solo: ₹120 (30min) - ₹250 (2hrs)\n\n"
+            reply += "• Solo: ₹100 (30min) | ₹170 (1hr) | ₹200 (1.5hr) | ₹200 (2hr)\n\n"
+            reply += "⭐ **Membership discounts:** 10% (Monthly ₹299) | 15% (Quarterly ₹799) | 20% (Annual ₹2,499)\n\n"
             reply += "Ready to book? Which game would you like?"
             
             return {
@@ -478,11 +592,13 @@ class FastAIBooking:
         # Timing inquiry
         if any(word in msg_lower for word in ['timing', 'hours', 'open', 'close', 'schedule']):
             reply = "🕒 **Business Hours:**\n\n"
-            reply += "Open: 10:00 AM - 10:00 PM\n"
+            reply += "Open: 9:00 AM - 10:00 PM\n"
             reply += "Open 7 days a week!\n\n"
-            reply += "Available time slots:\n"
-            reply += "10 AM, 11 AM, 12 PM, 1 PM, 2 PM, 3 PM,\n"
-            reply += "4 PM, 5 PM, 6 PM, 7 PM, 8 PM, 9 PM\n\n"
+            reply += "Time slots available every 30 minutes:\n"
+            reply += "9 AM, 9:30 AM, 10 AM, 10:30 AM, 11 AM, 11:30 AM,\n"
+            reply += "12 PM, 12:30 PM, 1 PM, 1:30 PM, 2 PM, 2:30 PM,\n"
+            reply += "3 PM, 3:30 PM, 4 PM, 4:30 PM, 5 PM, 5:30 PM,\n"
+            reply += "6 PM, 6:30 PM, 7 PM, 7:30 PM, 8 PM, 8:30 PM, 9 PM, 9:30 PM\n\n"
             reply += "Would you like to book a slot?"
             
             return {
@@ -541,9 +657,9 @@ class FastAIBooking:
             reply += f"📞 Phone: {self.location['phone']}\n"
             reply += f"📧 Email: {self.location['email']}\n\n"
             reply += "**Amenities:**\n"
-            for feature in self.location['features'][:4]: 
+            for feature in self.location['features'][:4]:
                 reply += f"• {feature}\n"
-            reply += "\nReady to book your session?"
+            reply += "\n🕒 Open 9:00 AM - 10:00 PM, 7 days a week\n\nReady to book your session?"
             
             return {
                 'reply': reply,
@@ -555,17 +671,21 @@ class FastAIBooking:
         
         # General help
         reply = "👋 **Welcome to GameSpot!**\n\n"
-        reply += "I can help you:\n"
-        reply += "• Book PS5 gaming sessions (1-4 players)\n"
-        reply += "• Book Driving Simulator (solo)\n"
-        reply += "• Check pricing and availability\n"
-        reply += "• Answer questions about our facility\n"
-        reply += "• Provide information about location, parking, payments\n\n"
-        reply += "What would you like to do?"
+        reply += "I can help you with:\n"
+        reply += "• 🎮 Book PS5 gaming sessions (1-4 players)\n"
+        reply += "• 🏎️ Book Driving Simulator (solo)\n"
+        reply += "• 💰 Check pricing and availability\n"
+        reply += "• 📦 Learn about rental services (PS5/VR for home)\n"
+        reply += "• 🎓 College event gaming setup info\n"
+        reply += "• ⭐ Membership plans and discounts\n"
+        reply += "• 🎁 Current offers and promotions\n"
+        reply += "• 📍 Location, hours, and contact info\n"
+        reply += "• ❓ Answer any other questions\n\n"
+        reply += "What would you like to know?"
         
         return {
             'reply': reply,
-            'buttons': ['🎮 Book PS5', '🏎️ Book Driving', '💰 Check Pricing', '❓ FAQs'],
+            'buttons': ['🎮 Book PS5', '🏎️ Book Driving', '💰 Pricing', '📦 Rentals', '⭐ Membership', '❓ FAQs'],
             'next_step': 'game',
             'booking_state': state,
             'action': 'help_provided'
@@ -609,7 +729,7 @@ class FastAIBooking:
                 close_time = datetime.strptime(self.business_hours['close'], '%H:%M').time()
                 
                 if time_obj < open_time or time_obj >= close_time:
-                    return f"⚠️ Please select a time between 10 AM and 10 PM."
+                    return f"⚠️ Please select a time between 9 AM and 10 PM."
                 
                 # Check if booking will finish before closing time
                 if state.get('duration'):
@@ -829,7 +949,7 @@ class FastAIBooking:
         # ============================================
         if current_step == 'time' and not state.get('time'):
             # Time period detection
-            morning_times = {'morning': 10, 'mornin': 10, 'mrning': 10}
+            morning_times = {'morning': 9, 'mornin': 9, 'mrning': 9}
             afternoon_times = {'afternoon': 14, 'afernoon': 14, 'noon': 12, 'lunch': 13}
             evening_times = {'evening': 18, 'evning': 18, 'evenin': 18}
             night_times = {'night': 20, 'nite': 20, 'tonight': 20}
@@ -850,7 +970,7 @@ class FastAIBooking:
                         hour += 12
                     elif period == 'am' and hour == 12:
                         hour = 0
-                    if 10 <= hour < 22:
+                    if 9 <= hour < 22:
                         state['time'] = f"{hour:02d}:{minutes:02d}"
                 # 24-hour format: "14:00", "18:00"
                 if not state.get('time'):
@@ -858,18 +978,18 @@ class FastAIBooking:
                     if time_24hr:
                         hour = int(time_24hr.group(1))
                         minutes = int(time_24hr.group(2))
-                        if 10 <= hour < 22:
+                        if 9 <= hour < 22:
                             state['time'] = f"{hour:02d}:{minutes:02d}"
-                # Just a number (assume PM for 1-9, as-is for 10-21)
+                # Just a number (assume PM for 1-9, as-is for 9-21)
                 if not state.get('time'):
                     simple_time = re.search(r'^(\d{1,2})(?::(\d{2}))?$', message.strip())
                     if simple_time:
                         hour = int(simple_time.group(1))
                         minutes = int(simple_time.group(2)) if simple_time.group(2) else 0
-                        # Smart inference: 1-9 likely means PM (1PM-9PM)
-                        if 1 <= hour <= 9:
+                        # Smart inference: 1-8 likely means PM (1PM-8PM), 9 could be AM
+                        if 1 <= hour <= 8:
                             hour += 12
-                        if 10 <= hour < 22:
+                        if 9 <= hour < 22:
                             state['time'] = f"{hour:02d}:{minutes:02d}"
         
         # ============================================
@@ -1002,8 +1122,10 @@ class FastAIBooking:
             
             if game_type in self.pricing and players in self. pricing[game_type]:
                 prices = self.pricing[game_type][players]
-                duration_key = '30min' if duration == 30 else f"{duration/60}hour"
-                price = prices. get(duration_key, 0)
+                # Fix duration key mapping
+                duration_key_map = {30: '30min', 60: '1hour', 90: '1.5hour', 120: '2hour'}
+                duration_key = duration_key_map.get(duration, '1hour')
+                price = prices.get(duration_key, 0)
                 
                 duration_text = "30 minutes" if duration == 30 else f"{int(duration/60)} hour{'s' if duration > 60 else ''}"
                 return f"{random.choice(self. dialogue['confirmations'])} Your {duration_text} session will be ₹{price}. 📅 When would you like to come?"
@@ -1022,10 +1144,10 @@ class FastAIBooking:
                         date_text = "tomorrow"
                     else:
                         date_text = date_obj.strftime('%B %d')
-                    return f"Perfect! 🕒 What time works for you {date_text}?\n\n(We're open 10 AM - 10 PM)"
+                    return f"Perfect! 🕒 What time works for you {date_text}?\n\n(We're open 9 AM - 10 PM)"
                 except: 
                     pass
-            return f"Got it! What time works best for you?\n\n(Open 10 AM - 10 PM)"
+            return f"Got it! What time works best for you?\n\n(Open 9 AM - 10 PM)"
         
         # After time check - availability confirmed - THIS WAS THE BUG!
         if step == 'check_availability':
@@ -1048,7 +1170,8 @@ class FastAIBooking:
             
             # Calculate price
             game_type = 'ps5' if game == 'PS5' else 'driving'
-            duration_key = '30min' if duration == 30 else f"{duration/60}hour"
+            duration_key_map = {30: '30min', 60: '1hour', 90: '1.5hour', 120: '2hour'}
+            duration_key = duration_key_map.get(duration, '1hour')
             price = self.pricing[game_type][players].get(duration_key, 0)
             
             # Format date nicely
@@ -1109,7 +1232,7 @@ class FastAIBooking:
             'players': ['1️⃣ 1 player', '2️⃣ 2 players', '3️⃣ 3 players', '4️⃣ 4 players'] if state.get('game') == 'PS5' else ['1️⃣ 1 player'],
             'duration': ['⏱️ 30 mins', '⏱️ 1 hour', '⏱️ 1.5 hours', '⏱️ 2 hours'],
             'date': ['📅 Today', '📅 Tomorrow'],
-            'time': ['🕐 10 AM', '🕐 12 PM', '🕐 2 PM', '🕐 4 PM', '🕐 6 PM', '🕐 8 PM'],
+            'time': ['🕐 9 AM', '🕐 11 AM', '🕐 1 PM', '🕐 3 PM', '🕐 5 PM', '🕐 7 PM', '🕐 9 PM'],
             'check_availability': [],
             'name': [],
             'phone': [],
