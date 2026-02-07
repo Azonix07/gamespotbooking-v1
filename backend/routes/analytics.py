@@ -1,18 +1,31 @@
 """
 Analytics API Routes
 Tracks visitor data and provides analytics insights
+IP addresses are hashed for privacy
 """
 
+import sys
+import hashlib
 from flask import Blueprint, request, jsonify
 from config.database import get_db_connection
+from middleware.auth import require_admin
+from middleware.rate_limiter import rate_limit
 from datetime import datetime, timedelta
 import json
 
 analytics_bp = Blueprint('analytics', __name__)
 
+def _hash_ip(ip_address):
+    """Hash IP address for privacy — cannot be reversed"""
+    if not ip_address:
+        return 'unknown'
+    return hashlib.sha256(ip_address.encode()).hexdigest()[:16]
+
+
 @analytics_bp.route('/api/analytics/track', methods=['POST', 'OPTIONS'])
+@rate_limit(max_requests=30, window_seconds=60)
 def track_visit():
-    """Track page visit"""
+    """Track page visit (IP is hashed for privacy)"""
     if request.method == 'OPTIONS':
         return '', 200
     
@@ -22,9 +35,9 @@ def track_visit():
     try:
         data = request.get_json()
         page = data.get('page', '/')
-        user_agent = request.headers.get('User-Agent', '')
-        ip_address = request.remote_addr
-        referrer = data.get('referrer', '')
+        user_agent = request.headers.get('User-Agent', '')[:500]  # Truncate
+        ip_address = _hash_ip(request.remote_addr)  # Hash for privacy
+        referrer = data.get('referrer', '')[:500]  # Truncate
         
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -40,8 +53,8 @@ def track_visit():
         return jsonify({'success': True})
         
     except Exception as e:
-        print(f"Analytics tracking error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        sys.stderr.write(f"[Analytics] Tracking error: {e}\n")
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -52,9 +65,13 @@ def track_visit():
 
 @analytics_bp.route('/api/analytics/stats', methods=['GET', 'OPTIONS'])
 def get_analytics_stats():
-    """Get comprehensive analytics statistics"""
+    """Get comprehensive analytics statistics (admin only)"""
     if request.method == 'OPTIONS':
         return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     
     conn = None
     cursor = None
@@ -209,7 +226,7 @@ def get_analytics_stats():
         
     except Exception as e:
         print(f"Analytics stats error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:

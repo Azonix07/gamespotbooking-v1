@@ -130,7 +130,7 @@ def transcribe_audio():
     except Exception as e:
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'An error occurred'
         }), 500
 
 
@@ -210,7 +210,7 @@ def synthesize_speech():
     except Exception as e:
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'An error occurred'
         }), 500
 
 
@@ -312,7 +312,7 @@ def process_conversation():
     except Exception as e:
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'An error occurred'
         }), 500
 
 
@@ -400,7 +400,7 @@ def enhance_text():
     except Exception as e:
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'An error occurred'
         }), 500
 
 

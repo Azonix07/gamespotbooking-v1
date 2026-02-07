@@ -71,7 +71,7 @@ def get_active_promotions():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -175,7 +175,7 @@ def check_eligibility():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -290,7 +290,7 @@ def claim_promotion():
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -342,7 +342,7 @@ def get_my_redemptions():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -410,7 +410,7 @@ def validate_redemption_code():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -489,7 +489,7 @@ def admin_get_redemptions():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -539,7 +539,7 @@ def admin_verify_redemption(redemption_id):
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()

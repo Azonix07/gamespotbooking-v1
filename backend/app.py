@@ -1,12 +1,14 @@
 """
 GameSpot Booking System - Python Backend
 Flask application with MySQL database
+Production-hardened with security middleware
 """
 
-from flask import Flask, session, request
+from flask import Flask, session, request, jsonify
 from flask_cors import CORS
 from datetime import timedelta
 import os
+import sys
 from dotenv import load_dotenv
 
 # Load environment variables FIRST (before importing services)
@@ -52,7 +54,7 @@ if not secret_key or secret_key == 'gamespot-secret-key-change-in-production':
     import secrets
     secret_key = secrets.token_hex(32)
     if os.getenv('RAILWAY_ENVIRONMENT'):
-        print("⚠️  WARNING: SECRET_KEY not set! Using random key (sessions won't persist across restarts)")
+        sys.stderr.write("⚠️  CRITICAL: SECRET_KEY not set in production! Using random key.\n")
 
 app.config['SECRET_KEY'] = secret_key
 app.config['SESSION_COOKIE_NAME'] = 'gamespot_session'
@@ -117,8 +119,22 @@ def add_security_headers(response):
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     response.headers['Permissions-Policy'] = 'camera=(), microphone=(self), geolocation=()'
     
-    # Remove server identification header
+    # Content-Security-Policy
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https://*.railway.app https://accounts.google.com; "
+        "frame-src https://accounts.google.com; "
+        "object-src 'none'; "
+        "base-uri 'self'"
+    )
+    
+    # Remove server identification headers
     response.headers.pop('Server', None)
+    response.headers.pop('X-Powered-By', None)
     
     # Strict-Transport-Security for production
     if os.getenv('RAILWAY_ENVIRONMENT') or request.is_secure:
@@ -371,39 +387,61 @@ create_missing_tables()
 def health_check():
     return {'status': 'healthy', 'message': 'GameSpot Python Backend is running'}, 200
 
-# Root endpoint - API info
+# Root endpoint - minimal info (don't expose API structure)
 @app.route('/', methods=['GET'])
 def root():
     return {
-        'message': 'GameSpot Booking System API',
-        'version': '2.0.0',
-        'backend': 'Python/Flask',
-        'endpoints': {
-            'slots': '/api/slots.php',
-            'pricing': '/api/pricing.php',
-            'bookings': '/api/bookings.php',
-            'admin': '/api/admin.php',
-            'ai_chat': '/api/ai/chat',
-            'auth_signup': '/api/auth/signup',
-            'auth_login': '/api/auth/login',
-            'membership_plans': '/api/membership/plans'
-        }
+        'message': 'GameSpot Booking System',
+        'status': 'running'
     }, 200
 
+
+# ============================================================
+# GLOBAL ERROR HANDLERS — never expose internal details
+# ============================================================
+@app.errorhandler(400)
+def bad_request(e):
+    return jsonify({'success': False, 'error': 'Bad request'}), 400
+
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({'success': False, 'error': 'Not found'}), 404
+
+@app.errorhandler(405)
+def method_not_allowed(e):
+    return jsonify({'success': False, 'error': 'Method not allowed'}), 405
+
+@app.errorhandler(413)
+def too_large(e):
+    return jsonify({'success': False, 'error': 'Request too large'}), 413
+
+@app.errorhandler(429)
+def rate_limited(e):
+    return jsonify({'success': False, 'error': 'Too many requests. Please try again later.'}), 429
+
+@app.errorhandler(500)
+def internal_error(e):
+    # Log the real error for debugging, but never expose it to client
+    sys.stderr.write(f"500 error: {e}\n")
+    return jsonify({'success': False, 'error': 'An internal error occurred'}), 500
+
 if __name__ == '__main__':
+    is_production = bool(os.getenv('RAILWAY_ENVIRONMENT'))
+    
     print("=" * 60)
     print("🎮 GameSpot Booking System - Python Backend")
     print("=" * 60)
+    print(f"✅ Environment: {'PRODUCTION' if is_production else 'DEVELOPMENT'}")
     print("✅ Server starting on http://localhost:8000")
     print("✅ CORS enabled for React frontend")
     print("✅ Session-based authentication enabled")
     print("✅ MySQL connection pool initialized")
     print("=" * 60)
     
-    # Run the Flask app
+    # Run the Flask app — NEVER use debug=True in production
     app.run(
         host='0.0.0.0',
         port=8000,
-        debug=True,
+        debug=not is_production,
         threaded=True
     )

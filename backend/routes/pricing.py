@@ -132,4 +132,4 @@ def calculate_pricing():
         return jsonify(response_data)
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500

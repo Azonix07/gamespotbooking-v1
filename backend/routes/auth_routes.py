@@ -3,6 +3,8 @@ Authentication API Routes
 Handles user signup, login, logout, password reset
 """
 
+import sys
+import os
 from flask import Blueprint, request, jsonify, session
 from services.auth_service import (
     register_user,
@@ -15,8 +17,9 @@ from services.auth_service import (
 from services.sms_service import sms_service
 from routes.admin import verify_php_password
 from config.database import get_db_connection
-from middleware.auth import generate_admin_token, generate_user_token
+from middleware.auth import generate_admin_token, generate_user_token, generate_refresh_token, verify_token
 from middleware.rate_limiter import auth_rate_limit
+from utils.sanitizer import validate_email, validate_phone, validate_name, validate_password, sanitize, is_sql_injection, is_xss_attempt
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -48,12 +51,37 @@ def signup():
         password = data.get('password', '')
         confirm_password = data.get('confirmPassword', '')
         
-        # Validate inputs
-        if not all([name, email, phone, password]):
-            return jsonify({'success': False, 'error': 'All fields are required'}), 400
+        # Validate inputs with sanitizer
+        valid, err = validate_name(name)
+        if not valid:
+            return jsonify({'success': False, 'error': err}), 400
+        
+        valid, err = validate_email(email)
+        if not valid:
+            return jsonify({'success': False, 'error': err}), 400
+        
+        valid, err = validate_phone(phone)
+        if not valid:
+            return jsonify({'success': False, 'error': err}), 400
+        
+        valid, err = validate_password(password)
+        if not valid:
+            return jsonify({'success': False, 'error': err}), 400
         
         if password != confirm_password:
             return jsonify({'success': False, 'error': 'Passwords do not match'}), 400
+        
+        # Check for injection attempts
+        if is_sql_injection(name) or is_xss_attempt(name):
+            try:
+                from utils.security_logger import log_injection_attempt
+                log_injection_attempt('signup_name', name)
+            except Exception:
+                pass
+            return jsonify({'success': False, 'error': 'Invalid input detected'}), 400
+        
+        # Sanitize name for storage
+        name = sanitize(name, max_length=100, strip_html=True)
         
         # Register user
         result = register_user(name, email, phone, password)
@@ -82,7 +110,8 @@ def signup():
             return jsonify(result), 400
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        sys.stderr.write(f"[Signup] Error: {e}\n")
+        return jsonify({'success': False, 'error': 'Registration failed. Please try again.'}), 500
 
 
 @auth_bp.route('/api/auth/login', methods=['POST', 'OPTIONS'])
@@ -141,14 +170,29 @@ def login():
             
             # Generate JWT token (for mobile browsers without cookies)
             token = generate_admin_token(admin['id'], admin['username'])
+            refresh_token = generate_refresh_token(admin['id'], 'admin')
             
-            return jsonify({
+            response = jsonify({
                 'success': True,
                 'message': 'Admin login successful',
                 'user_type': 'admin',
                 'username': admin['username'],
-                'token': token  # Mobile browsers use this token
+                'token': token
             })
+            # Set refresh token as HttpOnly cookie (not accessible to JS)
+            response.set_cookie(
+                'refresh_token', refresh_token,
+                httponly=True, secure=True, samesite='None',
+                max_age=7*24*60*60, path='/api/auth'
+            )
+            
+            try:
+                from utils.security_logger import log_successful_login
+                log_successful_login(admin['id'], 'admin')
+            except Exception:
+                pass
+            
+            return response
         
         # Customer login flow
         if not email and not username:
@@ -175,17 +219,38 @@ def login():
                 result['user']['email'],
                 result['user']['name']
             )
+            refresh_token = generate_refresh_token(result['user']['id'], 'customer')
             
-            return jsonify({
+            response = jsonify({
                 **result,
                 'user_type': 'customer',
-                'token': token  # Mobile browsers use this token
+                'token': token
             })
+            # Set refresh token as HttpOnly cookie
+            response.set_cookie(
+                'refresh_token', refresh_token,
+                httponly=True, secure=True, samesite='None',
+                max_age=7*24*60*60, path='/api/auth'
+            )
+            
+            try:
+                from utils.security_logger import log_successful_login
+                log_successful_login(result['user']['id'], 'customer')
+            except Exception:
+                pass
+            
+            return response
         else:
+            try:
+                from utils.security_logger import log_failed_login
+                log_failed_login(login_email)
+            except Exception:
+                pass
             return jsonify(result), 401
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        sys.stderr.write(f"[Login] Error: {e}\n")
+        return jsonify({'success': False, 'error': 'Login failed. Please try again.'}), 500
         
     finally:
         if cursor:
@@ -198,16 +263,25 @@ def login():
 def logout():
     """
     Logout current user (admin or customer)
+    Clears session and refresh token cookie
     """
     if request.method == 'OPTIONS':
         return '', 200
     
     session.clear()
     
-    return jsonify({
+    response = jsonify({
         'success': True,
         'message': 'Logged out successfully'
     })
+    # Clear the refresh token cookie
+    response.set_cookie(
+        'refresh_token', '',
+        httponly=True, secure=True, samesite='None',
+        max_age=0, path='/api/auth'
+    )
+    
+    return response
 
 
 @auth_bp.route('/api/auth/check', methods=['GET', 'OPTIONS'])
@@ -251,7 +325,6 @@ def check_session():
             })
     
     # MOBILE FIX: Check JWT token if no session (mobile browsers block cookies)
-    from middleware.auth import verify_token
     auth_header = request.headers.get('Authorization')
     if auth_header and auth_header.startswith('Bearer '):
         token = auth_header.split(' ')[1]
@@ -330,7 +403,8 @@ def forgot_password():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        sys.stderr.write(f"[ForgotPassword] Error: {e}\n")
+        return jsonify({'success': True, 'message': 'If the email exists, a reset link will be sent'})
 
 
 @auth_bp.route('/api/auth/reset-password', methods=['POST', 'OPTIONS'])
@@ -370,7 +444,8 @@ def reset_password():
             return jsonify(result), 400
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        sys.stderr.write(f"[ResetPassword] Error: {e}\n")
+        return jsonify({'success': False, 'error': 'Password reset failed. Please try again.'}), 500
 
 
 @auth_bp.route('/api/auth/me', methods=['GET', 'OPTIONS'])
@@ -443,8 +518,8 @@ def send_otp():
         })
         
     except Exception as e:
-        print(f'[OTP] Error sending OTP: {str(e)}')
-        return jsonify({'success': False, 'error': str(e)}), 500
+        sys.stderr.write(f"[OTP] Error sending OTP: {e}\n")
+        return jsonify({'success': False, 'error': 'Failed to send OTP. Please try again.'}), 500
 
 
 @auth_bp.route('/api/auth/verify-otp', methods=['POST', 'OPTIONS'])
@@ -543,10 +618,8 @@ def verify_otp():
         })
         
     except Exception as e:
-        print(f'[OTP] Error verifying OTP: {str(e)}')
-        import traceback
-        traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        sys.stderr.write(f"[OTP] Error verifying OTP: {e}\n")
+        return jsonify({'success': False, 'error': 'OTP verification failed. Please try again.'}), 500
 
 
 @auth_bp.route('/api/auth/google-login', methods=['POST', 'OPTIONS'])
@@ -573,10 +646,11 @@ def google_login():
             return jsonify({'success': False, 'error': 'No credential provided'}), 400
         
         # Verify the Google token
+        google_client_id = os.getenv('GOOGLE_CLIENT_ID', '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com')
         idinfo = id_token.verify_oauth2_token(
             credential, 
             google_requests.Request(),
-            '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com'
+            google_client_id
         )
         
         # Extract user info
@@ -642,13 +716,11 @@ def google_login():
         
     except ValueError as e:
         # Invalid token
-        print(f'[Google Login] Invalid token: {str(e)}')
+        sys.stderr.write(f"[Google Login] Invalid token: {e}\n")
         return jsonify({'success': False, 'error': 'Invalid Google token'}), 401
     except Exception as e:
-        print(f'[Google Login] Error: {str(e)}')
-        import traceback
-        traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        sys.stderr.write(f"[Google Login] Error: {e}\n")
+        return jsonify({'success': False, 'error': 'Google login failed. Please try again.'}), 500
 
 
 @auth_bp.route('/api/auth/apple-login', methods=['POST', 'OPTIONS'])
@@ -755,7 +827,99 @@ def apple_login():
         })
         
     except Exception as e:
-        print(f'[Apple Login] Error: {str(e)}')
-        import traceback
-        traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        sys.stderr.write(f"[Apple Login] Error: {e}\n")
+        return jsonify({'success': False, 'error': 'Apple login failed. Please try again.'}), 500
+
+
+# ============================================================
+# TOKEN REFRESH ENDPOINT
+# ============================================================
+
+@auth_bp.route('/api/auth/refresh', methods=['POST', 'OPTIONS'])
+@auth_rate_limit(max_attempts=30, window_seconds=300)
+def refresh_token():
+    """
+    Refresh an expired access token using a valid refresh token.
+    
+    The refresh token is read from the HttpOnly cookie set during login.
+    Returns a new access token (and optionally a new refresh token).
+    """
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    try:
+        # Get refresh token from HttpOnly cookie
+        refresh = request.cookies.get('refresh_token')
+        
+        # Fallback: also check request body (for mobile apps)
+        if not refresh:
+            data = request.get_json(silent=True)
+            if data:
+                refresh = data.get('refresh_token')
+        
+        if not refresh:
+            return jsonify({'success': False, 'error': 'Refresh token required'}), 401
+        
+        # Verify the refresh token
+        payload = verify_token(refresh)
+        
+        if not payload:
+            return jsonify({'success': False, 'error': 'Invalid or expired refresh token', 'redirect': '/login'}), 401
+        
+        # Must be a refresh token, not an access token
+        if payload.get('type') != 'refresh':
+            return jsonify({'success': False, 'error': 'Invalid token type'}), 401
+        
+        user_id = payload.get('sub')
+        user_type = payload.get('user_type', 'customer')
+        
+        if user_type == 'admin':
+            # Generate new admin access token
+            from config.database import get_db_connection
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute('SELECT id, username FROM admin_users WHERE id = %s', (user_id,))
+            admin = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            
+            if not admin:
+                return jsonify({'success': False, 'error': 'Admin not found', 'redirect': '/login'}), 401
+            
+            new_token = generate_admin_token(admin['id'], admin['username'])
+            new_refresh = generate_refresh_token(admin['id'], 'admin')
+            
+            response = jsonify({
+                'success': True,
+                'token': new_token,
+                'user_type': 'admin'
+            })
+        else:
+            # Generate new customer access token
+            from services.auth_service import get_user_by_id
+            user = get_user_by_id(user_id)
+            
+            if not user:
+                return jsonify({'success': False, 'error': 'User not found', 'redirect': '/login'}), 401
+            
+            new_token = generate_user_token(user['id'], user['email'], user['name'])
+            new_refresh = generate_refresh_token(user['id'], 'customer')
+            
+            response = jsonify({
+                'success': True,
+                'token': new_token,
+                'user_type': 'customer'
+            })
+        
+        # Rotate refresh token (set new one in cookie)
+        response.set_cookie(
+            'refresh_token', new_refresh,
+            httponly=True, secure=True, samesite='None',
+            max_age=7*24*60*60, path='/api/auth'
+        )
+        
+        return response
+        
+    except Exception as e:
+        sys.stderr.write(f"[TokenRefresh] Error: {e}\n")
+        return jsonify({'success': False, 'error': 'Token refresh failed'}), 500

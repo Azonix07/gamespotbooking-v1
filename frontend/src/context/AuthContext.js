@@ -1,11 +1,11 @@
 /**
  * AuthContext - Centralized Authentication State Management
- * Prevents redundant API calls and infinite loops
- * Mobile-optimized with localStorage backup for cookie timing issues
+ * Security-hardened: tokens stored in memory, not localStorage
+ * Mobile-optimized with refresh token rotation
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { apiFetch } from '../services/apiClient';
+import { apiFetch, setAccessToken, clearTokens } from '../services/apiClient';
 
 const AuthContext = createContext(null);
 
@@ -144,7 +144,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('gamespot_logged_in', 'true');
           localStorage.setItem('gamespot_user_type', data.user_type);
           if (data.token) {
-            localStorage.setItem('gamespot_auth_token', data.token);
+            setAccessToken(data.token);
           }
         } catch (e) {}
         
@@ -181,11 +181,11 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       lastCheckTimeRef.current = 0;
       
-      // Clear localStorage indicators and JWT token
+      // Clear all tokens and localStorage indicators
+      clearTokens();
       try {
         localStorage.removeItem('gamespot_logged_in');
         localStorage.removeItem('gamespot_user_type');
-        localStorage.removeItem('gamespot_auth_token');
       } catch (e) {}
     }
   }, []);
@@ -210,12 +210,12 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user || { name: formData.name, email: formData.email });
         setIsAuthenticated(true);
         
-        // Store login indicator and JWT token in localStorage for mobile persistence
+        // Store login indicator and JWT token
         try {
           localStorage.setItem('gamespot_logged_in', 'true');
           localStorage.setItem('gamespot_user_type', 'customer');
           if (data.token) {
-            localStorage.setItem('gamespot_auth_token', data.token);
+            setAccessToken(data.token);
           }
         } catch (e) {}
         

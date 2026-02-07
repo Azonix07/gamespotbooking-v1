@@ -110,8 +110,8 @@ def get_profile(user):
         })
         
     except Exception as e:
-        print(f'[Profile] Error: {str(e)}')
-        return jsonify({'success': False, 'error': str(e)}), 500
+        import sys; sys.stderr.write(f'[Profile] Error: {str(e)}')
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
 
 
 @user_bp.route('/api/user/profile-picture', methods=['POST'])
@@ -165,8 +165,8 @@ def upload_profile_picture(user):
         })
         
     except Exception as e:
-        print(f'[Profile Picture Upload] Error: {str(e)}')
-        return jsonify({'success': False, 'error': str(e)}), 500
+        import sys; sys.stderr.write(f'[Profile Picture Upload] Error: {str(e)}')
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
 
 
 @user_bp.route('/api/rewards/instagram-share', methods=['POST'])
@@ -235,8 +235,8 @@ def track_instagram_share(user):
         })
         
     except Exception as e:
-        print(f'[Instagram Share] Error: {str(e)}')
-        return jsonify({'success': False, 'error': str(e)}), 500
+        import sys; sys.stderr.write(f'[Instagram Share] Error: {str(e)}')
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
 
 
 @user_bp.route('/api/rewards/redeem', methods=['POST'])
@@ -357,8 +357,8 @@ def redeem_reward(user):
         })
         
     except Exception as e:
-        print(f'[Redeem Reward] Error: {str(e)}')
-        return jsonify({'success': False, 'error': str(e)}), 500
+        import sys; sys.stderr.write(f'[Redeem Reward] Error: {str(e)}')
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
 
 
 # Function to award points after booking (called from booking routes)
@@ -390,7 +390,7 @@ def award_booking_points(user_id, booking_amount):
         cursor.close()
         conn.close()
         
-        print(f'[Points] Awarded {points_earned} points to user {user_id} for booking ₹{booking_amount}')
+        import sys; sys.stderr.write(f'[Points] Awarded {points_earned} points to user {user_id} for booking ₹{booking_amount}')
         
     except Exception as e:
-        print(f'[Award Points] Error: {str(e)}')
+        import sys; sys.stderr.write(f'[Award Points] Error: {str(e)}')

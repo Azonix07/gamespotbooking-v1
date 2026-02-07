@@ -6,6 +6,7 @@ Handles creating, reading, updating, and deleting bookings
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
 from middleware.auth import require_admin
+from middleware.rate_limiter import rate_limit
 from utils.helpers import (
     validate_booking_data, 
     get_affected_slots, 
@@ -95,7 +96,7 @@ def handle_bookings():
             print(f"Error in handle_bookings GET: {e}")
             import traceback
             traceback.print_exc()
-            return jsonify({'success': False, 'error': f'Database error: {str(e)}'}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -270,7 +271,7 @@ def handle_bookings():
         except Exception as e:
             if conn:
                 conn.rollback()
-            return jsonify({'success': False, 'error': str(e)}), 400
+            return jsonify({'success': False, 'error': 'An error occurred'}), 400
         finally:
             if cursor:
                 cursor.close()
@@ -337,7 +338,7 @@ def handle_bookings():
         except Exception as e:
             if conn:
                 conn.rollback()
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -371,7 +372,7 @@ def handle_bookings():
             })
             
         except Exception as e:
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()

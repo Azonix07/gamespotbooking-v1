@@ -33,25 +33,14 @@ def init_db_pool():
         password = os.getenv("MYSQLPASSWORD")
         database = os.getenv("MYSQLDATABASE", "railway")
 
-        # Debug logging - force flush to stderr
+        # Minimal connection status logging (never log credentials)
         import sys
-        sys.stderr.write("=" * 60 + "\n")
-        sys.stderr.write("🔍 DATABASE CONFIG:\n")
-        sys.stderr.write(f"   Host: {host if host else 'NOT SET'}\n")
-        sys.stderr.write(f"   Port: {port}\n")
-        sys.stderr.write(f"   User: {user}\n")
-        sys.stderr.write(f"   Password: {'***' if password else 'NOT SET'}\n")
-        sys.stderr.write(f"   Database: {database}\n")
-        sys.stderr.write("=" * 60 + "\n")
+        sys.stderr.write("🔍 DATABASE: Initializing connection pool...\n")
         sys.stderr.flush()
 
         # Validate required variables
         if not host or not password:
-            sys.stderr.write("❌ MISSING REQUIRED ENVIRONMENT VARIABLES:\n")
-            if not host:
-                sys.stderr.write("   - MYSQLHOST is not set\n")
-            if not password:
-                sys.stderr.write("   - MYSQLPASSWORD is not set\n")
+            sys.stderr.write("❌ MISSING REQUIRED DB ENVIRONMENT VARIABLES\n")
             sys.stderr.write("⚠️ Database connection pool NOT initialized\n")
             sys.stderr.flush()
             connection_pool = None

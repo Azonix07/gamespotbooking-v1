@@ -147,7 +147,7 @@ def get_slots():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()

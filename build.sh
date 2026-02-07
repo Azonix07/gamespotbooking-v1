@@ -32,9 +32,9 @@ fi
 echo "📦 Installing npm dependencies..."
 npm install
 
-# Build React app
+# Build React app (disable source maps in production for security)
 echo "🔨 Building React app..."
-npm run build
+GENERATE_SOURCEMAP=false npm run build
 
 # Verify build
 if [ -f "build/index.html" ]; then

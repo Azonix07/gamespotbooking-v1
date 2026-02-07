@@ -31,7 +31,7 @@ def generate_promo_code(user):
     cursor = None
     
     try:
-        print(f'[Promo Code] Generate request from user: {user}')
+        import sys; sys.stderr.write(f'[Promo Code] Generate request from user: {user}')
         
         data = request.get_json() or {}
         code_type = data.get('type', 'invite')
@@ -39,7 +39,7 @@ def generate_promo_code(user):
         max_uses = data.get('max_uses', 1)
         expires_days = data.get('expires_days', 90)
         
-        print(f'[Promo Code] Type: {code_type}, Bonus: {bonus_minutes}, Max uses: {max_uses}')
+        import sys; sys.stderr.write(f'[Promo Code] Type: {code_type}, Bonus: {bonus_minutes}, Max uses: {max_uses}')
         
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -69,7 +69,7 @@ def generate_promo_code(user):
         conn.commit()
         code_id = cursor.lastrowid
         
-        print(f'[Promo Code] Successfully generated: {code} (ID: {code_id})')
+        import sys; sys.stderr.write(f'[Promo Code] Successfully generated: {code} (ID: {code_id})')
         
         return jsonify({
             'success': True,
@@ -86,12 +86,12 @@ def generate_promo_code(user):
     except Exception as e:
         if conn:
             conn.rollback()
-        print(f'[Promo Code] Error generating promo code: {str(e)}')
+        import sys; sys.stderr.write(f'[Promo Code] Error generating promo code: {str(e)}')
         import traceback
         traceback.print_exc()
         return jsonify({
             'success': False, 
-            'error': f'Failed to generate promo code: {str(e)}'
+            'error': 'Failed to generate promo code'
         }), 500
         
     finally:
@@ -170,10 +170,10 @@ def validate_promo_code():
         })
         
     except Exception as e:
-        print(f'Error validating promo code: {str(e)}')
+        sys.stderr.write(f'[Route] Error validating promo code: {e}\n')
         import traceback
         traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -223,10 +223,10 @@ def apply_promo_code():
     except Exception as e:
         if conn:
             conn.rollback()
-        print(f'Error applying promo code: {str(e)}')
+        sys.stderr.write(f'[Route] Error applying promo code: {e}\n')
         import traceback
         traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -271,10 +271,10 @@ def get_my_promo_codes(user):
         })
         
     except Exception as e:
-        print(f'Error fetching promo codes: {str(e)}')
+        sys.stderr.write(f'[Route] Error fetching promo codes: {e}\n')
         import traceback
         traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:

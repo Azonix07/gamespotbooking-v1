@@ -3,9 +3,10 @@ Games API Routes
 Handles game catalog, PS5 filtering, and game recommendations with voting
 """
 
+import sys
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
-from functools import wraps
+from middleware.auth import require_login as require_auth
 import mysql.connector
 
 games_bp = Blueprint('games', __name__)
@@ -35,15 +36,6 @@ FALLBACK_RECOMMENDATIONS = [
     {'id': 3, 'game_name': 'Baldurs Gate 3', 'description': 'Award-winning RPG that everyone is talking about.', 'votes': 28, 'status': 'pending'},
     {'id': 4, 'game_name': 'Final Fantasy XVI', 'description': 'Latest entry in the legendary series.', 'votes': 22, 'status': 'pending'},
 ]
-
-def require_auth(f):
-    """Decorator to require user authentication"""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return jsonify({'success': False, 'message': 'Authentication required'}), 401
-        return f(*args, **kwargs)
-    return decorated_function
 
 
 @games_bp.route('/api/games', methods=['GET', 'OPTIONS'])
@@ -126,14 +118,14 @@ def get_games():
                 'fallback': True
             }), 200
         else:
-            print(f"Error fetching games: {str(e)}")
+            sys.stderr.write(f"[Games] DB error: {e}\n")
             return jsonify({
                 'success': False,
-                'message': f'Failed to fetch games: {str(e)}'
+                'message': 'Failed to fetch games'
             }), 500
             
     except Exception as e:
-        print(f"Error fetching games: {str(e)}")
+        sys.stderr.write(f"[Games] Error: {e}\n")
         # Return fallback data on any error
         ps5_filter = request.args.get('ps5', None)
         games = FALLBACK_GAMES
@@ -201,14 +193,14 @@ def get_recommendations():
                 'fallback': True
             }), 200
         else:
-            print(f"Error fetching recommendations: {str(e)}")
+            sys.stderr.write(f"[Games] Recommendations DB error: {e}\n")
             return jsonify({
                 'success': False,
-                'message': f'Failed to fetch recommendations: {str(e)}'
+                'message': 'Failed to fetch recommendations'
             }), 500
             
     except Exception as e:
-        print(f"Error fetching recommendations: {str(e)}")
+        sys.stderr.write(f"[Games] Recommendations error: {e}\n")
         # Return fallback data on any error
         return jsonify({
             'success': True,
@@ -300,10 +292,10 @@ def recommend_game():
             }), 201
         
     except Exception as e:
-        print(f"Error creating recommendation: {str(e)}")
+        sys.stderr.write(f"[Games] Recommendation submit error: {e}\n")
         return jsonify({
             'success': False,
-            'message': f'Failed to submit recommendation: {str(e)}'
+            'message': 'Failed to submit recommendation'
         }), 500
 
 
@@ -379,10 +371,10 @@ def vote_for_game():
         }), 200
         
     except Exception as e:
-        print(f"Error voting: {str(e)}")
+        sys.stderr.write(f"[Games] Vote error: {e}\n")
         return jsonify({
             'success': False,
-            'message': f'Failed to vote: {str(e)}'
+            'message': 'Failed to vote'
         }), 500
 
 
@@ -428,8 +420,8 @@ def get_games_stats():
         }), 200
         
     except Exception as e:
-        print(f"Error fetching stats: {str(e)}")
+        sys.stderr.write(f"[Games] Stats error: {e}\n")
         return jsonify({
             'success': False,
-            'message': f'Failed to fetch stats: {str(e)}'
+            'message': 'Failed to fetch stats'
         }), 500

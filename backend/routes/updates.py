@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from config.database import get_db_connection
+from middleware.auth import require_admin
 from datetime import datetime
 
 updates_bp = Blueprint('updates', __name__)
@@ -47,11 +48,11 @@ def get_latest_updates():
         })
         
     except Exception as e:
-        print(f"Error fetching updates: {str(e)}")
+        import sys; sys.stderr.write(f"[Error] fetching updates: {str(e)}")
         return jsonify({
             'success': False,
             'message': 'Failed to fetch updates',
-            'error': str(e)
+            'error': 'An error occurred'
         }), 500
 
 @updates_bp.route('/api/updates/categories', methods=['GET'])
@@ -80,11 +81,11 @@ def get_update_categories():
         })
         
     except Exception as e:
-        print(f"Error fetching categories: {str(e)}")
+        import sys; sys.stderr.write(f"[Error] fetching categories: {str(e)}")
         return jsonify({
             'success': False,
             'message': 'Failed to fetch categories',
-            'error': str(e)
+            'error': 'An error occurred'
         }), 500
 
 @updates_bp.route('/api/updates/<int:update_id>', methods=['GET'])
@@ -120,17 +121,20 @@ def get_update_by_id(update_id):
             }), 404
         
     except Exception as e:
-        print(f"Error fetching update: {str(e)}")
+        import sys; sys.stderr.write(f"[Error] fetching update: {str(e)}")
         return jsonify({
             'success': False,
             'message': 'Failed to fetch update',
-            'error': str(e)
+            'error': 'An error occurred'
         }), 500
 
-# Admin routes (with authentication check in production)
+# Admin routes — require admin authentication
 @updates_bp.route('/api/admin/updates', methods=['POST'])
 def create_update():
     """Create new update (admin only)"""
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     try:
         data = request.json
         
@@ -162,16 +166,19 @@ def create_update():
         }), 201
         
     except Exception as e:
-        print(f"Error creating update: {str(e)}")
+        import sys; sys.stderr.write(f"[Error] creating update: {str(e)}")
         return jsonify({
             'success': False,
             'message': 'Failed to create update',
-            'error': str(e)
+            'error': 'An error occurred'
         }), 500
 
 @updates_bp.route('/api/admin/updates/<int:update_id>', methods=['PUT'])
 def update_update(update_id):
     """Update existing update (admin only)"""
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     try:
         data = request.json
         
@@ -204,16 +211,19 @@ def update_update(update_id):
         })
         
     except Exception as e:
-        print(f"Error updating update: {str(e)}")
+        import sys; sys.stderr.write(f"[Error] updating update: {str(e)}")
         return jsonify({
             'success': False,
             'message': 'Failed to update',
-            'error': str(e)
+            'error': 'An error occurred'
         }), 500
 
 @updates_bp.route('/api/admin/updates/<int:update_id>', methods=['DELETE'])
 def delete_update(update_id):
     """Delete/deactivate update (admin only)"""
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -236,9 +246,9 @@ def delete_update(update_id):
         })
         
     except Exception as e:
-        print(f"Error deleting update: {str(e)}")
+        import sys; sys.stderr.write(f"[Error] deleting update: {str(e)}")
         return jsonify({
             'success': False,
             'message': 'Failed to delete update',
-            'error': str(e)
+            'error': 'An error occurred'
         }), 500

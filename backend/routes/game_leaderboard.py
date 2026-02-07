@@ -3,8 +3,11 @@ Game Leaderboard API Routes
 Handles shooter game scores, leaderboard, and winner management
 """
 
+import sys
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
+from middleware.auth import require_admin
+from middleware.rate_limiter import rate_limit
 from datetime import datetime, timedelta
 import re
 
@@ -92,7 +95,8 @@ def get_leaderboard():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        sys.stderr.write(f"[Leaderboard] Error: {e}\n")
+        return jsonify({'success': False, 'error': 'Failed to fetch leaderboard'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -100,8 +104,9 @@ def get_leaderboard():
             conn.close()
 
 @game_leaderboard_bp.route('/api/game/score', methods=['POST', 'OPTIONS'])
+@rate_limit(max_requests=10, window_seconds=60)
 def submit_score():
-    """Submit game score (public endpoint)"""
+    """Submit game score (public, rate-limited)"""
     
     if request.method == 'OPTIONS':
         return '', 200
@@ -215,7 +220,7 @@ def submit_score():
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -297,7 +302,7 @@ def get_player_stats(player_name):
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -311,12 +316,10 @@ def admin_manage_scores():
     if request.method == 'OPTIONS':
         return '', 200
     
-    # Check admin session
-    if not session.get('admin_logged_in'):
-        return jsonify({
-            'success': False,
-            'error': 'Admin authentication required'
-        }), 401
+    # Check admin auth (supports both session and JWT)
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     
     conn = None
     cursor = None
@@ -421,7 +424,7 @@ def admin_manage_scores():
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -470,13 +473,9 @@ def manage_winners():
         
         # POST: Announce new winner (admin only)
         elif request.method == 'POST':
-            # Check admin session
-            if not session.get('admin_logged_in'):
-                return jsonify({
-                    'success': False,
-                    'error': 'Admin authentication required'
-                }), 401
-            
+            auth_error = require_admin()
+            if auth_error:
+                return auth_error
             data = request.get_json()
             
             required_fields = ['leaderboard_id', 'player_name', 'winning_score', 'period_start_date', 'period_end_date']
@@ -530,7 +529,7 @@ def manage_winners():
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -544,12 +543,10 @@ def get_game_stats():
     if request.method == 'OPTIONS':
         return '', 200
     
-    # Check admin session
-    if not session.get('admin_logged_in'):
-        return jsonify({
-            'success': False,
-            'error': 'Admin authentication required'
-        }), 401
+    # Check admin auth (supports both session and JWT)
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     
     conn = None
     cursor = None
@@ -598,7 +595,7 @@ def get_game_stats():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()

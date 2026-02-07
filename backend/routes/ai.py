@@ -115,7 +115,7 @@ def chat():
         return jsonify(response), 200
         
     except Exception as e:
-        print(f"Error in AI chat: {str(e)}")
+        sys.stderr.write(f"[Route] Error in AI chat: {e}\n")
         print(traceback.format_exc())
         return jsonify({
             'error': 'An error occurred processing your request',
@@ -219,7 +219,7 @@ def handle_availability_request(response):
         return response
         
     except Exception as e:
-        print(f"Error checking availability: {str(e)}")
+        sys.stderr.write(f"[Route] Error checking availability: {e}\n")
         response['reply'] = "I had trouble checking availability. Please try again."
         return response
 
@@ -356,7 +356,7 @@ def check_availability_for_booking(response):
         return response
         
     except Exception as e:
-        print(f"Error checking availability for booking: {str(e)}")
+        sys.stderr.write(f"[Route] Error checking availability for booking: {e}\n")
         print(traceback.format_exc())
         response['reply'] = "❌ I had trouble checking availability. Please try again."
         return response
@@ -465,7 +465,7 @@ def handle_booking_creation(response):
         return response
         
     except Exception as e:
-        print(f"Error creating booking: {str(e)}")
+        sys.stderr.write(f"[Route] Error creating booking: {e}\n")
         print(traceback.format_exc())
         response['reply'] = (
             "❌ I encountered an error while creating your booking.\n\n"
@@ -657,4 +657,4 @@ def clear_session():
         return jsonify({'message': 'Session cleared'}), 200
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An error occurred'}), 500

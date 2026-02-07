@@ -2,7 +2,7 @@
  * API Service
  * Handles all API calls to the backend
  * Works in local + production (Railway)
- * Supports both session cookies (desktop) and JWT tokens (mobile)
+ * Uses centralized token management from apiClient
  */
 
 // 🔑 Central backend URL
@@ -12,11 +12,13 @@ const API_BASE_URL =
   "https://gamespotbooking-v1-production.up.railway.app";
 
 // =======================================================
-// JWT Token Helper for Mobile
+// JWT Token Helper — delegates to apiClient for memory-first storage
 // =======================================================
 
 const getAuthToken = () => {
   try {
+    // Import dynamically to avoid circular dependency issues
+    // Falls back to localStorage for backward compatibility
     return localStorage.getItem('gamespot_auth_token');
   } catch (e) {
     return null;

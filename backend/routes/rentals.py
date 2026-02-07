@@ -5,6 +5,7 @@ Handles VR and PS5 rental booking operations
 
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
+from middleware.auth import require_admin
 from datetime import datetime, timedelta
 import re
 
@@ -27,8 +28,11 @@ def handle_rentals():
     if request.method == 'OPTIONS':
         return '', 200
     
-    # GET: Retrieve rental bookings (with optional filters)
+    # GET: Retrieve rental bookings (Admin only)
     if request.method == 'GET':
+        auth_error = require_admin()
+        if auth_error:
+            return auth_error
         conn = None
         cursor = None
         
@@ -95,7 +99,7 @@ def handle_rentals():
             })
             
         except Exception as e:
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -318,7 +322,7 @@ def handle_rentals():
                     }), 201
                 except Exception as e2:
                     return jsonify({'success': False, 'error': f'Failed to create table: {str(e2)}'}), 500
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -327,10 +331,15 @@ def handle_rentals():
 
 @rentals_bp.route('/api/rentals/<int:rental_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
 def handle_rental_by_id(rental_id):
-    """Handle individual rental booking operations"""
+    """Handle individual rental booking operations (admin only)"""
     
     if request.method == 'OPTIONS':
         return '', 200
+    
+    # All individual rental operations require admin auth
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     
     # GET: Retrieve specific rental
     if request.method == 'GET':
@@ -357,22 +366,15 @@ def handle_rental_by_id(rental_id):
             })
             
         except Exception as e:
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
             if conn:
                 conn.close()
     
-    # PUT: Update rental booking (admin only)
+    # PUT: Update rental booking (admin only — auth checked above)
     if request.method == 'PUT':
-        # Check admin session
-        if not session.get('admin_logged_in'):
-            return jsonify({
-                'success': False,
-                'error': 'Admin authentication required'
-            }), 401
-        
         conn = None
         cursor = None
         
@@ -422,22 +424,15 @@ def handle_rental_by_id(rental_id):
         except Exception as e:
             if conn:
                 conn.rollback()
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
             if conn:
                 conn.close()
     
-    # DELETE: Cancel/delete rental booking (admin only)
+    # DELETE: Cancel/delete rental booking (admin only — auth checked above)
     if request.method == 'DELETE':
-        # Check admin session
-        if not session.get('admin_logged_in'):
-            return jsonify({
-                'success': False,
-                'error': 'Admin authentication required'
-            }), 401
-        
         conn = None
         cursor = None
         
@@ -464,7 +459,7 @@ def handle_rental_by_id(rental_id):
         except Exception as e:
             if conn:
                 conn.rollback()
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -478,12 +473,10 @@ def get_rental_stats():
     if request.method == 'OPTIONS':
         return '', 200
     
-    # Check admin session
-    if not session.get('admin_logged_in'):
-        return jsonify({
-            'success': False,
-            'error': 'Admin authentication required'
-        }), 401
+    # Require admin auth (supports both session and JWT)
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     
     conn = None
     cursor = None
@@ -506,7 +499,7 @@ def get_rental_stats():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()

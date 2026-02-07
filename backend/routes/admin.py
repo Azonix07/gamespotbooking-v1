@@ -77,7 +77,7 @@ def handle_admin():
             })
             
         except Exception as e:
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -168,7 +168,7 @@ def get_all_users():
         print(f"Error in get_all_users: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({'success': False, 'error': f'Database error: {str(e)}'}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -233,7 +233,7 @@ def get_all_memberships():
         print(f"Error in get_all_memberships: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({'success': False, 'error': f'Database error: {str(e)}'}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -319,7 +319,7 @@ def get_dashboard_stats():
         print(f"Error in get_dashboard_stats: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({'success': False, 'error': f'Database error: {str(e)}'}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -413,7 +413,7 @@ def update_theme():
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -498,7 +498,7 @@ def get_all_rentals():
                 'count': 0,
                 'message': 'Rental bookings table not initialized yet'
             })
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -542,7 +542,7 @@ def update_rental_status(rental_id):
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -630,7 +630,7 @@ def get_all_college_bookings():
                 'count': 0,
                 'message': 'College bookings table not initialized yet'
             })
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -678,7 +678,7 @@ def update_college_booking_status(booking_id):
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -785,7 +785,7 @@ def get_all_leaderboard_entries():
                 },
                 'message': 'Game leaderboard table not initialized yet'
             })
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -831,7 +831,7 @@ def verify_leaderboard_entry(entry_id):
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -891,7 +891,7 @@ def set_leaderboard_winner(entry_id):
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -992,7 +992,7 @@ def get_full_dashboard_stats():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:

@@ -5,6 +5,7 @@ Handles college event and gaming setup requests
 
 from flask import Blueprint, request, jsonify, session
 from config.database import get_db_connection
+from middleware.auth import require_admin
 from datetime import datetime
 import re
 import math
@@ -127,7 +128,7 @@ def handle_college_bookings():
             })
             
         except Exception as e:
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -346,7 +347,7 @@ def handle_college_bookings():
         except Exception as e:
             if conn:
                 conn.rollback()
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -392,7 +393,7 @@ def handle_college_booking_by_id(booking_id):
             })
             
         except Exception as e:
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -401,12 +402,9 @@ def handle_college_booking_by_id(booking_id):
     
     # PUT: Update college booking (admin only)
     if request.method == 'PUT':
-        # Check admin session
-        if not session.get('admin_logged_in'):
-            return jsonify({
-                'success': False,
-                'error': 'Admin authentication required'
-            }), 401
+        auth_error = require_admin()
+        if auth_error:
+            return auth_error
         
         conn = None
         cursor = None
@@ -459,7 +457,7 @@ def handle_college_booking_by_id(booking_id):
         except Exception as e:
             if conn:
                 conn.rollback()
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -468,12 +466,9 @@ def handle_college_booking_by_id(booking_id):
     
     # DELETE: Cancel college booking (admin only)
     if request.method == 'DELETE':
-        # Check admin session
-        if not session.get('admin_logged_in'):
-            return jsonify({
-                'success': False,
-                'error': 'Admin authentication required'
-            }), 401
+        auth_error = require_admin()
+        if auth_error:
+            return auth_error
         
         conn = None
         cursor = None
@@ -501,7 +496,7 @@ def handle_college_booking_by_id(booking_id):
         except Exception as e:
             if conn:
                 conn.rollback()
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': 'An error occurred'}), 500
         finally:
             if cursor:
                 cursor.close()
@@ -515,12 +510,10 @@ def get_college_stats():
     if request.method == 'OPTIONS':
         return '', 200
     
-    # Check admin session
-    if not session.get('admin_logged_in'):
-        return jsonify({
-            'success': False,
-            'error': 'Admin authentication required'
-        }), 401
+    # Check admin auth (supports both session and JWT)
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     
     conn = None
     cursor = None
@@ -543,7 +536,7 @@ def get_college_stats():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -557,12 +550,10 @@ def add_college_media(booking_id):
     if request.method == 'OPTIONS':
         return '', 200
     
-    # Check admin session
-    if not session.get('admin_logged_in'):
-        return jsonify({
-            'success': False,
-            'error': 'Admin authentication required'
-        }), 401
+    # Check admin auth (supports both session and JWT)
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     
     conn = None
     cursor = None
@@ -619,7 +610,7 @@ def add_college_media(booking_id):
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -777,7 +768,7 @@ def handle_college_reviews():
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()
@@ -816,7 +807,7 @@ def delete_college_review(review_id):
     except Exception as e:
         if conn:
             conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
             cursor.close()

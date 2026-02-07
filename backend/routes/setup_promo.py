@@ -137,7 +137,7 @@ def setup_instagram_promotion():
             conn.rollback()
         return jsonify({
             'success': False,
-            'error': str(e),
+            'error': 'An error occurred',
             'message': 'Failed to setup Instagram promotion system'
         }), 500
         
@@ -190,7 +190,7 @@ def check_instagram_tables():
     except Exception as e:
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'An error occurred'
         }), 500
         
     finally:

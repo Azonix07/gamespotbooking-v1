@@ -175,7 +175,7 @@ def subscribe():
         }), 201
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -255,7 +255,7 @@ def get_status():
             })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -318,7 +318,7 @@ def cancel_membership():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:
@@ -374,7 +374,7 @@ def get_history():
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:
         if cursor:

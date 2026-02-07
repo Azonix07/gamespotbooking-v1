@@ -1,13 +1,17 @@
+import sys
 from flask import Blueprint, request, jsonify, session
 from datetime import datetime
 import mysql.connector
 from config.database import get_db_connection
+from middleware.auth import require_admin
+from middleware.rate_limiter import general_api_rate_limit
 
 feedback_bp = Blueprint('feedback', __name__)
 
 @feedback_bp.route('/api/feedback/submit', methods=['POST'])
+@general_api_rate_limit
 def submit_feedback():
-    """Submit user feedback/suggestion"""
+    """Submit user feedback/suggestion (public, rate-limited)"""
     try:
         data = request.json
         
@@ -49,21 +53,24 @@ def submit_feedback():
         })
         
     except mysql.connector.Error as err:
-        print(f"Database error: {err}")
+        sys.stderr.write(f"[Feedback] Database error: {err}\n")
         return jsonify({
             'success': False,
             'error': 'Failed to submit feedback'
         }), 500
     except Exception as e:
-        print(f"Error submitting feedback: {e}")
+        sys.stderr.write(f"[Feedback] Error: {e}\n")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to submit feedback'
         }), 500
 
 @feedback_bp.route('/api/feedback/all', methods=['GET'])
 def get_all_feedback():
     """Get all feedback (admin only)"""
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     try:
         # Get query parameters for filtering
         status_filter = request.args.get('status', 'all')  # all, pending, reviewed, resolved
@@ -105,15 +112,18 @@ def get_all_feedback():
         })
         
     except Exception as e:
-        print(f"Error fetching feedback: {e}")
+        sys.stderr.write(f"[Feedback] Error fetching: {e}\n")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to fetch feedback'
         }), 500
 
 @feedback_bp.route('/api/feedback/<int:feedback_id>/status', methods=['PUT'])
 def update_feedback_status(feedback_id):
     """Update feedback status (admin only)"""
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     try:
         data = request.json
         new_status = data.get('status')
@@ -146,15 +156,18 @@ def update_feedback_status(feedback_id):
         })
         
     except Exception as e:
-        print(f"Error updating feedback status: {e}")
+        sys.stderr.write(f"[Feedback] Error updating status: {e}\n")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to update feedback status'
         }), 500
 
 @feedback_bp.route('/api/feedback/<int:feedback_id>', methods=['DELETE'])
 def delete_feedback(feedback_id):
     """Delete feedback (admin only)"""
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -171,15 +184,18 @@ def delete_feedback(feedback_id):
         })
         
     except Exception as e:
-        print(f"Error deleting feedback: {e}")
+        sys.stderr.write(f"[Feedback] Error deleting: {e}\n")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to delete feedback'
         }), 500
 
 @feedback_bp.route('/api/feedback/stats', methods=['GET'])
 def get_feedback_stats():
     """Get feedback statistics (admin only)"""
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -228,8 +244,8 @@ def get_feedback_stats():
         })
         
     except Exception as e:
-        print(f"Error fetching feedback stats: {e}")
+        sys.stderr.write(f"[Feedback] Error fetching stats: {e}\n")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to fetch feedback stats'
         }), 500
