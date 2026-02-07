@@ -118,6 +118,9 @@ def handle_bookings():
         try:
             data = request.get_json()
             
+            if not data:
+                return jsonify({'success': False, 'error': 'Invalid request data'}), 400
+            
             # Validate input
             errors = validate_booking_data(data)
             if errors:
@@ -313,7 +316,7 @@ def handle_bookings():
                 conn.rollback()
             sys.stderr.write(f"[Booking POST] Unexpected error: {e}\n")
             sys.stderr.write(f"[Booking POST] Traceback:\n{traceback.format_exc()}\n")
-            return jsonify({'success': False, 'error': 'An error occurred while creating the booking'}), 500
+            return jsonify({'success': False, 'error': 'An error occurred while creating the booking. Please try again.'}), 400
         finally:
             if cursor:
                 cursor.close()

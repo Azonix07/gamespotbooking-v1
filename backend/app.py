@@ -435,7 +435,9 @@ def rate_limited(e):
 @app.errorhandler(500)
 def internal_error(e):
     # Log the real error for debugging, but never expose it to client
-    sys.stderr.write(f"500 error: {e}\n")
+    sys.stderr.write(f"[GLOBAL 500] Error: {e}\n")
+    import traceback
+    sys.stderr.write(f"[GLOBAL 500] Traceback:\n{traceback.format_exc()}\n")
     return jsonify({'success': False, 'error': 'An internal error occurred'}), 500
 
 if __name__ == '__main__':
