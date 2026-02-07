@@ -12,7 +12,6 @@ const HomePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showAIChat, setShowAIChat] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, isAdmin, logout } = useAuth();
 
@@ -52,8 +51,7 @@ const HomePage = () => {
         loop 
         muted 
         playsInline
-        preload="metadata"
-        onLoadedData={() => setVideoLoaded(true)}
+        preload="auto"
       >
         <source src="/assets/videos/background.mp4" type="video/mp4" />
         Your browser does not support the video tag.

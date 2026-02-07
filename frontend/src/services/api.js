@@ -51,9 +51,8 @@ const fetchWithCredentials = async (url, options = {}) => {
   // Check content type before parsing
   const contentType = response.headers.get("content-type");
   if (!contentType || !contentType.includes("application/json")) {
-    const text = await response.text();
-    console.error("Non-JSON response received:", text.substring(0, 200));
-    throw new Error(`Server returned non-JSON response (${response.status}). Expected JSON but got ${contentType || 'unknown type'}`);
+    await response.text();
+    throw new Error(`Server returned non-JSON response (${response.status})`);
   }
 
   const data = await response.json();
@@ -320,7 +319,7 @@ export const trackPageVisit = async (page, referrer = document.referrer) => {
       body: JSON.stringify({ page, referrer }),
     });
   } catch (error) {
-    console.error("Analytics tracking error:", error);
+    // Silently ignore analytics errors — table may not exist yet
   }
 };
 

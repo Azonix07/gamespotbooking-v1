@@ -38,22 +38,19 @@ export const AuthProvider = ({ children }) => {
     
     // Skip if check is already in progress
     if (checkInProgressRef.current) {
-      console.log('[AuthContext] Session check already in progress, skipping');
       return { authenticated: isAuthenticated, user, isAdmin };
     }
     
     // Skip if we checked recently (within cache duration) and not forcing
     if (!force && (now - lastCheckTimeRef.current) < CACHE_DURATION && lastCheckTimeRef.current > 0) {
-      console.log('[AuthContext] Using cached session data');
       return { authenticated: isAuthenticated, user, isAdmin };
     }
     
     // MOBILE FIX: If we just logged in, trust the auth state we already set
     const justLoggedIn = (now - recentLoginTimestamp) < RECENT_LOGIN_GRACE_PERIOD;
     if (justLoggedIn && isAuthenticated) {
-      console.log('[AuthContext] Recently logged in, trusting current auth state');
       setLoading(false);
-      lastCheckTimeRef.current = now; // Update cache time so we don't keep checking
+      lastCheckTimeRef.current = now;
       return { authenticated: true, user, isAdmin };
     }
     
@@ -63,15 +60,8 @@ export const AuthProvider = ({ children }) => {
       if (lastCheckTimeRef.current === 0) {
         setLoading(true);
       }
-      console.log('[AuthContext] Checking session...', { force });
       
       const data = await apiFetch('/api/auth/check');
-      
-      console.log('[AuthContext] Session check response:', {
-        authenticated: data.authenticated,
-        userType: data.user_type,
-        hasUser: !!data.user
-      });
       
       // Only update state if component is still mounted
       if (!mountedRef.current) return data;
@@ -93,7 +83,6 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('gamespot_logged_in', 'true');
           localStorage.setItem('gamespot_user_type', data.user_type);
         } catch (e) {}
-        console.log('[AuthContext] Session authenticated successfully');
       } else {
         // Session not authenticated - clear localStorage and state
         try {
@@ -103,16 +92,13 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setIsAdmin(false);
         setIsAuthenticated(false);
-        console.log('[AuthContext] No active session');
       }
       
       setError(null);
       return data;
       
     } catch (err) {
-      console.error('[AuthContext] Session check error:', err);
       if (mountedRef.current) {
-        // On error, just mark as not authenticated (don't keep retrying)
         setError(err.message);
         setUser(null);
         setIsAdmin(false);
@@ -133,14 +119,10 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      console.log('[AuthContext] Login attempt for:', identifier);
-      
       const data = await apiFetch('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ username: identifier, password })
       });
-      
-      console.log('[AuthContext] Login response:', { success: data.success, userType: data.user_type });
       
       if (data.success) {
         // MOBILE FIX: Mark this as a recent login to prevent session check from clearing state
@@ -163,26 +145,19 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('gamespot_user_type', data.user_type);
           if (data.token) {
             localStorage.setItem('gamespot_auth_token', data.token);
-            console.log('[AuthContext] JWT token stored for mobile API calls');
           }
-        } catch (e) {
-          console.log('[AuthContext] localStorage not available');
-        }
+        } catch (e) {}
         
         // Update cache time to prevent immediate re-checking
         lastCheckTimeRef.current = Date.now();
         
-        console.log('[AuthContext] Auth state set immediately from login response');
-        
         return { success: true, userType: data.user_type };
       } else {
-        console.error('[AuthContext] Login failed:', data.error);
         setError(data.error || 'Login failed');
         return { success: false, error: data.error };
       }
       
     } catch (err) {
-      console.error('[AuthContext] Login error:', err);
       setError(err.message || 'Login failed');
       return { success: false, error: err.message };
     } finally {
@@ -198,7 +173,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await apiFetch('/api/auth/logout', { method: 'POST' });
     } catch (err) {
-      console.error('Logout error:', err);
+      // Logout error, continue cleanup
     } finally {
       // Clear state immediately
       setUser(null);
@@ -211,9 +186,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('gamespot_logged_in');
         localStorage.removeItem('gamespot_user_type');
         localStorage.removeItem('gamespot_auth_token');
-      } catch (e) {
-        console.log('[AuthContext] localStorage not available');
-      }
+      } catch (e) {}
     }
   }, []);
 
@@ -241,9 +214,7 @@ export const AuthProvider = ({ children }) => {
         try {
           localStorage.setItem('gamespot_logged_in', 'true');
           localStorage.setItem('gamespot_user_type', 'customer');
-        } catch (e) {
-          console.log('[AuthContext] localStorage not available');
-        }
+        } catch (e) {}
         
         // Update cache time to prevent immediate re-checking
         lastCheckTimeRef.current = Date.now();
@@ -274,8 +245,6 @@ export const AuthProvider = ({ children }) => {
 
   // Set auth state directly (for OAuth/OTP login)
   const setAuthState = useCallback((userData, userType = 'customer') => {
-    console.log('[AuthContext] Setting auth state directly:', { userData, userType });
-    
     // Mark this as a recent login
     recentLoginTimestamp = Date.now();
     
@@ -293,14 +262,10 @@ export const AuthProvider = ({ children }) => {
     try {
       localStorage.setItem('gamespot_logged_in', 'true');
       localStorage.setItem('gamespot_user_type', userType);
-    } catch (e) {
-      console.log('[AuthContext] localStorage not available');
-    }
+    } catch (e) {}
     
     // Update cache time
     lastCheckTimeRef.current = Date.now();
-    
-    console.log('[AuthContext] Auth state set successfully');
   }, []);
 
   const value = {
