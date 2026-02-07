@@ -116,14 +116,16 @@ def login():
         if not password:
             return jsonify({'success': False, 'error': 'Password is required'}), 400
         
-        # Check if it's an admin login (username='admin' OR email='admin@gamespot.in')
-        if username == 'admin' or email == 'admin' or email == 'admin@gamespot.in':
+        # Check if it's an admin login (only email='admin@gamespot.in')
+        login_identifier = email if email else username.lower()
+        
+        if login_identifier == 'admin@gamespot.in':
             # Admin login flow
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
             
-            query = 'SELECT * FROM admin_users WHERE username = %s OR email = %s'
-            cursor.execute(query, ('admin', 'admin@gamespot.in'))
+            query = 'SELECT * FROM admin_users WHERE email = %s'
+            cursor.execute(query, ('admin@gamespot.in',))
             admin = cursor.fetchone()
             
             if not admin or not verify_php_password(password, admin['password_hash']):

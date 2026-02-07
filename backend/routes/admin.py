@@ -43,18 +43,22 @@ def handle_admin():
         try:
             data = request.get_json()
             
-            username = data.get('username', '')
+            username = data.get('username', '').strip().lower()
             password = data.get('password', '')
             
             if not username or not password:
-                return jsonify({'success': False, 'error': 'Username and password are required'}), 400
+                return jsonify({'success': False, 'error': 'Email and password are required'}), 400
+            
+            # Only accept admin@gamespot.in as the admin email
+            if username != 'admin@gamespot.in':
+                return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
             
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
             
-            # Get admin user (check both username and email)
-            query = 'SELECT * FROM admin_users WHERE username = %s OR email = %s'
-            cursor.execute(query, (username, username))
+            # Get admin user by email only
+            query = 'SELECT * FROM admin_users WHERE email = %s'
+            cursor.execute(query, ('admin@gamespot.in',))
             admin = cursor.fetchone()
             
             if not admin or not verify_php_password(password, admin['password_hash']):
