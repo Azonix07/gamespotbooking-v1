@@ -398,7 +398,7 @@ create_missing_tables()
 # Health check endpoint
 @app.route('/health', methods=['GET'])
 def health_check():
-    return {'status': 'healthy', 'message': 'GameSpot Python Backend is running', 'version': 'v2.3-txn-fix'}, 200
+    return {'status': 'healthy', 'message': 'GameSpot Python Backend is running'}, 200
 
 # Root endpoint - minimal info (don't expose API structure)
 @app.route('/', methods=['GET'])
