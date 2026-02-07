@@ -20,10 +20,10 @@ def allowed_file(filename):
 
 @user_bp.route('/api/user/profile', methods=['GET'])
 @require_auth
-def get_profile():
+def get_profile(user):
     """Get user profile, rewards data, and booking history"""
     try:
-        user_id = session.get('user_id')
+        user_id = user.get('id') or session.get('user_id')
         
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -116,10 +116,10 @@ def get_profile():
 
 @user_bp.route('/api/user/profile-picture', methods=['POST'])
 @require_auth
-def upload_profile_picture():
+def upload_profile_picture(user):
     """Upload user profile picture"""
     try:
-        user_id = session.get('user_id')
+        user_id = user.get('id') or session.get('user_id')
         
         if 'profile_picture' not in request.files:
             return jsonify({'success': False, 'error': 'No file provided'}), 400
@@ -171,10 +171,10 @@ def upload_profile_picture():
 
 @user_bp.route('/api/rewards/instagram-share', methods=['POST'])
 @require_auth
-def track_instagram_share():
+def track_instagram_share(user):
     """Track Instagram share"""
     try:
-        user_id = session.get('user_id')
+        user_id = user.get('id') or session.get('user_id')
         
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -241,10 +241,10 @@ def track_instagram_share():
 
 @user_bp.route('/api/rewards/redeem', methods=['POST'])
 @require_auth
-def redeem_reward():
+def redeem_reward(user):
     """Redeem rewards using points"""
     try:
-        user_id = session.get('user_id')
+        user_id = user.get('id') or session.get('user_id')
         data = request.get_json()
         reward_type = data.get('reward_type')
         

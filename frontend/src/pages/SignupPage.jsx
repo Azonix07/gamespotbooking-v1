@@ -122,11 +122,15 @@ const SignupPage = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/auth/google-login`, {
+      const API_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+      
+      const token = localStorage.getItem('gamespot_auth_token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      
+      const response = await fetch(`${API_URL}/api/auth/google-login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({ 
           credential: credentialResponse.credential 
         }),
@@ -137,6 +141,15 @@ const SignupPage = () => {
       
       if (data.success) {
         setSuccess('Account created successfully! Redirecting...');
+        
+        // Store JWT token for mobile browsers
+        if (data.token) {
+          try {
+            localStorage.setItem('gamespot_auth_token', data.token);
+            localStorage.setItem('gamespot_logged_in', 'true');
+            localStorage.setItem('gamespot_user_type', data.userType || 'customer');
+          } catch (e) {}
+        }
         
         // Set auth state directly from Google response
         setAuthState(data.user, data.userType || 'customer');

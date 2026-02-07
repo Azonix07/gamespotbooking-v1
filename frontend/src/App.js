@@ -4,13 +4,13 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './context/AuthContext';
 import { getTheme } from './services/api';
 import usePageTracking from './hooks/usePageTracking';
-
-// Google OAuth Client ID
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
-
-// Eager load critical pages for fast access
 import HomePage from './pages/HomePage.jsx';
 import LoginPage from './pages/LoginPage.jsx'; // Critical auth page - no lazy loading delay
+
+// Google OAuth Client ID
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com';
+
+// Lazy load all other pages - load only when visited
 
 // Lazy load all other pages - load only when visited
 const BookingPage = lazy(() => import('./pages/BookingPage.jsx'));

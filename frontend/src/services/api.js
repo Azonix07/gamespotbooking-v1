@@ -406,3 +406,47 @@ export const getGameLeaderboard = async (period = "all", limit = 100) => {
 export const getGameStats = async () => {
   return fetchWithCredentials(`${API_BASE_URL}/api/game/stats`);
 };
+
+// =======================================================
+// User Profile & Rewards API
+// =======================================================
+
+export const getUserProfile = async () => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/user/profile`);
+};
+
+export const uploadProfilePicture = async (formData) => {
+  const token = getAuthToken();
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  
+  const response = await fetch(`${API_BASE_URL}/api/user/profile-picture`, {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: formData
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Upload failed');
+  return data;
+};
+
+export const trackInstagramShare = async () => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/rewards/instagram-share`, {
+    method: "POST",
+  });
+};
+
+export const redeemReward = async (rewardType) => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/rewards/redeem`, {
+    method: "POST",
+    body: JSON.stringify({ reward_type: rewardType }),
+  });
+};
+
+export const googleLogin = async (credential) => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/auth/google-login`, {
+    method: "POST",
+    body: JSON.stringify({ credential }),
+  });
+};

@@ -30,6 +30,19 @@ const ProfilePage = () => {
   const [success, setSuccess] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  const API_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+
+  // Helper to build auth headers (session + JWT for mobile)
+  const getAuthHeaders = (contentType = 'application/json') => {
+    const headers = {};
+    if (contentType) headers['Content-Type'] = contentType;
+    try {
+      const token = localStorage.getItem('gamespot_auth_token');
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+    } catch (e) {}
+    return headers;
+  };
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -43,11 +56,9 @@ const ProfilePage = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/user/profile`, {
+        const response = await fetch(`${API_URL}/api/user/profile`, {
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          }
+          headers: getAuthHeaders()
         });
         
         if (!response.ok) {
@@ -61,11 +72,11 @@ const ProfilePage = () => {
           setRewards(data.rewards);
           setBookings(data.bookings || []);
         } else {
-          setError(data.error || 'Failed to load profile. Please run the database migration.');
+          setError(data.error || 'Failed to load profile.');
         }
       } catch (err) {
         console.error('Profile fetch error:', err);
-        setError('Unable to load profile. Please ensure the database migration has been run.');
+        setError('Unable to load profile. Please try logging in again.');
       } finally {
         setLoading(false);
       }
@@ -97,9 +108,17 @@ const ProfilePage = () => {
       const formData = new FormData();
       formData.append('profile_picture', file);
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/user/profile-picture`, {
+      // For file uploads, don't set Content-Type (browser sets multipart boundary)
+      const uploadHeaders = {};
+      try {
+        const token = localStorage.getItem('gamespot_auth_token');
+        if (token) uploadHeaders['Authorization'] = `Bearer ${token}`;
+      } catch (e) {}
+
+      const response = await fetch(`${API_URL}/api/user/profile-picture`, {
         method: 'POST',
         credentials: 'include',
+        headers: uploadHeaders,
         body: formData
       });
 
@@ -123,12 +142,10 @@ const ProfilePage = () => {
   const handleInstagramShare = async () => {
     try {
       setError(null);
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/rewards/instagram-share`, {
+      const response = await fetch(`${API_URL}/api/rewards/instagram-share`, {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       const data = await response.json();
@@ -150,12 +167,10 @@ const ProfilePage = () => {
   const handleRedeemReward = async (rewardType) => {
     try {
       setError(null);
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/api/rewards/redeem`, {
+      const response = await fetch(`${API_URL}/api/rewards/redeem`, {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ reward_type: rewardType })
       });
 
@@ -234,7 +249,7 @@ const ProfilePage = () => {
                   <div className="profile-picture-large">
                     {profileData?.profile_picture ? (
                       <img 
-                        src={`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-backend-production.up.railway.app'}/${profileData.profile_picture}`} 
+                        src={`${API_URL}/${profileData.profile_picture}`} 
                         alt="Profile" 
                       />
                     ) : (

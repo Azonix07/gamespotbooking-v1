@@ -111,6 +111,11 @@ def require_auth(f):
                         'name': payload.get('name'),
                         'user_type': 'customer'
                     }
+                    # Restore session from JWT so session.get() works in route handlers
+                    session['user_logged_in'] = True
+                    session['user_id'] = payload.get('user_id')
+                    session['user_email'] = payload.get('email')
+                    session['user_name'] = payload.get('name')
         
         if not user:
             return jsonify({

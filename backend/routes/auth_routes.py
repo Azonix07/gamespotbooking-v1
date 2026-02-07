@@ -233,6 +233,39 @@ def check_session():
                 'user': user_data
             })
     
+    # MOBILE FIX: Check JWT token if no session (mobile browsers block cookies)
+    from middleware.auth import verify_token
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split(' ')[1]
+        payload = verify_token(token)
+        if payload:
+            if payload.get('user_type') == 'admin':
+                return jsonify({
+                    'success': True,
+                    'authenticated': True,
+                    'user_type': 'admin',
+                    'user': {
+                        'username': payload.get('username'),
+                        'id': payload.get('admin_id')
+                    }
+                })
+            elif payload.get('user_type') == 'customer':
+                user_data = get_user_by_id(payload.get('user_id'))
+                if user_data:
+                    # Also restore session for subsequent requests
+                    session['user_logged_in'] = True
+                    session['user_id'] = payload.get('user_id')
+                    session['user_email'] = payload.get('email')
+                    session['user_name'] = payload.get('name')
+                    session.permanent = True
+                    return jsonify({
+                        'success': True,
+                        'authenticated': True,
+                        'user_type': 'customer',
+                        'user': user_data
+                    })
+    
     # Not logged in
     return jsonify({
         'success': True,

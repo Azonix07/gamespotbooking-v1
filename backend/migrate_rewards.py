@@ -26,19 +26,19 @@ def run_rewards_migration():
             FROM information_schema.COLUMNS 
             WHERE TABLE_SCHEMA = DATABASE()
             AND TABLE_NAME = 'users' 
-            AND COLUMN_NAME IN ('profile_picture', 'gamespot_points', 'instagram_shares', 'free_playtime_minutes')
+            AND COLUMN_NAME IN ('profile_picture', 'gamespot_points', 'instagram_shares', 'free_playtime_minutes', 'oauth_provider', 'oauth_provider_id')
         """)
         
         result = cursor.fetchone()
         cols_exist = result[0] if result else 0
         
-        if cols_exist >= 4:
+        if cols_exist >= 6:
             print("✅ Rewards system already configured")
             cursor.close()
             conn.close()
             return True
         
-        print(f"⚙️  Found {cols_exist}/4 columns - Running migration...")
+        print(f"⚙️  Found {cols_exist}/6 columns - Running migration...")
         
         # Migration SQLs
         migrations = [
@@ -46,6 +46,11 @@ def run_rewards_migration():
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS gamespot_points INT DEFAULT 0",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS instagram_shares INT DEFAULT 0",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS free_playtime_minutes INT DEFAULT 0",
+            # OAuth columns (needed for Google Sign-In)
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider VARCHAR(50) DEFAULT NULL",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider_id VARCHAR(255) DEFAULT NULL",
+            # Bookings: points tracking column
+            "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS points_awarded BOOLEAN DEFAULT FALSE",
             """
             CREATE TABLE IF NOT EXISTS user_rewards (
                 id INT PRIMARY KEY AUTO_INCREMENT,
