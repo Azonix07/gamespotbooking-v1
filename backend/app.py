@@ -238,6 +238,19 @@ def create_missing_tables():
         conn = get_db_connection()
         cursor = conn.cursor()
         
+        # Drop and recreate tables that were created with wrong column names
+        # These tables are empty so no data loss
+        fix_tables = [
+            "DROP TABLE IF EXISTS page_visits",
+            "DROP TABLE IF EXISTS game_leaderboard",
+        ]
+        for sql in fix_tables:
+            try:
+                cursor.execute(sql)
+            except Exception:
+                pass
+        conn.commit()
+        
         tables_sql = [
             """CREATE TABLE IF NOT EXISTS page_visits (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -250,7 +263,7 @@ def create_missing_tables():
                 device_type VARCHAR(50) DEFAULT 'desktop',
                 browser VARCHAR(100) NULL,
                 country VARCHAR(100) NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                visit_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )""",
             """CREATE TABLE IF NOT EXISTS rental_bookings (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -294,10 +307,13 @@ def create_missing_tables():
                 game_type VARCHAR(50) DEFAULT 'discount_game',
                 enemies_shot INT DEFAULT 0,
                 boss_enemies_shot INT DEFAULT 0,
-                accuracy DECIMAL(5,2) DEFAULT 0,
+                accuracy_percentage DECIMAL(5,2) DEFAULT 0,
                 duration_seconds INT DEFAULT 60,
                 is_winner BOOLEAN DEFAULT FALSE,
+                is_verified BOOLEAN DEFAULT TRUE,
+                is_flagged BOOLEAN DEFAULT FALSE,
                 prize_claimed BOOLEAN DEFAULT FALSE,
+                played_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )""",
             """CREATE TABLE IF NOT EXISTS game_winners (
