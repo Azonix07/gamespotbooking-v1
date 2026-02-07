@@ -562,64 +562,152 @@ const BookingPage = () => {
       <AnimatePresence>
         {showSuccessModal && (
           <motion.div 
-            className="modal-overlay" 
+            className="booking-success-overlay" 
             onClick={handleSuccessClose}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div 
-              className="modal-content success-modal" 
+              className="booking-success-modal" 
               onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.8, opacity: 0, y: 50 }}
+              initial={{ scale: 0.85, opacity: 0, y: 40 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: 50 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              exit={{ scale: 0.85, opacity: 0, y: 40 }}
+              transition={{ type: "spring", damping: 22, stiffness: 280 }}
             >
-              <div className="success-animation">
-                <div className="success-checkmark">
-                  <FiCheck className="checkmark-icon" />
-                </div>
-                <div className="success-ripple"></div>
-                <div className="success-ripple delay-1"></div>
-                <div className="success-ripple delay-2"></div>
+              {/* Decorative top gradient bar */}
+              <div className="booking-success-topbar"></div>
+              
+              {/* Animated checkmark */}
+              <div className="booking-success-icon-wrap">
+                <motion.div 
+                  className="booking-success-icon"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", delay: 0.2, damping: 12, stiffness: 200 }}
+                >
+                  <FiCheck className="booking-success-check" />
+                </motion.div>
+                <motion.div 
+                  className="booking-success-ring ring-1"
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1.6, opacity: 0 }}
+                  transition={{ duration: 1.2, delay: 0.4, ease: "easeOut" }}
+                />
+                <motion.div 
+                  className="booking-success-ring ring-2"
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1.8, opacity: 0 }}
+                  transition={{ duration: 1.4, delay: 0.6, ease: "easeOut" }}
+                />
               </div>
               
-              <h2 className="success-title">Booking Confirmed! 🎉</h2>
-              <p className="success-subtitle">Get ready for an epic gaming session!</p>
+              <motion.h2 
+                className="booking-success-heading"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                Booking Confirmed!
+              </motion.h2>
+              <motion.p 
+                className="booking-success-sub"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                Get ready for an epic gaming session 🎮
+              </motion.p>
               
-              <div className="success-details">
-                <div className="detail-card">
-                  <div className="detail-row">
-                    <span className="detail-label">Booking ID</span>
-                    <span className="detail-value highlight">#{bookingId}</span>
-                  </div>
-                  <div className="detail-divider"></div>
-                  <div className="detail-row">
-                    <span className="detail-label">📅 Date</span>
-                    <span className="detail-value">{selectedDate}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">🕐 Time</span>
-                    <span className="detail-value">{formatTime12Hour(selectedTime)}</span>
-                  </div>
-                  <div className="detail-divider"></div>
-                  <div className="detail-row total">
-                    <span className="detail-label">Total Amount</span>
-                    <span className="detail-value price">{formatPrice(price)}</span>
-                  </div>
-                  {bonusMinutes > 0 && (
-                    <div className="detail-row bonus-minutes">
-                      <span className="detail-label">🎁 Bonus Time</span>
-                      <span className="detail-value bonus">+{bonusMinutes} minutes FREE!</span>
+              <motion.div 
+                className="booking-success-card"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <div className="booking-success-id-row">
+                  <span className="booking-success-id-label">Booking ID</span>
+                  <span className="booking-success-id-value">#{bookingId}</span>
+                </div>
+                
+                <div className="booking-success-divider"></div>
+                
+                <div className="booking-success-info-grid">
+                  <div className="booking-success-info-item">
+                    <FiCalendar className="booking-success-info-icon" />
+                    <div>
+                      <span className="booking-success-info-label">Date</span>
+                      <span className="booking-success-info-value">{selectedDate ? formatDate(selectedDate) : selectedDate}</span>
                     </div>
-                  )}
+                  </div>
+                  <div className="booking-success-info-item">
+                    <FiClock className="booking-success-info-icon" />
+                    <div>
+                      <span className="booking-success-info-label">Time</span>
+                      <span className="booking-success-info-value">{formatTime12Hour(selectedTime)}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+
+                {/* Devices summary */}
+                {(ps5Bookings.length > 0 || drivingSim) && (
+                  <>
+                    <div className="booking-success-divider"></div>
+                    <div className="booking-success-devices">
+                      {ps5Bookings.map((ps5, idx) => (
+                        <div key={idx} className="booking-success-device">
+                          <FiMonitor className="booking-success-device-icon" />
+                          <span>PS5 Unit {ps5.device_number}</span>
+                          <span className="booking-success-device-detail">{ps5.player_count} player{ps5.player_count > 1 ? 's' : ''} · {formatDuration(ps5.duration || 60)}</span>
+                        </div>
+                      ))}
+                      {drivingSim && (
+                        <div className="booking-success-device">
+                          <FiCpu className="booking-success-device-icon" />
+                          <span>Driving Simulator</span>
+                          <span className="booking-success-device-detail">{formatDuration(drivingSim.duration || 60)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+                
+                <div className="booking-success-divider"></div>
+                
+                <div className="booking-success-total-row">
+                  <span className="booking-success-total-label">Total Amount</span>
+                  <span className="booking-success-total-value">{formatPrice(price)}</span>
+                </div>
+
+                {bonusMinutes > 0 && (
+                  <div className="booking-success-bonus">
+                    <span className="booking-success-bonus-icon">🎁</span>
+                    <span>+{bonusMinutes} minutes FREE bonus time!</span>
+                  </div>
+                )}
+              </motion.div>
               
-              <button className="btn-success-action" onClick={handleSuccessClose}>
-                <FiArrowLeft /> Return Home
-              </button>
+              <motion.p 
+                className="booking-success-note"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                Pay at the counter when you arrive
+              </motion.p>
+              
+              <motion.button 
+                className="booking-success-btn" 
+                onClick={handleSuccessClose}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <FiArrowLeft /> Back to Home
+              </motion.button>
             </motion.div>
           </motion.div>
         )}
