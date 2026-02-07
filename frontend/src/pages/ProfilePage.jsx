@@ -469,7 +469,7 @@ const ProfilePage = () => {
                 ) : (
                   <div className="bookings-list">
                     {bookings.map((booking) => (
-                      <div key={booking.id} className={`booking-item status-${booking.status}`}>
+                      <div key={booking.id} className={`booking-item status-${booking.status || 'confirmed'}`}>
                         <div className="booking-header-row">
                           <div className="booking-date-time">
                             <FiClock className="booking-icon" />
@@ -479,13 +479,21 @@ const ProfilePage = () => {
                             </div>
                           </div>
                           <div className="booking-status-badge">
-                            {booking.status === 'completed' && <FiCheckCircle />}
-                            {booking.status}
+                            {(booking.status || 'confirmed') === 'completed' && <FiCheckCircle />}
+                            {booking.status || 'confirmed'}
                           </div>
                         </div>
+
+                        {/* Show booked-as name if different from profile name */}
+                        {booking.booked_as && profileData?.name && booking.booked_as !== profileData.name && (
+                          <div className="booking-booked-as">
+                            <FiUser className="booked-as-icon" />
+                            <span>Booked as: <strong>{booking.booked_as}</strong></span>
+                          </div>
+                        )}
                         
                         <div className="booking-devices">
-                          {booking.devices.map((device, idx) => (
+                          {booking.devices && booking.devices.map((device, idx) => (
                             <span key={idx} className="device-tag">
                               <FiMonitor /> {device.type === 'ps5' ? `PS5 #${device.number}` : 'Driving Sim'} ({device.players} {device.players > 1 ? 'players' : 'player'})
                             </span>
@@ -493,7 +501,7 @@ const ProfilePage = () => {
                         </div>
                         
                         <div className="booking-footer-row">
-                          <div className="booking-price">₹{booking.price.toFixed(2)}</div>
+                          <div className="booking-price">₹{(booking.price || 0).toFixed(2)}</div>
                           {booking.points_earned > 0 && (
                             <div className="booking-points-earned">
                               <FiStar className="points-star-small" /> +{booking.points_earned} points earned

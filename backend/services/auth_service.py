@@ -142,12 +142,21 @@ def _link_guest_bookings_to_user(cursor, conn, user_id, phone):
         return
     
     # Find all guest bookings with this phone number
-    cursor.execute("""
-        SELECT id, total_price, points_awarded
-        FROM bookings
-        WHERE customer_phone = %s AND user_id IS NULL
-    """, (phone,))
-    guest_bookings = cursor.fetchall()
+    try:
+        cursor.execute("""
+            SELECT id, total_price, points_awarded
+            FROM bookings
+            WHERE customer_phone = %s AND user_id IS NULL
+        """, (phone,))
+        guest_bookings = cursor.fetchall()
+    except Exception:
+        # points_awarded column might not exist — try without it
+        cursor.execute("""
+            SELECT id, total_price
+            FROM bookings
+            WHERE customer_phone = %s AND user_id IS NULL
+        """, (phone,))
+        guest_bookings = cursor.fetchall()
     
     if not guest_bookings:
         return

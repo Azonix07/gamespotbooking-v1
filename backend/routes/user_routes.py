@@ -30,8 +30,7 @@ def get_profile(user):
         
         # Get user profile
         cursor.execute("""
-            SELECT id, name, email, phone, profile_picture, gamespot_points, 
-                   instagram_shares, free_playtime_minutes, created_at
+            SELECT id, name, email, phone, profile_picture, created_at
             FROM users
             WHERE id = %s
         """, (user_id,))
@@ -41,11 +40,31 @@ def get_profile(user):
         if not profile:
             return jsonify({'success': False, 'error': 'User not found'}), 404
         
-        # Get rewards data
+        # Convert datetime to string for JSON serialization
+        if profile.get('created_at'):
+            profile['created_at'] = profile['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+        
+        # Safely get rewards columns (they might not exist yet)
+        gp = 0
+        ig = 0
+        fpm = 0
+        try:
+            cursor.execute("""
+                SELECT gamespot_points, instagram_shares, free_playtime_minutes
+                FROM users WHERE id = %s
+            """, (user_id,))
+            rw = cursor.fetchone()
+            if rw:
+                gp = rw.get('gamespot_points') or 0
+                ig = rw.get('instagram_shares') or 0
+                fpm = rw.get('free_playtime_minutes') or 0
+        except Exception:
+            pass  # Rewards columns may not exist
+        
         rewards = {
-            'gamespot_points': profile['gamespot_points'] or 0,
-            'instagram_shares': profile['instagram_shares'] or 0,
-            'free_playtime_minutes': profile['free_playtime_minutes'] or 0
+            'gamespot_points': gp,
+            'instagram_shares': ig,
+            'free_playtime_minutes': fpm
         }
         
         # Get user's phone for matching guest bookings
@@ -54,54 +73,124 @@ def get_profile(user):
         # Get user's booking history
         # Match by BOTH user_id AND customer_phone (to include guest bookings
         # made with this phone number before or after account creation)
-        cursor.execute("""
-            SELECT 
-                b.id,
-                b.booking_date,
-                b.start_time,
-                b.duration_minutes,
-                b.total_price,
-                b.status,
-                b.driving_after_ps5,
-                b.points_awarded,
-                b.created_at,
-                GROUP_CONCAT(
-                    CONCAT(bd.device_type, ':', COALESCE(bd.device_number, 'NA'), ':', bd.player_count)
-                    SEPARATOR '|'
-                ) as devices
-            FROM bookings b
-            LEFT JOIN booking_devices bd ON b.id = bd.booking_id
-            WHERE b.user_id = %s OR (b.user_id IS NULL AND b.customer_phone = %s)
-            GROUP BY b.id
-            ORDER BY b.booking_date DESC, b.start_time DESC
-            LIMIT 50
-        """, (user_id, user_phone))
+        # Note: b.status and b.points_awarded may not exist — use safe query
+        try:
+            cursor.execute("""
+                SELECT 
+                    b.id,
+                    b.customer_name,
+                    b.booking_date,
+                    b.start_time,
+                    b.duration_minutes,
+                    b.total_price,
+                    b.driving_after_ps5,
+                    b.created_at,
+                    GROUP_CONCAT(
+                        CONCAT(bd.device_type, ':', COALESCE(bd.device_number, 'NA'), ':', bd.player_count)
+                        SEPARATOR '|'
+                    ) as devices
+                FROM bookings b
+                LEFT JOIN booking_devices bd ON b.id = bd.booking_id
+                WHERE b.user_id = %s OR b.customer_phone = %s
+                GROUP BY b.id
+                ORDER BY b.booking_date DESC, b.start_time DESC
+                LIMIT 50
+            """, (user_id, user_phone))
+        except Exception:
+            # Fallback: user_id column might not exist at all
+            cursor.execute("""
+                SELECT 
+                    b.id,
+                    b.customer_name,
+                    b.booking_date,
+                    b.start_time,
+                    b.duration_minutes,
+                    b.total_price,
+                    b.driving_after_ps5,
+                    b.created_at,
+                    GROUP_CONCAT(
+                        CONCAT(bd.device_type, ':', COALESCE(bd.device_number, 'NA'), ':', bd.player_count)
+                        SEPARATOR '|'
+                    ) as devices
+                FROM bookings b
+                LEFT JOIN booking_devices bd ON b.id = bd.booking_id
+                WHERE b.customer_phone = %s
+                GROUP BY b.id
+                ORDER BY b.booking_date DESC, b.start_time DESC
+                LIMIT 50
+            """, (user_phone,))
         
         bookings = cursor.fetchall()
+        
+        # Safely check if status/points_awarded columns exist
+        has_status = False
+        has_points_awarded = False
+        try:
+            cursor.execute("""
+                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' 
+                AND COLUMN_NAME IN ('status', 'points_awarded')
+            """)
+            existing_cols = [r['COLUMN_NAME'] for r in cursor.fetchall()]
+            has_status = 'status' in existing_cols
+            has_points_awarded = 'points_awarded' in existing_cols
+        except Exception:
+            pass
         
         # Format bookings data
         formatted_bookings = []
         for booking in bookings:
             devices_list = []
-            if booking['devices']:
-                for device_str in booking['devices'].split('|'):
-                    parts = device_str.split(':')
-                    devices_list.append({
-                        'type': parts[0],
-                        'number': None if parts[1] == 'NA' else int(parts[1]),
-                        'players': int(parts[2])
-                    })
+            if booking.get('devices'):
+                try:
+                    for device_str in booking['devices'].split('|'):
+                        parts = device_str.split(':')
+                        if len(parts) >= 3:
+                            devices_list.append({
+                                'type': parts[0],
+                                'number': None if parts[1] == 'NA' else int(parts[1]),
+                                'players': int(parts[2])
+                            })
+                except Exception:
+                    pass
+            
+            # Get status safely
+            status = 'confirmed'
+            if has_status:
+                try:
+                    # Re-query individual booking for status
+                    cursor.execute("SELECT status FROM bookings WHERE id = %s", (booking['id'],))
+                    st = cursor.fetchone()
+                    if st and st.get('status'):
+                        status = st['status']
+                except Exception:
+                    pass
+            
+            # Get points_awarded safely
+            points_awarded = False
+            if has_points_awarded:
+                try:
+                    cursor.execute("SELECT points_awarded FROM bookings WHERE id = %s", (booking['id'],))
+                    pa = cursor.fetchone()
+                    if pa:
+                        points_awarded = bool(pa.get('points_awarded'))
+                except Exception:
+                    pass
+            
+            # Booking name — might differ from profile name (guest bookings)
+            booked_as_name = booking.get('customer_name', '')
             
             formatted_bookings.append({
                 'id': booking['id'],
-                'date': booking['booking_date'].strftime('%Y-%m-%d'),
-                'time': str(booking['start_time']),
-                'duration': booking['duration_minutes'],
-                'price': float(booking['total_price']),
-                'status': booking['status'],
+                'booked_as': booked_as_name,
+                'date': booking['booking_date'].strftime('%Y-%m-%d') if booking.get('booking_date') else '',
+                'time': str(booking.get('start_time', '')),
+                'duration': booking.get('duration_minutes', 0),
+                'price': float(booking.get('total_price', 0)),
+                'status': status,
                 'devices': devices_list,
-                'points_earned': int(booking['total_price'] * 0.50) if booking['points_awarded'] else 0,
-                'created_at': booking['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+                'points_earned': int(float(booking.get('total_price', 0)) * 0.50) if points_awarded else 0,
+                'created_at': booking['created_at'].strftime('%Y-%m-%d %H:%M:%S') if booking.get('created_at') else ''
             })
         
         cursor.close()
@@ -115,7 +204,9 @@ def get_profile(user):
         })
         
     except Exception as e:
-        import sys; sys.stderr.write(f'[Profile] Error: {str(e)}')
+        import sys, traceback
+        sys.stderr.write(f'[Profile] Error: {str(e)}\n')
+        sys.stderr.write(f'[Profile] Traceback:\n{traceback.format_exc()}\n')
         return jsonify({'success': False, 'error': 'An error occurred'}), 500
 
 
