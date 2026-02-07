@@ -121,7 +121,8 @@ const AdminDashboard = () => {
     setError(null);
     
     try {
-      const [statsData, bookingsData, usersData, membershipsData, analyticsData] = await Promise.all([
+      // Use Promise.allSettled so one failing API doesn't break all data loading
+      const [statsResult, bookingsResult, usersResult, membershipsResult, analyticsResult] = await Promise.allSettled([
         getAdminStats(),
         getAllBookings(),
         getAdminUsers(),
@@ -129,13 +130,14 @@ const AdminDashboard = () => {
         getAnalytics()
       ]);
       
-      setStats(statsData.stats);
-      setBookings(bookingsData.bookings);
-      setUsers(usersData.users);
-      setMemberships(membershipsData.memberships);
-      setAnalytics(analyticsData);
+      // Set data from successful responses, use defaults for failed ones
+      if (statsResult.status === 'fulfilled') setStats(statsResult.value.stats);
+      if (bookingsResult.status === 'fulfilled') setBookings(bookingsResult.value.bookings || []);
+      if (usersResult.status === 'fulfilled') setUsers(usersResult.value.users || []);
+      if (membershipsResult.status === 'fulfilled') setMemberships(membershipsResult.value.memberships || []);
+      if (analyticsResult.status === 'fulfilled') setAnalytics(analyticsResult.value);
       
-      // Load rental, college, and game data
+      // Load secondary data (each has its own error handling)
       await loadRentals();
       await loadCollegeBookings();
       await loadGameLeaderboard();

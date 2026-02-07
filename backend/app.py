@@ -224,6 +224,133 @@ def fix_admin_credentials():
 
 # Run the fix on startup
 fix_admin_credentials()
+
+# ============================================================
+# AUTO-CREATE MISSING TABLES ON STARTUP
+# Ensures all required tables exist in the Railway database
+# ============================================================
+def create_missing_tables():
+    """Create any missing tables that the admin dashboard needs"""
+    conn = None
+    cursor = None
+    try:
+        from config.database import get_db_connection
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        tables_sql = [
+            """CREATE TABLE IF NOT EXISTS page_visits (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                page VARCHAR(255) NOT NULL,
+                referrer VARCHAR(500) NULL,
+                user_agent VARCHAR(500) NULL,
+                ip_address VARCHAR(45) NULL,
+                session_id VARCHAR(255) NULL,
+                user_id INT NULL,
+                device_type VARCHAR(50) DEFAULT 'desktop',
+                browser VARCHAR(100) NULL,
+                country VARCHAR(100) NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            """CREATE TABLE IF NOT EXISTS rental_bookings (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                customer_name VARCHAR(100) NOT NULL,
+                customer_phone VARCHAR(20) NOT NULL,
+                customer_email VARCHAR(255) NULL,
+                rental_type VARCHAR(50) NOT NULL,
+                item_name VARCHAR(255) NOT NULL,
+                quantity INT DEFAULT 1,
+                start_date DATE NOT NULL,
+                end_date DATE NOT NULL,
+                total_price DECIMAL(10,2) NOT NULL,
+                deposit_amount DECIMAL(10,2) DEFAULT 0,
+                status VARCHAR(20) DEFAULT 'pending',
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )""",
+            """CREATE TABLE IF NOT EXISTS college_bookings (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                college_name VARCHAR(255) NOT NULL,
+                contact_person VARCHAR(100) NOT NULL,
+                contact_phone VARCHAR(20) NOT NULL,
+                contact_email VARCHAR(255) NULL,
+                event_type VARCHAR(100) NOT NULL,
+                event_date DATE NOT NULL,
+                start_time TIME NOT NULL,
+                end_time TIME NOT NULL,
+                expected_attendees INT DEFAULT 50,
+                requirements TEXT,
+                total_price DECIMAL(10,2) NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending',
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )""",
+            """CREATE TABLE IF NOT EXISTS game_leaderboard (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                player_name VARCHAR(100) NOT NULL,
+                score INT NOT NULL,
+                game_type VARCHAR(50) DEFAULT 'discount_game',
+                enemies_shot INT DEFAULT 0,
+                boss_enemies_shot INT DEFAULT 0,
+                accuracy DECIMAL(5,2) DEFAULT 0,
+                duration_seconds INT DEFAULT 60,
+                is_winner BOOLEAN DEFAULT FALSE,
+                prize_claimed BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            """CREATE TABLE IF NOT EXISTS game_winners (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                leaderboard_id INT NOT NULL,
+                player_name VARCHAR(100) NOT NULL,
+                score INT NOT NULL,
+                prize_type VARCHAR(50) DEFAULT 'free_gaming',
+                prize_value DECIMAL(10,2) DEFAULT 0,
+                claimed_at TIMESTAMP NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            """CREATE TABLE IF NOT EXISTS college_event_media (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                booking_id INT NOT NULL,
+                media_type VARCHAR(20) NOT NULL,
+                file_url VARCHAR(500) NOT NULL,
+                caption VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            """CREATE TABLE IF NOT EXISTS site_settings (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                setting_key VARCHAR(100) UNIQUE NOT NULL,
+                setting_value TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )"""
+        ]
+        
+        created = 0
+        for sql in tables_sql:
+            try:
+                cursor.execute(sql)
+                created += 1
+            except Exception as e:
+                print(f"⚠️  Table creation warning: {e}")
+        
+        conn.commit()
+        print(f"✅ Database tables verified ({created} CREATE IF NOT EXISTS statements executed)")
+        
+    except Exception as e:
+        print(f"⚠️  Table creation error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            try:
+                conn.close()
+            except:
+                pass
+
+create_missing_tables()
+
+# Health check endpoint
 @app.route('/health', methods=['GET'])
 def health_check():
     return {'status': 'healthy', 'message': 'GameSpot Python Backend is running'}, 200
