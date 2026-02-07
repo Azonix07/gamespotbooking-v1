@@ -63,7 +63,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 app.config['SESSION_COOKIE_DOMAIN'] = None  # Let browser handle domain automatically
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload size
 
-# Allowed origins (whitelist instead of wildcard)
+# Allowed origins (whitelist)
 ALLOWED_ORIGINS = [
     'https://gamespot.in',
     'https://www.gamespot.in',
@@ -74,14 +74,26 @@ ALLOWED_ORIGINS = [
     'http://127.0.0.1:5173',
 ]
 
-# Add custom origins from environment
+# Add custom origins from environment (comma-separated)
 custom_origins = os.getenv('ALLOWED_ORIGINS', '')
 if custom_origins:
     ALLOWED_ORIGINS.extend([o.strip() for o in custom_origins.split(',') if o.strip()])
 
-# CORS Configuration - Restricted to allowed origins
+
+def is_origin_allowed(origin):
+    """Check if origin is allowed — whitelist + Railway pattern matching"""
+    if not origin:
+        return False
+    if origin in ALLOWED_ORIGINS:
+        return True
+    # Allow any Railway-deployed service (*.up.railway.app)
+    if origin.endswith('.up.railway.app') and origin.startswith('https://'):
+        return True
+    return False
+
+
+# CORS Configuration
 CORS(app, 
-     origins=ALLOWED_ORIGINS,
      supports_credentials=True,
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
@@ -91,8 +103,8 @@ CORS(app,
 def add_security_headers(response):
     origin = request.headers.get('Origin')
     
-    # CORS: Only allow whitelisted origins
-    if origin and origin in ALLOWED_ORIGINS:
+    # CORS: Only allow whitelisted origins + Railway services
+    if origin and is_origin_allowed(origin):
         response.headers['Access-Control-Allow-Origin'] = origin
         response.headers['Access-Control-Allow-Credentials'] = 'true'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
