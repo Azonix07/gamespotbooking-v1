@@ -111,7 +111,6 @@ function App() {
               <Route path="/rental" element={<RentalPage />} />
               <Route path="/college-setup" element={<CollegeSetupPage />} />
               <Route path="/feedback" element={<FeedbackPage />} />
-              <Route path="/get-offers" element={<GetOffersPage />} />
               <Route path="/invite" element={<InvitePage />} />
 
               {/* ========== AUTH PAGES (Redirect if already logged in) ========== */}
@@ -122,6 +121,7 @@ function App() {
               {/* ========== PROTECTED ROUTES (Login required for account features) ========== */}
               <Route path="/membership" element={<ProtectedRoute><MembershipPlansPage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/get-offers" element={<ProtectedRoute><GetOffersPage /></ProtectedRoute>} />
 
               {/* ========== ADMIN ROUTES (Admin login required) ========== */}
               <Route path="/admin/login" element={<Navigate to="/login" replace />} />
