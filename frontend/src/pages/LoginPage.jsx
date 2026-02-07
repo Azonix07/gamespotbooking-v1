@@ -6,7 +6,8 @@ import {
   FiLock, 
   FiLogIn,
   FiAlertCircle,
-  FiCheckCircle
+  FiCheckCircle,
+  FiPhone
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
@@ -17,8 +18,8 @@ const LoginPage = () => {
   const location = useLocation();
   const { isAuthenticated, isAdmin, login, setAuthState, loading: authLoading } = useAuth();
   
-  // Email/Password Login fields
-  const [email, setEmail] = useState('');
+  // Email or Phone / Password Login fields
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   
   const [loading, setLoading] = useState(false);
@@ -40,8 +41,8 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      setError('Please enter both email and password');
+    if (!identifier || !password) {
+      setError('Please enter your email/phone and password');
       return;
     }
     
@@ -49,7 +50,7 @@ const LoginPage = () => {
       setLoading(true);
       setError(null);
       
-      const result = await login(email, password);
+      const result = await login(identifier.trim(), password);
       
       if (result.success) {
         setSuccess('Login successful! Redirecting...');
@@ -150,23 +151,23 @@ const LoginPage = () => {
               </div>
             )}
 
-            {/* Email/Password Login Form */}
+            {/* Email/Phone Login Form */}
             <form onSubmit={handleLogin}>
               <div className="form-group">
-                <label htmlFor="email" className="form-label">
-                  Email Address
+                <label htmlFor="identifier" className="form-label">
+                  Email or Phone Number
                 </label>
                 <div className="input-wrapper">
-                  <FiMail className="input-icon" />
+                  {/^\+?\d[\d\s-]{6,}$/.test(identifier) ? <FiPhone className="input-icon" /> : <FiMail className="input-icon" />}
                   <input
-                    id="email"
-                    type="email"
+                    id="identifier"
+                    type="text"
                     className="form-input"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email or phone number"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
                     required
-                    autoComplete="email"
+                    autoComplete="username"
                   />
                 </div>
               </div>

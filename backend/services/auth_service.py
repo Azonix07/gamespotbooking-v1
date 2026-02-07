@@ -236,12 +236,12 @@ def link_guest_bookings_on_login(user_id, phone):
             conn.close()
 
 
-def login_user(email: str, password: str) -> Dict[str, Any]:
+def login_user(identifier: str, password: str) -> Dict[str, Any]:
     """
-    Authenticate a user by email and password
+    Authenticate a user by email OR phone number and password
     
     Args:
-        email: User's email
+        identifier: User's email or phone number
         password: Plain text password
         
     Returns:
@@ -251,23 +251,42 @@ def login_user(email: str, password: str) -> Dict[str, Any]:
     cursor = None
     
     try:
-        if not email or not password:
-            return {'success': False, 'error': 'Email and password are required'}
+        if not identifier or not password:
+            return {'success': False, 'error': 'Email/phone and password are required'}
         
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # Get user by email
-        query = 'SELECT * FROM users WHERE email = %s'
-        cursor.execute(query, (email,))
-        user = cursor.fetchone()
+        # Detect if identifier is a phone number or email
+        # Phone: digits only (optionally with + prefix), at least 10 digits
+        clean_identifier = identifier.strip()
+        is_phone = clean_identifier.replace('+', '').replace(' ', '').replace('-', '').isdigit() and len(clean_identifier.replace('+', '').replace(' ', '').replace('-', '')) >= 10
+        
+        if is_phone:
+            # Strip non-digit characters for matching (keep last 10 digits)
+            phone_digits = clean_identifier.replace('+', '').replace(' ', '').replace('-', '')
+            # Try exact match first, then last-10-digits match
+            query = 'SELECT * FROM users WHERE phone = %s'
+            cursor.execute(query, (phone_digits,))
+            user = cursor.fetchone()
+            
+            if not user and len(phone_digits) > 10:
+                # Try matching last 10 digits (e.g., +91 prefix)
+                last10 = phone_digits[-10:]
+                cursor.execute('SELECT * FROM users WHERE phone LIKE %s', (f'%{last10}',))
+                user = cursor.fetchone()
+        else:
+            # Email-based lookup
+            query = 'SELECT * FROM users WHERE email = %s'
+            cursor.execute(query, (clean_identifier.lower(),))
+            user = cursor.fetchone()
         
         if not user:
-            return {'success': False, 'error': 'Invalid email or password'}
+            return {'success': False, 'error': 'Invalid email/phone or password'}
         
         # Verify password
         if not verify_password(password, user['password_hash']):
-            return {'success': False, 'error': 'Invalid email or password'}
+            return {'success': False, 'error': 'Invalid email/phone or password'}
         
         # Remove password hash from response
         user_data = {

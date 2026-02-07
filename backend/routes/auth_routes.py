@@ -196,12 +196,12 @@ def login():
         
         # Customer login flow
         if not email and not username:
-            return jsonify({'success': False, 'error': 'Email is required'}), 400
+            return jsonify({'success': False, 'error': 'Email or phone number is required'}), 400
         
-        # If username provided but not "admin", treat as email
-        login_email = email if email else username
+        # Accept email OR phone number as the login identifier
+        login_identifier = email if email else username
         
-        result = login_user(login_email, password)
+        result = login_user(login_identifier, password)
         
         if result['success']:
             # Set customer session (for desktop browsers with cookies)
@@ -250,7 +250,7 @@ def login():
         else:
             try:
                 from utils.security_logger import log_failed_login
-                log_failed_login(login_email)
+                log_failed_login(login_identifier)
             except Exception:
                 pass
             return jsonify(result), 401
