@@ -119,9 +119,9 @@ function App() {
               <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute>} />
 
               {/* ========== PROTECTED ROUTES (Login required for account features) ========== */}
-              <Route path="/membership" element={<ProtectedRoute><MembershipPlansPage /></ProtectedRoute>} />
+              <Route path="/membership" element={<MembershipPlansPage />} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-              <Route path="/get-offers" element={<ProtectedRoute><GetOffersPage /></ProtectedRoute>} />
+              <Route path="/get-offers" element={<GetOffersPage />} />
 
               {/* ========== ADMIN ROUTES (Admin login required) ========== */}
               <Route path="/admin/login" element={<Navigate to="/login" replace />} />

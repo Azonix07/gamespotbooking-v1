@@ -5,11 +5,13 @@ import { FaInstagram, FaWhatsapp } from 'react-icons/fa';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import '../styles/GetOffersPage.css';
+import { useAuth } from '../context/AuthContext';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
 
 function GetOffersPage() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const [instaPromo, setInstaPromo] = useState(null);
   const [instaLoading, setInstaLoading] = useState(false);
@@ -44,6 +46,10 @@ function GetOffersPage() {
   };
 
   const handleClaimInstaPromo = async () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/get-offers' } });
+      return;
+    }
     if (!instaUsername.trim()) return;
     if (shareCount < requiredCount) return;
 
@@ -73,10 +79,14 @@ function GetOffersPage() {
       if (data.success) {
         setClaimResult(data.redemption);
       } else {
-        alert(data.error || 'Failed to claim promotion. Please login first.');
+        if (data.error && data.error.toLowerCase().includes('login')) {
+          navigate('/login', { state: { from: '/get-offers' } });
+        } else {
+          alert(data.error || 'Failed to claim promotion.');
+        }
       }
     } catch (err) {
-      alert('Failed to claim. Please login and try again.');
+      alert('Failed to claim. Please try again.');
     } finally {
       setClaimLoading(false);
     }

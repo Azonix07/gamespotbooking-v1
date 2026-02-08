@@ -83,7 +83,7 @@ const MembershipPlansPage = () => {
       }
     } catch (err) {
       console.error("Subscribe error:", err);
-      setError("Request failed. Please try again.");
+      setError(err.message || "Request failed. Please try again.");
     } finally {
       setSubscribing(null);
     }
@@ -108,7 +108,7 @@ const MembershipPlansPage = () => {
       }
     } catch (err) {
       console.error("Upgrade error:", err);
-      setError("Upgrade request failed. Please try again.");
+      setError(err.message || "Upgrade request failed. Please try again.");
     } finally {
       setSubscribing(null);
     }

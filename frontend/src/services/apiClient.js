@@ -141,7 +141,7 @@ export const apiFetch = async (path, options = {}, _isRetry = false) => {
     
     // Redirect to login if on a protected page
     const currentPath = window.location.pathname;
-    const publicPaths = ['/', '/login', '/signup', '/forgot-password', '/contact', '/games', '/updates', '/discount-game', '/win-free-game', '/instagram-promo'];
+    const publicPaths = ['/', '/login', '/signup', '/forgot-password', '/contact', '/games', '/updates', '/discount-game', '/win-free-game', '/instagram-promo', '/membership', '/get-offers'];
     if (!publicPaths.includes(currentPath) && data.redirect) {
       window.location.href = '/login';
       return data;
