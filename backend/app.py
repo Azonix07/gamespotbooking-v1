@@ -399,6 +399,18 @@ def create_missing_tables():
             except Exception:
                 pass  # Column already exists, skip silently
         
+        # Migrate memberships status ENUM to support pending/rejected flows
+        try:
+            cursor.execute("""
+                ALTER TABLE memberships 
+                MODIFY COLUMN status ENUM('active','expired','cancelled','pending','rejected') NOT NULL DEFAULT 'active'
+            """)
+            conn.commit()
+            print("✅ Memberships status ENUM updated (added pending, rejected)")
+        except Exception as e:
+            # Already updated or table doesn't exist yet
+            pass
+        
         # Add indexes for fast lookups
         index_statements = [
             "CREATE INDEX idx_customer_phone ON bookings (customer_phone)",

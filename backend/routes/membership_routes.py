@@ -190,7 +190,10 @@ def subscribe():
         }), 201
         
     except Exception as e:
-        return jsonify({'success': False, 'error': 'An error occurred'}), 500
+        print(f"Error in subscribe: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
         
     finally:
         if cursor:
@@ -277,7 +280,10 @@ def get_status():
         return jsonify(result)
         
     except Exception as e:
-        return jsonify({'success': False, 'error': 'An error occurred'}), 500
+        print(f"Error in get_status: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
         
     finally:
         if cursor:

@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS memberships (
     plan_type ENUM('monthly', 'quarterly', 'annual') NOT NULL DEFAULT 'monthly',
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    status ENUM('active', 'expired', 'cancelled') NOT NULL DEFAULT 'active',
+    status ENUM('active', 'expired', 'cancelled', 'pending', 'rejected') NOT NULL DEFAULT 'pending',
     discount_percentage INT NOT NULL DEFAULT 10 COMMENT 'Percentage discount (e.g., 10 for 10%)',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
