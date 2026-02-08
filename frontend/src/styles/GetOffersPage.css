@@ -151,6 +151,11 @@
   display: flex;
   gap: 20px;
   margin-bottom: 36px;
+  transition: opacity 0.3s ease;
+}
+
+.offers-step.completed {
+  opacity: 0.92;
 }
 
 .offers-step:last-of-type {
@@ -176,12 +181,13 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 16px rgba(255, 107, 53, 0.25);
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .offers-step-num.done {
   background: linear-gradient(135deg, #22c55e, #16a34a);
   box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+  transform: scale(1.05);
 }
 
 .offers-step-line {
@@ -203,6 +209,8 @@
   font-weight: 600;
   color: #1a1a2e;
   margin-bottom: 6px;
+  display: flex;
+  align-items: center;
 }
 
 .offers-step-desc {
@@ -210,6 +218,13 @@
   color: #888;
   line-height: 1.5;
   margin-bottom: 14px;
+}
+
+/* Step Actions Container */
+.offers-step-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* Follow Button */
@@ -234,8 +249,37 @@
   box-shadow: 0 10px 32px rgba(193, 53, 132, 0.4);
 }
 
+.offers-follow-btn.followed {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 6px 24px rgba(34, 197, 94, 0.3);
+}
+
+.offers-follow-btn.followed:hover {
+  box-shadow: 0 10px 32px rgba(34, 197, 94, 0.4);
+}
+
 .offers-follow-btn-icon {
   font-size: 1.3rem;
+}
+
+/* Already Follow Link */
+.offers-already-btn {
+  background: none;
+  border: none;
+  color: #ff6b35;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  align-self: flex-start;
+}
+
+.offers-already-btn:hover {
+  opacity: 1;
 }
 
 /* Username Input */
@@ -246,7 +290,7 @@
   border: 2px solid rgba(255, 107, 53, 0.15);
   border-radius: 14px;
   padding: 4px 16px;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .offers-username-wrap:focus-within {
@@ -280,70 +324,176 @@
   color: #22c55e;
   font-size: 1.2rem;
   flex-shrink: 0;
+  animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Friends List */
-.offers-friends-list {
+@keyframes checkPop {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+/* ===== Share Buttons Grid ===== */
+.offers-share-grid {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-bottom: 16px;
 }
 
-.offers-friend-row {
+.offers-share-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: #f8f4f0;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 14px;
   border: 2px solid transparent;
-  border-radius: 12px;
-  padding: 4px 14px;
+  background: #f8f4f0;
+  cursor: pointer;
   transition: all 0.3s ease;
+  text-align: left;
 }
 
-.offers-friend-row.filled {
-  border-color: rgba(34, 197, 94, 0.3);
-  background: rgba(34, 197, 94, 0.04);
+.offers-share-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
-.offers-friend-row:focus-within {
-  border-color: #ff6b35;
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.08);
+.offers-share-btn:active {
+  transform: translateY(0);
 }
 
-.offers-friend-num {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: rgba(255, 107, 53, 0.1);
+/* WhatsApp share */
+.offers-share-btn.whatsapp {
+  border-color: rgba(37, 211, 102, 0.2);
+}
+
+.offers-share-btn.whatsapp:hover {
+  border-color: rgba(37, 211, 102, 0.4);
+  background: rgba(37, 211, 102, 0.06);
+}
+
+.offers-share-btn.whatsapp .offers-share-btn-icon {
+  color: #25D366;
+  font-size: 1.5rem;
+}
+
+.offers-share-btn.whatsapp.shared {
+  background: rgba(37, 211, 102, 0.08);
+  border-color: rgba(37, 211, 102, 0.35);
+}
+
+/* Copy link share */
+.offers-share-btn.copylink {
+  border-color: rgba(255, 107, 53, 0.15);
+}
+
+.offers-share-btn.copylink:hover {
+  border-color: rgba(255, 107, 53, 0.35);
+  background: rgba(255, 107, 53, 0.04);
+}
+
+.offers-share-btn.copylink .offers-share-btn-icon {
   color: #ff6b35;
-  font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 1.3rem;
+}
+
+.offers-share-btn.copylink.shared {
+  background: rgba(255, 107, 53, 0.06);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+/* Native share */
+.offers-share-btn.native {
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+.offers-share-btn.native:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.offers-share-btn.native .offers-share-btn-icon {
+  color: #6366f1;
+  font-size: 1.3rem;
+}
+
+.offers-share-btn.native.shared {
+  background: rgba(99, 102, 241, 0.06);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.offers-share-btn-icon {
+  flex-shrink: 0;
+  width: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
-.offers-friend-input {
+.offers-share-btn-text {
   flex: 1;
-  border: none;
-  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.offers-share-btn-label {
   font-size: 0.95rem;
-  padding: 10px 4px;
+  font-weight: 600;
   color: #1a1a2e;
-  outline: none;
-  font-family: 'Inter', sans-serif;
 }
 
-.offers-friend-input::placeholder {
-  color: #bbb;
+.offers-share-btn-sub {
+  font-size: 0.78rem;
+  color: #aaa;
 }
 
-.offers-friend-check {
+.offers-share-done {
   color: #22c55e;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   flex-shrink: 0;
+  animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ===== Manual Confirm ===== */
+.offers-manual-confirm {
+  background: rgba(255, 107, 53, 0.04);
+  border: 1px dashed rgba(255, 107, 53, 0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.offers-manual-text {
+  font-size: 0.82rem;
+  color: #888;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.offers-manual-btn {
+  background: rgba(255, 107, 53, 0.08);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  border-radius: 10px;
+  padding: 8px 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #ff6b35;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.offers-manual-btn:hover {
+  background: rgba(255, 107, 53, 0.14);
+  border-color: rgba(255, 107, 53, 0.35);
+}
+
+.offers-manual-btn:active {
+  transform: scale(0.97);
 }
 
 /* Progress Bar */
@@ -373,30 +523,95 @@
   font-weight: 600;
   color: #ff6b35;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
 }
 
-/* Reward Preview */
+/* ===== Reward Preview ===== */
 .offers-reward-preview {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background: linear-gradient(135deg, rgba(255, 107, 53, 0.08), rgba(255, 184, 77, 0.08));
   border: 1px solid rgba(255, 107, 53, 0.15);
   border-radius: 14px;
-  padding: 16px 20px;
-  margin-bottom: 24px;
-  font-size: 0.95rem;
-  color: #1a1a2e;
+  padding: 18px 20px;
+  margin-bottom: 16px;
 }
 
 .offers-reward-icon {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   color: #ff6b35;
   flex-shrink: 0;
 }
 
-.offers-reward-preview strong {
+.offers-reward-text {
+  font-size: 0.95rem;
+  color: #1a1a2e;
+  line-height: 1.5;
+}
+
+.offers-reward-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: #ff6b35;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.offers-reward-text strong {
+  color: #ff6b35;
+  font-size: 1.1rem;
+}
+
+/* ===== Checklist Summary ===== */
+.offers-checklist {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: #fafafa;
+  border-radius: 12px;
+}
+
+.offers-check-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #bbb;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+}
+
+.offers-check-item.done {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.06);
+}
+
+.offers-check-icon {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.offers-check-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  display: block;
+}
+
+.offers-check-item.done .offers-check-circle {
+  border-color: #22c55e;
+  background: #22c55e;
 }
 
 /* Claim Button */
@@ -423,11 +638,17 @@
   color: #fff;
   cursor: pointer;
   box-shadow: 0 8px 32px rgba(255, 107, 53, 0.35);
+  animation: claimGlow 2s ease-in-out infinite;
+}
+
+@keyframes claimGlow {
+  0%, 100% { box-shadow: 0 8px 32px rgba(255, 107, 53, 0.35); }
+  50% { box-shadow: 0 8px 44px rgba(255, 107, 53, 0.55); }
 }
 
 .offers-claim-btn.ready:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 44px rgba(255, 107, 53, 0.45);
+  box-shadow: 0 12px 44px rgba(255, 107, 53, 0.5);
 }
 
 .offers-claim-btn.ready:active {
@@ -633,6 +854,30 @@
     padding: 10px 18px;
     font-size: 0.88rem;
     border-radius: 12px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .offers-share-btn {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .offers-share-btn-label {
+    font-size: 0.88rem;
+  }
+
+  .offers-share-btn-sub {
+    font-size: 0.72rem;
+  }
+
+  .offers-checklist {
+    gap: 4px;
+  }
+
+  .offers-check-item {
+    font-size: 0.75rem;
+    padding: 3px 8px;
   }
 
   .offers-success-card {
@@ -671,8 +916,12 @@
     padding: 22px 16px;
   }
 
-  .offers-follow-btn {
-    width: 100%;
-    justify-content: center;
+  .offers-share-btn-sub {
+    display: none;
+  }
+
+  .offers-checklist {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
