@@ -241,6 +241,16 @@ export const getMembershipHistory = async () => {
   );
 };
 
+export const requestMembershipUpgrade = async (planType) => {
+  return fetchWithCredentials(
+    `${API_BASE_URL}/api/membership/upgrade`,
+    {
+      method: "POST",
+      body: JSON.stringify({ plan_type: planType }),
+    }
+  );
+};
+
 // =======================================================
 // Admin Management API
 // =======================================================
@@ -251,6 +261,20 @@ export const getAdminUsers = async () => {
 
 export const getAdminMemberships = async () => {
   return fetchWithCredentials(`${API_BASE_URL}/api/admin/memberships`);
+};
+
+export const approveMembership = async (membershipId) => {
+  return fetchWithCredentials(
+    `${API_BASE_URL}/api/admin/membership/approve/${membershipId}`,
+    { method: "POST" }
+  );
+};
+
+export const rejectMembership = async (membershipId) => {
+  return fetchWithCredentials(
+    `${API_BASE_URL}/api/admin/membership/reject/${membershipId}`,
+    { method: "POST" }
+  );
 };
 
 export const getAdminStats = async () => {

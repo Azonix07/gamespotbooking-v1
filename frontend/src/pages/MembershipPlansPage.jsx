@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import '../styles/AdminLoginPage.css';
+import '../styles/MembershipPlansPage.css';
 import { apiFetch } from "../services/apiClient";
 import { useAuth } from "../context/AuthContext";
 
@@ -12,9 +12,14 @@ const MembershipPlansPage = () => {
   const { isAuthenticated, isAdmin, loading: authLoading } = useAuth();
   const [plans, setPlans] = useState([]);
   const [currentMembership, setCurrentMembership] = useState(null);
+  const [pendingMembership, setPendingMembership] = useState(null);
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState(null);
   const [error, setError] = useState(null);
+  const [successMsg, setSuccessMsg] = useState(null);
+
+  // Plan rank for upgrade logic
+  const planRank = { monthly: 1, quarterly: 2, annual: 3 };
 
   useEffect(() => {
     loadData();
@@ -33,8 +38,17 @@ const MembershipPlansPage = () => {
       // 2️⃣ If authenticated as customer, load membership status
       if (isAuthenticated && !isAdmin) {
         const statusData = await apiFetch("/api/membership/status");
-        if (statusData.success && statusData.has_membership) {
-          setCurrentMembership(statusData.membership);
+        if (statusData.success) {
+          if (statusData.has_membership) {
+            setCurrentMembership(statusData.membership);
+          } else {
+            setCurrentMembership(null);
+          }
+          if (statusData.has_pending) {
+            setPendingMembership(statusData.pending_membership);
+          } else {
+            setPendingMembership(null);
+          }
         }
       }
     } catch (err) {
@@ -45,7 +59,6 @@ const MembershipPlansPage = () => {
     }
   };
 
-
   const handleSubscribe = async (planType) => {
     if (!isAuthenticated) {
       navigate("/login", { state: { from: "/membership" } });
@@ -55,6 +68,7 @@ const MembershipPlansPage = () => {
     try {
       setSubscribing(planType);
       setError(null);
+      setSuccessMsg(null);
 
       const data = await apiFetch("/api/membership/subscribe", {
         method: "POST",
@@ -62,79 +76,128 @@ const MembershipPlansPage = () => {
       });
 
       if (data.success) {
-        alert(`✅ ${data.message}\n\nYour ${planType} membership is now active!`);
+        setSuccessMsg(data.message);
         loadData();
       } else {
-        setError(data.error || "Subscription failed");
+        setError(data.error || "Request failed");
       }
     } catch (err) {
       console.error("Subscribe error:", err);
-      setError("Subscription failed. Please try again.");
+      setError("Request failed. Please try again.");
     } finally {
       setSubscribing(null);
     }
   };
 
+  const handleUpgrade = async (planType) => {
+    try {
+      setSubscribing(planType);
+      setError(null);
+      setSuccessMsg(null);
+
+      const data = await apiFetch("/api/membership/upgrade", {
+        method: "POST",
+        body: JSON.stringify({ plan_type: planType }),
+      });
+
+      if (data.success) {
+        setSuccessMsg(data.message);
+        loadData();
+      } else {
+        setError(data.error || "Upgrade request failed");
+      }
+    } catch (err) {
+      console.error("Upgrade error:", err);
+      setError("Upgrade request failed. Please try again.");
+    } finally {
+      setSubscribing(null);
+    }
+  };
+
+  const getButtonState = (plan) => {
+    // If this plan has a pending request
+    if (pendingMembership && pendingMembership.plan_type === plan.type) {
+      return { label: '⏳ Request Pending', className: 'pending-btn', disabled: true, action: null };
+    }
+    
+    // Any pending request blocks new requests
+    if (pendingMembership) {
+      return { label: 'Pending Request Exists', className: 'pending-btn', disabled: true, action: null };
+    }
+
+    // If user has this plan active
+    if (currentMembership && currentMembership.plan_type === plan.type) {
+      return { label: '✓ Current Plan', className: 'current', disabled: true, action: null };
+    }
+
+    // If user has a lower plan — show upgrade
+    if (currentMembership) {
+      const currentRank = planRank[currentMembership.plan_type] || 0;
+      const planRankVal = planRank[plan.type] || 0;
+      
+      if (planRankVal > currentRank) {
+        return { 
+          label: `⬆ Upgrade to ${plan.name.split(' ')[0]}`, 
+          className: 'upgrade', 
+          disabled: subscribing === plan.type, 
+          action: () => handleUpgrade(plan.type) 
+        };
+      }
+      // Lower plan than current
+      return { label: 'Lower Plan', className: 'primary', disabled: true, action: null };
+    }
+
+    // No membership — request new
+    return { 
+      label: subscribing === plan.type ? '⏳ Requesting...' : 'Request Membership', 
+      className: 'primary', 
+      disabled: subscribing === plan.type,
+      action: () => handleSubscribe(plan.type)
+    };
+  };
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--dark)' }}>
+      <div className="membership-page">
         <Navbar />
-        <div className="container" style={{ textAlign: 'center', padding: '4rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
-          <p style={{ color: 'var(--light-gray)' }}>Loading membership plans...</p>
+        <div className="membership-container">
+          <div className="membership-loading">
+            <div className="spinner"></div>
+            <p>Loading membership plans...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--dark)' }}>
+    <div className="membership-page">
       <Navbar />
-      <div className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
-            💎 Membership Plans
-          </h1>
-          <p style={{ color: 'var(--light-gray)', fontSize: '1.1rem' }}>
-            Save money with our exclusive membership discounts on every booking
-          </p>
-        </div>
+      <div className="membership-container">
         
+        {/* Header */}
+        <div className="membership-header">
+          <h1>� <span>Membership Plans</span></h1>
+          <p>Save money with exclusive membership discounts on every booking. Pay at the shop and get activated!</p>
+        </div>
+
         {/* Login prompt for guests */}
         {!isAuthenticated && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)',
-            border: '1px solid rgba(99, 102, 241, 0.3)',
-            padding: '1.5rem',
-            borderRadius: '1rem',
-            marginBottom: '2rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '1rem'
-          }}>
+          <div className="membership-login-prompt">
             <div>
-              <h3 style={{ color: '#fff', marginBottom: '0.25rem', fontSize: '1.1rem' }}>
-                🔐 Login to Subscribe
-              </h3>
-              <p style={{ color: 'var(--light-gray)', margin: 0, fontSize: '0.9rem' }}>
-                Create an account or login to activate membership discounts
-              </p>
+              <h3>🔐 Login to Request a Plan</h3>
+              <p>Create an account or login to request a membership plan</p>
             </div>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div className="login-prompt-buttons">
               <button 
-                className="btn btn-primary" 
+                className="login-btn-orange"
                 onClick={() => navigate('/login', { state: { from: '/membership' } })}
-                style={{ padding: '0.6rem 1.5rem' }}
               >
                 Login
               </button>
               <button 
-                className="btn btn-secondary" 
+                className="signup-btn-outline"
                 onClick={() => navigate('/signup', { state: { from: '/membership' } })}
-                style={{ padding: '0.6rem 1.5rem' }}
               >
                 Sign Up
               </button>
@@ -142,178 +205,133 @@ const MembershipPlansPage = () => {
           </div>
         )}
 
+        {/* Error message */}
         {error && (
-          <div style={{
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            padding: '1rem',
-            borderRadius: '0.5rem',
-            marginBottom: '2rem',
-            color: '#ef4444',
-            textAlign: 'center'
-          }}>
-            ❌ {error}
-          </div>
+          <div className="membership-error">❌ {error}</div>
         )}
 
+        {/* Success message */}
+        {successMsg && (
+          <div className="membership-success">✅ {successMsg}</div>
+        )}
+
+        {/* Active membership banner */}
         {currentMembership && (
-          <div style={{
-            background: 'rgba(34, 197, 94, 0.1)',
-            border: '2px solid rgba(34, 197, 94, 0.3)',
-            padding: '1.5rem',
-            borderRadius: '0.75rem',
-            marginBottom: '3rem',
-            textAlign: 'center'
-          }}>
-            <h3 style={{ color: '#22c55e', marginBottom: '0.5rem' }}>
-              ✅ Active Membership
-            </h3>
-            <p style={{ color: 'var(--light-gray)', marginBottom: '0.5rem' }}>
-              Plan: <strong style={{ color: 'var(--text-primary)' }}>
-                {currentMembership.plan_type.charAt(0).toUpperCase() + currentMembership.plan_type.slice(1)}
-              </strong>
-            </p>
-            <p style={{ color: 'var(--light-gray)', marginBottom: '0.5rem' }}>
-              Discount: <strong style={{ color: '#22c55e' }}>{currentMembership.discount_percentage}%</strong>
-            </p>
-            <p style={{ color: 'var(--light-gray)' }}>
-              Expires: <strong style={{ color: 'var(--text-primary)' }}>
-                {new Date(currentMembership.end_date).toLocaleDateString()}
-              </strong> ({currentMembership.days_remaining} days remaining)
-            </p>
+          <div className="membership-status-banner active">
+            <div className="status-banner-header">
+              <span className="status-icon">✅</span>
+              <h3>Active Membership</h3>
+            </div>
+            <div className="status-banner-details">
+              <span>
+                Plan: <strong>{currentMembership.plan_type.charAt(0).toUpperCase() + currentMembership.plan_type.slice(1)}</strong>
+              </span>
+              <span>
+                Discount: <strong>{currentMembership.discount_percentage}% OFF</strong>
+              </span>
+              <span>
+                Expires: <strong>{new Date(currentMembership.end_date).toLocaleDateString()}</strong> ({currentMembership.days_remaining} days left)
+              </span>
+            </div>
           </div>
         )}
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-          gap: '2rem',
-          maxWidth: '1200px',
-          margin: '0 auto'
-        }}>
-          {plans.map((plan) => (
-            <div
-              key={plan.type}
-              className="card"
-              style={{
-                position: 'relative',
-                border: plan.popular ? '2px solid var(--primary)' : '1px solid var(--border)',
-                transform: plan.popular ? 'scale(1.05)' : 'none',
-                boxShadow: plan.popular ? '0 10px 40px rgba(99, 102, 241, 0.3)' : 'none'
-              }}
-            >
-              {plan.popular && (
-                <div style={{
-                  position: 'absolute',
-                  top: '-12px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: 'var(--primary)',
-                  color: 'white',
-                  padding: '0.25rem 1rem',
-                  borderRadius: '1rem',
-                  fontSize: '0.85rem',
-                  fontWeight: 'bold'
-                }}>
-                  ⭐ POPULAR
-                </div>
-              )}
-
-              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-                  {plan.name}
-                </h3>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>
-                  ₹{plan.price}
-                </div>
-                <p style={{ color: 'var(--light-gray)', fontSize: '0.9rem' }}>
-                  {plan.duration_days} days
-                </p>
-              </div>
-
-              <div style={{
-                background: 'rgba(99, 102, 241, 0.1)',
-                padding: '1rem',
-                borderRadius: '0.5rem',
-                marginBottom: '1.5rem',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#22c55e' }}>
-                  {plan.discount_percentage}% OFF
-                </div>
-                <p style={{ color: 'var(--light-gray)', fontSize: '0.9rem', margin: 0 }}>
-                  on all bookings
-                </p>
-              </div>
-
-              <ul style={{ 
-                listStyle: 'none', 
-                padding: 0, 
-                marginBottom: '2rem',
-                color: 'var(--light-gray)'
-              }}>
-                {plan.features.map((feature, index) => (
-                  <li key={index} style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'flex-start' }}>
-                    <span style={{ marginRight: '0.5rem', color: '#22c55e', flexShrink: 0 }}>✓</span>
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                className="btn btn-primary"
-                onClick={() => handleSubscribe(plan.type)}
-                disabled={
-                  subscribing === plan.type || 
-                  (currentMembership && currentMembership.plan_type === plan.type)
-                }
-                style={{ width: '100%' }}
-              >
-                {subscribing === plan.type 
-                  ? '🔄 Subscribing...' 
-                  : currentMembership && currentMembership.plan_type === plan.type
-                  ? '✓ Current Plan'
-                  : `Subscribe Now`}
-              </button>
+        {/* Pending request banner */}
+        {pendingMembership && (
+          <div className="membership-status-banner pending">
+            <div className="status-banner-header">
+              <span className="status-icon">⏳</span>
+              <h3>Membership Request Pending</h3>
             </div>
-          ))}
+            <div className="status-banner-details">
+              <span>
+                Plan: <strong>{pendingMembership.plan_type.charAt(0).toUpperCase() + pendingMembership.plan_type.slice(1)}</strong>
+              </span>
+              <span>
+                Please visit the shop to complete payment. Admin will activate your membership.
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Plans grid */}
+        <div className="membership-plans-grid">
+          {plans.map((plan) => {
+            const btnState = getButtonState(plan);
+            return (
+              <div 
+                key={plan.type} 
+                className={`membership-plan-card ${plan.popular ? 'popular' : ''}`}
+              >
+                {plan.popular && (
+                  <div className="popular-badge">⭐ MOST POPULAR</div>
+                )}
+
+                <div className="plan-card-header">
+                  <h3>{plan.name}</h3>
+                  <div className="plan-price">₹{plan.price}</div>
+                  <div className="plan-duration">{plan.duration_days} days</div>
+                </div>
+
+                <div className="plan-discount-badge">
+                  <div className="discount-value">{plan.discount_percentage}% OFF</div>
+                  <div className="discount-label">on all bookings</div>
+                </div>
+
+                <ul className="plan-features">
+                  {plan.features.map((feature, index) => (
+                    <li key={index}>
+                      <span className="check-icon">✓</span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  className={`membership-btn ${btnState.className}`}
+                  onClick={btnState.action}
+                  disabled={btnState.disabled}
+                >
+                  {btnState.label}
+                </button>
+              </div>
+            );
+          })}
         </div>
 
-        <div style={{
-          marginTop: '3rem',
-          padding: '2rem',
-          background: 'rgba(99, 102, 241, 0.05)',
-          borderRadius: '0.75rem',
-          border: '1px solid rgba(99, 102, 241, 0.2)',
-          textAlign: 'center'
-        }}>
-          <h3 style={{ marginBottom: '1rem' }}>💡 How It Works</h3>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-            gap: '1.5rem',
-            color: 'var(--light-gray)'
-          }}>
-            <div>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>1️⃣</div>
-              <p>Choose a plan</p>
+        {/* How It Works */}
+        <div className="membership-how-it-works">
+          <h3>💡 How It Works</h3>
+          <p className="subtitle">Simple 4-step process to get your membership activated</p>
+          <div className="how-it-works-grid">
+            <div className="how-it-works-step">
+              <div className="step-number">1</div>
+              <div className="step-icon">📋</div>
+              <h4>Choose a Plan</h4>
+              <p>Select the plan that fits your gaming needs</p>
             </div>
-            <div>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>2️⃣</div>
-              <p>Subscribe instantly</p>
+            <div className="how-it-works-step">
+              <div className="step-number">2</div>
+              <div className="step-icon">📩</div>
+              <h4>Submit Request</h4>
+              <p>Your request is sent to the admin for approval</p>
             </div>
-            <div>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>3️⃣</div>
-              <p>Book & save automatically</p>
+            <div className="how-it-works-step">
+              <div className="step-number">3</div>
+              <div className="step-icon">💰</div>
+              <h4>Pay at Shop</h4>
+              <p>Visit GameSpot and pay for your plan in-person</p>
             </div>
-            <div>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>4️⃣</div>
-              <p>Cancel anytime</p>
+            <div className="how-it-works-step">
+              <div className="step-number">4</div>
+              <div className="step-icon">🎮</div>
+              <h4>Start Saving</h4>
+              <p>Admin activates your plan & enjoy discounts on bookings!</p>
             </div>
           </div>
         </div>
-      </div>
 
+      </div>
       <Footer />
     </div>
   );

@@ -242,6 +242,123 @@ def get_all_memberships():
             conn.close()
 
 
+@admin_bp.route('/api/admin/membership/approve/<int:membership_id>', methods=['POST', 'OPTIONS'])
+def approve_membership(membership_id):
+    """Approve a pending membership request — activates the plan"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get the pending membership
+        cursor.execute('SELECT * FROM memberships WHERE id = %s AND status = %s', (membership_id, 'pending'))
+        membership = cursor.fetchone()
+        
+        if not membership:
+            return jsonify({'success': False, 'error': 'Pending membership not found'}), 404
+        
+        # Plan durations
+        plan_durations = {
+            'monthly': 30,
+            'quarterly': 90,
+            'annual': 365
+        }
+        
+        from datetime import date, timedelta
+        start_date = date.today()
+        duration = plan_durations.get(membership['plan_type'], 30)
+        end_date = start_date + timedelta(days=duration)
+        
+        # Cancel any existing active membership for the same user
+        cancel_query = '''
+            UPDATE memberships 
+            SET status = 'cancelled', end_date = CURDATE()
+            WHERE user_id = %s AND status = 'active' AND id != %s
+        '''
+        cursor.execute(cancel_query, (membership['user_id'], membership_id))
+        
+        # Activate this membership
+        activate_query = '''
+            UPDATE memberships 
+            SET status = 'active', start_date = %s, end_date = %s
+            WHERE id = %s
+        '''
+        cursor.execute(activate_query, (start_date, end_date, membership_id))
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Membership #{membership_id} approved and activated successfully'
+        })
+        
+    except Exception as e:
+        print(f"Error approving membership: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/membership/reject/<int:membership_id>', methods=['POST', 'OPTIONS'])
+def reject_membership(membership_id):
+    """Reject a pending membership request"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get the pending membership
+        cursor.execute('SELECT * FROM memberships WHERE id = %s AND status = %s', (membership_id, 'pending'))
+        membership = cursor.fetchone()
+        
+        if not membership:
+            return jsonify({'success': False, 'error': 'Pending membership not found'}), 404
+        
+        # Reject (set status to rejected)
+        cursor.execute('UPDATE memberships SET status = %s WHERE id = %s', ('rejected', membership_id))
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Membership #{membership_id} rejected'
+        })
+        
+    except Exception as e:
+        print(f"Error rejecting membership: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
 @admin_bp.route('/api/admin/stats', methods=['GET', 'OPTIONS'])
 def get_dashboard_stats():
     """Get dashboard statistics"""

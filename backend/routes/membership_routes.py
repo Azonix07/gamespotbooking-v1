@@ -1,6 +1,7 @@
 """
 Membership API Routes
-Handles membership plans, subscriptions, and status checks
+Handles membership plans, subscriptions (request-based), and status checks
+Admin approval required before activation — pay in-person at shop
 """
 
 from flask import Blueprint, request, jsonify, session
@@ -94,7 +95,7 @@ def get_plans():
 @require_login
 def subscribe():
     """
-    Subscribe to a membership plan
+    Request a membership plan (pending admin approval)
     
     POST body:
     {
@@ -133,29 +134,44 @@ def subscribe():
             AND end_date > CURDATE()
         '''
         cursor.execute(check_query, (user_id,))
-        existing = cursor.fetchone()
+        existing_active = cursor.fetchone()
         
-        if existing:
+        if existing_active:
             return jsonify({
                 'success': False,
                 'error': 'You already have an active membership',
                 'membership': {
-                    'plan_type': existing['plan_type'],
-                    'end_date': existing['end_date'].isoformat()
+                    'plan_type': existing_active['plan_type'],
+                    'end_date': existing_active['end_date'].isoformat()
                 }
             }), 400
         
-        # Calculate dates
+        # Check if user already has a pending request
+        pending_query = '''
+            SELECT * FROM memberships 
+            WHERE user_id = %s 
+            AND status = 'pending'
+        '''
+        cursor.execute(pending_query, (user_id,))
+        existing_pending = cursor.fetchone()
+        
+        if existing_pending:
+            return jsonify({
+                'success': False,
+                'error': 'You already have a pending membership request. Please wait for admin approval.'
+            }), 400
+        
+        # Calculate dates (will be recalculated on admin approval)
         start_date = date.today()
         duration_days = valid_plans[plan_type]['days']
         end_date = start_date + timedelta(days=duration_days)
         discount = valid_plans[plan_type]['discount']
         
-        # Create membership
+        # Create membership request with PENDING status
         insert_query = '''
             INSERT INTO memberships 
             (user_id, plan_type, start_date, end_date, status, discount_percentage)
-            VALUES (%s, %s, %s, %s, 'active', %s)
+            VALUES (%s, %s, %s, %s, 'pending', %s)
         '''
         cursor.execute(insert_query, (user_id, plan_type, start_date, end_date, discount))
         conn.commit()
@@ -164,12 +180,11 @@ def subscribe():
         
         return jsonify({
             'success': True,
-            'message': f'{plan_type.capitalize()} membership activated successfully',
+            'message': f'{plan_type.capitalize()} membership request submitted! Please visit the shop to pay and get it activated.',
             'membership': {
                 'id': membership_id,
                 'plan_type': plan_type,
-                'start_date': start_date.isoformat(),
-                'end_date': end_date.isoformat(),
+                'status': 'pending',
                 'discount_percentage': discount
             }
         }), 201
@@ -188,22 +203,7 @@ def subscribe():
 @require_login
 def get_status():
     """
-    Get user's current membership status
-    
-    Returns:
-    {
-        "success": true,
-        "has_membership": true,
-        "membership": {
-            "id": 1,
-            "plan_type": "monthly",
-            "start_date": "2025-01-01",
-            "end_date": "2025-01-31",
-            "status": "active",
-            "discount_percentage": 10,
-            "days_remaining": 15
-        }
-    }
+    Get user's current membership status (active or pending)
     """
     if request.method == 'OPTIONS':
         return '', 200
@@ -235,24 +235,46 @@ def get_status():
             LIMIT 1
         '''
         cursor.execute(query, (user_id,))
-        membership = cursor.fetchone()
+        active_membership = cursor.fetchone()
         
-        if membership:
-            # Convert dates to ISO format
-            membership['start_date'] = membership['start_date'].isoformat()
-            membership['end_date'] = membership['end_date'].isoformat()
-            
-            return jsonify({
-                'success': True,
-                'has_membership': True,
-                'membership': membership
-            })
-        else:
-            return jsonify({
-                'success': True,
-                'has_membership': False,
-                'membership': None
-            })
+        # Also check for pending request
+        pending_query = '''
+            SELECT 
+                id,
+                plan_type,
+                status,
+                discount_percentage,
+                created_at
+            FROM memberships 
+            WHERE user_id = %s 
+            AND status = 'pending'
+            ORDER BY created_at DESC
+            LIMIT 1
+        '''
+        cursor.execute(pending_query, (user_id,))
+        pending_membership = cursor.fetchone()
+        
+        result = {
+            'success': True,
+            'has_membership': False,
+            'membership': None,
+            'has_pending': False,
+            'pending_membership': None
+        }
+        
+        if active_membership:
+            active_membership['start_date'] = active_membership['start_date'].isoformat()
+            active_membership['end_date'] = active_membership['end_date'].isoformat()
+            result['has_membership'] = True
+            result['membership'] = active_membership
+        
+        if pending_membership:
+            if pending_membership.get('created_at'):
+                pending_membership['created_at'] = pending_membership['created_at'].isoformat()
+            result['has_pending'] = True
+            result['pending_membership'] = pending_membership
+        
+        return jsonify(result)
         
     except Exception as e:
         return jsonify({'success': False, 'error': 'An error occurred'}), 500
@@ -374,6 +396,114 @@ def get_history():
         })
         
     except Exception as e:
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@membership_bp.route('/api/membership/upgrade', methods=['POST', 'OPTIONS'])
+@require_login
+def request_upgrade():
+    """
+    Request an upgrade to a higher membership plan.
+    Creates a new pending request.
+    
+    POST body:
+    {
+        "plan_type": "quarterly" | "annual"
+    }
+    """
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    conn = None
+    cursor = None
+    
+    try:
+        data = request.get_json()
+        new_plan_type = data.get('plan_type', '').strip().lower()
+        user_id = session.get('user_id')
+        
+        valid_plans = {
+            'monthly': {'days': 30, 'discount': 10, 'rank': 1},
+            'quarterly': {'days': 90, 'discount': 15, 'rank': 2},
+            'annual': {'days': 365, 'discount': 20, 'rank': 3}
+        }
+        
+        if new_plan_type not in valid_plans:
+            return jsonify({'success': False, 'error': 'Invalid plan type'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Check current active membership
+        check_query = '''
+            SELECT * FROM memberships 
+            WHERE user_id = %s 
+            AND status = 'active' 
+            AND end_date > CURDATE()
+        '''
+        cursor.execute(check_query, (user_id,))
+        current = cursor.fetchone()
+        
+        if not current:
+            return jsonify({
+                'success': False,
+                'error': 'You don\'t have an active membership to upgrade'
+            }), 400
+        
+        # Verify it's actually an upgrade (higher rank)
+        current_rank = valid_plans.get(current['plan_type'], {}).get('rank', 0)
+        new_rank = valid_plans[new_plan_type]['rank']
+        
+        if new_rank <= current_rank:
+            return jsonify({
+                'success': False,
+                'error': 'You can only upgrade to a higher plan'
+            }), 400
+        
+        # Check if already has a pending upgrade
+        pending_query = '''
+            SELECT * FROM memberships 
+            WHERE user_id = %s 
+            AND status = 'pending'
+        '''
+        cursor.execute(pending_query, (user_id,))
+        existing_pending = cursor.fetchone()
+        
+        if existing_pending:
+            return jsonify({
+                'success': False,
+                'error': 'You already have a pending upgrade request'
+            }), 400
+        
+        # Create upgrade request
+        start_date = date.today()
+        duration_days = valid_plans[new_plan_type]['days']
+        end_date = start_date + timedelta(days=duration_days)
+        discount = valid_plans[new_plan_type]['discount']
+        
+        insert_query = '''
+            INSERT INTO memberships 
+            (user_id, plan_type, start_date, end_date, status, discount_percentage)
+            VALUES (%s, %s, %s, %s, 'pending', %s)
+        '''
+        cursor.execute(insert_query, (user_id, new_plan_type, start_date, end_date, discount))
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Upgrade request to {new_plan_type.capitalize()} plan submitted! Please visit the shop to pay.'
+        }), 201
+        
+    except Exception as e:
+        print(f"Error in request_upgrade: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': 'An error occurred'}), 500
         
     finally:

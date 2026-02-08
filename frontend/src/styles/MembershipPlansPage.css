@@ -1,0 +1,607 @@
+/* MembershipPlansPage.css - Warm Orange Theme (matches BookingPage) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ============================================
+   PAGE LAYOUT
+   ============================================ */
+.membership-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #ffffff 0%, #fff5f0 30%, #ffe8dc 60%, #ffffff 100%);
+  color: #212529;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.membership-page::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    linear-gradient(rgba(255, 107, 53, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 107, 53, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.membership-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.membership-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.membership-header h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 0.75rem;
+}
+
+.membership-header h1 span {
+  background: linear-gradient(135deg, #ff6b35, #ff9966);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.membership-header p {
+  font-family: 'Inter', sans-serif;
+  color: #6c757d;
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   STATUS BANNERS
+   ============================================ */
+.membership-status-banner {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2.5rem;
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(255, 107, 53, 0.1);
+}
+
+.membership-status-banner.active {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.membership-status-banner.pending {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.membership-status-banner.rejected {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.status-banner-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.status-banner-header .status-icon {
+  font-size: 1.5rem;
+}
+
+.status-banner-header h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.membership-status-banner.active .status-banner-header h3 {
+  color: #10b981;
+}
+
+.membership-status-banner.pending .status-banner-header h3 {
+  color: #f59e0b;
+}
+
+.membership-status-banner.rejected .status-banner-header h3 {
+  color: #ef4444;
+}
+
+.status-banner-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: #495057;
+}
+
+.status-banner-details span strong {
+  color: #212529;
+}
+
+/* ============================================
+   LOGIN PROMPT
+   ============================================ */
+.membership-login-prompt {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(255, 107, 53, 0.1);
+}
+
+.membership-login-prompt h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #212529;
+  margin: 0 0 0.25rem 0;
+}
+
+.membership-login-prompt p {
+  font-family: 'Inter', sans-serif;
+  color: #6c757d;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.login-prompt-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* ============================================
+   ERROR MESSAGE
+   ============================================ */
+.membership-error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  color: #ef4444;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.membership-success {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  color: #10b981;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+/* ============================================
+   PLANS GRID
+   ============================================ */
+.membership-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+/* ============================================
+   PLAN CARD
+   ============================================ */
+.membership-plan-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 107, 53, 0.15);
+  border-radius: 20px;
+  padding: 2rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(255, 107, 53, 0.08);
+}
+
+.membership-plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(255, 107, 53, 0.15), 0 10px 10px -5px rgba(255, 107, 53, 0.08);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+.membership-plan-card.popular {
+  border: 2px solid #ff6b35;
+  transform: scale(1.04);
+  box-shadow: 0 20px 25px -5px rgba(255, 107, 53, 0.2), 0 10px 10px -5px rgba(255, 107, 53, 0.1);
+}
+
+.membership-plan-card.popular:hover {
+  transform: scale(1.04) translateY(-4px);
+  box-shadow: 0 0 40px rgba(255, 107, 53, 0.3);
+}
+
+.popular-badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ff6b35 0%, #ff9966 100%);
+  color: white;
+  padding: 0.3rem 1.25rem;
+  border-radius: 20px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.plan-card-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.plan-card-header h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.5rem;
+}
+
+.plan-price {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #ff6b35;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+.plan-duration {
+  font-family: 'Inter', sans-serif;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.plan-discount-badge {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 153, 102, 0.15));
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border: 1px solid rgba(255, 107, 53, 0.15);
+}
+
+.plan-discount-badge .discount-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ff6b35;
+}
+
+.plan-discount-badge .discount-label {
+  font-family: 'Inter', sans-serif;
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+/* ============================================
+   FEATURES LIST
+   ============================================ */
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+}
+
+.plan-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: #495057;
+  margin-bottom: 0.65rem;
+  line-height: 1.4;
+}
+
+.plan-features li .check-icon {
+  color: #ff6b35;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.membership-btn {
+  width: 100%;
+  padding: 0.85rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.membership-btn.primary {
+  background: linear-gradient(135deg, #ff6b35 0%, #ff9966 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.membership-btn.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+}
+
+.membership-btn.upgrade {
+  background: linear-gradient(135deg, #ffb84d 0%, #ff9966 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 184, 77, 0.3);
+}
+
+.membership-btn.upgrade:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 184, 77, 0.4);
+}
+
+.membership-btn.current {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 2px solid #10b981;
+  cursor: default;
+}
+
+.membership-btn.pending-btn {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 2px solid #f59e0b;
+  cursor: default;
+}
+
+.membership-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.membership-btn.secondary {
+  background: rgba(255, 255, 255, 0.8);
+  color: #ff6b35;
+  border: 2px solid #ff6b35;
+}
+
+.membership-btn.secondary:hover {
+  background: #ff6b35;
+  color: white;
+}
+
+.login-btn-orange {
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff9966 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.login-btn-orange:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+}
+
+.signup-btn-outline {
+  padding: 0.6rem 1.5rem;
+  border: 2px solid #ff6b35;
+  border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+  color: #ff6b35;
+}
+
+.signup-btn-outline:hover {
+  background: #ff6b35;
+  color: white;
+}
+
+/* ============================================
+   HOW IT WORKS SECTION
+   ============================================ */
+.membership-how-it-works {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 107, 53, 0.15);
+  border-radius: 20px;
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.membership-how-it-works h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.5rem;
+}
+
+.membership-how-it-works .subtitle {
+  font-family: 'Inter', sans-serif;
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}
+
+.how-it-works-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.how-it-works-step {
+  text-align: center;
+}
+
+.step-number {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff9966 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 auto 0.75rem;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.how-it-works-step .step-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.how-it-works-step h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.25rem;
+}
+
+.how-it-works-step p {
+  font-family: 'Inter', sans-serif;
+  color: #6c757d;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+.membership-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.membership-loading .spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 107, 53, 0.2);
+  border-top: 4px solid #ff6b35;
+  border-radius: 50%;
+  animation: membership-spin 0.8s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes membership-spin {
+  to { transform: rotate(360deg); }
+}
+
+.membership-loading p {
+  font-family: 'Inter', sans-serif;
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 992px) {
+  .membership-plans-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .membership-plan-card.popular {
+    transform: scale(1);
+  }
+  
+  .membership-plan-card.popular:hover {
+    transform: translateY(-4px);
+  }
+  
+  .how-it-works-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .membership-container {
+    padding: 1.5rem 1rem 3rem;
+  }
+  
+  .membership-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .membership-plans-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .membership-plan-card.popular {
+    transform: scale(1);
+  }
+  
+  .how-it-works-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  
+  .membership-login-prompt {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .membership-status-banner {
+    padding: 1.25rem;
+  }
+  
+  .status-banner-details {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

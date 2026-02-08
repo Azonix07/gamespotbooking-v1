@@ -40,7 +40,9 @@ import {
   getCollegeBookings,
   getCollegeStats,
   getGameLeaderboard,
-  getGameStats
+  getGameStats,
+  approveMembership,
+  rejectMembership
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -294,6 +296,44 @@ const AdminDashboard = () => {
   const filteredMemberships = membershipFilter === 'all' 
     ? memberships 
     : memberships.filter(m => m.status === membershipFilter);
+
+  const pendingMembershipsCount = memberships.filter(m => m.status === 'pending').length;
+
+  // Handle membership approval
+  const handleApproveMembership = async (membershipId) => {
+    try {
+      const result = await approveMembership(membershipId);
+      if (result.success) {
+        alert('✅ Membership approved and activated!');
+        // Refresh memberships
+        const membershipsData = await getAdminMemberships();
+        setMemberships(membershipsData.memberships || []);
+      } else {
+        alert('❌ ' + (result.error || 'Failed to approve'));
+      }
+    } catch (err) {
+      console.error('Error approving membership:', err);
+      alert('❌ Error approving membership');
+    }
+  };
+
+  // Handle membership rejection
+  const handleRejectMembership = async (membershipId) => {
+    if (!window.confirm('Are you sure you want to reject this membership request?')) return;
+    try {
+      const result = await rejectMembership(membershipId);
+      if (result.success) {
+        alert('Membership request rejected.');
+        const membershipsData = await getAdminMemberships();
+        setMemberships(membershipsData.memberships || []);
+      } else {
+        alert('❌ ' + (result.error || 'Failed to reject'));
+      }
+    } catch (err) {
+      console.error('Error rejecting membership:', err);
+      alert('❌ Error rejecting membership');
+    }
+  };
 
   // Render Dashboard Stats
   const renderDashboard = () => (
@@ -730,13 +770,35 @@ const AdminDashboard = () => {
   const renderMemberships = () => (
     <div className="memberships-section">
       <div className="section-header">
-        <h2 className="section-title">💳 Membership Subscriptions ({filteredMemberships.length})</h2>
+        <h2 className="section-title">
+          💳 Membership Subscriptions ({filteredMemberships.length})
+          {pendingMembershipsCount > 0 && (
+            <span style={{
+              background: '#f59e0b',
+              color: '#fff',
+              padding: '2px 10px',
+              borderRadius: '12px',
+              fontSize: '0.8rem',
+              marginLeft: '0.75rem',
+              fontWeight: '600'
+            }}>
+              {pendingMembershipsCount} pending
+            </span>
+          )}
+        </h2>
         <div className="filter-buttons">
           <button 
             className={`filter-btn ${membershipFilter === 'all' ? 'active' : ''}`}
             onClick={() => setMembershipFilter('all')}
           >
             All
+          </button>
+          <button 
+            className={`filter-btn ${membershipFilter === 'pending' ? 'active' : ''}`}
+            onClick={() => setMembershipFilter('pending')}
+            style={pendingMembershipsCount > 0 ? { borderColor: '#f59e0b', color: membershipFilter === 'pending' ? '#fff' : '#f59e0b', background: membershipFilter === 'pending' ? '#f59e0b' : 'transparent' } : {}}
+          >
+            Pending {pendingMembershipsCount > 0 && `(${pendingMembershipsCount})`}
           </button>
           <button 
             className={`filter-btn ${membershipFilter === 'active' ? 'active' : ''}`}
@@ -749,6 +811,12 @@ const AdminDashboard = () => {
             onClick={() => setMembershipFilter('expired')}
           >
             Expired
+          </button>
+          <button 
+            className={`filter-btn ${membershipFilter === 'rejected' ? 'active' : ''}`}
+            onClick={() => setMembershipFilter('rejected')}
+          >
+            Rejected
           </button>
           <button 
             className={`filter-btn ${membershipFilter === 'cancelled' ? 'active' : ''}`}
@@ -778,11 +846,12 @@ const AdminDashboard = () => {
                   <th>Discount</th>
                   <th>Status</th>
                   <th>Days Left</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredMemberships.map(membership => (
-                  <tr key={membership.id}>
+                  <tr key={membership.id} style={membership.status === 'pending' ? { background: 'rgba(245, 158, 11, 0.05)' } : {}}>
                     <td className="membership-id" data-label="ID">#{membership.id}</td>
                     <td className="user-name" data-label="USER">{membership.user_name}</td>
                     <td data-label="EMAIL">{membership.user_email}</td>
@@ -791,8 +860,12 @@ const AdminDashboard = () => {
                           {membership.plan_type}
                         </span>
                       </td>
-                      <td data-label="START DATE">{new Date(membership.start_date).toLocaleDateString()}</td>
-                      <td data-label="END DATE">{new Date(membership.end_date).toLocaleDateString()}</td>
+                      <td data-label="START DATE">
+                        {membership.status === 'pending' ? <em style={{ color: '#6c757d' }}>On approval</em> : new Date(membership.start_date).toLocaleDateString()}
+                      </td>
+                      <td data-label="END DATE">
+                        {membership.status === 'pending' ? <em style={{ color: '#6c757d' }}>On approval</em> : new Date(membership.end_date).toLocaleDateString()}
+                      </td>
                       <td className="discount" data-label="DISCOUNT">{membership.discount_percentage}%</td>
                       <td data-label="STATUS">
                         <span className={`status-badge ${membership.status}`}>
@@ -800,12 +873,58 @@ const AdminDashboard = () => {
                         </span>
                       </td>
                       <td data-label="DAYS LEFT">
-                        {membership.days_remaining !== null ? (
+                        {membership.status === 'pending' ? (
+                          <span style={{ color: '#f59e0b', fontWeight: '600' }}>Awaiting</span>
+                        ) : membership.days_remaining !== null ? (
                           <span className={membership.days_remaining > 7 ? 'days-ok' : 'days-expiring'}>
                             {membership.days_remaining > 0 ? `${membership.days_remaining} days` : 'Expired'}
                           </span>
                         ) : (
                           '-'
+                        )}
+                      </td>
+                      <td data-label="ACTIONS">
+                        {membership.status === 'pending' ? (
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <button
+                              onClick={() => handleApproveMembership(membership.id)}
+                              style={{
+                                padding: '0.35rem 0.75rem',
+                                background: '#10b981',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '0.8rem',
+                                fontWeight: '600',
+                                transition: 'all 0.2s'
+                              }}
+                              onMouseOver={(e) => e.target.style.background = '#059669'}
+                              onMouseOut={(e) => e.target.style.background = '#10b981'}
+                            >
+                              ✅ Approve
+                            </button>
+                            <button
+                              onClick={() => handleRejectMembership(membership.id)}
+                              style={{
+                                padding: '0.35rem 0.75rem',
+                                background: '#ef4444',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '0.8rem',
+                                fontWeight: '600',
+                                transition: 'all 0.2s'
+                              }}
+                              onMouseOver={(e) => e.target.style.background = '#dc2626'}
+                              onMouseOut={(e) => e.target.style.background = '#ef4444'}
+                            >
+                              ❌ Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ color: '#6c757d', fontSize: '0.85rem' }}>—</span>
                         )}
                       </td>
                   </tr>
