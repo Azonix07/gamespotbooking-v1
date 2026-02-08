@@ -97,6 +97,10 @@ const Navbar = ({ showCenter = true }) => {
               Games
             </div>
             
+            <div className="navbar-item" onClick={() => navigate('/get-offers')}>
+              Offers
+            </div>
+            
             {/* Membership Tab - Normal styling */}
             <div className="navbar-item" onClick={() => navigate('/membership')}>
               Membership
