@@ -178,7 +178,7 @@ const RentalPage = () => {
 
   return (
     <div className="rp">
-      <Navbar showCenter={false} />
+      <Navbar variant="light" />
 
       <div className="rp-bg">
         <div className="rp-bg-grad"></div>

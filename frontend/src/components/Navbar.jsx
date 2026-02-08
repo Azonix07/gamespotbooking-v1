@@ -5,10 +5,11 @@ import '../styles/Navbar.css';
 import { useAuth } from '../context/AuthContext';
 
 
-const Navbar = ({ showCenter = true }) => {
+const Navbar = ({ showCenter = true, variant = 'dark' }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAdmin, isAuthenticated, logout } = useAuth();
+  const isLight = variant === 'light';
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -77,7 +78,7 @@ const Navbar = ({ showCenter = true }) => {
 
   return (
     <>
-      <nav className="navbar">
+      <nav className={`navbar${isLight ? ' navbar-light' : ''}`}>
         <div className="navbar-brand" onClick={() => navigate('/')}>
           <img 
             src="/assets/images/logo.png" 
@@ -247,7 +248,7 @@ const Navbar = ({ showCenter = true }) => {
             </div>
           ) : (
             <button className="login-icon-button" onClick={() => navigate('/login')} title="Login">
-              <FiUser size={24} color='white' />
+              <FiUser size={24} color={isLight ? '#212529' : 'white'} />
             </button>
           )}
 
@@ -275,7 +276,7 @@ const Navbar = ({ showCenter = true }) => {
       />
 
       {/* Mobile Navigation Drawer */}
-      <div className={`mobile-nav-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+      <div className={`mobile-nav-drawer${isLight ? ' mobile-nav-light' : ''} ${mobileMenuOpen ? 'open' : ''}`}>
         <button 
           className="mobile-nav-close" 
           onClick={() => setMobileMenuOpen(false)}

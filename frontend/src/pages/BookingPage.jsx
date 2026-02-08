@@ -548,7 +548,7 @@ const BookingPage = () => {
 
   return (
     <div className="booking-page">
-      <Navbar showCenter={false} />
+      <Navbar variant="light" />
       
       {/* Animated Background */}
       <div className="booking-bg-effects">

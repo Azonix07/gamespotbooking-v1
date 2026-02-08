@@ -172,7 +172,7 @@ const SignupPage = () => {
 
   return (
       <div className="login-page">
-        <Navbar />
+        <Navbar variant="light" />
         
         <div className="login-container">
           <div className="login-card">

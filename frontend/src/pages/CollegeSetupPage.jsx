@@ -483,7 +483,7 @@ const CollegeSetupPage = () => {
 
   return (
     <div className="college-setup-page">
-      <Navbar />
+      <Navbar variant="light" />
       
       {/* Background Effects */}
       <div className="college-bg-effects">

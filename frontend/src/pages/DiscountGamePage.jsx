@@ -533,7 +533,7 @@ const DiscountGamePage = () => {
 
   return (
     <div className="discount-game-page" ref={gameContainerRef}>
-      {!isFullscreen && <Navbar showCenter={false} />}
+      {!isFullscreen && <Navbar variant="light" showCenter={false} />}
       
       {/* Animated Background */}
       <div className="game-bg-effects">

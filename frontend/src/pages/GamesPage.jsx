@@ -260,7 +260,7 @@ const GamesPage = () => {
 
   return (
     <div className="games-page">
-      <Navbar />
+      <Navbar variant="light" />
       
       {/* Hero Section - Cinematic */}
       <section className="games-hero">

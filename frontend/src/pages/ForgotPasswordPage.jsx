@@ -299,7 +299,7 @@ const ForgotPasswordPage = () => {
   // ==================== RENDER ====================
   return (
     <div className="login-page">
-      <Navbar />
+      <Navbar variant="light" />
 
       <div className="login-container">
         <div className="login-card" style={{ maxWidth: '440px' }}>

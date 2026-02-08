@@ -560,6 +560,202 @@
   color: var(--white);
 }
 
+/* ===================================
+   NAVBAR LIGHT VARIANT
+   Warm orange light theme for inner pages
+   =================================== */
+
+.navbar.navbar-light {
+  background: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.06);
+}
+
+.navbar-light .navbar-item {
+  color: #495057;
+}
+
+.navbar-light .navbar-item:hover {
+  color: #ff6b35;
+  background: rgba(255, 107, 53, 0.08);
+}
+
+.navbar-light .dropdown-arrow {
+  color: #6c757d;
+}
+
+.navbar-light .dropdown-menu {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(255, 107, 53, 0.12);
+  box-shadow: 0 16px 48px rgba(255, 107, 53, 0.1);
+}
+
+.navbar-light .dropdown-item {
+  color: #495057;
+}
+
+.navbar-light .dropdown-item:hover {
+  background: rgba(255, 107, 53, 0.06);
+  color: #212529;
+  border-left-color: #ff6b35;
+}
+
+.navbar-light .dropdown-title {
+  color: #212529;
+}
+
+.navbar-light .dropdown-item:hover .dropdown-title {
+  color: #ff6b35;
+}
+
+.navbar-light .dropdown-description {
+  color: #6c757d;
+}
+
+.navbar-light .dropdown-icon {
+  color: #ff6b35;
+}
+
+.navbar-light .dropdown-item:hover .dropdown-icon {
+  color: #e85a2a;
+}
+
+/* Light variant — Profile */
+.navbar-light .profile-button {
+  background: rgba(255, 107, 53, 0.06);
+  border-color: rgba(255, 107, 53, 0.15);
+}
+
+.navbar-light .profile-button:hover {
+  background: rgba(255, 107, 53, 0.12);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+.navbar-light .profile-name {
+  color: #212529;
+}
+
+.navbar-light .profile-arrow {
+  color: #6c757d;
+}
+
+.navbar-light .profile-dropdown {
+  background: #ffffff;
+  border: 1px solid rgba(255, 107, 53, 0.12);
+  box-shadow: 0 16px 48px rgba(255, 107, 53, 0.1);
+}
+
+.navbar-light .profile-dropdown-header {
+  background: rgba(255, 107, 53, 0.04);
+}
+
+.navbar-light .profile-dropdown-name {
+  color: #212529;
+}
+
+.navbar-light .profile-dropdown-email {
+  color: #6c757d;
+}
+
+.navbar-light .profile-dropdown-divider {
+  background: rgba(255, 107, 53, 0.08);
+}
+
+.navbar-light .profile-dropdown-item {
+  color: #495057;
+}
+
+.navbar-light .profile-dropdown-item:hover {
+  background: rgba(255, 107, 53, 0.06);
+  color: #ff6b35;
+}
+
+.navbar-light .profile-dropdown-icon-small {
+  color: #ff6b35;
+}
+
+.navbar-light .profile-dropdown-logout {
+  color: #ef4444;
+}
+
+.navbar-light .profile-dropdown-logout:hover {
+  background: rgba(239, 68, 68, 0.06);
+  color: #dc2626;
+}
+
+/* Light variant — Login icon button */
+.navbar-light .login-icon-button {
+  background: rgba(255, 107, 53, 0.08);
+  border-color: rgba(255, 107, 53, 0.2);
+}
+
+.navbar-light .login-icon-button:hover {
+  background: rgba(255, 107, 53, 0.15);
+  border-color: rgba(255, 107, 53, 0.4);
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.15);
+}
+
+/* Light variant — Hamburger */
+.navbar-light .hamburger-icon span {
+  background: #212529;
+}
+
+/* Light variant — Discount tab override */
+.navbar-light .navbar-item.discount-tab {
+  color: white;
+}
+
+/* ===================================
+   MOBILE NAV LIGHT VARIANT
+   =================================== */
+
+.mobile-nav-drawer.mobile-nav-light {
+  background: rgba(255, 255, 255, 0.98);
+  border-left: 1px solid rgba(255, 107, 53, 0.1);
+  box-shadow: -10px 0 40px rgba(255, 107, 53, 0.08);
+}
+
+.mobile-nav-light .mobile-nav-close {
+  background: rgba(255, 107, 53, 0.06);
+  border-color: rgba(255, 107, 53, 0.15);
+  color: #212529;
+}
+
+.mobile-nav-light .mobile-nav-close:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.mobile-nav-light .mobile-nav-item {
+  color: #495057;
+}
+
+.mobile-nav-light .mobile-nav-item:hover,
+.mobile-nav-light .mobile-nav-item:active {
+  background: rgba(255, 107, 53, 0.08);
+  border-color: rgba(255, 107, 53, 0.2);
+  color: #ff6b35;
+}
+
+.mobile-nav-light .mobile-nav-item.active {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: rgba(255, 107, 53, 0.3);
+  color: #ff6b35;
+}
+
+.mobile-nav-light .mobile-nav-item .nav-icon {
+  color: #ff6b35;
+}
+
+.mobile-nav-light .mobile-nav-divider {
+  background: rgba(255, 107, 53, 0.1);
+}
+
+.mobile-nav-light .mobile-nav-section-title {
+  color: #6c757d;
+}
+
 /* Responsive */
 @media (max-width: 968px) {
   .navbar-logo {

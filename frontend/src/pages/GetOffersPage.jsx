@@ -154,7 +154,7 @@ function GetOffersPage() {
 
   return (
     <div className="offers-page">
-      <Navbar />
+      <Navbar variant="light" />
 
       <div className="offers-bg">
         <div className="offers-bg-orb offers-bg-orb-1"></div>

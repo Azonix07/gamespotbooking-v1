@@ -116,7 +116,7 @@ const UpdatesPage = () => {
 
   return (
     <div className="updates-page">
-      <Navbar />
+      <Navbar variant="light" />
       
       <div className="updates-page-container">
         {/* Hero Section */}

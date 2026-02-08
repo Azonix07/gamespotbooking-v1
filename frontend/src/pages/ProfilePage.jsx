@@ -193,7 +193,7 @@ const ProfilePage = () => {
   if (authLoading || loading) {
     return (
       <>
-        <Navbar />
+        <Navbar variant="light" />
         <div className="profile-page-new">
           <div className="profile-loading">
             <div className="spinner"></div>
@@ -207,7 +207,7 @@ const ProfilePage = () => {
   if (error && !profileData) {
     return (
       <>
-        <Navbar />
+        <Navbar variant="light" />
         <div className="profile-page-new">
           <div className="profile-error">
             <h2>⚠️ Profile Not Available</h2>
@@ -221,7 +221,7 @@ const ProfilePage = () => {
 
   return (
     <>
-      <Navbar />
+      <Navbar variant="light" />
       <div className="profile-page-new">
         <div className="profile-container-new">
           

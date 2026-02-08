@@ -159,7 +159,7 @@ const MembershipPlansPage = () => {
   if (loading) {
     return (
       <div className="membership-page">
-        <Navbar />
+        <Navbar variant="light" />
         <div className="membership-container">
           <div className="membership-loading">
             <div className="spinner"></div>
@@ -172,7 +172,7 @@ const MembershipPlansPage = () => {
 
   return (
     <div className="membership-page">
-      <Navbar />
+      <Navbar variant="light" />
       <div className="membership-container">
         
         {/* Header */}

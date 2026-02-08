@@ -200,7 +200,7 @@ const InstagramPromoPage = () => {
     console.log('[InstagramPromo] Showing loading screen:', { loading, authLoading });
     return (
       <div className="instagram-promo-page">
-        <Navbar />
+        <Navbar variant="light" />
         <div className="container" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
           <div className="spinner"></div>
           <p>Loading...</p>
@@ -214,7 +214,7 @@ const InstagramPromoPage = () => {
     console.log('[InstagramPromo] User not authenticated, showing login screen:', { isAuthenticated, user: user?.name });
     return (
       <div className="instagram-promo-page">
-        <Navbar />
+        <Navbar variant="light" />
         
         <div className="promo-bg-effects">
           <div className="promo-bg-orb promo-bg-orb-1"></div>
@@ -318,7 +318,7 @@ const InstagramPromoPage = () => {
   if (!activePromotion) {
     return (
       <div className="instagram-promo-page">
-        <Navbar />
+        <Navbar variant="light" />
         <div className="container promo-container">
           <motion.div 
             className="no-promo-card"
@@ -343,7 +343,7 @@ const InstagramPromoPage = () => {
 
   return (
     <div className="instagram-promo-page">
-      <Navbar />
+      <Navbar variant="light" />
       
       <div className="promo-bg-effects">
         <div className="promo-bg-orb promo-bg-orb-1"></div>

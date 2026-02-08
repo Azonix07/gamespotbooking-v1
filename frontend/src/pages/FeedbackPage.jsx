@@ -133,7 +133,7 @@ const FeedbackPage = () => {
 
   return (
     <div className="feedback-page">
-      <Navbar />
+      <Navbar variant="light" />
       
       <div className="feedback-container">
         <div className="feedback-header">

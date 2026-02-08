@@ -121,7 +121,7 @@ const ContactPage = () => {
 
   return (
     <div className="contact-page">
-      <Navbar />
+      <Navbar variant="light" />
 
       {/* ═══ HERO ═══ */}
       <section className="contact-hero">
