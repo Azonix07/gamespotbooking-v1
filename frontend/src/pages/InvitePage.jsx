@@ -1,17 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaWhatsapp, FaInstagram, FaGamepad, FaGift } from 'react-icons/fa';
+import { FaWhatsapp, FaInstagram } from 'react-icons/fa';
+import { FiCalendar, FiGift, FiArrowRight } from 'react-icons/fi';
 import '../styles/InvitePage.css';
 
 function InvitePage() {
   const navigate = useNavigate();
 
   const handleWhatsAppClick = () => {
-    window.open('https://wa.me/917012125919', '_blank');
+    window.open('https://wa.me/917012125919', '_blank', 'noopener');
   };
 
   const handleInstagramClick = () => {
-    window.open('https://instagram.com/gamespot_kdlr', '_blank');
+    window.open('https://instagram.com/gamespot_kdlr', '_blank', 'noopener');
   };
 
   const handleBookingClick = () => {
@@ -19,59 +20,88 @@ function InvitePage() {
   };
 
   const handleGetOffersClick = () => {
-    // Redirect to get-offers page (Instagram promo page)
     navigate('/get-offers');
   };
 
+  const cards = [
+    {
+      icon: <FaWhatsapp />,
+      title: 'WhatsApp Us',
+      desc: 'Chat with us directly for bookings, queries, or just to say hi!',
+      color: '#25D366',
+      action: handleWhatsAppClick,
+      btnText: 'Open Chat',
+    },
+    {
+      icon: <FiCalendar />,
+      title: 'Book Now',
+      desc: 'Reserve your gaming slot in seconds. Pick your time and jump in!',
+      color: '#ff6b35',
+      action: handleBookingClick,
+      btnText: 'Book a Slot',
+    },
+    {
+      icon: <FaInstagram />,
+      title: 'Follow Us',
+      desc: 'Stay updated with events, tournaments, and exclusive drops.',
+      color: '#E1306C',
+      action: handleInstagramClick,
+      btnText: 'Follow @gamespot_kdlr',
+    },
+    {
+      icon: <FiGift />,
+      title: 'Get Offers',
+      desc: 'Follow us on Instagram and unlock a free gaming hour — easy!',
+      color: '#ff9966',
+      action: handleGetOffersClick,
+      btnText: 'Claim Free Hour',
+    },
+  ];
+
   return (
     <div className="invite-page">
-      <div className="invite-container">
-        <div className="invite-header">
-          <h1>Welcome to GameSpot</h1>
-          <p>Your Gateway to Gaming Paradise</p>
+      <div className="invite-bg">
+        <div className="invite-bg-orb invite-bg-orb-1"></div>
+        <div className="invite-bg-orb invite-bg-orb-2"></div>
+      </div>
+
+      <div className="invite-content">
+        <div className="invite-logo">
+          <span className="invite-logo-icon">🎮</span>
         </div>
 
-        <div className="invite-links">
-          <div className="invite-card" onClick={handleWhatsAppClick}>
-            <div className="invite-icon whatsapp">
-              <FaWhatsapp />
-            </div>
-            <h3>WhatsApp Us</h3>
-            <p>7012125919</p>
-            <span className="link-hint">Quick Response • 24/7 Available</span>
-          </div>
+        <h1 className="invite-title">
+          Welcome to <span className="invite-brand">GameSpot</span>
+        </h1>
+        <p className="invite-sub">
+          Calicut's premium gaming lounge — book, play, and level up!
+        </p>
 
-          <div className="invite-card" onClick={handleBookingClick}>
-            <div className="invite-icon booking">
-              <FaGamepad />
+        <div className="invite-grid">
+          {cards.map((card, idx) => (
+            <div
+              key={idx}
+              className="invite-card"
+              onClick={card.action}
+              style={{ '--card-accent': card.color }}
+            >
+              <div className="invite-card-icon-wrap">
+                {card.icon}
+              </div>
+              <div className="invite-card-body">
+                <h3 className="invite-card-title">{card.title}</h3>
+                <p className="invite-card-desc">{card.desc}</p>
+              </div>
+              <div className="invite-card-arrow">
+                <FiArrowRight />
+              </div>
             </div>
-            <h3>Book Now</h3>
-            <p>Go to Homepage</p>
-            <span className="link-hint">Start Your Gaming Session</span>
-          </div>
-
-          <div className="invite-card" onClick={handleInstagramClick}>
-            <div className="invite-icon instagram">
-              <FaInstagram />
-            </div>
-            <h3>Follow Us</h3>
-            <p>@gamespot_kdlr</p>
-            <span className="link-hint">Latest Updates • Gaming News</span>
-          </div>
-
-          <div className="invite-card special" onClick={handleGetOffersClick}>
-            <div className="invite-icon offers">
-              <FaGift />
-            </div>
-            <h3>Get Offers</h3>
-            <p>Share & Win</p>
-            <span className="link-hint">Exclusive Promo Codes</span>
-          </div>
+          ))}
         </div>
 
-        <div className="invite-footer">
-          <p>Choose any option to continue</p>
-        </div>
+        <p className="invite-footer-text">
+          GameSpot Gaming Lounge · Kozhikode, Kerala
+        </p>
       </div>
     </div>
   );
