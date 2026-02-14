@@ -18,12 +18,12 @@ const GAME_COVERS = {
     color: '#b91c1c'
   },
   'FC 26': {
-    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2669320/library_600x900.jpg',
+    img: 'https://image.api.playstation.com/vulcan/ap/rnd/202507/1617/27132291f4187708f316b43f65ab887a74fdf325f4ece306.png',
     emoji: '⚽',
     color: '#1a472a'
   },
   'WWE 2K24': {
-    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2315790/library_600x900.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2315690/library_600x900.jpg',
     emoji: '🤼',
     color: '#8b0000'
   },
@@ -33,7 +33,7 @@ const GAME_COVERS = {
     color: '#990000'
   },
   'Split Fiction': {
-    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3364550/library_600x900.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2001120/library_600x900.jpg',
     emoji: '📖',
     color: '#4a0e8f'
   },
@@ -58,7 +58,7 @@ const GAME_COVERS = {
     color: '#006400'
   },
   'Gran Turismo 7': {
-    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2440510/library_600x900.jpg',
+    img: 'https://image.api.playstation.com/vulcan/ap/rnd/202109/1321/y7iyxoBE8VKotN89QCFhLgLM.png',
     emoji: '🏎️',
     color: '#00308F'
   },
@@ -68,7 +68,7 @@ const GAME_COVERS = {
     color: '#ff6b00'
   },
   'The Crew Motorfest': {
-    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2627070/library_600x900.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2698940/library_600x900.jpg',
     emoji: '🏝️',
     color: '#0077be'
   },
@@ -125,7 +125,7 @@ const BookingPage = () => {
   // Game selection state
   const [allGames, setAllGames] = useState([]);
   const [gamesLoading, setGamesLoading] = useState(false);
-  const [selectedGame, setSelectedGame] = useState(null); // Game user wants to play
+  const [selectedGames, setSelectedGames] = useState([]); // Games user wants to play (multiple selection)
   const [gameSearchQuery, setGameSearchQuery] = useState('');
   const [activeGenreFilter, setActiveGenreFilter] = useState('All');
   const [selectionMode, setSelectionMode] = useState('game'); // 'game' or 'device' - start with game-first flow
@@ -240,25 +240,43 @@ const BookingPage = () => {
     return games;
   }, [allGames, activeGenreFilter, gameSearchQuery]);
 
-  // Get PS5 units that have the selected game
+  // Get PS5 units that have the selected games
   const recommendedPS5Units = useMemo(() => {
-    if (!selectedGame) return [];
-    return (selectedGame.ps5_numbers || []).filter(n => availablePS5Units.includes(n));
-  }, [selectedGame, availablePS5Units]);
+    if (selectedGames.length === 0) return [];
+    // Collect all PS5 units across all selected games
+    const allUnits = new Set();
+    selectedGames.forEach(game => {
+      (game.ps5_numbers || []).forEach(n => {
+        if (availablePS5Units.includes(n)) allUnits.add(n);
+      });
+    });
+    return Array.from(allUnits);
+  }, [selectedGames, availablePS5Units]);
 
   // Get games available on a specific PS5 unit
   const getGamesForUnit = (unitNumber) => {
     return allGames.filter(g => (g.ps5_numbers || []).includes(unitNumber));
   };
 
-  // Handle game selection and auto-select recommended PS5
+  // Handle game selection (multi-select) and auto-select recommended PS5
   const handleGameSelect = (game) => {
-    if (selectedGame?.id === game.id) {
+    const isAlreadySelected = selectedGames.some(g => g.id === game.id);
+    
+    let newSelectedGames;
+    if (isAlreadySelected) {
       // Deselect
-      setSelectedGame(null);
+      newSelectedGames = selectedGames.filter(g => g.id !== game.id);
+      setSelectedGames(newSelectedGames);
+      // If no games left, reset PS5 bookings
+      if (newSelectedGames.length === 0) {
+        setPs5Bookings([]);
+      }
       return;
     }
-    setSelectedGame(game);
+    
+    // Add to selection
+    newSelectedGames = [...selectedGames, game];
+    setSelectedGames(newSelectedGames);
     setShowGamePicker(false);
     
     // If game is a driving sim only game (all its units are unit 4), auto-select the driving simulator
@@ -270,10 +288,29 @@ const BookingPage = () => {
       return;
     }
     
-    // Auto-select the first available PS5 that has this game (if none selected yet)
-    const availableUnitsWithGame = (game.ps5_numbers || []).filter(n => n !== 4 && availablePS5Units.includes(n));
+    // PS5 Allocation Priority: PS5-2 first → PS5-3 if driving sim selected → closest → PS5-1 last resort
+    const gamePS5Units = (game.ps5_numbers || []).filter(n => n !== 4);
+    const availableUnitsWithGame = gamePS5Units.filter(n => availablePS5Units.includes(n));
+    
     if (availableUnitsWithGame.length > 0 && ps5Bookings.length === 0) {
-      const unitNumber = availableUnitsWithGame[0];
+      // Check if any selected game includes driving sim
+      const hasDrivingSimGame = newSelectedGames.some(g => (g.ps5_numbers || []).includes(4));
+      
+      let unitNumber;
+      // Priority: PS5-2 > PS5-3 (if driving sim) > PS5-3 > PS5-1 (last resort)
+      if (availableUnitsWithGame.includes(2)) {
+        unitNumber = 2;
+      } else if (hasDrivingSimGame && availableUnitsWithGame.includes(3)) {
+        unitNumber = 3;
+      } else if (availableUnitsWithGame.includes(3)) {
+        unitNumber = 3;
+      } else if (availableUnitsWithGame.includes(1)) {
+        // PS5-1 is last resort — only if the game is exclusively on PS5-1
+        unitNumber = 1;
+      } else {
+        unitNumber = availableUnitsWithGame[0];
+      }
+      
       setPs5Bookings([{ device_number: unitNumber, player_count: 1, duration: 60, game_preference: game.name }]);
       setExpandedPS5(unitNumber);
     }
@@ -413,7 +450,7 @@ const BookingPage = () => {
     setSelectedTime(time);
     setPs5Bookings([]);
     setDrivingSim(null);
-    setSelectedGame(null);
+    setSelectedGames([]);
     setPrice(0);
     setError(null);
     
@@ -482,7 +519,7 @@ const BookingPage = () => {
         return;
       }
       
-      setPs5Bookings([...ps5Bookings, { device_number: deviceNumber, player_count: newCount, duration: 60, game_preference: selectedGame?.name || null }]);
+      setPs5Bookings([...ps5Bookings, { device_number: deviceNumber, player_count: newCount, duration: 60, game_preference: selectedGames.map(g => g.name).join(', ') || null }]);
     }
   };
   
@@ -1165,8 +1202,8 @@ const BookingPage = () => {
                         exit={{ opacity: 0, y: -15 }}
                         transition={{ duration: 0.3 }}
                       >
-                        {/* Selected Game Banner */}
-                        {selectedGame && (
+                        {/* Selected Games Banner */}
+                        {selectedGames.length > 0 && (
                           <motion.div 
                             className="selected-game-banner"
                             initial={{ opacity: 0, scale: 0.95 }}
@@ -1174,33 +1211,40 @@ const BookingPage = () => {
                             transition={{ type: "spring", stiffness: 300, damping: 25 }}
                           >
                             <div className="sgb-content">
-                              <div className="sgb-game-icon">
-                                {getGameCover(selectedGame.name).img ? (
-                                  <img src={getGameCover(selectedGame.name).img} alt={selectedGame.name} className="sgb-cover-img" />
-                                ) : (
-                                  <span>{getGameCover(selectedGame.name).emoji}</span>
-                                )}
+                              <div className="sgb-games-list">
+                                {selectedGames.map(game => (
+                                  <div key={game.id} className="sgb-game-item">
+                                    <div className="sgb-game-icon">
+                                      {getGameCover(game.name).img ? (
+                                        <img src={getGameCover(game.name).img} alt={game.name} className="sgb-cover-img" />
+                                      ) : (
+                                        <span>{getGameCover(game.name).emoji}</span>
+                                      )}
+                                    </div>
+                                    <div className="sgb-info">
+                                      <span className="sgb-name">{game.name}</span>
+                                      <span className="sgb-meta">
+                                        {game.genre} • {game.max_players}P
+                                      </span>
+                                    </div>
+                                    <button className="sgb-remove-game" onClick={() => handleGameSelect(game)} title="Remove game">
+                                      <FiX />
+                                    </button>
+                                  </div>
+                                ))}
                               </div>
-                              <div className="sgb-info">
-                                <span className="sgb-label">Playing</span>
-                                <span className="sgb-name">{selectedGame.name}</span>
-                                <span className="sgb-meta">
-                                  {selectedGame.genre} • Up to {selectedGame.max_players}P
-                                  {recommendedPS5Units.length > 0 && (
-                                    <span className="sgb-available"> • Available on Unit{recommendedPS5Units.length > 1 ? 's' : ''} {recommendedPS5Units.join(', ')}</span>
-                                  )}
-                                </span>
+                              <div className="sgb-actions">
+                                <span className="sgb-count">{selectedGames.length} game{selectedGames.length > 1 ? 's' : ''} selected</span>
+                                <button className="sgb-change" onClick={() => { setSelectedGames([]); setPs5Bookings([]); }}>
+                                  <FiX /> Clear All
+                                </button>
                               </div>
-                              <button className="sgb-change" onClick={() => { setSelectedGame(null); setPs5Bookings([]); }}>
-                                <FiX /> Change
-                              </button>
                             </div>
                           </motion.div>
                         )}
 
-                        {/* Game Search & Filter */}
-                        {!selectedGame && (
-                          <div className="game-browser">
+                        {/* Game Search & Filter - Always visible for multi-select */}
+                        <div className="game-browser">
                             <div className="game-browser-header">
                               <h3 className="section-title">
                                 <FiStar className="section-icon" />
@@ -1263,7 +1307,7 @@ const BookingPage = () => {
                                     <motion.div
                                       key={game.id}
                                       variants={fadeInUp}
-                                      className={`game-card ${!isGameAvailable ? 'game-unavailable' : ''} ${selectedGame?.id === game.id ? 'game-selected' : ''} ${isDrivingSim ? 'driving-sim-game' : ''}`}
+                                      className={`game-card ${!isGameAvailable ? 'game-unavailable' : ''} ${selectedGames.some(g => g.id === game.id) ? 'game-selected' : ''} ${isDrivingSim ? 'driving-sim-game' : ''}`}
                                       onClick={() => isGameAvailable && handleGameSelect(game)}
                                       whileHover={isGameAvailable ? { y: -6, scale: 1.02 } : {}}
                                       whileTap={isGameAvailable ? { scale: 0.98 } : {}}
@@ -1285,6 +1329,11 @@ const BookingPage = () => {
                                           <span className="game-card-emoji">{cover.emoji}</span>
                                         </div>
                                         <div className="game-card-gradient"></div>
+                                        {selectedGames.some(g => g.id === game.id) && (
+                                          <div className="game-selected-badge">
+                                            <FiCheck />
+                                          </div>
+                                        )}
                                         {isDrivingSim && (
                                           <div className="game-device-badge driving-sim-badge">
                                             <FiCpu style={{ fontSize: '0.6rem' }} /> Sim
@@ -1306,25 +1355,26 @@ const BookingPage = () => {
                                         <div className="game-card-title-overlay">
                                           <h4 className="game-card-name">{game.name}</h4>
                                         </div>
-                                      </div>
-                                      {/* Hover-reveal details */}
-                                      <div className="game-card-details">
-                                        <div className="game-card-meta">
-                                          <span className="game-genre-tag">{game.genre}</span>
-                                          <span className="game-players-tag">
-                                            <FiUsers className="tag-icon" />
-                                            {game.max_players}P
-                                          </span>
-                                        </div>
-                                        <div className="game-card-units">
-                                          {(game.ps5_numbers || []).map(n => (
-                                            <span 
-                                              key={n} 
-                                              className={`unit-chip ${n === 4 ? (availableDriving ? 'available' : 'booked') : (availablePS5Units.includes(n) ? 'available' : 'booked')} ${n === 4 ? 'driving-chip' : ''}`}
-                                            >
-                                              {n === 4 ? 'Sim' : `PS5-${n}`}
+                                        {/* Hover-reveal details - inside card visual as overlay */}
+                                        <div className="game-card-details">
+                                          <h4 className="game-card-detail-name">{game.name}</h4>
+                                          <div className="game-card-meta">
+                                            <span className="game-genre-tag">{game.genre}</span>
+                                            <span className="game-players-tag">
+                                              <FiUsers className="tag-icon" />
+                                              {game.max_players}P
                                             </span>
-                                          ))}
+                                          </div>
+                                          <div className="game-card-units">
+                                            {(game.ps5_numbers || []).map(n => (
+                                              <span 
+                                                key={n} 
+                                                className={`unit-chip ${n === 4 ? (availableDriving ? 'available' : 'booked') : (availablePS5Units.includes(n) ? 'available' : 'booked')} ${n === 4 ? 'driving-chip' : ''}`}
+                                              >
+                                                {n === 4 ? 'Sim' : `PS5-${n}`}
+                                              </span>
+                                            ))}
+                                          </div>
                                         </div>
                                       </div>
                                     </motion.div>
@@ -1342,10 +1392,9 @@ const BookingPage = () => {
                               </motion.div>
                             )}
                           </div>
-                        )}
 
-                        {/* PS5 Unit Selection (shown after game is picked) */}
-                        {selectedGame && (
+                        {/* PS5 Unit Selection (shown after games are picked) */}
+                        {selectedGames.length > 0 && (
                           <motion.div 
                             className="post-game-device-select"
                             initial={{ opacity: 0, y: 20 }}
@@ -1363,7 +1412,8 @@ const BookingPage = () => {
                                 const isExpanded = expandedPS5 === unitNumber;
                                 const isSelected = !!booking;
                                 const isAvailable = availablePS5Units.includes(unitNumber);
-                                const hasGame = (selectedGame.ps5_numbers || []).includes(unitNumber);
+                                // Check if ANY selected game is on this unit
+                                const hasGame = selectedGames.some(g => (g.ps5_numbers || []).includes(unitNumber));
                                 const isRecommended = hasGame && isAvailable;
                                 
                                 if (!hasGame) return null;
@@ -1408,7 +1458,7 @@ const BookingPage = () => {
                                     {!isExpanded && isAvailable && (
                                       <div className="device-games-preview">
                                         {getGamesForUnit(unitNumber).slice(0, 3).map(g => (
-                                          <span key={g.id} className={`mini-game-tag ${g.id === selectedGame?.id ? 'highlight' : ''}`}>
+                                          <span key={g.id} className={`mini-game-tag ${selectedGames.some(sg => sg.id === g.id) ? 'highlight' : ''}`}>
                                             {g.name}
                                           </span>
                                         ))}
@@ -1575,7 +1625,10 @@ const BookingPage = () => {
                                                         : b
                                                     ));
                                                   }
-                                                  setSelectedGame(g);
+                                                  // Add game to selection if not already selected
+                                                  if (!selectedGames.some(sg => sg.id === g.id)) {
+                                                    setSelectedGames([...selectedGames, g]);
+                                                  }
                                                 }}
                                               >
                                                 {getGameCover(g.name).img ? (
@@ -1646,7 +1699,7 @@ const BookingPage = () => {
                   </AnimatePresence>
 
                   {/* Driving Simulator - Always visible */}
-                  <div className="devices-section" style={{ marginTop: selectionMode === 'game' && !selectedGame ? 0 : 8 }}>
+                  <div className="devices-section" style={{ marginTop: selectionMode === 'game' && selectedGames.length === 0 ? 0 : 8 }}>
                     <h3 className="section-title driving-title">
                       <FiCpu className="section-icon" />
                       Racing Simulator
@@ -1974,10 +2027,10 @@ const BookingPage = () => {
                     
                     <div className="summary-section-v2">
                       <span className="section-title-v2">Selected Equipment</span>
-                      {selectedGame && (
+                      {selectedGames.length > 0 && (
                         <div className="summary-game-badge">
-                          <span className="summary-game-label">🎮 Game:</span>
-                          <span className="summary-game-name">{selectedGame.name}</span>
+                          <span className="summary-game-label">🎮 Game{selectedGames.length > 1 ? 's' : ''}:</span>
+                          <span className="summary-game-name">{selectedGames.map(g => g.name).join(', ')}</span>
                         </div>
                       )}
                       <div className="items-list-v2">

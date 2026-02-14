@@ -23,21 +23,21 @@ FALLBACK_GAMES = [
     },
     {
         'id': 2, 'name': 'FC 26', 
-        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2669320/library_600x900.jpg',
+        'cover_image': 'https://image.api.playstation.com/vulcan/ap/rnd/202507/1617/27132291f4187708f316b43f65ab887a74fdf325f4ece306.png',
         'genre': 'Sports', 'max_players': 4, 'rating': 8.5,
         'description': 'The latest EA Sports football experience with next-gen gameplay.',
         'release_year': 2025, 'ps5_numbers': [1, 2, 3]
     },
     {
         'id': 3, 'name': 'WWE 2K24', 
-        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2315790/library_600x900.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2315690/library_600x900.jpg',
         'genre': 'Fighting', 'max_players': 4, 'rating': 8.0,
         'description': 'Step into the ring with WWE superstars in the most electrifying wrestling game.',
         'release_year': 2024, 'ps5_numbers': [1, 2]
     },
     {
         'id': 4, 'name': 'Split Fiction', 
-        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3364550/library_600x900.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2001120/library_600x900.jpg',
         'genre': 'Co-op Adventure', 'max_players': 2, 'rating': 9.0,
         'description': 'A co-op adventure where two writers get trapped inside their own stories.',
         'release_year': 2025, 'ps5_numbers': [1, 2, 3]
@@ -79,7 +79,7 @@ FALLBACK_GAMES = [
     },
     {
         'id': 10, 'name': 'Gran Turismo 7', 
-        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2440510/library_600x900.jpg',
+        'cover_image': 'https://image.api.playstation.com/vulcan/ap/rnd/202109/1321/y7iyxoBE8VKotN89QCFhLgLM.png',
         'genre': 'Racing', 'max_players': 2, 'rating': 8.5,
         'description': 'The real driving simulator. The definitive Gran Turismo experience.',
         'release_year': 2022, 'ps5_numbers': [3, 4]
@@ -94,7 +94,7 @@ FALLBACK_GAMES = [
     },
     {
         'id': 12, 'name': 'The Crew Motorfest', 
-        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2627070/library_600x900.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2698940/library_600x900.jpg',
         'genre': 'Racing', 'max_players': 1, 'rating': 7.8,
         'description': 'A festival of speed set in the paradise of Hawaii.',
         'release_year': 2023, 'ps5_numbers': [4],

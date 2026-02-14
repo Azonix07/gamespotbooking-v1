@@ -3960,6 +3960,31 @@ span.device-unit {
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
 
+/* Selected game checkmark badge */
+.game-selected-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--booking-primary);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+  animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
 /* Info Button (replaces rating badge) */
 .game-info-btn {
   position: absolute;
@@ -4021,17 +4046,49 @@ span.device-unit {
   overflow: hidden;
 }
 
-/* Hover-reveal details section */
+/* Hover-reveal details section - absolute overlay inside card */
 .game-card-details {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 0 12px;
   max-height: 0;
   overflow: hidden;
+  z-index: 4;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
   transition: max-height 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.35s ease;
 }
 
 .game-card:hover .game-card-details {
-  max-height: 90px;
-  padding: 8px 12px 10px;
+  max-height: 110px;
+  padding: 30px 12px 10px;
+}
+
+/* Game name inside hover details */
+.game-card-detail-name {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Hide title overlay on hover since details takes over */
+.game-card:hover .game-card-title-overlay {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.game-card .game-card-title-overlay {
+  transition: opacity 0.2s ease;
 }
 
 .game-card-meta {
@@ -4044,11 +4101,11 @@ span.device-unit {
 
 .game-genre-tag {
   padding: 2px 8px;
-  background: rgba(255, 107, 53, 0.1);
+  background: rgba(255, 107, 53, 0.25);
   border-radius: 100px;
   font-size: 0.65rem;
   font-weight: 600;
-  color: var(--booking-primary);
+  color: #fff;
 }
 
 .game-players-tag {
@@ -4057,7 +4114,7 @@ span.device-unit {
   gap: 4px;
   font-size: 0.65rem;
   font-weight: 600;
-  color: var(--booking-gray-600);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .tag-icon {
@@ -4079,28 +4136,28 @@ span.device-unit {
 }
 
 .unit-chip.available {
-  background: rgba(16, 185, 129, 0.1);
-  color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.4);
 }
 
 .unit-chip.booked {
-  background: rgba(239, 68, 68, 0.08);
-  color: #dc2626;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
   text-decoration: line-through;
   opacity: 0.7;
 }
 
 .unit-chip.driving-chip.available {
-  background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.3);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.4);
 }
 
 .unit-chip.driving-chip.booked {
-  background: rgba(99, 102, 241, 0.06);
-  color: #6366f1;
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
   opacity: 0.5;
 }
 
@@ -4382,22 +4439,38 @@ span.device-unit {
 
 .sgb-content {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column;
+  gap: 12px;
   padding: 16px 20px;
 }
 
-.sgb-game-icon {
-  width: 48px;
-  height: 48px;
+.sgb-games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sgb-game-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.7);
   border-radius: 10px;
+  border: 1px solid rgba(255, 107, 53, 0.1);
+}
+
+.sgb-game-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 107, 53, 0.1);
-  font-size: 1.8rem;
+  font-size: 1.4rem;
 }
 
 .sgb-info {
@@ -4417,14 +4490,51 @@ span.device-unit {
 
 .sgb-name {
   font-family: 'Space Grotesk', 'Inter', sans-serif;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--booking-gray-900);
 }
 
 .sgb-meta {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--booking-gray-600);
+}
+
+.sgb-remove-game {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.06);
+  color: #ef4444;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.sgb-remove-game:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.sgb-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 107, 53, 0.1);
+}
+
+.sgb-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--booking-primary);
 }
 
 .sgb-available {
@@ -4748,7 +4858,11 @@ span.device-unit {
   /* On mobile: always show details, no hover needed */
   .game-card-details {
     max-height: none;
-    padding: 8px 10px 10px;
+    padding: 30px 10px 8px;
+  }
+
+  .game-card .game-card-title-overlay {
+    opacity: 0;
   }
 
   .game-card-title-overlay .game-card-name {
@@ -4807,20 +4921,27 @@ span.device-unit {
   }
 
   .sgb-game-icon {
-    font-size: 1.8rem;
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
   }
 
   .sgb-name {
-    font-size: 1rem;
+    font-size: 0.85rem;
   }
 
   .sgb-meta {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 
   .sgb-change {
     padding: 6px 12px;
     font-size: 0.8rem;
+  }
+
+  .sgb-game-item {
+    padding: 6px 10px;
+    gap: 10px;
   }
 
   /* Recommended Units */
@@ -4911,7 +5032,7 @@ span.device-unit {
   }
 
   .game-card-details {
-    padding: 6px 8px 8px;
+    padding: 24px 8px 6px;
   }
 
   .game-card-title-overlay .game-card-name {
@@ -4952,7 +5073,7 @@ span.device-unit {
   }
 
   .game-card-details {
-    padding: 5px 6px 6px;
+    padding: 20px 6px 5px;
   }
 
   .game-card-title-overlay .game-card-name {
