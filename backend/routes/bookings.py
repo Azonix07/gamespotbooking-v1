@@ -13,6 +13,7 @@ from utils.helpers import (
     calculate_ps5_price, 
     calculate_driving_price
 )
+from routes.membership_routes import VALID_PLANS
 import mysql.connector
 import sys
 import traceback
@@ -406,6 +407,78 @@ def handle_bookings():
                 except Exception as pts_err:
                     sys.stderr.write(f"[Booking] Points award failed (non-critical): {pts_err}\n")
             
+            # ─── Track membership hours usage ───
+            if current_user_id:
+                try:
+                    booking_hours = duration_minutes / 60.0
+                    # Determine which device categories are in this booking
+                    has_ps5 = bool(ps5_bookings)
+                    has_driving = bool(driving_sim)
+
+                    # Fetch user's active memberships
+                    cursor.execute('''
+                        SELECT id, plan_type,
+                               COALESCE(total_hours, 0) as total_hours,
+                               COALESCE(hours_used, 0) as hours_used
+                        FROM memberships
+                        WHERE user_id = %s AND status = 'active' AND end_date >= CURDATE()
+                        ORDER BY created_at DESC
+                    ''', (current_user_id,))
+                    user_memberships = cursor.fetchall()
+
+                    for mem in user_memberships:
+                        plan_info = VALID_PLANS.get(mem['plan_type'], {})
+                        cat = plan_info.get('category', '')
+                        remaining_h = max(0, float(mem['total_hours']) - float(mem['hours_used']))
+
+                        # Only deduct if category matches devices AND hours are sufficient
+                        should_deduct = False
+                        if cat == 'story' and has_ps5 and remaining_h >= booking_hours:
+                            should_deduct = True
+                        elif cat == 'driving' and has_driving and remaining_h >= booking_hours:
+                            should_deduct = True
+
+                        if should_deduct:
+                            cursor.execute('''
+                                UPDATE memberships
+                                SET hours_used = hours_used + %s
+                                WHERE id = %s
+                            ''', (booking_hours, mem['id']))
+                            sys.stderr.write(
+                                f"[Booking] Deducted {booking_hours}h from membership #{mem['id']} "
+                                f"({mem['plan_type']}) for booking #{booking_id}\n"
+                            )
+
+                    # Try to store membership_id and membership_rate flag on the booking
+                    try:
+                        cursor.execute("""
+                            SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'membership_id'
+                        """)
+                        if cursor.fetchone():
+                            # Find the primary membership used (story for ps5, driving for sim)
+                            primary_mem_id = None
+                            mem_rate_applied = False
+                            for mem in user_memberships:
+                                pi = VALID_PLANS.get(mem['plan_type'], {})
+                                c = pi.get('category', '')
+                                rem = max(0, float(mem['total_hours']) - float(mem['hours_used']))
+                                if (c == 'story' and has_ps5 and rem >= 0) or \
+                                   (c == 'driving' and has_driving and rem >= 0):
+                                    primary_mem_id = mem['id']
+                                    mem_rate_applied = True
+                                    break
+                            if primary_mem_id:
+                                cursor.execute('''
+                                    UPDATE bookings SET membership_id = %s, membership_rate = %s WHERE id = %s
+                                ''', (primary_mem_id, 1 if mem_rate_applied else 0, booking_id))
+                    except Exception:
+                        pass  # membership columns might not exist yet
+
+                    conn.commit()
+                except Exception as mem_err:
+                    sys.stderr.write(f"[Booking] Membership hours tracking failed (non-critical): {mem_err}\n")
+
             return jsonify({
                 'success': True,
                 'booking_id': booking_id,

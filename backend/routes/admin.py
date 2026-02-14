@@ -266,16 +266,14 @@ def approve_membership(membership_id):
         if not membership:
             return jsonify({'success': False, 'error': 'Pending membership not found'}), 404
         
-        # Plan durations
-        plan_durations = {
-            'monthly': 30,
-            'quarterly': 90,
-            'annual': 365
-        }
+        # Use VALID_PLANS from membership_routes for durations & hours
+        from routes.membership_routes import VALID_PLANS
         
         from datetime import date, timedelta
         start_date = date.today()
-        duration = plan_durations.get(membership['plan_type'], 30)
+        plan_info = VALID_PLANS.get(membership['plan_type'], {})
+        duration = plan_info.get('days', 30)
+        total_hours = plan_info.get('hours', 0)
         end_date = start_date + timedelta(days=duration)
         
         # Cancel any existing active membership for the same user
@@ -289,10 +287,11 @@ def approve_membership(membership_id):
         # Activate this membership
         activate_query = '''
             UPDATE memberships 
-            SET status = 'active', start_date = %s, end_date = %s
+            SET status = 'active', start_date = %s, end_date = %s,
+                total_hours = %s, hours_used = 0
             WHERE id = %s
         '''
-        cursor.execute(activate_query, (start_date, end_date, membership_id))
+        cursor.execute(activate_query, (start_date, end_date, total_hours, membership_id))
         conn.commit()
         
         return jsonify({

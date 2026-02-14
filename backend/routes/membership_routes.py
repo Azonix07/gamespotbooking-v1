@@ -277,13 +277,14 @@ def subscribe():
         duration_days = plan_info['days']
         end_date = start_date + timedelta(days=duration_days)
         discount = plan_info['discount']
+        total_hours = plan_info['hours']
 
         insert_query = '''
             INSERT INTO memberships
-            (user_id, plan_type, start_date, end_date, status, discount_percentage)
-            VALUES (%s, %s, %s, %s, 'pending', %s)
+            (user_id, plan_type, start_date, end_date, status, discount_percentage, total_hours, hours_used)
+            VALUES (%s, %s, %s, %s, 'pending', %s, %s, 0)
         '''
-        cursor.execute(insert_query, (user_id, plan_type, start_date, end_date, discount))
+        cursor.execute(insert_query, (user_id, plan_type, start_date, end_date, discount, total_hours))
         conn.commit()
 
         membership_id = cursor.lastrowid
@@ -333,6 +334,8 @@ def get_status():
             SELECT
                 id, plan_type, start_date, end_date,
                 status, discount_percentage,
+                COALESCE(total_hours, 0) as total_hours,
+                COALESCE(hours_used, 0) as hours_used,
                 DATEDIFF(end_date, CURDATE()) as days_remaining
             FROM memberships
             WHERE user_id = %s
@@ -368,6 +371,15 @@ def get_status():
         if active_membership:
             active_membership['start_date'] = active_membership['start_date'].isoformat()
             active_membership['end_date'] = active_membership['end_date'].isoformat()
+            # Add computed hours info
+            total_h = float(active_membership.get('total_hours', 0))
+            used_h = float(active_membership.get('hours_used', 0))
+            active_membership['hours_remaining'] = max(0, total_h - used_h)
+            # Add plan metadata (rate, category) from VALID_PLANS
+            plan_meta = VALID_PLANS.get(active_membership['plan_type'], {})
+            active_membership['rate_per_hour'] = plan_meta.get('rate', 0)
+            active_membership['category'] = plan_meta.get('category', '')
+            active_membership['plan_price'] = plan_meta.get('price', 0)
             result['has_membership'] = True
             result['membership'] = active_membership
 
@@ -560,13 +572,14 @@ def request_upgrade():
         duration_days = new_plan_info['days']
         end_date = start_date + timedelta(days=duration_days)
         discount = new_plan_info['discount']
+        total_hours = new_plan_info['hours']
 
         insert_query = '''
             INSERT INTO memberships
-            (user_id, plan_type, start_date, end_date, status, discount_percentage)
-            VALUES (%s, %s, %s, %s, 'pending', %s)
+            (user_id, plan_type, start_date, end_date, status, discount_percentage, total_hours, hours_used)
+            VALUES (%s, %s, %s, %s, 'pending', %s, %s, 0)
         '''
-        cursor.execute(insert_query, (user_id, new_plan_type, start_date, end_date, discount))
+        cursor.execute(insert_query, (user_id, new_plan_type, start_date, end_date, discount, total_hours))
         conn.commit()
 
         nice_name = new_plan_type.replace('_', ' ').title()

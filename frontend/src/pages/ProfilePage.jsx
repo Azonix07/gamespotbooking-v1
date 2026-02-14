@@ -25,6 +25,7 @@ const ProfilePage = () => {
   const [profileData, setProfileData] = useState(null);
   const [rewards, setRewards] = useState(null);
   const [bookings, setBookings] = useState([]);
+  const [membershipData, setMembershipData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -73,6 +74,20 @@ const ProfilePage = () => {
           setBookings(data.bookings || []);
         } else {
           setError(data.error || 'Failed to load profile.');
+        }
+        
+        // Fetch membership status
+        try {
+          const memRes = await fetch(`${API_URL}/api/membership/status`, {
+            credentials: 'include',
+            headers: getAuthHeaders()
+          });
+          const memData = await memRes.json();
+          if (memData.success && memData.has_membership) {
+            setMembershipData(memData.membership);
+          }
+        } catch (memErr) {
+          console.log('No active membership');
         }
       } catch (err) {
         console.error('Profile fetch error:', err);
@@ -301,6 +316,96 @@ const ProfilePage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Membership Card */}
+              {membershipData && (
+                <div className="profile-card membership-status-card" style={{
+                  background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+                  color: '#fff',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: '-20px',
+                    right: '-20px',
+                    width: '100px',
+                    height: '100px',
+                    borderRadius: '50%',
+                    background: 'rgba(255, 165, 0, 0.15)',
+                    pointerEvents: 'none'
+                  }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <div>
+                      <p style={{ fontSize: '0.75rem', color: '#aaa', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        {membershipData.category === 'story' ? '🎮 Story Pass' : '🏎️ Driving Pass'}
+                      </p>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: '700', margin: 0, textTransform: 'capitalize' }}>
+                        {membershipData.plan_type?.replace(/_/g, ' ')}
+                      </h3>
+                    </div>
+                    <span style={{
+                      background: membershipData.status === 'active' ? '#00c853' : '#ff9800',
+                      color: '#fff',
+                      padding: '4px 10px',
+                      borderRadius: '12px',
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      textTransform: 'uppercase'
+                    }}>
+                      {membershipData.status}
+                    </span>
+                  </div>
+                  
+                  {/* Rate per hour */}
+                  {membershipData.rate_per_hour && (
+                    <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                      <span style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffa500' }}>
+                        ₹{membershipData.rate_per_hour}
+                      </span>
+                      <span style={{ fontSize: '0.85rem', color: '#aaa' }}>/hour</span>
+                    </div>
+                  )}
+
+                  {/* Hours Progress */}
+                  <div style={{ marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#ccc', marginBottom: '6px' }}>
+                      <span>Hours Used</span>
+                      <span>
+                        {(membershipData.hours_used || 0).toFixed(1)} / {(membershipData.total_hours || 0).toFixed(0)}h
+                      </span>
+                    </div>
+                    <div style={{
+                      width: '100%',
+                      height: '8px',
+                      borderRadius: '4px',
+                      background: 'rgba(255,255,255,0.15)',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        width: `${membershipData.total_hours > 0 ? Math.min(100, (membershipData.hours_used / membershipData.total_hours) * 100) : 0}%`,
+                        height: '100%',
+                        borderRadius: '4px',
+                        background: 'linear-gradient(90deg, #ffa500, #ff6b35)',
+                        transition: 'width 0.5s ease'
+                      }} />
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: '#aaa', marginTop: '4px' }}>
+                      {(membershipData.hours_remaining || 0).toFixed(1)}h remaining
+                    </p>
+                  </div>
+
+                  {/* Days remaining */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#ccc' }}>
+                    <span><FiClock style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Days Remaining</span>
+                    <span style={{ fontWeight: '600', color: '#fff' }}>
+                      {membershipData.days_remaining || 0} days
+                    </span>
+                  </div>
+                </div>
+              )}
 
             </div>
 

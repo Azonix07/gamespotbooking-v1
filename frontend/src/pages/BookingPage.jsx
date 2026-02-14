@@ -94,6 +94,7 @@ const BookingPage = () => {
   const [price, setPrice] = useState(0);
   const [originalPrice, setOriginalPrice] = useState(0);
   const [discountInfo, setDiscountInfo] = useState(null); // { percentage, amount, membership }
+  const [hoursWarning, setHoursWarning] = useState(null); // hours warning message from pricing API
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -449,6 +450,7 @@ const BookingPage = () => {
       let totalOriginalPrice = 0;
       let totalFinalPrice = 0;
       let lastDiscountInfo = null;
+      let lastHoursWarning = null;
       
       // Calculate PS5 prices
       for (const ps5 of ps5Bookings) {
@@ -462,6 +464,11 @@ const BookingPage = () => {
             percentage: response.discount_percentage,
             membership: response.membership
           };
+        }
+        
+        // Capture hours warning
+        if (response.hours_warning) {
+          lastHoursWarning = response.hours_warning_message;
         }
       }
       
@@ -478,6 +485,11 @@ const BookingPage = () => {
             membership: response.membership
           };
         }
+        
+        // Capture hours warning
+        if (response.hours_warning) {
+          lastHoursWarning = response.hours_warning_message;
+        }
       }
       
       setOriginalPrice(totalOriginalPrice);
@@ -491,6 +503,8 @@ const BookingPage = () => {
       } else {
         setDiscountInfo(null);
       }
+      
+      setHoursWarning(lastHoursWarning);
     } catch (err) {
       console.error('Price calculation error:', err);
     }
@@ -2629,10 +2643,17 @@ const BookingPage = () => {
                           <div className="total-row-v2 discount-row">
                             <span className="discount-label">
                               <FiTag className="discount-icon" />
-                              {discountInfo.membership?.plan_type} ({discountInfo.percentage}% off)
+                              {discountInfo.membership?.plan_type?.replace(/_/g, ' ')} Member Rate
+                              {discountInfo.membership?.rate_per_hour && ` (₹${discountInfo.membership.rate_per_hour}/hr)`}
                             </span>
                             <span className="discount-amount">-{formatPrice(discountInfo.amount)}</span>
                           </div>
+                          {discountInfo.membership?.hours_remaining && (
+                            <div className="total-row-v2" style={{fontSize: '0.8rem', color: '#888'}}>
+                              <span>Hours remaining after booking</span>
+                              <span>{(discountInfo.membership.hours_remaining - (discountInfo.membership.hours_this_booking || 0)).toFixed(1)}h</span>
+                            </div>
+                          )}
                           <div className="total-row-v2 final-total">
                             <span className="total-label-v2">Total</span>
                             <span className="total-amount-v2">{formatPrice(price)}</span>
@@ -2642,6 +2663,23 @@ const BookingPage = () => {
                         <div className="total-row-v2">
                           <span className="total-label-v2">Total</span>
                           <span className="total-amount-v2">{formatPrice(price)}</span>
+                        </div>
+                      )}
+                      {hoursWarning && (
+                        <div className="hours-warning-banner" style={{
+                          background: '#fff3cd', 
+                          border: '1px solid #ffc107', 
+                          borderRadius: '8px', 
+                          padding: '10px 14px', 
+                          marginTop: '10px',
+                          fontSize: '0.85rem',
+                          color: '#856404',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}>
+                          <FiInfo style={{flexShrink: 0}} />
+                          <span>{hoursWarning}</span>
                         </div>
                       )}
                       <p className="payment-note-v2"><FiCheckCircle style={{verticalAlign: 'middle', marginRight: 6}} /> No payment required now</p>
