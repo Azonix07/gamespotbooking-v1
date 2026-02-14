@@ -183,15 +183,6 @@ const MembershipPlansPage = () => {
                 >
                   {/* ─── FRONT FACE ─── */}
                   <div className="pass-card-face pass-card-front" style={{ background: plan.gradient, color: plan.font_color || '#ffffff' }}>
-                    {/* Chip */}
-                    <div className={`card-chip ${plan.tier === 'premium' ? 'chip-gold' : ''}`}>
-                      <div className="chip-lines">
-                        <div className="chip-line"></div>
-                        <div className="chip-line"></div>
-                        <div className="chip-line"></div>
-                      </div>
-                    </div>
-
                     {/* Card Content */}
                     <div className="card-front-content">
                       <div className="card-tier-badge" style={plan.tier === 'premium' ? { color: '#d4a017', background: 'rgba(212, 160, 23, 0.15)', border: '1px solid rgba(212, 160, 23, 0.3)' } : plan.tier === 'standard' ? { color: '#1a1a2e', background: 'rgba(0,0,0,0.12)' } : {}}>{tierLabel}</div>
@@ -225,10 +216,22 @@ const MembershipPlansPage = () => {
                   {/* ─── BACK FACE ─── */}
                   <div className="pass-card-face pass-card-back" style={{ '--accent': plan.accent }}>
                     <div className="card-back-top">
-                      <div className="card-back-header">
-                        <span className="card-back-icon">{plan.chip_icon}</span>
-                        <h3>{plan.name}</h3>
-                        <div className="card-back-price">₹{plan.price}<span>/mo</span></div>
+                      <div className="card-back-action">
+                        <button
+                          className={`card-action-btn ${btnState.className}`}
+                          style={
+                            btnState.className === 'primary'
+                              ? { background: plan.gradient }
+                              : {}
+                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (btnState.action) btnState.action();
+                          }}
+                          disabled={btnState.disabled}
+                        >
+                          {btnState.label}
+                        </button>
                       </div>
 
                       <ul className="card-back-features">
@@ -242,21 +245,6 @@ const MembershipPlansPage = () => {
                     </div>
 
                     <div className="card-back-bottom">
-                      <button
-                        className={`card-action-btn ${btnState.className}`}
-                        style={
-                          btnState.className === 'primary'
-                            ? { background: plan.gradient }
-                            : {}
-                        }
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (btnState.action) btnState.action();
-                        }}
-                        disabled={btnState.disabled}
-                      >
-                        {btnState.label}
-                      </button>
                       <div className="back-hint">
                         <span>TAP TO FLIP BACK</span>
                       </div>
