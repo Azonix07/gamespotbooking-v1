@@ -1164,6 +1164,18 @@ const BookingPage = () => {
                   <span>{error}</span>
                 </motion.div>
               )}
+
+              {success && (
+                <motion.div 
+                  className="alert"
+                  style={{ background: 'rgba(16, 185, 129, 0.1)', border: '2px solid rgba(16, 185, 129, 0.3)', color: '#059669' }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <span className="alert-icon">✅</span>
+                  <span>{success}</span>
+                </motion.div>
+              )}
               
               {/* Booking Type Toggle */}
               <div className="booking-type-toggle">
@@ -1339,7 +1351,7 @@ const BookingPage = () => {
                               style={{ cursor: 'pointer' }}
                             >
                               <option value="">Select a game...</option>
-                              {allGames.filter(g => g.game_type === 'ps5').map(g => (
+                              {allGames.filter(g => (g.ps5_numbers || []).some(n => [1, 2, 3].includes(n))).map(g => (
                                 <option key={g.id} value={g.name}>{g.name}</option>
                               ))}
                             </select>
