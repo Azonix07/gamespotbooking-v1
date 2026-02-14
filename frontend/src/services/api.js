@@ -497,3 +497,53 @@ export const deletePartyBooking = async (bookingId) => {
     { method: "DELETE" }
   );
 };
+
+// =======================================================
+// Quest Pass (Story Mode Membership) API
+// =======================================================
+
+export const getQuestPassInfo = async () => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/quest-pass/info`);
+};
+
+export const getQuestPassStatus = async () => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/quest-pass/status`);
+};
+
+export const subscribeQuestPass = async (gameName) => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/quest-pass/subscribe`, {
+    method: "POST",
+    body: JSON.stringify({ game_name: gameName }),
+  });
+};
+
+export const cancelQuestPass = async () => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/quest-pass/cancel`, {
+    method: "POST",
+  });
+};
+
+export const getAdminQuestPasses = async () => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/admin/quest-pass`);
+};
+
+export const approveQuestPass = async (passId, deviceNumber, notes = '') => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/admin/quest-pass/approve/${passId}`, {
+    method: "POST",
+    body: JSON.stringify({ device_number: deviceNumber, notes }),
+  });
+};
+
+export const rejectQuestPass = async (passId, reason = '') => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/admin/quest-pass/reject/${passId}`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+};
+
+export const updateQuestProgress = async (passId, hoursPlayed, progressNotes) => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/admin/quest-pass/progress/${passId}`, {
+    method: "POST",
+    body: JSON.stringify({ hours_played: hoursPlayed, progress_notes: progressNotes }),
+  });
+};

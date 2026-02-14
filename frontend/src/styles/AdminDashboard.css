@@ -195,16 +195,17 @@
 .admin-summary-bar {
   display: flex;
   gap: 2rem;
-  padding: 1rem 1.25rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1.125rem 1.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
 }
 
 .admin-summary-bar .summary-stat {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 
 .admin-summary-bar .summary-label {
@@ -212,12 +213,14 @@
   color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .admin-summary-bar .summary-value {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
   color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 /* Empty State */
@@ -226,20 +229,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem 1.5rem;
+  padding: 3.5rem 1.5rem;
   text-align: center;
   color: rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
 .empty-state h3 {
   margin: 0.75rem 0 0.25rem;
   font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.7);
+  font-weight: 700;
 }
 
 .empty-state p {
   font-size: 0.82rem;
   margin: 0;
+  line-height: 1.5;
 }
 
 /* Sidebar Footer */

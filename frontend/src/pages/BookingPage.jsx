@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo, FiAward } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus, getGames, createPartyBooking } from '../services/api';
+import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus, getGames, createPartyBooking, getQuestPassStatus, subscribeQuestPass } from '../services/api';
 import { formatDate, getToday, formatDuration, formatPrice, formatTime12Hour, isValidName, isValidPhone } from '../utils/helpers';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -138,6 +138,12 @@ const BookingPage = () => {
   const [partyHours, setPartyHours] = useState(1); // 1, 2, or 3 hours
   const [partySubmitting, setPartySubmitting] = useState(false);
 
+  // Quest Pass state
+  const [questPass, setQuestPass] = useState(null); // { has_active, active_pass, has_pending, pending_pass, progress }
+  const [questPassGame, setQuestPassGame] = useState(''); // Game name for new subscription
+  const [questPassSubmitting, setQuestPassSubmitting] = useState(false);
+  const [showQuestPassModal, setShowQuestPassModal] = useState(false);
+
   // Check user session on component mount
   useEffect(() => {
     checkUserSession();
@@ -201,6 +207,16 @@ const BookingPage = () => {
           }
         } catch (membershipErr) {
           console.log('No active membership');
+        }
+
+        // Fetch Quest Pass status
+        try {
+          const questResponse = await getQuestPassStatus();
+          if (questResponse.success) {
+            setQuestPass(questResponse);
+          }
+        } catch (questErr) {
+          console.log('No quest pass data');
         }
       }
     } catch (err) {
@@ -739,6 +755,36 @@ const BookingPage = () => {
     }
   };
 
+  // Quest Pass Subscribe Handler
+  const handleQuestPassSubscribe = async () => {
+    if (!questPassGame.trim()) {
+      setError('Please select a game for your Quest Pass');
+      return;
+    }
+    
+    try {
+      setQuestPassSubmitting(true);
+      setError(null);
+      
+      const response = await subscribeQuestPass(questPassGame);
+      if (response.success) {
+        setShowQuestPassModal(false);
+        setQuestPassGame('');
+        // Refresh quest pass status
+        const questResponse = await getQuestPassStatus();
+        if (questResponse.success) {
+          setQuestPass(questResponse);
+        }
+        setSuccess(response.message);
+        setTimeout(() => setSuccess(null), 5000);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setQuestPassSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -1192,6 +1238,142 @@ const BookingPage = () => {
                 </motion.div>
               )}
 
+              {/* Quest Pass Section - Only for logged-in users */}
+              {isLoggedIn && bookingType === 'regular' && (
+                <div className="story-mode-section">
+                  <div className="story-mode-card" onClick={() => {
+                    if (!questPass?.has_active && !questPass?.has_pending) {
+                      setShowQuestPassModal(true);
+                    }
+                  }}>
+                    <div className="story-mode-header">
+                      <div className="story-mode-icon">🏆</div>
+                      <div>
+                        <h3 className="story-mode-title">Quest Pass</h3>
+                        <p className="story-mode-subtitle">Your Story, Your Console — Save & Resume</p>
+                      </div>
+                    </div>
+                    <div className="story-mode-features">
+                      <span className="story-feature-tag">🎮 Dedicated PS5</span>
+                      <span className="story-feature-tag">💾 Progress Saved</span>
+                      <span className="story-feature-tag">⚡ ₹50/hr Play Rate</span>
+                      <span className="story-feature-tag">📅 30 Days</span>
+                    </div>
+                    <div className="story-mode-pricing">
+                      <div className="story-price-main">
+                        <span className="story-price-value">₹500</span>
+                        <span className="story-price-period">per month</span>
+                      </div>
+                      <div className="story-play-rate">
+                        <FiZap />
+                        <span>Play at ₹50/hr</span>
+                      </div>
+                    </div>
+                    {questPass?.has_active && (
+                      <div className="story-mode-status active">
+                        ✅ Active — PS5-{questPass.active_pass?.device_number} • {questPass.active_pass?.game_name} • {questPass.active_pass?.days_remaining} days left
+                      </div>
+                    )}
+                    {questPass?.has_pending && !questPass?.has_active && (
+                      <div className="story-mode-status pending">
+                        ⏳ Pending Approval — {questPass.pending_pass?.game_name}
+                      </div>
+                    )}
+                    {!questPass?.has_active && !questPass?.has_pending && (
+                      <div className="story-mode-status none">
+                        Tap to subscribe → Get your own console & save progress
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Quest Pass Subscribe Modal */}
+              <AnimatePresence>
+                {showQuestPassModal && (
+                  <motion.div
+                    className="modal-overlay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowQuestPassModal(false)}
+                  >
+                    <motion.div
+                      className="booking-card"
+                      style={{ maxWidth: '480px', margin: '2rem auto', position: 'relative', zIndex: 1001 }}
+                      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <div className="card-header">
+                        <div className="card-icon" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
+                          <FiAward />
+                        </div>
+                        <div className="card-header-content">
+                          <h2 className="card-title">🏆 Subscribe to Quest Pass</h2>
+                          <p className="card-subtitle">₹500/month • Play at ₹50/hr • Dedicated Console</p>
+                        </div>
+                        <button className="back-button" onClick={() => setShowQuestPassModal(false)} style={{ marginLeft: 'auto' }}>
+                          <FiX />
+                        </button>
+                      </div>
+
+                      <div style={{ padding: '0 1.5rem 1.5rem' }}>
+                        <div className="party-info-banner" style={{ borderColor: 'rgba(139, 92, 246, 0.2)', background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(79, 70, 229, 0.04))' }}>
+                          <div className="party-info-icon">🎮</div>
+                          <div className="party-info-text">
+                            <h4 style={{ color: '#6d28d9' }}>How Quest Pass Works</h4>
+                            <p>Choose a story-mode game → Admin assigns you a dedicated PS5 → Your save data is exclusively yours. Resume your adventure anytime!</p>
+                          </div>
+                        </div>
+
+                        <div className="form-group-v2" style={{ marginBottom: '1rem' }}>
+                          <label className="form-label-v2" style={{ color: '#6d28d9', fontWeight: 700 }}>Choose Your Game</label>
+                          <div className="input-wrapper-v2">
+                            <FiStar className="input-icon-v2" style={{ color: '#8b5cf6' }} />
+                            <select
+                              className="form-input-v2"
+                              value={questPassGame}
+                              onChange={(e) => setQuestPassGame(e.target.value)}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <option value="">Select a game...</option>
+                              {allGames.filter(g => g.game_type === 'ps5').map(g => (
+                                <option key={g.id} value={g.name}>{g.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="story-mode-features" style={{ marginBottom: '1rem' }}>
+                          <span className="story-feature-tag">🎮 Dedicated PS5 assigned</span>
+                          <span className="story-feature-tag">💾 Save data preserved</span>
+                          <span className="story-feature-tag">⚡ ₹50/hr play rate</span>
+                          <span className="story-feature-tag">📅 30-day access</span>
+                          <span className="story-feature-tag">🔄 Resume anytime</span>
+                        </div>
+
+                        <button 
+                          className="submit-btn-v2"
+                          style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', width: '100%' }}
+                          onClick={handleQuestPassSubscribe}
+                          disabled={questPassSubmitting || !questPassGame}
+                        >
+                          {questPassSubmitting ? 'Submitting...' : `🏆 Request Quest Pass — ₹500/month`}
+                          {!questPassSubmitting && <FiCheck />}
+                        </button>
+
+                        <p className="payment-note-v2" style={{ textAlign: 'center', marginTop: '0.75rem' }}>
+                          <FiCheckCircle style={{ verticalAlign: 'middle', marginRight: 6 }} />
+                          Pay ₹500 at the shop after admin approval
+                        </p>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div className="step-content-wrapper">
                 {/* Time Slots */}
                 <div className="time-section-full">
@@ -1476,6 +1658,17 @@ const BookingPage = () => {
                   <span className="alert-icon">⚠️</span>
                   <span>{error}</span>
                 </motion.div>
+              )}
+
+              {/* Quest Pass Active Banner */}
+              {questPass?.has_active && (
+                <div className="story-booking-info">
+                  <span className="story-booking-badge">🏆 QUEST PASS</span>
+                  <span className="story-booking-text">
+                    Playing {questPass.active_pass?.game_name} on PS5-{questPass.active_pass?.device_number}
+                  </span>
+                  <span className="story-booking-rate">₹50/hr</span>
+                </div>
               )}
               
               {loading ? (

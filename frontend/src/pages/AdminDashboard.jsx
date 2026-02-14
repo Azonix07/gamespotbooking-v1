@@ -24,7 +24,8 @@ import {
   FiPackage,
   FiAward,
   FiTarget,
-  FiZap
+  FiZap,
+  FiCheckCircle
 } from 'react-icons/fi';
 import { 
   getAllBookings, 
@@ -44,7 +45,11 @@ import {
   approveMembership,
   rejectMembership,
   getPartyBookings,
-  deletePartyBooking
+  deletePartyBooking,
+  getAdminQuestPasses,
+  approveQuestPass,
+  rejectQuestPass,
+  updateQuestProgress
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -98,6 +103,10 @@ const AdminDashboard = () => {
   // Party Bookings
   const [partyBookings, setPartyBookings] = useState([]);
   
+  // Quest Pass
+  const [questPasses, setQuestPasses] = useState([]);
+  const [questPassStats, setQuestPassStats] = useState({ total: 0, pending: 0, active: 0 });
+  
   // Loading & Error
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -149,6 +158,7 @@ const AdminDashboard = () => {
       await loadCollegeBookings();
       await loadGameLeaderboard();
       await loadPartyBookings();
+      await loadQuestPasses();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -210,6 +220,59 @@ const AdminDashboard = () => {
       await deletePartyBooking(bookingId);
       loadPartyBookings();
       loadAllData(); // Refresh overall stats too
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const loadQuestPasses = async () => {
+    try {
+      const data = await getAdminQuestPasses();
+      setQuestPasses(data.quest_passes || []);
+      setQuestPassStats(data.stats || { total: 0, pending: 0, active: 0 });
+    } catch (err) {
+      console.error("Error loading quest passes:", err);
+    }
+  };
+
+  const handleApproveQuestPass = async (passId) => {
+    const device = prompt('Assign PS5 unit number (1, 2, or 3):');
+    if (!device) return;
+    const deviceNum = parseInt(device);
+    if (![1, 2, 3].includes(deviceNum)) {
+      alert('Invalid PS5 unit. Must be 1, 2, or 3.');
+      return;
+    }
+    const notes = prompt('Admin notes (optional):') || '';
+    try {
+      setError(null);
+      await approveQuestPass(passId, deviceNum, notes);
+      loadQuestPasses();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleRejectQuestPass = async (passId) => {
+    const reason = prompt('Reason for rejection (optional):') || '';
+    if (!window.confirm('Reject this Quest Pass request?')) return;
+    try {
+      setError(null);
+      await rejectQuestPass(passId, reason);
+      loadQuestPasses();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleUpdateQuestProgress = async (passId) => {
+    const hours = prompt('Hours played this session:');
+    if (!hours) return;
+    const notes = prompt('Progress notes (e.g., "Completed Chapter 3"):') || '';
+    try {
+      setError(null);
+      await updateQuestProgress(passId, parseFloat(hours), notes);
+      loadQuestPasses();
     } catch (err) {
       setError(err.message);
     }
@@ -1466,6 +1529,139 @@ const AdminDashboard = () => {
     </div>
   );
 
+  // Render Quest Pass Management
+  const renderQuestPasses = () => (
+    <div className="admin-section fade-in">
+      <div className="section-header-mobile">
+        <h2 className="section-title">🏆 Quest Pass</h2>
+        <span className="badge">{questPassStats.pending} pending • {questPassStats.active} active</span>
+      </div>
+      
+      {questPasses.length === 0 ? (
+        <div className="empty-state">
+          <span style={{ fontSize: '3rem' }}>🏆</span>
+          <h3>No Quest Pass Subscriptions</h3>
+          <p>Story Mode membership requests will appear here for approval.</p>
+        </div>
+      ) : (
+        <div className="table-wrapper">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Game</th>
+                <th>Device</th>
+                <th>Status</th>
+                <th>Period</th>
+                <th>Hours</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {questPasses.map(qp => (
+                <tr key={qp.id}>
+                  <td>
+                    <span className="badge" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', color: '#fff', padding: '2px 8px', borderRadius: 6, fontSize: '0.75rem' }}>
+                      🏆 #{qp.id}
+                    </span>
+                  </td>
+                  <td>
+                    <div>
+                      <strong>{qp.user_name || 'Unknown'}</strong>
+                      <br />
+                      <small style={{ opacity: 0.6 }}>{qp.user_phone || qp.user_email || ''}</small>
+                    </div>
+                  </td>
+                  <td><strong>{qp.game_name}</strong></td>
+                  <td>
+                    {qp.device_number ? (
+                      <span className="badge" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#8b5cf6' }}>
+                        PS5-{qp.device_number}
+                      </span>
+                    ) : (
+                      <span style={{ opacity: 0.4 }}>—</span>
+                    )}
+                  </td>
+                  <td>
+                    <span className="badge" style={{
+                      background: qp.status === 'active' ? 'rgba(16, 185, 129, 0.15)' : 
+                                  qp.status === 'pending' ? 'rgba(245, 158, 11, 0.15)' : 
+                                  'rgba(239, 68, 68, 0.15)',
+                      color: qp.status === 'active' ? '#10b981' : 
+                             qp.status === 'pending' ? '#f59e0b' : '#ef4444'
+                    }}>
+                      {qp.status === 'active' ? '✅' : qp.status === 'pending' ? '⏳' : '❌'} {qp.status}
+                    </span>
+                  </td>
+                  <td>
+                    {qp.start_date ? (
+                      <small>{new Date(qp.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → {new Date(qp.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</small>
+                    ) : '—'}
+                  </td>
+                  <td>—</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                      {qp.status === 'pending' && (
+                        <>
+                          <button 
+                            className="btn btn-sm" 
+                            style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: 6, fontSize: '0.72rem', cursor: 'pointer' }}
+                            onClick={() => handleApproveQuestPass(qp.id)}
+                          >
+                            <FiCheckCircle /> Approve
+                          </button>
+                          <button 
+                            className="btn btn-sm btn-danger" 
+                            onClick={() => handleRejectQuestPass(qp.id)}
+                          >
+                            <FiX /> Reject
+                          </button>
+                        </>
+                      )}
+                      {qp.status === 'active' && (
+                        <button 
+                          className="btn btn-sm"
+                          style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#8b5cf6', border: '1px solid rgba(139, 92, 246, 0.2)', padding: '4px 10px', borderRadius: 6, fontSize: '0.72rem', cursor: 'pointer' }}
+                          onClick={() => handleUpdateQuestProgress(qp.id)}
+                        >
+                          <FiEdit2 /> Log Progress
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      
+      {questPassStats.active > 0 && (
+        <div className="admin-summary-bar" style={{ marginTop: '1rem' }}>
+          <div className="summary-stat">
+            <span className="summary-label">Active Passes</span>
+            <span className="summary-value" style={{ color: '#8b5cf6' }}>
+              {questPassStats.active}
+            </span>
+          </div>
+          <div className="summary-stat">
+            <span className="summary-label">Monthly Revenue</span>
+            <span className="summary-value" style={{ color: '#8b5cf6' }}>
+              ₹{(questPassStats.active * 500).toLocaleString()}
+            </span>
+          </div>
+          <div className="summary-stat">
+            <span className="summary-label">Pending Requests</span>
+            <span className="summary-value" style={{ color: '#f59e0b' }}>
+              {questPassStats.pending}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   // Render Party Bookings
   const renderPartyBookings = () => (
     <div className="admin-section fade-in">
@@ -1571,6 +1767,7 @@ const AdminDashboard = () => {
       case 'leaderboard': return renderGameLeaderboard();
       case 'analytics': return renderAnalytics();
       case 'party': return renderPartyBookings();
+      case 'questpass': return renderQuestPasses();
       default: return renderDashboard();
     }
   };
@@ -1614,6 +1811,11 @@ const AdminDashboard = () => {
               <FiZap className="nav-icon" />
               <span className="nav-label">Party Bookings</span>
               {partyBookings.length > 0 && <span className="nav-badge">{partyBookings.length}</span>}
+            </button>
+            <button className={`sidebar-nav-item ${activeTab === 'questpass' ? 'active' : ''}`} onClick={() => setActiveTab('questpass')}>
+              <FiAward className="nav-icon" />
+              <span className="nav-label">Quest Pass</span>
+              {questPassStats.pending > 0 && <span className="nav-badge">{questPassStats.pending}</span>}
             </button>
             <button className={`sidebar-nav-item ${activeTab === 'rentals' ? 'active' : ''}`} onClick={() => setActiveTab('rentals')}>
               <FiPackage className="nav-icon" />
@@ -1660,6 +1862,7 @@ const AdminDashboard = () => {
               {activeTab === 'users' && '👥 User Management'}
               {activeTab === 'memberships' && '💳 Memberships'}
               {activeTab === 'party' && '🎉 Party Bookings'}
+              {activeTab === 'questpass' && '🏆 Quest Pass Management'}
               {activeTab === 'rentals' && '📦 Rentals'}
               {activeTab === 'college' && '🎓 College Events'}
               {activeTab === 'leaderboard' && '🎯 Game Leaderboard'}
