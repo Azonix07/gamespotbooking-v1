@@ -16,77 +16,77 @@ games_bp = Blueprint('games', __name__)
 FALLBACK_GAMES = [
     {
         'id': 1, 'name': 'Spider-Man 2', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6bw6.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2651280/library_600x900.jpg',
         'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.0,
         'description': 'The incredible power of the symbiote forces Peter and Miles to face the ultimate test.',
         'release_year': 2023, 'ps5_numbers': [1]
     },
     {
         'id': 2, 'name': 'FC 26', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co5w0w.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2669320/library_600x900.jpg',
         'genre': 'Sports', 'max_players': 4, 'rating': 8.5,
         'description': 'The latest EA Sports football experience with next-gen gameplay.',
         'release_year': 2025, 'ps5_numbers': [1, 2, 3]
     },
     {
         'id': 3, 'name': 'WWE 2K24', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co7kso.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2315790/library_600x900.jpg',
         'genre': 'Fighting', 'max_players': 4, 'rating': 8.0,
         'description': 'Step into the ring with WWE superstars in the most electrifying wrestling game.',
         'release_year': 2024, 'ps5_numbers': [1, 2]
     },
     {
         'id': 4, 'name': 'Split Fiction', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co9bvk.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3364550/library_600x900.jpg',
         'genre': 'Co-op Adventure', 'max_players': 2, 'rating': 9.0,
         'description': 'A co-op adventure where two writers get trapped inside their own stories.',
         'release_year': 2025, 'ps5_numbers': [1, 2, 3]
     },
     {
         'id': 5, 'name': 'It Takes Two', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2t8f.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1426210/library_600x900.jpg',
         'genre': 'Co-op Adventure', 'max_players': 2, 'rating': 9.2,
         'description': 'An award-winning co-op platformer about a couple turned into dolls.',
         'release_year': 2021, 'ps5_numbers': [1, 2, 3]
     },
     {
         'id': 6, 'name': 'Marvel Rivals', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co8t4b.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2767030/library_600x900.jpg',
         'genre': 'Shooter', 'max_players': 2, 'rating': 8.3,
         'description': 'Team-based PvP shooter featuring iconic Marvel heroes and villains.',
         'release_year': 2024, 'ps5_numbers': [1]
     },
     {
         'id': 7, 'name': 'Mortal Kombat 1', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6bkp.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1971870/library_600x900.jpg',
         'genre': 'Fighting', 'max_players': 2, 'rating': 8.3,
         'description': 'A new beginning for the iconic fighting franchise. Liu Kang has reshaped the universe.',
         'release_year': 2023, 'ps5_numbers': [1, 2, 3]
     },
     {
         'id': 8, 'name': 'GTA 5', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2lbd.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/library_600x900.jpg',
         'genre': 'Action-Adventure', 'max_players': 2, 'rating': 9.7,
         'description': 'The blockbuster open-world adventure in Los Santos, now on PS5.',
         'release_year': 2022, 'ps5_numbers': [1, 2, 3]
     },
     {
         'id': 9, 'name': 'WWE 2K25', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co9dpi.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2895490/library_600x900.jpg',
         'genre': 'Fighting', 'max_players': 4, 'rating': 8.2,
         'description': 'The newest WWE wrestling game with updated rosters and gameplay.',
         'release_year': 2025, 'ps5_numbers': [3]
     },
     {
         'id': 10, 'name': 'Gran Turismo 7', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co3mni.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2440510/library_600x900.jpg',
         'genre': 'Racing', 'max_players': 2, 'rating': 8.5,
         'description': 'The real driving simulator. The definitive Gran Turismo experience.',
         'release_year': 2022, 'ps5_numbers': [3, 4]
     },
     {
         'id': 11, 'name': 'Forza Horizon 5', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co3ofx.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1551360/library_600x900.jpg',
         'genre': 'Racing', 'max_players': 1, 'rating': 9.1,
         'description': 'Explore the vibrant world of Mexico in the ultimate open-world racing game.',
         'release_year': 2021, 'ps5_numbers': [4],
@@ -94,7 +94,7 @@ FALLBACK_GAMES = [
     },
     {
         'id': 12, 'name': 'The Crew Motorfest', 
-        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6g4a.jpg',
+        'cover_image': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2627070/library_600x900.jpg',
         'genre': 'Racing', 'max_players': 1, 'rating': 7.8,
         'description': 'A festival of speed set in the paradise of Hawaii.',
         'release_year': 2023, 'ps5_numbers': [4],

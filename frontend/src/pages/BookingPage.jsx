@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus, getGames } from '../services/api';
 import { formatDate, getToday, formatDuration, formatPrice, formatTime12Hour, isValidName, isValidPhone } from '../utils/helpers';
@@ -10,65 +10,65 @@ import { apiFetch } from '../services/apiClient';
 import ModernDatePicker from '../components/ModernDatePicker';
 import '../styles/BookingPage.css';
 
-// Game cover images mapping - high quality covers for each game
+// Game cover images mapping - using Steam CDN (library_600x900) for verified correct covers
 const GAME_COVERS = {
   'Spider-Man 2': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6bw6.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2651280/library_600x900.jpg',
     emoji: '🕷️',
     color: '#b91c1c'
   },
   'FC 26': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co5w0w.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2669320/library_600x900.jpg',
     emoji: '⚽',
     color: '#1a472a'
   },
   'WWE 2K24': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co7kso.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2315790/library_600x900.jpg',
     emoji: '🤼',
     color: '#8b0000'
   },
   'WWE 2K25': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co9dpi.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2895490/library_600x900.jpg',
     emoji: '🤼',
     color: '#990000'
   },
   'Split Fiction': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co9bvk.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3364550/library_600x900.jpg',
     emoji: '📖',
     color: '#4a0e8f'
   },
   'It Takes Two': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2t8f.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1426210/library_600x900.jpg',
     emoji: '💑',
     color: '#e85d04'
   },
   'Marvel Rivals': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co8t4b.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2767030/library_600x900.jpg',
     emoji: '🦸',
     color: '#c41e3a'
   },
   'Mortal Kombat 1': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6bkp.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1971870/library_600x900.jpg',
     emoji: '🐉',
     color: '#8b4513'
   },
   'GTA 5': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2lbd.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/library_600x900.jpg',
     emoji: '🔫',
     color: '#006400'
   },
   'Gran Turismo 7': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co3mni.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2440510/library_600x900.jpg',
     emoji: '🏎️',
     color: '#00308F'
   },
   'Forza Horizon 5': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co3ofx.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1551360/library_600x900.jpg',
     emoji: '🏁',
     color: '#ff6b00'
   },
   'The Crew Motorfest': {
-    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6g4a.jpg',
+    img: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2627070/library_600x900.jpg',
     emoji: '🏝️',
     color: '#0077be'
   },
@@ -130,6 +130,7 @@ const BookingPage = () => {
   const [activeGenreFilter, setActiveGenreFilter] = useState('All');
   const [selectionMode, setSelectionMode] = useState('game'); // 'game' or 'device' - start with game-first flow
   const [showGamePicker, setShowGamePicker] = useState(false); // For mobile game picker modal
+  const [gameInfoModal, setGameInfoModal] = useState(null); // Game detail modal
 
   // Check user session on component mount
   useEffect(() => {
@@ -1289,20 +1290,25 @@ const BookingPage = () => {
                                             <FiCpu style={{ fontSize: '0.6rem' }} /> Sim
                                           </div>
                                         )}
-                                        {game.rating && (
-                                          <div className="game-rating-badge">
-                                            <FiStar className="rating-star" />
-                                            <span>{game.rating}</span>
-                                          </div>
-                                        )}
+                                        <button
+                                          className="game-info-btn"
+                                          onClick={(e) => { e.stopPropagation(); setGameInfoModal(game); }}
+                                          title="Game details"
+                                        >
+                                          <FiInfo />
+                                        </button>
                                         {!isGameAvailable && (
                                           <div className="game-unavail-overlay">
                                             <span>Unavailable</span>
                                           </div>
                                         )}
+                                        {/* Title overlay on image */}
+                                        <div className="game-card-title-overlay">
+                                          <h4 className="game-card-name">{game.name}</h4>
+                                        </div>
                                       </div>
-                                      <div className="game-card-info">
-                                        <h4 className="game-card-name">{game.name}</h4>
+                                      {/* Hover-reveal details */}
+                                      <div className="game-card-details">
                                         <div className="game-card-meta">
                                           <span className="game-genre-tag">{game.genre}</span>
                                           <span className="game-players-tag">
@@ -2051,6 +2057,77 @@ const BookingPage = () => {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Game Info Modal */}
+      <AnimatePresence>
+        {gameInfoModal && (
+          <motion.div
+            className="game-info-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setGameInfoModal(null)}
+          >
+            <motion.div
+              className="game-info-modal"
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="game-info-modal-close" onClick={() => setGameInfoModal(null)}>
+                <FiX />
+              </button>
+              <div className="game-info-modal-cover">
+                {(() => {
+                  const cover = getGameCover(gameInfoModal.name);
+                  return cover.img ? (
+                    <img src={cover.img} alt={gameInfoModal.name} className="game-info-modal-img" />
+                  ) : (
+                    <div className="game-info-modal-fallback" style={{ background: `linear-gradient(135deg, ${cover.color}cc, ${cover.color}99)` }}>
+                      <span style={{ fontSize: '4rem' }}>{cover.emoji}</span>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="game-info-modal-content">
+                <h2 className="game-info-modal-title">{gameInfoModal.name}</h2>
+                <div className="game-info-modal-tags">
+                  <span className="game-info-tag genre">{gameInfoModal.genre}</span>
+                  <span className="game-info-tag year">{gameInfoModal.release_year}</span>
+                  <span className="game-info-tag players">
+                    <FiUsers style={{ fontSize: '0.75rem' }} />
+                    {gameInfoModal.max_players} Player{gameInfoModal.max_players > 1 ? 's' : ''}
+                  </span>
+                  {gameInfoModal.rating && (
+                    <span className="game-info-tag rating">
+                      <FiStar style={{ fontSize: '0.75rem', color: '#f59e0b' }} />
+                      {gameInfoModal.rating}
+                    </span>
+                  )}
+                </div>
+                <p className="game-info-modal-desc">{gameInfoModal.description}</p>
+                <div className="game-info-modal-availability">
+                  <h4>Available On</h4>
+                  <div className="game-info-modal-units">
+                    {(gameInfoModal.ps5_numbers || []).map(n => (
+                      <span
+                        key={n}
+                        className={`game-info-unit ${n === 4 ? 'sim' : ''} ${n === 4 ? (availableDriving ? 'available' : 'booked') : (availablePS5Units.includes(n) ? 'available' : 'booked')}`}
+                      >
+                        <FiMonitor style={{ fontSize: '0.8rem' }} />
+                        {n === 4 ? 'Driving Sim' : `PS5 Unit ${n}`}
+                        <span className="unit-status-dot"></span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>
