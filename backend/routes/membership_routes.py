@@ -74,9 +74,10 @@ def get_plans():
                         'Single Player Only',
                         '₹50/hour effective rate'
                     ],
-                    'accent': '#8b5cf6',
-                    'gradient': 'linear-gradient(135deg, #a78bfa, #7c3aed)',
-                    'chip_icon': '⚔️'
+                    'accent': '#3b82f6',
+                    'gradient': 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                    'chip_icon': '⚔️',
+                    'font_color': '#ffffff'
                 },
                 {
                     'type': 'legend_mode',
@@ -97,9 +98,10 @@ def get_plans():
                         'Save ₹200 vs Solo Quest'
                     ],
                     'popular': True,
-                    'accent': '#6d28d9',
-                    'gradient': 'linear-gradient(135deg, #8b5cf6, #5b21b6)',
-                    'chip_icon': '🛡️'
+                    'accent': '#b8860b',
+                    'gradient': 'linear-gradient(135deg, #f0c85a, #b8860b)',
+                    'chip_icon': '🛡️',
+                    'font_color': '#1a1a2e'
                 },
                 {
                     'type': 'god_mode',
@@ -119,9 +121,10 @@ def get_plans():
                         '₹35/hour effective rate',
                         'Best Value — Save ₹600'
                     ],
-                    'accent': '#4c1d95',
-                    'gradient': 'linear-gradient(135deg, #6d28d9, #3b0764)',
-                    'chip_icon': '👑'
+                    'accent': '#d4a017',
+                    'gradient': 'linear-gradient(135deg, #1a1a2e, #0a0a14)',
+                    'chip_icon': '👑',
+                    'font_color': '#d4a017'
                 }
             ]
         },
@@ -146,9 +149,10 @@ def get_plans():
                         '₹60/hour effective rate',
                         'Full Racing Sim Access'
                     ],
-                    'accent': '#ea580c',
-                    'gradient': 'linear-gradient(135deg, #fb923c, #ea580c)',
-                    'chip_icon': '🔑'
+                    'accent': '#3b82f6',
+                    'gradient': 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                    'chip_icon': '🔑',
+                    'font_color': '#ffffff'
                 },
                 {
                     'type': 'turbo',
@@ -168,9 +172,10 @@ def get_plans():
                         'Save ₹200 vs Ignition'
                     ],
                     'popular': True,
-                    'accent': '#c2410c',
-                    'gradient': 'linear-gradient(135deg, #ea580c, #9a3412)',
-                    'chip_icon': '⚡'
+                    'accent': '#b8860b',
+                    'gradient': 'linear-gradient(135deg, #f0c85a, #b8860b)',
+                    'chip_icon': '⚡',
+                    'font_color': '#1a1a2e'
                 },
                 {
                     'type': 'apex',
@@ -189,9 +194,10 @@ def get_plans():
                         'Best Value — Save ₹800',
                         'Leaderboard Priority'
                     ],
-                    'accent': '#7c2d12',
-                    'gradient': 'linear-gradient(135deg, #c2410c, #7c2d12)',
-                    'chip_icon': '🏆'
+                    'accent': '#d4a017',
+                    'gradient': 'linear-gradient(135deg, #1a1a2e, #0a0a14)',
+                    'chip_icon': '🏆',
+                    'font_color': '#d4a017'
                 }
             ]
         }

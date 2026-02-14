@@ -182,9 +182,9 @@ const MembershipPlansPage = () => {
                   onClick={() => toggleFlip(plan.type)}
                 >
                   {/* ─── FRONT FACE ─── */}
-                  <div className="pass-card-face pass-card-front" style={{ background: plan.gradient }}>
+                  <div className="pass-card-face pass-card-front" style={{ background: plan.gradient, color: plan.font_color || '#ffffff' }}>
                     {/* Chip */}
-                    <div className="card-chip">
+                    <div className={`card-chip ${plan.tier === 'premium' ? 'chip-gold' : ''}`}>
                       <div className="chip-lines">
                         <div className="chip-line"></div>
                         <div className="chip-line"></div>
@@ -194,21 +194,21 @@ const MembershipPlansPage = () => {
 
                     {/* Card Content */}
                     <div className="card-front-content">
-                      <div className="card-tier-badge">{tierLabel}</div>
+                      <div className="card-tier-badge" style={plan.tier === 'premium' ? { color: '#d4a017', background: 'rgba(212, 160, 23, 0.15)', border: '1px solid rgba(212, 160, 23, 0.3)' } : plan.tier === 'standard' ? { color: '#1a1a2e', background: 'rgba(0,0,0,0.12)' } : {}}>{tierLabel}</div>
                       <div className="card-plan-icon">{plan.chip_icon}</div>
-                      <h3 className="card-plan-name">{plan.name}</h3>
-                      <p className="card-plan-tagline">{plan.tagline}</p>
+                      <h3 className="card-plan-name" style={{ color: plan.font_color || '#ffffff' }}>{plan.name}</h3>
+                      <p className="card-plan-tagline" style={{ color: plan.font_color ? `${plan.font_color}aa` : 'rgba(255,255,255,0.75)' }}>{plan.tagline}</p>
                     </div>
 
                     {/* Card Price */}
-                    <div className="card-front-price">
+                    <div className="card-front-price" style={{ color: plan.font_color || '#ffffff' }}>
                       <span className="price-symbol">₹</span>
                       <span className="price-value">{plan.price}</span>
                       <span className="price-period">/month</span>
                     </div>
 
                     {/* Card Bottom */}
-                    <div className="card-front-bottom">
+                    <div className="card-front-bottom" style={{ color: plan.font_color ? `${plan.font_color}cc` : 'rgba(255,255,255,0.75)', borderTopColor: plan.font_color ? `${plan.font_color}33` : 'rgba(255,255,255,0.15)' }}>
                       <span className="card-hours">{plan.hours} hrs</span>
                       <span className="card-divider">•</span>
                       <span className="card-rate">₹{plan.rate_per_hour}/hr</span>
@@ -218,45 +218,48 @@ const MembershipPlansPage = () => {
 
                     {/* Tap hint */}
                     <div className="card-tap-hint">
-                      <span>TAP TO VIEW DETAILS</span>
+                      <span style={{ color: plan.font_color ? `${plan.font_color}66` : 'rgba(255,255,255,0.4)' }}>TAP TO VIEW DETAILS</span>
                     </div>
                   </div>
 
                   {/* ─── BACK FACE ─── */}
                   <div className="pass-card-face pass-card-back" style={{ '--accent': plan.accent }}>
-                    <div className="card-back-header">
-                      <span className="card-back-icon">{plan.chip_icon}</span>
-                      <h3>{plan.name}</h3>
-                      <div className="card-back-price">₹{plan.price}<span>/month</span></div>
+                    <div className="card-back-top">
+                      <div className="card-back-header">
+                        <span className="card-back-icon">{plan.chip_icon}</span>
+                        <h3>{plan.name}</h3>
+                        <div className="card-back-price">₹{plan.price}<span>/mo</span></div>
+                      </div>
+
+                      <ul className="card-back-features">
+                        {plan.features.map((feature, i) => (
+                          <li key={i}>
+                            <span className="feature-check" style={{ color: plan.accent }}>✓</span>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
 
-                    <ul className="card-back-features">
-                      {plan.features.map((feature, i) => (
-                        <li key={i}>
-                          <span className="feature-check" style={{ color: plan.accent }}>✓</span>
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <button
-                      className={`card-action-btn ${btnState.className}`}
-                      style={
-                        btnState.className === 'primary'
-                          ? { background: plan.gradient }
-                          : {}
-                      }
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (btnState.action) btnState.action();
-                      }}
-                      disabled={btnState.disabled}
-                    >
-                      {btnState.label}
-                    </button>
-
-                    <div className="card-tap-hint back-hint">
-                      <span>TAP TO FLIP BACK</span>
+                    <div className="card-back-bottom">
+                      <button
+                        className={`card-action-btn ${btnState.className}`}
+                        style={
+                          btnState.className === 'primary'
+                            ? { background: plan.gradient }
+                            : {}
+                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (btnState.action) btnState.action();
+                        }}
+                        disabled={btnState.disabled}
+                      >
+                        {btnState.label}
+                      </button>
+                      <div className="back-hint">
+                        <span>TAP TO FLIP BACK</span>
+                      </div>
                     </div>
                   </div>
                 </div>

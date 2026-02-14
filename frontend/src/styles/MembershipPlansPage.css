@@ -1,15 +1,17 @@
-/* MembershipPlansPage.css — Flipping Card Design */
+/* MembershipPlansPage.css — Warm Orange Light Theme + Flipping Credit Cards */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 /* ============================================
-   PAGE LAYOUT
+   PAGE LAYOUT — Warm Orange Light Theme
+   (matches BookingPage, GamesPage, ContactPage)
    ============================================ */
 .membership-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #0f0f14 0%, #1a1a2e 40%, #16213e 70%, #0f0f14 100%);
-  color: #e2e8f0;
+  background: linear-gradient(180deg, #ffffff 0%, #fff5f0 30%, #ffe8dc 60%, #ffffff 100%);
+  color: #212529;
   position: relative;
   overflow-x: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .membership-page::before {
@@ -17,8 +19,8 @@
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background:
-    radial-gradient(ellipse 600px 400px at 20% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 600px 400px at 80% 80%, rgba(234, 88, 12, 0.06) 0%, transparent 60%);
+    radial-gradient(ellipse 600px 400px at 20% 20%, rgba(255, 107, 53, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 600px 400px at 80% 80%, rgba(255, 153, 102, 0.05) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
@@ -44,12 +46,12 @@
   font-family: 'Space Grotesk', sans-serif;
   font-size: 2.8rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #212529;
   margin-bottom: 0.75rem;
 }
 
 .membership-header h1 span {
-  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  background: linear-gradient(135deg, #ff6b35, #ff9966);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -57,7 +59,7 @@
 
 .membership-header p {
   font-family: 'Inter', sans-serif;
-  color: #94a3b8;
+  color: #6c757d;
   font-size: 1.1rem;
   max-width: 500px;
   margin: 0 auto;
@@ -67,15 +69,16 @@
    STATUS BANNERS
    ============================================ */
 .membership-status-banner {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(20px);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
   margin-bottom: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.12);
+  box-shadow: 0 2px 12px rgba(255, 107, 53, 0.06);
 }
-.membership-status-banner.active { border-color: #10b981; background: rgba(16, 185, 129, 0.08); }
-.membership-status-banner.pending { border-color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
+.membership-status-banner.active { border-color: #10b981; background: rgba(16, 185, 129, 0.06); }
+.membership-status-banner.pending { border-color: #f59e0b; background: rgba(245, 158, 11, 0.06); }
 
 .status-banner-header {
   display: flex;
@@ -89,9 +92,10 @@
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0;
+  color: #212529;
 }
-.membership-status-banner.active .status-banner-header h3 { color: #10b981; }
-.membership-status-banner.pending .status-banner-header h3 { color: #f59e0b; }
+.membership-status-banner.active .status-banner-header h3 { color: #059669; }
+.membership-status-banner.pending .status-banner-header h3 { color: #d97706; }
 
 .status-banner-details {
   display: flex;
@@ -99,17 +103,17 @@
   gap: 1.25rem;
   font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: #6c757d;
 }
-.status-banner-details span strong { color: #e2e8f0; }
+.status-banner-details span strong { color: #212529; }
 
 /* ============================================
    LOGIN PROMPT
    ============================================ */
 .membership-login-prompt {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.15);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
   margin-bottom: 2rem;
@@ -118,17 +122,18 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
+  box-shadow: 0 2px 12px rgba(255, 107, 53, 0.06);
 }
 .membership-login-prompt h3 {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1.05rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: #212529;
   margin: 0 0 0.2rem 0;
 }
 .membership-login-prompt p {
   font-family: 'Inter', sans-serif;
-  color: #94a3b8;
+  color: #6c757d;
   margin: 0;
   font-size: 0.85rem;
 }
@@ -143,18 +148,18 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  background: linear-gradient(135deg, #ff6b35, #ff9966);
   color: white;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 .login-btn-orange:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
 }
 
 .signup-btn-outline {
   padding: 0.55rem 1.3rem;
-  border: 2px solid #8b5cf6;
+  border: 2px solid #ff6b35;
   border-radius: 10px;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 0.9rem;
@@ -162,32 +167,32 @@
   cursor: pointer;
   transition: all 0.3s ease;
   background: transparent;
-  color: #a78bfa;
+  color: #ff6b35;
 }
-.signup-btn-outline:hover { background: #8b5cf6; color: white; }
+.signup-btn-outline:hover { background: #ff6b35; color: white; }
 
 /* ============================================
    ALERTS
    ============================================ */
 .membership-error {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
   padding: 0.85rem 1.25rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
-  color: #fca5a5;
+  color: #dc2626;
   text-align: center;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
   font-size: 0.9rem;
 }
 .membership-success {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
   padding: 0.85rem 1.25rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
-  color: #6ee7b7;
+  color: #059669;
   text-align: center;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
@@ -207,7 +212,7 @@
   gap: 1rem;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 107, 53, 0.1);
 }
 
 .pass-category-icon {
@@ -218,16 +223,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 16px;
-}
-
-.story-theme .pass-category-icon {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(109, 40, 217, 0.1));
-  border: 1px solid rgba(139, 92, 246, 0.25);
-}
-
-.driving-theme .pass-category-icon {
-  background: linear-gradient(135deg, rgba(234, 88, 12, 0.15), rgba(194, 65, 12, 0.1));
-  border: 1px solid rgba(234, 88, 12, 0.25);
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 153, 102, 0.08));
+  border: 1px solid rgba(255, 107, 53, 0.15);
 }
 
 .pass-category-text h2 {
@@ -235,14 +232,12 @@
   font-size: 1.8rem;
   font-weight: 700;
   margin: 0;
+  color: #212529;
 }
-
-.story-theme .pass-category-text h2 { color: #a78bfa; }
-.driving-theme .pass-category-text h2 { color: #fb923c; }
 
 .pass-category-text p {
   font-family: 'Inter', sans-serif;
-  color: #64748b;
+  color: #6c757d;
   font-size: 0.9rem;
   margin: 0.15rem 0 0 0;
 }
@@ -273,28 +268,36 @@
 }
 
 .popular-ribbon span {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #1a1a2e;
-  padding: 0.25rem 1.2rem;
+  background: linear-gradient(135deg, #ff6b35, #ff9966);
+  color: #ffffff;
+  padding: 0.3rem 1.2rem;
   border-radius: 20px;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 1.5px;
-  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.35);
+  display: inline-block;
 }
 
 .pass-card {
   width: 100%;
-  aspect-ratio: 1.586 / 1;
+  min-height: 240px;
   position: relative;
   cursor: pointer;
   transform-style: preserve-3d;
   transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Fixed height front face = credit card ratio */
+.pass-card:not(.flipped) {
+  aspect-ratio: 1.586 / 1;
+}
+
+/* When flipped, auto height for content */
 .pass-card.flipped {
   transform: rotateY(180deg);
+  aspect-ratio: auto;
 }
 
 .pass-card-face {
@@ -306,6 +309,13 @@
   overflow: hidden;
 }
 
+/* Back face needs to define its own height */
+.pass-card-back {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  min-height: 100%;
+}
+
 /* ============================================
    FRONT FACE — Credit Card Style
    ============================================ */
@@ -313,10 +323,10 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.5rem;
+  padding: 1.4rem 1.5rem;
   color: white;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .pass-card-front::before {
@@ -324,12 +334,28 @@
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background:
-    radial-gradient(ellipse 200px 150px at 10% 10%, rgba(255, 255, 255, 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 150px 100px at 90% 90%, rgba(0, 0, 0, 0.15) 0%, transparent 60%);
+    radial-gradient(ellipse 200px 150px at 10% 10%, rgba(255, 255, 255, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 150px 100px at 90% 90%, rgba(0, 0, 0, 0.1) 0%, transparent 60%);
   pointer-events: none;
 }
 
-/* Card Chip (like a credit card chip) */
+/* Premium card has a subtle gold shimmer overlay */
+.tier-premium .pass-card-front::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(212, 160, 23, 0.05) 25%,
+    rgba(212, 160, 23, 0.12) 50%,
+    rgba(212, 160, 23, 0.05) 75%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Card Chip */
 .card-chip {
   width: 42px;
   height: 30px;
@@ -338,6 +364,11 @@
   position: relative;
   z-index: 2;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.card-chip.chip-gold {
+  background: linear-gradient(135deg, #d4a017, #f0c85a, #d4a017);
+  box-shadow: 0 2px 8px rgba(212, 160, 23, 0.4);
 }
 
 .chip-lines {
@@ -376,9 +407,9 @@
   font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.12);
-  padding: 0.15rem 0.6rem;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.2rem 0.65rem;
   border-radius: 4px;
   margin-bottom: 0.2rem;
 }
@@ -394,14 +425,13 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   line-height: 1.2;
 }
 
 .card-plan-tagline {
   font-family: 'Inter', sans-serif;
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.75);
   margin: 0;
 }
 
@@ -423,10 +453,9 @@
 
 .price-value {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 2.4rem;
+  font-size: 2.2rem;
   font-weight: 800;
   line-height: 1;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .price-period {
@@ -445,7 +474,6 @@
   gap: 0.5rem;
   font-family: 'Inter', sans-serif;
   font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.75);
   padding-top: 0.4rem;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
@@ -465,7 +493,6 @@
   font-size: 0.55rem;
   font-weight: 600;
   letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.4);
   animation: tapPulse 2s ease-in-out infinite;
 }
 
@@ -475,59 +502,68 @@
 }
 
 /* ============================================
-   BACK FACE — Details & Action
+   BACK FACE — Clean & Structured
    ============================================ */
 .pass-card-back {
   transform: rotateY(180deg);
-  background: #1e1e30;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
-  padding: 1.25rem 1.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 }
 
 .pass-card-back::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 3px;
+  height: 4px;
   background: linear-gradient(90deg, var(--accent), transparent);
+  z-index: 1;
+}
+
+/* Back card top section (header + features) */
+.card-back-top {
+  padding: 1.2rem 1.4rem 0.8rem;
+  flex: 1;
 }
 
 .card-back-header {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.6rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .card-back-icon {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
 }
 
 .card-back-header h3 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: #212529;
   margin: 0;
   flex: 1;
 }
 
 .card-back-price {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--accent);
 }
 
 .card-back-price span {
   font-size: 0.7rem;
-  opacity: 0.7;
-  color: #94a3b8;
+  opacity: 0.6;
+  color: #6c757d;
 }
 
 /* Feature List */
@@ -535,10 +571,9 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 .card-back-features li {
@@ -546,70 +581,80 @@
   align-items: center;
   gap: 0.5rem;
   font-family: 'Inter', sans-serif;
-  font-size: 0.78rem;
-  color: #cbd5e1;
-  line-height: 1.3;
+  font-size: 0.8rem;
+  color: #495057;
+  line-height: 1.35;
 }
 
 .feature-check {
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   flex-shrink: 0;
+}
+
+/* Back card bottom section (button + hint) */
+.card-back-bottom {
+  padding: 0.8rem 1.4rem 1rem;
+  background: #fafafa;
+  border-top: 1px solid #f0f0f0;
 }
 
 /* Action Button */
 .card-action-btn {
   width: 100%;
-  padding: 0.6rem 1rem;
+  padding: 0.7rem 1rem;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 0.6rem;
   position: relative;
   z-index: 5;
+  letter-spacing: 0.3px;
 }
 
 .card-action-btn.primary {
   color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 .card-action-btn.primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  filter: brightness(1.05);
 }
 
 .card-action-btn.upgrade {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #1a1a2e;
-  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+  background: linear-gradient(135deg, #ff6b35, #ff9966);
+  color: white;
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
 }
 .card-action-btn.upgrade:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
 }
 
 .card-action-btn.current {
-  background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
-  border: 1.5px solid #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 2px solid #10b981;
   cursor: default;
+  font-weight: 600;
 }
 
 .card-action-btn.pending-btn {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1.5px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 2px solid #f59e0b;
   cursor: default;
+  font-weight: 600;
 }
 
 .card-action-btn.lower {
-  background: rgba(100, 116, 139, 0.15);
-  color: #64748b;
-  border: 1.5px solid rgba(100, 116, 139, 0.3);
+  background: #f5f5f5;
+  color: #adb5bd;
+  border: 2px solid #dee2e6;
   cursor: default;
 }
 
@@ -618,65 +663,78 @@
   cursor: not-allowed;
 }
 
+/* Back hint */
 .back-hint {
-  position: static;
   text-align: center;
-  margin-top: 0.35rem;
+  margin-top: 0.5rem;
 }
 
 .back-hint span {
-  color: rgba(255, 255, 255, 0.25);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: #adb5bd;
 }
 
 /* ============================================
-   PREMIUM TIER GLOW
+   PREMIUM CARD GLOW
    ============================================ */
-.pass-card-wrapper:has(.tier-premium) .pass-card-front {
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35), 0 0 30px rgba(109, 40, 217, 0.15);
+.tier-premium .pass-card-front {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2), 0 0 30px rgba(212, 160, 23, 0.12);
+  border: 1px solid rgba(212, 160, 23, 0.3);
 }
 
-.story-theme .pass-card-wrapper:has(.tier-premium) .pass-card-front {
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35), 0 0 40px rgba(109, 40, 217, 0.2);
+/* Standard (gold) card border */
+.tier-standard .pass-card-front {
+  border: 1px solid rgba(184, 134, 11, 0.3);
+  box-shadow: 0 8px 32px rgba(184, 134, 11, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.driving-theme .pass-card-wrapper:has(.tier-premium) .pass-card-front {
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35), 0 0 40px rgba(194, 65, 12, 0.2);
+/* Basic (blue) card border */
+.tier-basic .pass-card-front {
+  border: 1px solid rgba(59, 130, 246, 0.25);
 }
 
 /* ============================================
-   HOVER LIFT
+   HOVER LIFT (only when not flipped)
    ============================================ */
 .pass-card:not(.flipped):hover {
-  transform: translateY(-6px);
+  transform: translateY(-8px);
   transition: transform 0.3s ease;
 }
 
 .pass-card:not(.flipped):hover .pass-card-front {
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tier-premium:not(.flipped):hover .pass-card-front {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), 0 0 40px rgba(212, 160, 23, 0.18);
 }
 
 /* ============================================
    HOW IT WORKS
    ============================================ */
 .membership-how-it-works {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 107, 53, 0.1);
   border-radius: 20px;
   padding: 2.5rem;
   text-align: center;
   margin-top: 1rem;
+  box-shadow: 0 2px 12px rgba(255, 107, 53, 0.06);
 }
 .membership-how-it-works h3 {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1.4rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: #212529;
   margin-bottom: 0.4rem;
 }
 .membership-how-it-works .subtitle {
   font-family: 'Inter', sans-serif;
-  color: #64748b;
+  color: #6c757d;
   font-size: 0.9rem;
   margin-bottom: 2rem;
 }
@@ -690,7 +748,7 @@
 .step-number {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  background: linear-gradient(135deg, #ff6b35, #ff9966);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -700,19 +758,19 @@
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0 auto 0.6rem;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 .how-it-works-step .step-icon { font-size: 1.6rem; margin-bottom: 0.4rem; }
 .how-it-works-step h4 {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: #212529;
   margin-bottom: 0.2rem;
 }
 .how-it-works-step p {
   font-family: 'Inter', sans-serif;
-  color: #64748b;
+  color: #6c757d;
   font-size: 0.8rem;
   line-height: 1.4;
 }
@@ -731,8 +789,8 @@
 .membership-loading .spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid rgba(139, 92, 246, 0.2);
-  border-top: 4px solid #8b5cf6;
+  border: 4px solid rgba(255, 107, 53, 0.2);
+  border-top: 4px solid #ff6b35;
   border-radius: 50%;
   animation: membership-spin 0.8s linear infinite;
   margin-bottom: 1rem;
@@ -740,7 +798,7 @@
 @keyframes membership-spin { to { transform: rotate(360deg); } }
 .membership-loading p {
   font-family: 'Inter', sans-serif;
-  color: #64748b;
+  color: #6c757d;
   font-size: 1rem;
 }
 
@@ -758,7 +816,7 @@
   }
 
   .card-plan-name { font-size: 1.25rem; }
-  .price-value { font-size: 2rem; }
+  .price-value { font-size: 1.8rem; }
 }
 
 /* ============================================
@@ -775,10 +833,6 @@
     gap: 2rem;
     max-width: 380px;
     margin: 0 auto;
-  }
-
-  .pass-card {
-    aspect-ratio: 1.586 / 1;
   }
 
   .membership-login-prompt {
@@ -822,19 +876,23 @@
   }
 
   .pass-card-front {
-    padding: 1.2rem;
+    padding: 1.1rem;
   }
 
-  .pass-card-back {
-    padding: 1rem 1.2rem;
+  .card-back-top {
+    padding: 1rem 1.1rem 0.6rem;
+  }
+
+  .card-back-bottom {
+    padding: 0.6rem 1.1rem 0.8rem;
   }
 
   .card-plan-name { font-size: 1.3rem; }
-  .price-value { font-size: 2rem; }
+  .price-value { font-size: 1.8rem; }
   .card-chip { width: 36px; height: 26px; }
   .card-plan-icon { font-size: 1.3rem; }
   .card-front-bottom { font-size: 0.65rem; gap: 0.35rem; }
-  .card-back-features li { font-size: 0.72rem; gap: 0.35rem; }
-  .card-action-btn { font-size: 0.82rem; padding: 0.5rem 0.8rem; }
+  .card-back-features li { font-size: 0.73rem; gap: 0.35rem; }
+  .card-action-btn { font-size: 0.85rem; padding: 0.6rem 0.8rem; }
   .card-back-header h3 { font-size: 1rem; }
 }
