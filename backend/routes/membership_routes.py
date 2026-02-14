@@ -38,8 +38,45 @@ def get_plans():
     # Define membership plans
     plans = [
         {
+            'type': 'story_game',
+            'name': 'Story Game Pass',
+            'icon': '🏆',
+            'tagline': 'Your Story, Your Console',
+            'duration_days': 30,
+            'price': 500,
+            'discount_percentage': 0,
+            'features': [
+                'Dedicated PS5 console reserved for you',
+                'Game progress saved exclusively',
+                'Play at ₹50/hour rate',
+                'Monthly subscription',
+                'Priority access to your device',
+                'Resume your story anytime',
+                'Admin approval required'
+            ]
+        },
+        {
+            'type': 'driving_sim',
+            'name': 'Driving Sim Pass',
+            'icon': '🏎️',
+            'tagline': 'Ultimate Racing Experience',
+            'duration_days': 30,
+            'price': 399,
+            'discount_percentage': 0,
+            'features': [
+                'Unlimited driving simulator access',
+                'VR headset included',
+                'Realistic racing experience',
+                'Monthly subscription',
+                '₹100/session when active',
+                'Leaderboard rankings',
+                'Admin approval required'
+            ]
+        },
+        {
             'type': 'monthly',
             'name': 'Monthly Membership',
+            'icon': '⭐',
             'duration_days': 30,
             'price': 299,
             'discount_percentage': 10,
@@ -54,6 +91,7 @@ def get_plans():
         {
             'type': 'quarterly',
             'name': 'Quarterly Membership',
+            'icon': '⭐⭐',
             'duration_days': 90,
             'price': 799,
             'discount_percentage': 15,
@@ -70,6 +108,7 @@ def get_plans():
         {
             'type': 'annual',
             'name': 'Annual Membership',
+            'icon': '⭐⭐⭐',
             'duration_days': 365,
             'price': 2499,
             'discount_percentage': 20,

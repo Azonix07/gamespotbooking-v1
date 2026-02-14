@@ -310,6 +310,78 @@
 }
 
 /* ============================================
+   SPECIAL MEMBERSHIP CARDS
+   ============================================ */
+/* Story Game Pass Card */
+.membership-plan-card[data-type="story_game"],
+.membership-plan-card[data-type="driving_sim"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 250, 245, 0.9) 100%);
+  border: 2px solid #ff6b35;
+  position: relative;
+  overflow: hidden;
+}
+
+.membership-plan-card[data-type="story_game"]::before,
+.membership-plan-card[data-type="driving_sim"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ff6b35, #ff9966);
+}
+
+/* Story Game Pass - Purple accent */
+.membership-plan-card[data-type="story_game"] {
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15), 0 4px 6px -1px rgba(255, 107, 53, 0.08);
+}
+
+.membership-plan-card[data-type="story_game"]:hover {
+  box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2), 0 10px 10px -5px rgba(255, 107, 53, 0.1);
+  border-color: #8b5cf6;
+}
+
+/* Driving Sim Pass - Orange accent */
+.membership-plan-card[data-type="driving_sim"] {
+  box-shadow: 0 8px 30px rgba(255, 107, 53, 0.15), 0 4px 6px -1px rgba(255, 107, 53, 0.08);
+}
+
+.membership-plan-card[data-type="driving_sim"]:hover {
+  box-shadow: 0 20px 40px rgba(255, 107, 53, 0.25), 0 10px 10px -5px rgba(255, 107, 53, 0.1);
+}
+
+/* Add icon to card headers */
+.membership-plan-card[data-type="story_game"] .plan-card-header::before {
+  content: '🏆';
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.membership-plan-card[data-type="driving_sim"] .plan-card-header::before {
+  content: '🏎️';
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.membership-plan-card[data-type="story_game"] .plan-price {
+  color: #8b5cf6;
+}
+
+.membership-plan-card[data-type="driving_sim"] .plan-price {
+  color: #ff6b35;
+}
+
+/* Special badge for story game and driving sim */
+.membership-plan-card[data-type="story_game"] .plan-discount-badge,
+.membership-plan-card[data-type="driving_sim"] .plan-discount-badge {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.12), rgba(255, 153, 102, 0.18));
+  border: 2px solid rgba(255, 107, 53, 0.25);
+}
+
+/* ============================================
    FEATURES LIST
    ============================================ */
 .plan-features {

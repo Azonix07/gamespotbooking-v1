@@ -262,6 +262,7 @@ const MembershipPlansPage = () => {
               <div 
                 key={plan.type} 
                 className={`membership-plan-card ${plan.popular ? 'popular' : ''}`}
+                data-type={plan.type}
               >
                 {plan.popular && (
                   <div className="popular-badge">⭐ MOST POPULAR</div>
