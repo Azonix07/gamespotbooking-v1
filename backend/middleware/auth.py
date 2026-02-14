@@ -37,10 +37,19 @@ from functools import wraps
 # JWT_SECRET MUST be set in production. Random fallback for development only.
 _jwt_secret = os.getenv('JWT_SECRET') or os.getenv('SECRET_KEY')
 if not _jwt_secret or _jwt_secret == 'gamespot-secret-key-change-in-production':
-    _jwt_secret = secrets.token_hex(32)
-    if os.getenv('RAILWAY_ENVIRONMENT'):
-        import sys
-        sys.stderr.write("⚠️  CRITICAL: JWT_SECRET not set in production! Using random key.\n")
+    # ── DETERMINISTIC FALLBACK ──
+    # Derive a stable JWT secret from the DB password so tokens survive restarts.
+    _db_pw = os.getenv('MYSQLPASSWORD', '')
+    if _db_pw:
+        import hashlib
+        _jwt_secret = hashlib.sha256(f'gamespot-jwt-{_db_pw}'.encode()).hexdigest()
+        import sys as _sys
+        _sys.stderr.write("⚠️  JWT_SECRET not set — using deterministic fallback derived from MYSQLPASSWORD\n")
+    else:
+        _jwt_secret = secrets.token_hex(32)
+        if os.getenv('RAILWAY_ENVIRONMENT'):
+            import sys as _sys
+            _sys.stderr.write("⚠️  CRITICAL: JWT_SECRET not set and no MYSQLPASSWORD! Tokens will break on restart.\n")
 
 JWT_SECRET = _jwt_secret
 JWT_ALGORITHM = 'HS256'

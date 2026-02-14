@@ -53,10 +53,19 @@ app = Flask(__name__)
 # Ensure SECRET_KEY is set from environment (no weak default in production)
 secret_key = os.getenv('SECRET_KEY')
 if not secret_key or secret_key == 'gamespot-secret-key-change-in-production':
-    import secrets
-    secret_key = secrets.token_hex(32)
-    if os.getenv('RAILWAY_ENVIRONMENT'):
-        sys.stderr.write("⚠️  CRITICAL: SECRET_KEY not set in production! Using random key.\n")
+    # ── DETERMINISTIC FALLBACK ──
+    # If SECRET_KEY is not explicitly set, derive a stable one from
+    # the database password so it survives restarts. Random keys break
+    # all sessions and JWTs every time Railway redeploys.
+    db_pw = os.getenv('MYSQLPASSWORD', '')
+    if db_pw:
+        import hashlib
+        secret_key = hashlib.sha256(f'gamespot-secret-{db_pw}'.encode()).hexdigest()
+        sys.stderr.write("⚠️  SECRET_KEY not set — using deterministic fallback derived from MYSQLPASSWORD\n")
+    else:
+        import secrets as _s
+        secret_key = _s.token_hex(32)
+        sys.stderr.write("⚠️  CRITICAL: SECRET_KEY not set and no MYSQLPASSWORD! Using random key — sessions will break on restart.\n")
 
 app.config['SECRET_KEY'] = secret_key
 app.config['SESSION_COOKIE_NAME'] = 'gamespot_session'
