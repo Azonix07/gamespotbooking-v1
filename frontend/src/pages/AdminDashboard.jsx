@@ -875,13 +875,14 @@ const AdminDashboard = () => {
           💳 Membership Subscriptions ({filteredMemberships.length})
           {pendingMembershipsCount > 0 && (
             <span style={{
-              background: '#f59e0b',
-              color: '#fff',
-              padding: '2px 10px',
+              background: 'rgba(245, 158, 11, 0.12)',
+              color: '#d97706',
+              padding: '3px 12px',
               borderRadius: '12px',
               fontSize: '0.8rem',
               marginLeft: '0.75rem',
-              fontWeight: '600'
+              fontWeight: '600',
+              border: '1px solid rgba(245, 158, 11, 0.25)'
             }}>
               {pendingMembershipsCount} pending
             </span>
@@ -897,7 +898,7 @@ const AdminDashboard = () => {
           <button 
             className={`filter-btn ${membershipFilter === 'pending' ? 'active' : ''}`}
             onClick={() => setMembershipFilter('pending')}
-            style={pendingMembershipsCount > 0 ? { borderColor: '#f59e0b', color: membershipFilter === 'pending' ? '#fff' : '#f59e0b', background: membershipFilter === 'pending' ? '#f59e0b' : 'transparent' } : {}}
+            style={pendingMembershipsCount > 0 ? { borderColor: '#d97706', color: membershipFilter === 'pending' ? '#fff' : '#d97706', background: membershipFilter === 'pending' ? '#d97706' : 'transparent' } : {}}
           >
             Pending {pendingMembershipsCount > 0 && `(${pendingMembershipsCount})`}
           </button>
@@ -952,7 +953,7 @@ const AdminDashboard = () => {
               </thead>
               <tbody>
                 {filteredMemberships.map(membership => (
-                  <tr key={membership.id} style={membership.status === 'pending' ? { background: 'rgba(245, 158, 11, 0.05)' } : {}}>
+                  <tr key={membership.id} style={membership.status === 'pending' ? { background: 'rgba(245, 158, 11, 0.04)' } : {}}>
                     <td className="membership-id" data-label="ID">#{membership.id}</td>
                     <td className="user-name" data-label="USER">{membership.user_name}</td>
                     <td data-label="EMAIL">{membership.user_email}</td>
@@ -962,10 +963,10 @@ const AdminDashboard = () => {
                         </span>
                       </td>
                       <td data-label="START DATE">
-                        {membership.status === 'pending' ? <em style={{ color: '#6c757d' }}>On approval</em> : new Date(membership.start_date).toLocaleDateString()}
+                        {membership.status === 'pending' ? <em style={{ color: '#94a3b8' }}>On approval</em> : new Date(membership.start_date).toLocaleDateString()}
                       </td>
                       <td data-label="END DATE">
-                        {membership.status === 'pending' ? <em style={{ color: '#6c757d' }}>On approval</em> : new Date(membership.end_date).toLocaleDateString()}
+                        {membership.status === 'pending' ? <em style={{ color: '#94a3b8' }}>On approval</em> : new Date(membership.end_date).toLocaleDateString()}
                       </td>
                       <td className="discount" data-label="DISCOUNT">{membership.discount_percentage}%</td>
                       <td data-label="STATUS">
@@ -975,7 +976,7 @@ const AdminDashboard = () => {
                       </td>
                       <td data-label="DAYS LEFT">
                         {membership.status === 'pending' ? (
-                          <span style={{ color: '#f59e0b', fontWeight: '600' }}>Awaiting</span>
+                          <span style={{ color: '#d97706', fontWeight: '600' }}>Awaiting</span>
                         ) : membership.days_remaining !== null ? (
                           <span className={membership.days_remaining > 7 ? 'days-ok' : 'days-expiring'}>
                             {membership.days_remaining > 0 ? `${membership.days_remaining} days` : 'Expired'}
@@ -988,44 +989,20 @@ const AdminDashboard = () => {
                         {membership.status === 'pending' ? (
                           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                             <button
+                              className="btn btn-sm btn-success"
                               onClick={() => handleApproveMembership(membership.id)}
-                              style={{
-                                padding: '0.35rem 0.75rem',
-                                background: '#10b981',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontSize: '0.8rem',
-                                fontWeight: '600',
-                                transition: 'all 0.2s'
-                              }}
-                              onMouseOver={(e) => e.target.style.background = '#059669'}
-                              onMouseOut={(e) => e.target.style.background = '#10b981'}
                             >
                               ✅ Approve
                             </button>
                             <button
+                              className="btn btn-sm btn-danger"
                               onClick={() => handleRejectMembership(membership.id)}
-                              style={{
-                                padding: '0.35rem 0.75rem',
-                                background: '#ef4444',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontSize: '0.8rem',
-                                fontWeight: '600',
-                                transition: 'all 0.2s'
-                              }}
-                              onMouseOver={(e) => e.target.style.background = '#dc2626'}
-                              onMouseOut={(e) => e.target.style.background = '#ef4444'}
                             >
                               ❌ Reject
                             </button>
                           </div>
                         ) : (
-                          <span style={{ color: '#6c757d', fontSize: '0.85rem' }}>—</span>
+                          <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>—</span>
                         )}
                       </td>
                   </tr>
@@ -1546,7 +1523,9 @@ const AdminDashboard = () => {
     <div className="admin-section fade-in">
       <div className="section-header-mobile">
         <h2 className="section-title">🏆 Quest Pass</h2>
-        <span className="badge">{questPassStats.pending} pending • {questPassStats.active} active</span>
+        <span className="badge" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#7c3aed' }}>
+          {questPassStats.pending} pending • {questPassStats.active} active
+        </span>
       </div>
       
       {questPasses.length === 0 ? (
@@ -1574,51 +1553,45 @@ const AdminDashboard = () => {
               {questPasses.map(qp => (
                 <tr key={qp.id}>
                   <td>
-                    <span className="badge" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', color: '#fff', padding: '2px 8px', borderRadius: 6, fontSize: '0.75rem' }}>
+                    <span style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', color: '#fff', padding: '3px 10px', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600 }}>
                       🏆 #{qp.id}
                     </span>
                   </td>
                   <td>
                     <div>
-                      <strong>{qp.user_name || 'Unknown'}</strong>
+                      <strong style={{ color: '#1e293b' }}>{qp.user_name || 'Unknown'}</strong>
                       <br />
-                      <small style={{ opacity: 0.6 }}>{qp.user_phone || qp.user_email || ''}</small>
+                      <small style={{ color: '#64748b' }}>{qp.user_phone || qp.user_email || ''}</small>
                     </div>
                   </td>
-                  <td><strong>{qp.game_name}</strong></td>
+                  <td><strong style={{ color: '#334155' }}>{qp.game_name}</strong></td>
                   <td>
                     {qp.device_number ? (
-                      <span className="badge" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#8b5cf6' }}>
+                      <span style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#7c3aed', padding: '3px 10px', borderRadius: 8, fontSize: '0.82rem', fontWeight: 600 }}>
                         PS5-{qp.device_number}
                       </span>
                     ) : (
-                      <span style={{ opacity: 0.4 }}>—</span>
+                      <span style={{ color: '#94a3b8' }}>—</span>
                     )}
                   </td>
                   <td>
-                    <span className="badge" style={{
-                      background: qp.status === 'active' ? 'rgba(16, 185, 129, 0.15)' : 
-                                  qp.status === 'pending' ? 'rgba(245, 158, 11, 0.15)' : 
-                                  'rgba(239, 68, 68, 0.15)',
-                      color: qp.status === 'active' ? '#10b981' : 
-                             qp.status === 'pending' ? '#f59e0b' : '#ef4444'
-                    }}>
+                    <span className={`status-badge ${qp.status}`}>
                       {qp.status === 'active' ? '✅' : qp.status === 'pending' ? '⏳' : '❌'} {qp.status}
                     </span>
                   </td>
                   <td>
                     {qp.start_date ? (
-                      <small>{new Date(qp.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → {new Date(qp.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</small>
-                    ) : '—'}
+                      <small style={{ color: '#475569' }}>{new Date(qp.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → {new Date(qp.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</small>
+                    ) : <span style={{ color: '#94a3b8' }}>—</span>}
                   </td>
-                  <td>—</td>
+                  <td style={{ color: '#94a3b8' }}>—</td>
                   <td>
-                    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                       {qp.status === 'pending' && (
                         <>
                           <button 
                             className="btn btn-sm" 
-                            style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: 6, fontSize: '0.72rem', cursor: 'pointer' }}
+                            style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', color: '#fff', border: 'none', padding: '5px 12px', borderRadius: 8, fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
                             onClick={() => handleApproveQuestPass(qp.id)}
                           >
                             <FiCheckCircle /> Approve
@@ -1634,7 +1607,7 @@ const AdminDashboard = () => {
                       {qp.status === 'active' && (
                         <button 
                           className="btn btn-sm"
-                          style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#8b5cf6', border: '1px solid rgba(139, 92, 246, 0.2)', padding: '4px 10px', borderRadius: 6, fontSize: '0.72rem', cursor: 'pointer' }}
+                          style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#7c3aed', border: '1px solid rgba(139, 92, 246, 0.2)', padding: '5px 12px', borderRadius: 8, fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
                           onClick={() => handleUpdateQuestProgress(qp.id)}
                         >
                           <FiEdit2 /> Log Progress
@@ -1650,22 +1623,22 @@ const AdminDashboard = () => {
       )}
       
       {questPassStats.active > 0 && (
-        <div className="admin-summary-bar" style={{ marginTop: '1rem' }}>
+        <div className="admin-summary-bar" style={{ marginTop: '1.25rem' }}>
           <div className="summary-stat">
             <span className="summary-label">Active Passes</span>
-            <span className="summary-value" style={{ color: '#8b5cf6' }}>
+            <span className="summary-value" style={{ color: '#7c3aed' }}>
               {questPassStats.active}
             </span>
           </div>
           <div className="summary-stat">
             <span className="summary-label">Monthly Revenue</span>
-            <span className="summary-value" style={{ color: '#8b5cf6' }}>
+            <span className="summary-value" style={{ color: '#7c3aed' }}>
               ₹{(questPassStats.active * 500).toLocaleString()}
             </span>
           </div>
           <div className="summary-stat">
             <span className="summary-label">Pending Requests</span>
-            <span className="summary-value" style={{ color: '#f59e0b' }}>
+            <span className="summary-value" style={{ color: '#d97706' }}>
               {questPassStats.pending}
             </span>
           </div>
@@ -1679,7 +1652,9 @@ const AdminDashboard = () => {
     <div className="admin-section fade-in">
       <div className="section-header-mobile">
         <h2 className="section-title">🎉 Party Bookings</h2>
-        <span className="badge">{partyBookings.length} total</span>
+        <span className="badge" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#d97706' }}>
+          {partyBookings.length} total
+        </span>
       </div>
       
       {partyBookings.length === 0 ? (
@@ -1708,21 +1683,21 @@ const AdminDashboard = () => {
               {partyBookings.map(booking => (
                 <tr key={booking.id}>
                   <td>
-                    <span className="badge" style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)', color: '#fff', padding: '2px 8px', borderRadius: 6, fontSize: '0.75rem' }}>
+                    <span style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)', color: '#fff', padding: '3px 10px', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600 }}>
                       🎉 #{booking.id}
                     </span>
                   </td>
-                  <td>{booking.customer_name}</td>
-                  <td>{booking.customer_phone}</td>
-                  <td>{new Date(booking.booking_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                  <td>{formatTime12Hour(booking.start_time)}</td>
+                  <td style={{ color: '#1e293b', fontWeight: 600 }}>{booking.customer_name}</td>
+                  <td style={{ color: '#475569' }}>{booking.customer_phone}</td>
+                  <td style={{ color: '#334155' }}>{new Date(booking.booking_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                  <td style={{ color: '#334155' }}>{formatTime12Hour(booking.start_time)}</td>
                   <td>
-                    <span className="badge" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
+                    <span style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#d97706', padding: '3px 10px', borderRadius: 8, fontSize: '0.82rem', fontWeight: 600 }}>
                       {booking.hours || booking.duration_minutes / 60} hr{(booking.hours || booking.duration_minutes / 60) > 1 ? 's' : ''}
                     </span>
                   </td>
-                  <td><strong>₹{booking.total_price.toLocaleString()}</strong></td>
-                  <td>{new Date(booking.created_at).toLocaleDateString()}</td>
+                  <td><strong style={{ color: '#059669' }}>₹{booking.total_price.toLocaleString()}</strong></td>
+                  <td style={{ color: '#64748b', fontSize: '0.85rem' }}>{new Date(booking.created_at).toLocaleDateString()}</td>
                   <td>
                     <button 
                       className="btn btn-sm btn-danger" 
@@ -1740,10 +1715,10 @@ const AdminDashboard = () => {
       )}
       
       {partyBookings.length > 0 && (
-        <div className="admin-summary-bar" style={{ marginTop: '1rem' }}>
+        <div className="admin-summary-bar" style={{ marginTop: '1.25rem' }}>
           <div className="summary-stat">
             <span className="summary-label">Total Party Revenue</span>
-            <span className="summary-value" style={{ color: '#f59e0b' }}>
+            <span className="summary-value" style={{ color: '#d97706' }}>
               ₹{partyBookings.reduce((sum, b) => sum + b.total_price, 0).toLocaleString()}
             </span>
           </div>
