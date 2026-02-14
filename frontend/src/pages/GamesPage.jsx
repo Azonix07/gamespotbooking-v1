@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiStar, FiUsers, FiThumbsUp, FiPlus, FiX, FiSearch, FiHeart, FiCheck, FiExternalLink, FiChevronDown, FiZap, FiBookOpen } from 'react-icons/fi';
+import { FiStar, FiUsers, FiThumbsUp, FiPlus, FiX, FiSearch, FiHeart, FiCheck, FiExternalLink, FiChevronDown, FiZap, FiBookOpen, FiPlay } from 'react-icons/fi';
 import { getGames, getRecommendations, recommendGame, voteForGame } from '../services/api';
 import { batchGetGameCovers, searchPS5Games, getPopularPS5Games } from '../services/rawgApi';
 import Navbar from '../components/Navbar';
@@ -483,6 +483,12 @@ const GamesPage = () => {
                           {game.description && (
                             <p className="game-card-desc">{game.description}</p>
                           )}
+                          <button 
+                            className="game-book-btn"
+                            onClick={(e) => { e.stopPropagation(); navigate('/booking'); }}
+                          >
+                            <FiPlay /> Book Now
+                          </button>
                         </div>
                       </div>
                     </div>

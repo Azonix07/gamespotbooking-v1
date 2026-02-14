@@ -25,7 +25,8 @@ import {
   FiAward,
   FiTarget,
   FiZap,
-  FiCheckCircle
+  FiCheckCircle,
+  FiMenu
 } from 'react-icons/fi';
 import { 
   getAllBookings, 
@@ -61,6 +62,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isAdmin, loading: authLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const mobileNavRef = React.useRef(null);
   
   // Dashboard Stats
   const [stats, setStats] = useState(null);
@@ -127,6 +129,16 @@ const AdminDashboard = () => {
     console.log('[AdminDashboard] Admin authenticated, loading data...');
     loadAllData();
   }, [authLoading, isAuthenticated, isAdmin, navigate]);
+
+  // Scroll active mobile nav tab into view
+  useEffect(() => {
+    if (mobileNavRef.current) {
+      const activeBtn = mobileNavRef.current.querySelector('.mobile-nav-btn.active');
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     applyBookingFilters();
@@ -1872,10 +1884,52 @@ const AdminDashboard = () => {
           </div>
           <div className="topbar-actions">
             <button className="btn btn-primary btn-refresh" onClick={loadAllData}>
-              <FiRefreshCw /> Refresh Data
+              <FiRefreshCw /> <span>Refresh Data</span>
+            </button>
+            <button className="mobile-topbar-home" onClick={() => navigate('/')} title="Back to Site">
+              <FiHome />
+            </button>
+            <button className="mobile-topbar-logout" onClick={handleLogout} title="Logout">
+              <FiLogOut />
             </button>
           </div>
         </header>
+
+        {/* Mobile Horizontal Tab Navigation */}
+        <div className="mobile-tab-nav" ref={mobileNavRef}>
+          <button className={`mobile-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
+            <FiBarChart2 /> <span>Dashboard</span>
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'bookings' ? 'active' : ''}`} onClick={() => setActiveTab('bookings')}>
+            <FiCalendar /> <span>Bookings</span>
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
+            <FiUsers /> <span>Users</span>
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'memberships' ? 'active' : ''}`} onClick={() => setActiveTab('memberships')}>
+            <FiCreditCard /> <span>Members</span>
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'party' ? 'active' : ''}`} onClick={() => setActiveTab('party')}>
+            <FiZap /> <span>Party</span>
+            {partyBookings.length > 0 && <span className="mobile-nav-badge">{partyBookings.length}</span>}
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'questpass' ? 'active' : ''}`} onClick={() => setActiveTab('questpass')}>
+            <FiAward /> <span>Quest</span>
+            {questPassStats.pending > 0 && <span className="mobile-nav-badge">{questPassStats.pending}</span>}
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'rentals' ? 'active' : ''}`} onClick={() => setActiveTab('rentals')}>
+            <FiPackage /> <span>Rentals</span>
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'college' ? 'active' : ''}`} onClick={() => setActiveTab('college')}>
+            <FiAward /> <span>College</span>
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>
+            <FiTarget /> <span>Scores</span>
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
+            <FiTrendingUp /> <span>Analytics</span>
+          </button>
+        </div>
 
         <div className="admin-content-wrapper">
           {error && <div className="error">❌ {error}</div>}
