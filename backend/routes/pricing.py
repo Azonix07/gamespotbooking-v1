@@ -42,6 +42,7 @@ def get_user_active_memberships(user_id):
             WHERE user_id = %s
             AND status = 'active'
             AND end_date >= CURDATE()
+            AND plan_type IN ('solo_quest','legend_mode','god_mode','ignition','turbo','apex')
             ORDER BY created_at DESC
         '''
         cursor.execute(query, (user_id,))

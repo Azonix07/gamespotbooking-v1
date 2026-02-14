@@ -205,6 +205,8 @@ def get_all_memberships():
                 m.end_date,
                 m.status,
                 m.discount_percentage,
+                COALESCE(m.total_hours, 0) as total_hours,
+                COALESCE(m.hours_used, 0) as hours_used,
                 m.created_at,
                 u.name as user_name,
                 u.email as user_email,
@@ -212,7 +214,9 @@ def get_all_memberships():
                 DATEDIFF(m.end_date, CURDATE()) as days_remaining
             FROM memberships m
             JOIN users u ON m.user_id = u.id
-            ORDER BY m.created_at DESC
+            ORDER BY 
+                FIELD(m.status, 'pending', 'active', 'expired', 'cancelled', 'rejected'),
+                m.created_at DESC
         '''
         cursor.execute(query)
         memberships = cursor.fetchall()

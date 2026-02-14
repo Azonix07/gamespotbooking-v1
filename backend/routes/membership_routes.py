@@ -243,10 +243,19 @@ def subscribe():
             AND end_date > CURDATE()
         '''
         cursor.execute(check_query, (user_id,))
-        existing_active = cursor.fetchone()
+        existing_actives = cursor.fetchall()
 
-        if existing_active:
-            existing_cat = VALID_PLANS.get(existing_active['plan_type'], {}).get('category', '')
+        for existing_active in existing_actives:
+            existing_plan_info = VALID_PLANS.get(existing_active['plan_type'])
+            if not existing_plan_info:
+                # Old/invalid plan type — auto-expire it so it doesn't block new subscriptions
+                cursor.execute(
+                    "UPDATE memberships SET status = 'expired' WHERE id = %s",
+                    (existing_active['id'],)
+                )
+                conn.commit()
+                continue
+            existing_cat = existing_plan_info.get('category', '')
             new_cat = plan_info['category']
             if existing_cat == new_cat:
                 return jsonify({
@@ -258,11 +267,12 @@ def subscribe():
                     }
                 }), 400
 
-        # Check if user already has a pending request
+        # Check if user already has a pending request (only for valid new plans)
         pending_query = '''
             SELECT * FROM memberships
             WHERE user_id = %s
             AND status = 'pending'
+            AND plan_type IN ('solo_quest','legend_mode','god_mode','ignition','turbo','apex')
         '''
         cursor.execute(pending_query, (user_id,))
         existing_pending = cursor.fetchone()
@@ -341,6 +351,7 @@ def get_status():
             WHERE user_id = %s
             AND status = 'active'
             AND end_date >= CURDATE()
+            AND plan_type IN ('solo_quest','legend_mode','god_mode','ignition','turbo','apex')
             ORDER BY end_date DESC
             LIMIT 1
         '''
@@ -354,6 +365,7 @@ def get_status():
             FROM memberships
             WHERE user_id = %s
             AND status = 'pending'
+            AND plan_type IN ('solo_quest','legend_mode','god_mode','ignition','turbo','apex')
             ORDER BY created_at DESC
             LIMIT 1
         '''
@@ -532,6 +544,7 @@ def request_upgrade():
             WHERE user_id = %s
             AND status = 'active'
             AND end_date > CURDATE()
+            AND plan_type IN ('solo_quest','legend_mode','god_mode','ignition','turbo','apex')
         '''
         cursor.execute(check_query, (user_id,))
         current = cursor.fetchone()
@@ -558,6 +571,7 @@ def request_upgrade():
         pending_query = '''
             SELECT * FROM memberships
             WHERE user_id = %s AND status = 'pending'
+            AND plan_type IN ('solo_quest','legend_mode','god_mode','ignition','turbo','apex')
         '''
         cursor.execute(pending_query, (user_id,))
         existing_pending = cursor.fetchone()

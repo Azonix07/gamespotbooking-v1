@@ -434,6 +434,31 @@ def create_missing_tables():
             except Exception:
                 pass  # Column/change already exists
         
+        # ── One-time cleanup: Delete ALL old membership records for a fresh start ──
+        # Old records have plan_type = 'monthly'/'quarterly'/'annual' which don't
+        # exist in the new VALID_PLANS system. They block new subscriptions.
+        try:
+            cursor.execute("SELECT COUNT(*) as cnt FROM memberships WHERE plan_type IN ('monthly','quarterly','annual')")
+            row = cursor.fetchone()
+            old_count = row['cnt'] if isinstance(row, dict) else row[0]
+            if old_count > 0:
+                cursor.execute("DELETE FROM memberships WHERE plan_type IN ('monthly','quarterly','annual')")
+                conn.commit()
+                print(f"✅ Cleaned up {old_count} old-format membership records (monthly/quarterly/annual)")
+            
+            # Also clean up any memberships with plan_type not in the new valid plans
+            valid_plan_names = ('solo_quest','legend_mode','god_mode','ignition','turbo','apex')
+            placeholders = ','.join(['%s'] * len(valid_plan_names))
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM memberships WHERE plan_type NOT IN ({placeholders})", valid_plan_names)
+            row2 = cursor.fetchone()
+            stale_count = row2['cnt'] if isinstance(row2, dict) else row2[0]
+            if stale_count > 0:
+                cursor.execute(f"DELETE FROM memberships WHERE plan_type NOT IN ({placeholders})", valid_plan_names)
+                conn.commit()
+                print(f"✅ Cleaned up {stale_count} stale membership records with invalid plan types")
+        except Exception as e:
+            print(f"⚠️  Membership cleanup: {e}")
+        
         # Add indexes for fast lookups
         index_statements = [
             "CREATE INDEX idx_customer_phone ON bookings (customer_phone)",
