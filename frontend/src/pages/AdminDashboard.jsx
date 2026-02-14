@@ -941,11 +941,11 @@ const AdminDashboard = () => {
                 <tr>
                   <th>ID</th>
                   <th>User</th>
-                  <th>Email</th>
+                  <th>Phone</th>
                   <th>Plan</th>
+                  <th>Hours</th>
                   <th>Start Date</th>
                   <th>End Date</th>
-                  <th>Discount</th>
                   <th>Status</th>
                   <th>Days Left</th>
                   <th>Actions</th>
@@ -956,11 +956,16 @@ const AdminDashboard = () => {
                   <tr key={membership.id} style={membership.status === 'pending' ? { background: 'rgba(245, 158, 11, 0.04)' } : {}}>
                     <td className="membership-id" data-label="ID">#{membership.id}</td>
                     <td className="user-name" data-label="USER">{membership.user_name}</td>
-                    <td data-label="EMAIL">{membership.user_email}</td>
+                    <td data-label="PHONE">{membership.user_phone || '-'}</td>
                     <td data-label="PLAN">
                         <span className={`plan-badge ${membership.plan_type}`}>
-                          {membership.plan_type}
+                          {membership.plan_type?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </span>
+                      </td>
+                      <td data-label="HOURS">
+                        {membership.total_hours > 0 ? (
+                          <span>{membership.hours_used || 0}/{membership.total_hours} hrs</span>
+                        ) : '-'}
                       </td>
                       <td data-label="START DATE">
                         {membership.status === 'pending' ? <em style={{ color: '#94a3b8' }}>On approval</em> : new Date(membership.start_date).toLocaleDateString()}
@@ -968,7 +973,6 @@ const AdminDashboard = () => {
                       <td data-label="END DATE">
                         {membership.status === 'pending' ? <em style={{ color: '#94a3b8' }}>On approval</em> : new Date(membership.end_date).toLocaleDateString()}
                       </td>
-                      <td className="discount" data-label="DISCOUNT">{membership.discount_percentage}%</td>
                       <td data-label="STATUS">
                         <span className={`status-badge ${membership.status}`}>
                           {membership.status}

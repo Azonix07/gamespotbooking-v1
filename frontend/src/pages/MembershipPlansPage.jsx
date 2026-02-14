@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
@@ -19,6 +19,9 @@ const MembershipPlansPage = () => {
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const [flippedCards, setFlippedCards] = useState({});
+  const [cardFeedback, setCardFeedback] = useState({}); // per-card inline feedback
+  const [showConfirm, setShowConfirm] = useState(null); // { planType, planName, price, action: 'subscribe'|'upgrade' }
+  const messageBannerRef = useRef(null);
 
   // Plan rank map for upgrade logic
   const planRankMap = {
@@ -60,7 +63,30 @@ const MembershipPlansPage = () => {
     setFlippedCards(prev => ({ ...prev, [planType]: !prev[planType] }));
   };
 
-  const handleSubscribe = async (planType) => {
+  // Scroll to message banner
+  const scrollToMessage = () => {
+    setTimeout(() => {
+      messageBannerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
+
+  // Show confirmation dialog before subscribe/upgrade
+  const confirmAction = (planType, planName, price, action) => {
+    setShowConfirm({ planType, planName, price, action });
+  };
+
+  const executeConfirmedAction = async () => {
+    if (!showConfirm) return;
+    const { planType, action } = showConfirm;
+    setShowConfirm(null);
+    if (action === 'upgrade') {
+      await doUpgrade(planType);
+    } else {
+      await doSubscribe(planType);
+    }
+  };
+
+  const doSubscribe = async (planType) => {
     if (!isAuthenticated) {
       navigate("/login", { state: { from: "/membership" } });
       return;
@@ -69,43 +95,91 @@ const MembershipPlansPage = () => {
       setSubscribing(planType);
       setError(null);
       setSuccessMsg(null);
+      setCardFeedback(prev => ({ ...prev, [planType]: { type: 'loading', msg: 'Sending request...' } }));
+
       const data = await apiFetch("/api/membership/subscribe", {
         method: "POST",
         body: JSON.stringify({ plan_type: planType }),
       });
       if (data.success) {
         setSuccessMsg(data.message);
-        loadData();
+        setCardFeedback(prev => ({ ...prev, [planType]: { type: 'success', msg: 'Request sent! ✅' } }));
+        scrollToMessage();
+        await loadData();
       } else {
         setError(data.error || "Request failed");
+        setCardFeedback(prev => ({ ...prev, [planType]: { type: 'error', msg: data.error || 'Request failed' } }));
+        scrollToMessage();
       }
     } catch (err) {
-      setError(err.message || "Request failed. Please try again.");
+      const msg = err.message || "Request failed. Please try again.";
+      setError(msg);
+      setCardFeedback(prev => ({ ...prev, [planType]: { type: 'error', msg } }));
+      scrollToMessage();
     } finally {
       setSubscribing(null);
+      // Clear card feedback after 5 seconds
+      setTimeout(() => {
+        setCardFeedback(prev => { const copy = { ...prev }; delete copy[planType]; return copy; });
+      }, 5000);
     }
   };
 
-  const handleUpgrade = async (planType) => {
+  const doUpgrade = async (planType) => {
     try {
       setSubscribing(planType);
       setError(null);
       setSuccessMsg(null);
+      setCardFeedback(prev => ({ ...prev, [planType]: { type: 'loading', msg: 'Sending upgrade request...' } }));
+
       const data = await apiFetch("/api/membership/upgrade", {
         method: "POST",
         body: JSON.stringify({ plan_type: planType }),
       });
       if (data.success) {
         setSuccessMsg(data.message);
-        loadData();
+        setCardFeedback(prev => ({ ...prev, [planType]: { type: 'success', msg: 'Upgrade request sent! ✅' } }));
+        scrollToMessage();
+        await loadData();
       } else {
         setError(data.error || "Upgrade request failed");
+        setCardFeedback(prev => ({ ...prev, [planType]: { type: 'error', msg: data.error || 'Upgrade failed' } }));
+        scrollToMessage();
       }
     } catch (err) {
-      setError(err.message || "Upgrade request failed.");
+      const msg = err.message || "Upgrade request failed.";
+      setError(msg);
+      setCardFeedback(prev => ({ ...prev, [planType]: { type: 'error', msg } }));
+      scrollToMessage();
     } finally {
       setSubscribing(null);
+      setTimeout(() => {
+        setCardFeedback(prev => { const copy = { ...prev }; delete copy[planType]; return copy; });
+      }, 5000);
     }
+  };
+
+  const handleSubscribe = (planType) => {
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: "/membership" } });
+      return;
+    }
+    // Find plan details for confirmation dialog
+    const allPlans = categories ? [
+      ...(categories.story_pass?.plans || []),
+      ...(categories.driving_pass?.plans || [])
+    ] : [];
+    const plan = allPlans.find(p => p.type === planType);
+    confirmAction(planType, plan?.name || planType, plan?.price || 0, 'subscribe');
+  };
+
+  const handleUpgrade = (planType) => {
+    const allPlans = categories ? [
+      ...(categories.story_pass?.plans || []),
+      ...(categories.driving_pass?.plans || [])
+    ] : [];
+    const plan = allPlans.find(p => p.type === planType);
+    confirmAction(planType, plan?.name || planType, plan?.price || 0, 'upgrade');
   };
 
   const getButtonState = (plan, categoryKey) => {
@@ -222,16 +296,28 @@ const MembershipPlansPage = () => {
                           style={
                             btnState.className === 'primary'
                               ? { background: plan.gradient }
+                              : btnState.className === 'upgrade'
+                              ? {}
                               : {}
                           }
                           onClick={(e) => {
                             e.stopPropagation();
+                            e.preventDefault();
                             if (btnState.action) btnState.action();
                           }}
-                          disabled={btnState.disabled}
+                          onTouchEnd={(e) => {
+                            e.stopPropagation();
+                          }}
+                          disabled={btnState.disabled || subscribing === plan.type}
                         >
-                          {btnState.label}
+                          {subscribing === plan.type ? '⏳ Sending...' : btnState.label}
                         </button>
+                        {/* Inline card feedback */}
+                        {cardFeedback[plan.type] && (
+                          <div className={`card-inline-feedback ${cardFeedback[plan.type].type}`}>
+                            {cardFeedback[plan.type].msg}
+                          </div>
+                        )}
                       </div>
 
                       <ul className="card-back-features">
@@ -303,15 +389,60 @@ const MembershipPlansPage = () => {
         )}
 
         {/* Banners */}
+        <div ref={messageBannerRef}>
+          <AnimatePresence>
+            {error && (
+              <motion.div className="membership-error" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                ❌ {error}
+              </motion.div>
+            )}
+            {successMsg && (
+              <motion.div className="membership-success" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                ✅ {successMsg}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Confirmation Dialog */}
         <AnimatePresence>
-          {error && (
-            <motion.div className="membership-error" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-              ❌ {error}
-            </motion.div>
-          )}
-          {successMsg && (
-            <motion.div className="membership-success" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-              ✅ {successMsg}
+          {showConfirm && (
+            <motion.div
+              className="membership-confirm-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowConfirm(null)}
+            >
+              <motion.div
+                className="membership-confirm-dialog"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="confirm-icon">
+                  {showConfirm.action === 'upgrade' ? '⬆️' : '📋'}
+                </div>
+                <h3>{showConfirm.action === 'upgrade' ? 'Confirm Upgrade' : 'Confirm Plan Selection'}</h3>
+                <p>
+                  {showConfirm.action === 'upgrade'
+                    ? `Upgrade to ${showConfirm.planName} for ₹${showConfirm.price}/month?`
+                    : `Request ${showConfirm.planName} pass for ₹${showConfirm.price}/month?`
+                  }
+                </p>
+                <p className="confirm-note">
+                  Your request will be sent to the admin. Visit the shop to pay and get it activated.
+                </p>
+                <div className="confirm-buttons">
+                  <button className="confirm-btn confirm-yes" onClick={executeConfirmedAction}>
+                    {showConfirm.action === 'upgrade' ? '⬆ Yes, Upgrade' : '✓ Yes, Request Plan'}
+                  </button>
+                  <button className="confirm-btn confirm-no" onClick={() => setShowConfirm(null)}>
+                    Cancel
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -326,7 +457,14 @@ const MembershipPlansPage = () => {
             <div className="status-banner-details">
               <span>Plan: <strong>{currentMembership.plan_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</strong></span>
               <span>Expires: <strong>{new Date(currentMembership.end_date).toLocaleDateString()}</strong> ({currentMembership.days_remaining} days left)</span>
+              {currentMembership.total_hours > 0 && (
+                <span>Hours: <strong>{currentMembership.hours_remaining ?? (currentMembership.total_hours - (currentMembership.hours_used || 0))}/{currentMembership.total_hours} hrs remaining</strong></span>
+              )}
+              {currentMembership.rate_per_hour > 0 && (
+                <span>Rate: <strong>₹{currentMembership.rate_per_hour}/hr</strong></span>
+              )}
             </div>
+            <p className="status-banner-note">You can upgrade to a higher tier within the same category below.</p>
           </div>
         )}
 
