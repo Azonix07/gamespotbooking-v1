@@ -415,6 +415,25 @@ def create_missing_tables():
             # Already updated or table doesn't exist yet
             pass
         
+        # ── Membership V2 migration: hours tracking + rate-based pricing ──
+        membership_v2_alters = [
+            # Widen plan_type to support new plan names (solo_quest, legend_mode, etc.)
+            "ALTER TABLE memberships MODIFY COLUMN plan_type VARCHAR(50) NOT NULL",
+            # Add hours tracking columns
+            "ALTER TABLE memberships ADD COLUMN total_hours DECIMAL(6,2) DEFAULT 0",
+            "ALTER TABLE memberships ADD COLUMN hours_used DECIMAL(6,2) DEFAULT 0",
+            # Add membership reference on bookings
+            "ALTER TABLE bookings ADD COLUMN membership_id INT NULL",
+            "ALTER TABLE bookings ADD COLUMN membership_rate TINYINT(1) DEFAULT 0",
+        ]
+        for sql in membership_v2_alters:
+            try:
+                cursor.execute(sql)
+                conn.commit()
+                print(f"✅ Membership V2: {sql[:60]}...")
+            except Exception:
+                pass  # Column/change already exists
+        
         # Add indexes for fast lookups
         index_statements = [
             "CREATE INDEX idx_customer_phone ON bookings (customer_phone)",
