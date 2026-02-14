@@ -12,22 +12,94 @@ import mysql.connector
 games_bp = Blueprint('games', __name__)
 
 # Fallback games data when database tables don't exist
+# These are the ACTUAL games installed on each device at GameSpot
 FALLBACK_GAMES = [
-    {'id': 1, 'name': 'God of War Ragnarök', 'cover_image': '/images/games/god-of-war.jpg', 'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.5, 'description': 'Embark on an epic journey as Kratos and Atreus.', 'release_year': 2022, 'ps5_numbers': [1, 3]},
-    {'id': 2, 'name': 'Spider-Man 2', 'cover_image': '/images/games/spiderman-2.jpg', 'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.0, 'description': 'The incredible power of the symbiote forces Peter and Miles to face the ultimate test.', 'release_year': 2023, 'ps5_numbers': [1, 2]},
-    {'id': 3, 'name': 'Horizon Forbidden West', 'cover_image': '/images/games/horizon.jpg', 'genre': 'Action RPG', 'max_players': 1, 'rating': 8.8, 'description': 'Join Aloy as she braves the Forbidden West.', 'release_year': 2022, 'ps5_numbers': [3]},
-    {'id': 4, 'name': 'The Last of Us Part II', 'cover_image': '/images/games/tlou2.jpg', 'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.2, 'description': 'Experience the emotional story of Ellie.', 'release_year': 2020, 'ps5_numbers': [1, 3]},
-    {'id': 5, 'name': 'Gran Turismo 7', 'cover_image': '/images/games/gt7.jpg', 'genre': 'Racing', 'max_players': 2, 'rating': 8.5, 'description': 'The ultimate driving simulator.', 'release_year': 2022, 'ps5_numbers': [2]},
-    {'id': 6, 'name': 'Call of Duty: Modern Warfare III', 'cover_image': '/images/games/cod-mw3.jpg', 'genre': 'First-Person Shooter', 'max_players': 4, 'rating': 8.0, 'description': 'The latest Call of Duty experience.', 'release_year': 2023, 'ps5_numbers': [2]},
-    {'id': 7, 'name': 'FIFA 24', 'cover_image': '/images/games/fifa24.jpg', 'genre': 'Sports', 'max_players': 4, 'rating': 8.2, 'description': 'The world\'s game with HyperMotionV technology.', 'release_year': 2023, 'ps5_numbers': [2]},
-    {'id': 8, 'name': 'NBA 2K24', 'cover_image': '/images/games/nba2k24.jpg', 'genre': 'Sports', 'max_players': 4, 'rating': 8.0, 'description': 'Experience basketball like never before.', 'release_year': 2023, 'ps5_numbers': [2]},
-    {'id': 9, 'name': 'Mortal Kombat 1', 'cover_image': '/images/games/mk1.jpg', 'genre': 'Fighting', 'max_players': 2, 'rating': 8.3, 'description': 'A new beginning for the iconic fighting franchise.', 'release_year': 2023, 'ps5_numbers': [2]},
-    {'id': 10, 'name': 'Resident Evil 4 Remake', 'cover_image': '/images/games/re4.jpg', 'genre': 'Survival Horror', 'max_players': 1, 'rating': 9.3, 'description': 'The horror classic reimagined.', 'release_year': 2023, 'ps5_numbers': [1]},
-    {'id': 11, 'name': 'Elden Ring', 'cover_image': '/images/games/elden-ring.jpg', 'genre': 'Action RPG', 'max_players': 1, 'rating': 9.6, 'description': 'Rise, Tarnished, and be guided by grace.', 'release_year': 2022, 'ps5_numbers': [1, 3]},
-    {'id': 12, 'name': 'Hogwarts Legacy', 'cover_image': '/images/games/hogwarts.jpg', 'genre': 'Action RPG', 'max_players': 1, 'rating': 8.4, 'description': 'Experience life at Hogwarts School.', 'release_year': 2023, 'ps5_numbers': [3]},
-    {'id': 13, 'name': 'Tekken 8', 'cover_image': '/images/games/tekken8.jpg', 'genre': 'Fighting', 'max_players': 2, 'rating': 8.6, 'description': 'The legendary fighting game returns.', 'release_year': 2024, 'ps5_numbers': [2]},
-    {'id': 14, 'name': 'Red Dead Redemption 2', 'cover_image': '/images/games/rdr2.jpg', 'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.8, 'description': 'America, 1899. The end of the Wild West era.', 'release_year': 2018, 'ps5_numbers': [1, 3]},
-    {'id': 15, 'name': 'Ghost of Tsushima', 'cover_image': '/images/games/ghost-tsushima.jpg', 'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.1, 'description': 'A beautiful samurai epic set in feudal Japan.', 'release_year': 2020, 'ps5_numbers': [1, 3]},
+    {
+        'id': 1, 'name': 'Spider-Man 2', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6bw6.jpg',
+        'genre': 'Action-Adventure', 'max_players': 1, 'rating': 9.0,
+        'description': 'The incredible power of the symbiote forces Peter and Miles to face the ultimate test.',
+        'release_year': 2023, 'ps5_numbers': [1]
+    },
+    {
+        'id': 2, 'name': 'FC 26', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co5w0w.jpg',
+        'genre': 'Sports', 'max_players': 4, 'rating': 8.5,
+        'description': 'The latest EA Sports football experience with next-gen gameplay.',
+        'release_year': 2025, 'ps5_numbers': [1, 2, 3]
+    },
+    {
+        'id': 3, 'name': 'WWE 2K24', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co7kso.jpg',
+        'genre': 'Fighting', 'max_players': 4, 'rating': 8.0,
+        'description': 'Step into the ring with WWE superstars in the most electrifying wrestling game.',
+        'release_year': 2024, 'ps5_numbers': [1, 2]
+    },
+    {
+        'id': 4, 'name': 'Split Fiction', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co9bvk.jpg',
+        'genre': 'Co-op Adventure', 'max_players': 2, 'rating': 9.0,
+        'description': 'A co-op adventure where two writers get trapped inside their own stories.',
+        'release_year': 2025, 'ps5_numbers': [1, 2, 3]
+    },
+    {
+        'id': 5, 'name': 'It Takes Two', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2t8f.jpg',
+        'genre': 'Co-op Adventure', 'max_players': 2, 'rating': 9.2,
+        'description': 'An award-winning co-op platformer about a couple turned into dolls.',
+        'release_year': 2021, 'ps5_numbers': [1, 2, 3]
+    },
+    {
+        'id': 6, 'name': 'Marvel Rivals', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co8t4b.jpg',
+        'genre': 'Shooter', 'max_players': 2, 'rating': 8.3,
+        'description': 'Team-based PvP shooter featuring iconic Marvel heroes and villains.',
+        'release_year': 2024, 'ps5_numbers': [1]
+    },
+    {
+        'id': 7, 'name': 'Mortal Kombat 1', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6bkp.jpg',
+        'genre': 'Fighting', 'max_players': 2, 'rating': 8.3,
+        'description': 'A new beginning for the iconic fighting franchise. Liu Kang has reshaped the universe.',
+        'release_year': 2023, 'ps5_numbers': [1, 2, 3]
+    },
+    {
+        'id': 8, 'name': 'GTA 5', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2lbd.jpg',
+        'genre': 'Action-Adventure', 'max_players': 2, 'rating': 9.7,
+        'description': 'The blockbuster open-world adventure in Los Santos, now on PS5.',
+        'release_year': 2022, 'ps5_numbers': [1, 2, 3]
+    },
+    {
+        'id': 9, 'name': 'WWE 2K25', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co9dpi.jpg',
+        'genre': 'Fighting', 'max_players': 4, 'rating': 8.2,
+        'description': 'The newest WWE wrestling game with updated rosters and gameplay.',
+        'release_year': 2025, 'ps5_numbers': [3]
+    },
+    {
+        'id': 10, 'name': 'Gran Turismo 7', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co3mni.jpg',
+        'genre': 'Racing', 'max_players': 2, 'rating': 8.5,
+        'description': 'The real driving simulator. The definitive Gran Turismo experience.',
+        'release_year': 2022, 'ps5_numbers': [3, 4]
+    },
+    {
+        'id': 11, 'name': 'Forza Horizon 5', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co3ofx.jpg',
+        'genre': 'Racing', 'max_players': 1, 'rating': 9.1,
+        'description': 'Explore the vibrant world of Mexico in the ultimate open-world racing game.',
+        'release_year': 2021, 'ps5_numbers': [4],
+        'device_type': 'driving_sim'
+    },
+    {
+        'id': 12, 'name': 'The Crew Motorfest', 
+        'cover_image': 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6g4a.jpg',
+        'genre': 'Racing', 'max_players': 1, 'rating': 7.8,
+        'description': 'A festival of speed set in the paradise of Hawaii.',
+        'release_year': 2023, 'ps5_numbers': [4],
+        'device_type': 'driving_sim'
+    },
 ]
 
 FALLBACK_RECOMMENDATIONS = [
@@ -41,105 +113,27 @@ FALLBACK_RECOMMENDATIONS = [
 @games_bp.route('/api/games', methods=['GET', 'OPTIONS'])
 def get_games():
     """
-    Get all games or filter by PS5 number
-    Query params: ps5 (optional) - Filter by PS5 number (1, 2, or 3)
+    Get all games or filter by PS5 number.
+    Always returns the hardcoded FALLBACK_GAMES which represent
+    the ACTUAL games physically installed on each device at GameSpot.
+    Query params: ps5 (optional) - Filter by PS5/device number (1, 2, 3, or 4)
     """
     if request.method == 'OPTIONS':
         return '', 200
     
-    try:
-        ps5_filter = request.args.get('ps5', None)
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
-        
-        if ps5_filter:
-            # Get games for specific PS5
-            query = """
-                SELECT DISTINCT 
-                    g.id, g.name, g.cover_image, g.genre, 
-                    g.max_players, g.rating, g.description, g.release_year,
-                    GROUP_CONCAT(DISTINCT pg.ps5_number ORDER BY pg.ps5_number) as ps5_numbers
-                FROM games g
-                INNER JOIN ps5_games pg ON g.id = pg.game_id
-                WHERE pg.ps5_number = %s
-                GROUP BY g.id
-                ORDER BY g.rating DESC, g.name ASC
-            """
-            cursor.execute(query, (ps5_filter,))
-        else:
-            # Get all games with PS5 associations
-            query = """
-                SELECT 
-                    g.id, g.name, g.cover_image, g.genre, 
-                    g.max_players, g.rating, g.description, g.release_year,
-                    GROUP_CONCAT(DISTINCT pg.ps5_number ORDER BY pg.ps5_number) as ps5_numbers
-                FROM games g
-                LEFT JOIN ps5_games pg ON g.id = pg.game_id
-                GROUP BY g.id
-                ORDER BY g.rating DESC, g.name ASC
-            """
-            cursor.execute(query)
-        
-        games = cursor.fetchall()
-        
-        # Convert ps5_numbers to list
-        for game in games:
-            if game['ps5_numbers']:
-                game['ps5_numbers'] = [int(num) for num in game['ps5_numbers'].split(',')]
-            else:
-                game['ps5_numbers'] = []
-        
-        cursor.close()
-        connection.close()
-        
-        return jsonify({
-            'success': True,
-            'games': games,
-            'count': len(games),
-            'filter': ps5_filter if ps5_filter else 'all'
-        }), 200
-        
-    except mysql.connector.Error as e:
-        # Check if it's a "table doesn't exist" error
-        if e.errno == 1146:  # Table doesn't exist
-            print(f"Games tables not found, using fallback data")
-            # Filter fallback games by PS5 if needed
-            ps5_filter = request.args.get('ps5', None)
-            games = FALLBACK_GAMES
-            if ps5_filter:
-                ps5_num = int(ps5_filter)
-                games = [g for g in FALLBACK_GAMES if ps5_num in g['ps5_numbers']]
-            
-            return jsonify({
-                'success': True,
-                'games': games,
-                'count': len(games),
-                'filter': ps5_filter if ps5_filter else 'all',
-                'fallback': True
-            }), 200
-        else:
-            sys.stderr.write(f"[Games] DB error: {e}\n")
-            return jsonify({
-                'success': False,
-                'message': 'Failed to fetch games'
-            }), 500
-            
-    except Exception as e:
-        sys.stderr.write(f"[Games] Error: {e}\n")
-        # Return fallback data on any error
-        ps5_filter = request.args.get('ps5', None)
-        games = FALLBACK_GAMES
-        if ps5_filter:
-            ps5_num = int(ps5_filter)
-            games = [g for g in FALLBACK_GAMES if ps5_num in g['ps5_numbers']]
-        
-        return jsonify({
-            'success': True,
-            'games': games,
-            'count': len(games),
-            'filter': ps5_filter if ps5_filter else 'all',
-            'fallback': True
-        }), 200
+    ps5_filter = request.args.get('ps5', None)
+    games = FALLBACK_GAMES
+    
+    if ps5_filter:
+        ps5_num = int(ps5_filter)
+        games = [g for g in FALLBACK_GAMES if ps5_num in g['ps5_numbers']]
+    
+    return jsonify({
+        'success': True,
+        'games': games,
+        'count': len(games),
+        'filter': ps5_filter if ps5_filter else 'all'
+    }), 200
 
 
 @games_bp.route('/api/games/recommendations', methods=['GET', 'OPTIONS'])

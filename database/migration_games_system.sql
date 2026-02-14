@@ -67,71 +67,67 @@ CREATE TABLE IF NOT EXISTS game_votes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ===================================
--- SEED DATA: POPULAR PS5 GAMES
+-- SEED DATA: ACTUAL GAMESPOT INSTALLED GAMES
 -- ===================================
 
--- Insert popular games
-INSERT INTO games (name, cover_image, genre, max_players, rating, description, release_year) VALUES
-('God of War Ragnarök', '/images/games/god-of-war.jpg', 'Action-Adventure', 1, 9.5, 'Embark on an epic and heartfelt journey as Kratos and Atreus struggle with holding on and letting go.', 2022),
-('Spider-Man 2', '/images/games/spiderman-2.jpg', 'Action-Adventure', 1, 9.0, 'The incredible power of the symbiote forces Peter and Miles to face the ultimate test of strength.', 2023),
-('Horizon Forbidden West', '/images/games/horizon.jpg', 'Action RPG', 1, 8.8, 'Join Aloy as she braves the Forbidden West - a majestic but dangerous frontier.', 2022),
-('The Last of Us Part II', '/images/games/tlou2.jpg', 'Action-Adventure', 1, 9.2, 'Experience the emotional story of Ellie on her quest for justice and revenge.', 2020),
-('Gran Turismo 7', '/images/games/gt7.jpg', 'Racing', 1, 8.5, 'The ultimate driving simulator returns with over 400 cars and stunning graphics.', 2022),
-('Call of Duty: Modern Warfare III', '/images/games/cod-mw3.jpg', 'First-Person Shooter', 4, 8.0, 'The direct sequel to 2022s Modern Warfare II continues the story.', 2023),
-('FIFA 24', '/images/games/fifa24.jpg', 'Sports', 4, 8.2, 'The world\'s game featuring HyperMotionV technology and over 19,000 players.', 2023),
-('NBA 2K24', '/images/games/nba2k24.jpg', 'Sports', 4, 8.0, 'Experience basketball like never before with ProPLAY technology.', 2023),
-('Mortal Kombat 1', '/images/games/mk1.jpg', 'Fighting', 2, 8.3, 'A new beginning for the iconic fighting franchise.', 2023),
-('Resident Evil 4 Remake', '/images/games/re4.jpg', 'Survival Horror', 1, 9.3, 'Experience the horror classic reimagined with cutting-edge graphics.', 2023),
-('Elden Ring', '/images/games/elden-ring.jpg', 'Action RPG', 1, 9.6, 'A new fantasy action RPG. Rise, Tarnished, and be guided by grace.', 2022),
-('Hogwarts Legacy', '/images/games/hogwarts.jpg', 'Action RPG', 1, 8.4, 'Experience life as a student at Hogwarts School of Witchcraft and Wizardry.', 2023),
-('Tekken 8', '/images/games/tekken8.jpg', 'Fighting', 2, 8.6, 'The legendary fighting game returns with stunning graphics.', 2024),
-('Red Dead Redemption 2', '/images/games/rdr2.jpg', 'Action-Adventure', 1, 9.8, 'America, 1899. The end of the Wild West era has begun.', 2018),
-('Assassins Creed Mirage', '/images/games/ac-mirage.jpg', 'Action-Adventure', 1, 8.1, 'Experience the story of Basim, a cunning street thief in Baghdad.', 2023),
-('FC 24', '/images/games/fc24.jpg', 'Sports', 4, 8.3, 'EA SPORTS FC 24 welcomes you to a new era of football.', 2023),
-('Uncharted: Legacy of Thieves', '/images/games/uncharted.jpg', 'Action-Adventure', 1, 8.9, 'Play as Nathan Drake and Chloe Frazer in remastered adventures.', 2022),
-('Ghost of Tsushima', '/images/games/ghost-tsushima.jpg', 'Action-Adventure', 1, 9.1, 'A beautiful open-world samurai epic set in feudal Japan.', 2020),
-('Demon\'s Souls', '/images/games/demons-souls.jpg', 'Action RPG', 1, 9.2, 'Entirely rebuilt from the ground up, this remake invites you to experience the unsettling story.', 2020),
-('Ratchet & Clank: Rift Apart', '/images/games/ratchet.jpg', 'Action-Platformer', 1, 8.8, 'Go dimension-hopping with Ratchet and Clank.', 2021);
+-- Clear old data first
+DELETE FROM ps5_games;
+DELETE FROM games;
+
+-- Insert the ACTUAL games installed at GameSpot
+INSERT INTO games (id, name, cover_image, genre, max_players, rating, description, release_year) VALUES
+(1, 'Spider-Man 2', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6bw6.jpg', 'Action-Adventure', 1, 9.0, 'The incredible power of the symbiote forces Peter and Miles to face the ultimate test.', 2023),
+(2, 'FC 26', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co5w0w.jpg', 'Sports', 4, 8.5, 'The latest EA Sports football experience with next-gen gameplay.', 2025),
+(3, 'WWE 2K24', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co7kso.jpg', 'Fighting', 4, 8.0, 'Step into the ring with WWE superstars in the most electrifying wrestling game.', 2024),
+(4, 'Split Fiction', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co9bvk.jpg', 'Co-op Adventure', 2, 9.0, 'A co-op adventure where two writers get trapped inside their own stories.', 2025),
+(5, 'It Takes Two', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2t8f.jpg', 'Co-op Adventure', 2, 9.2, 'An award-winning co-op platformer about a couple turned into dolls.', 2021),
+(6, 'Marvel Rivals', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co8t4b.jpg', 'Shooter', 2, 8.3, 'Team-based PvP shooter featuring iconic Marvel heroes and villains.', 2024),
+(7, 'Mortal Kombat 1', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6bkp.jpg', 'Fighting', 2, 8.3, 'A new beginning for the iconic fighting franchise. Liu Kang has reshaped the universe.', 2023),
+(8, 'GTA 5', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2lbd.jpg', 'Action-Adventure', 2, 9.7, 'The blockbuster open-world adventure in Los Santos, now on PS5.', 2022),
+(9, 'WWE 2K25', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co9dpi.jpg', 'Fighting', 4, 8.2, 'The newest WWE wrestling game with updated rosters and gameplay.', 2025),
+(10, 'Gran Turismo 7', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co3mni.jpg', 'Racing', 2, 8.5, 'The real driving simulator. The definitive Gran Turismo experience.', 2022),
+(11, 'Forza Horizon 5', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co3ofx.jpg', 'Racing', 1, 9.1, 'Explore the vibrant world of Mexico in the ultimate open-world racing game.', 2021),
+(12, 'The Crew Motorfest', 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6g4a.jpg', 'Racing', 1, 7.8, 'A festival of speed set in the paradise of Hawaii.', 2023);
 
 -- ===================================
--- ASSOCIATE GAMES WITH PS5 CONSOLES
+-- ASSOCIATE GAMES WITH PS5/DEVICES
 -- ===================================
 
--- PS5-1: Action & Adventure focused
+-- PS5-1: Spider-Man 2, FC26, WWE 2K24, Split Fiction, It Takes Two, Marvel Rivals, Mortal Kombat 1, GTA 5
 INSERT INTO ps5_games (ps5_number, game_id) VALUES
-(1, 1),  -- God of War Ragnarök
-(1, 2),  -- Spider-Man 2
-(1, 4),  -- The Last of Us Part II
-(1, 10), -- Resident Evil 4
-(1, 11), -- Elden Ring
-(1, 14), -- Red Dead Redemption 2
-(1, 18), -- Ghost of Tsushima
-(1, 19), -- Demon's Souls
-(1, 20); -- Ratchet & Clank
+(1, 1),  -- Spider-Man 2
+(1, 2),  -- FC 26
+(1, 3),  -- WWE 2K24
+(1, 4),  -- Split Fiction
+(1, 5),  -- It Takes Two
+(1, 6),  -- Marvel Rivals
+(1, 7),  -- Mortal Kombat 1
+(1, 8);  -- GTA 5
 
--- PS5-2: Sports & Multiplayer focused
+-- PS5-2: FC26, WWE 2K24, Split Fiction, It Takes Two, Mortal Kombat 1, GTA 5
 INSERT INTO ps5_games (ps5_number, game_id) VALUES
-(2, 5),  -- Gran Turismo 7
-(2, 6),  -- Call of Duty MW3
-(2, 7),  -- FIFA 24
-(2, 8),  -- NBA 2K24
-(2, 9),  -- Mortal Kombat 1
-(2, 13), -- Tekken 8
-(2, 16), -- FC 24
-(2, 2),  -- Spider-Man 2 (also here)
-(2, 17); -- Uncharted
+(2, 2),  -- FC 26
+(2, 3),  -- WWE 2K24
+(2, 4),  -- Split Fiction
+(2, 5),  -- It Takes Two
+(2, 7),  -- Mortal Kombat 1
+(2, 8);  -- GTA 5
 
--- PS5-3: RPG & Story focused
+-- PS5-3: FC26, WWE 2K25, Split Fiction, It Takes Two, Mortal Kombat 1, GTA 5, Gran Turismo 7
 INSERT INTO ps5_games (ps5_number, game_id) VALUES
-(3, 1),  -- God of War Ragnarök
-(3, 3),  -- Horizon Forbidden West
-(3, 11), -- Elden Ring
-(3, 12), -- Hogwarts Legacy
-(3, 14), -- Red Dead Redemption 2
-(3, 15), -- Assassin's Creed Mirage
-(3, 18), -- Ghost of Tsushima
-(3, 19), -- Demon's Souls
-(3, 4);  -- The Last of Us Part II
+(3, 2),  -- FC 26
+(3, 9),  -- WWE 2K25
+(3, 4),  -- Split Fiction
+(3, 5),  -- It Takes Two
+(3, 7),  -- Mortal Kombat 1
+(3, 8),  -- GTA 5
+(3, 10); -- Gran Turismo 7
+
+-- Driving Simulator (Unit 4): Forza Horizon 5, The Crew Motorfest, Gran Turismo 7
+INSERT INTO ps5_games (ps5_number, game_id) VALUES
+(4, 11), -- Forza Horizon 5
+(4, 12), -- The Crew Motorfest
+(4, 10); -- Gran Turismo 7
 
 -- ===================================
 -- SEED SAMPLE RECOMMENDATIONS

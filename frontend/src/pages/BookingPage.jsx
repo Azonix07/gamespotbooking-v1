@@ -10,6 +10,75 @@ import { apiFetch } from '../services/apiClient';
 import ModernDatePicker from '../components/ModernDatePicker';
 import '../styles/BookingPage.css';
 
+// Game cover images mapping - high quality covers for each game
+const GAME_COVERS = {
+  'Spider-Man 2': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6bw6.jpg',
+    emoji: '🕷️',
+    color: '#b91c1c'
+  },
+  'FC 26': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co5w0w.jpg',
+    emoji: '⚽',
+    color: '#1a472a'
+  },
+  'WWE 2K24': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co7kso.jpg',
+    emoji: '🤼',
+    color: '#8b0000'
+  },
+  'WWE 2K25': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co9dpi.jpg',
+    emoji: '🤼',
+    color: '#990000'
+  },
+  'Split Fiction': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co9bvk.jpg',
+    emoji: '📖',
+    color: '#4a0e8f'
+  },
+  'It Takes Two': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2t8f.jpg',
+    emoji: '💑',
+    color: '#e85d04'
+  },
+  'Marvel Rivals': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co8t4b.jpg',
+    emoji: '🦸',
+    color: '#c41e3a'
+  },
+  'Mortal Kombat 1': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6bkp.jpg',
+    emoji: '🐉',
+    color: '#8b4513'
+  },
+  'GTA 5': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2lbd.jpg',
+    emoji: '🔫',
+    color: '#006400'
+  },
+  'Gran Turismo 7': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co3mni.jpg',
+    emoji: '🏎️',
+    color: '#00308F'
+  },
+  'Forza Horizon 5': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co3ofx.jpg',
+    emoji: '🏁',
+    color: '#ff6b00'
+  },
+  'The Crew Motorfest': {
+    img: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6g4a.jpg',
+    emoji: '🏝️',
+    color: '#0077be'
+  },
+};
+
+// Helper to get game cover info
+const getGameCover = (gameName) => {
+  return GAME_COVERS[gameName] || { img: null, emoji: '🎮', color: '#ff6b35' };
+};
+
 const BookingPage = () => {
   const navigate = useNavigate();
   
@@ -191,8 +260,17 @@ const BookingPage = () => {
     setSelectedGame(game);
     setShowGamePicker(false);
     
+    // If game is a driving sim only game (all its units are unit 4), auto-select the driving simulator
+    const isOnlyDrivingSim = game.device_type === 'driving_sim' || (game.ps5_numbers || []).every(n => n === 4);
+    if (isOnlyDrivingSim) {
+      if (availableDriving && !drivingSim) {
+        setDrivingSim({ duration: 60, afterPS5: false });
+      }
+      return;
+    }
+    
     // Auto-select the first available PS5 that has this game (if none selected yet)
-    const availableUnitsWithGame = (game.ps5_numbers || []).filter(n => availablePS5Units.includes(n));
+    const availableUnitsWithGame = (game.ps5_numbers || []).filter(n => n !== 4 && availablePS5Units.includes(n));
     if (availableUnitsWithGame.length > 0 && ps5Bookings.length === 0) {
       const unitNumber = availableUnitsWithGame[0];
       setPs5Bookings([{ device_number: unitNumber, player_count: 1, duration: 60, game_preference: game.name }]);
@@ -1095,7 +1173,13 @@ const BookingPage = () => {
                             transition={{ type: "spring", stiffness: 300, damping: 25 }}
                           >
                             <div className="sgb-content">
-                              <div className="sgb-game-icon">🎮</div>
+                              <div className="sgb-game-icon">
+                                {getGameCover(selectedGame.name).img ? (
+                                  <img src={getGameCover(selectedGame.name).img} alt={selectedGame.name} className="sgb-cover-img" />
+                                ) : (
+                                  <span>{getGameCover(selectedGame.name).emoji}</span>
+                                )}
+                              </div>
                               <div className="sgb-info">
                                 <span className="sgb-label">Playing</span>
                                 <span className="sgb-name">{selectedGame.name}</span>
@@ -1167,21 +1251,44 @@ const BookingPage = () => {
                                 animate="animate"
                               >
                                 {filteredGames.map((game) => {
-                                  const gameAvailableUnits = (game.ps5_numbers || []).filter(n => availablePS5Units.includes(n));
-                                  const isGameAvailable = gameAvailableUnits.length > 0;
+                                  const isDrivingSim = game.device_type === 'driving_sim' || ((game.ps5_numbers || []).every(n => n === 4));
+                                  const ps5Units = (game.ps5_numbers || []).filter(n => n !== 4);
+                                  const hasDrivingSimUnit = (game.ps5_numbers || []).includes(4);
+                                  const gameAvailablePS5Units = ps5Units.filter(n => availablePS5Units.includes(n));
+                                  const isGameAvailable = isDrivingSim ? availableDriving : (gameAvailablePS5Units.length > 0 || (hasDrivingSimUnit && availableDriving));
+                                  const cover = getGameCover(game.name);
                                   
                                   return (
                                     <motion.div
                                       key={game.id}
                                       variants={fadeInUp}
-                                      className={`game-card ${!isGameAvailable ? 'game-unavailable' : ''} ${selectedGame?.id === game.id ? 'game-selected' : ''}`}
+                                      className={`game-card ${!isGameAvailable ? 'game-unavailable' : ''} ${selectedGame?.id === game.id ? 'game-selected' : ''} ${isDrivingSim ? 'driving-sim-game' : ''}`}
                                       onClick={() => isGameAvailable && handleGameSelect(game)}
                                       whileHover={isGameAvailable ? { y: -6, scale: 1.02 } : {}}
                                       whileTap={isGameAvailable ? { scale: 0.98 } : {}}
                                     >
                                       <div className="game-card-visual">
+                                        {cover.img ? (
+                                          <img 
+                                            src={cover.img} 
+                                            alt={game.name} 
+                                            className="game-card-cover-img"
+                                            loading="lazy"
+                                            onError={(e) => {
+                                              e.target.style.display = 'none';
+                                              e.target.nextSibling.style.display = 'flex';
+                                            }}
+                                          />
+                                        ) : null}
+                                        <div className="game-card-cover-fallback" style={{ display: cover.img ? 'none' : 'flex', background: `linear-gradient(135deg, ${cover.color}cc, ${cover.color}99)` }}>
+                                          <span className="game-card-emoji">{cover.emoji}</span>
+                                        </div>
                                         <div className="game-card-gradient"></div>
-                                        <div className="game-card-emoji">🎮</div>
+                                        {isDrivingSim && (
+                                          <div className="game-device-badge driving-sim-badge">
+                                            <FiCpu style={{ fontSize: '0.6rem' }} /> Sim
+                                          </div>
+                                        )}
                                         {game.rating && (
                                           <div className="game-rating-badge">
                                             <FiStar className="rating-star" />
@@ -1207,9 +1314,9 @@ const BookingPage = () => {
                                           {(game.ps5_numbers || []).map(n => (
                                             <span 
                                               key={n} 
-                                              className={`unit-chip ${availablePS5Units.includes(n) ? 'available' : 'booked'}`}
+                                              className={`unit-chip ${n === 4 ? (availableDriving ? 'available' : 'booked') : (availablePS5Units.includes(n) ? 'available' : 'booked')} ${n === 4 ? 'driving-chip' : ''}`}
                                             >
-                                              PS5-{n}
+                                              {n === 4 ? 'Sim' : `PS5-${n}`}
                                             </span>
                                           ))}
                                         </div>
@@ -1465,6 +1572,11 @@ const BookingPage = () => {
                                                   setSelectedGame(g);
                                                 }}
                                               >
+                                                {getGameCover(g.name).img ? (
+                                                  <img src={getGameCover(g.name).img} alt={g.name} className="unit-game-thumb" />
+                                                ) : (
+                                                  <span className="unit-game-emoji">{getGameCover(g.name).emoji}</span>
+                                                )}
                                                 <span className="unit-game-name">{g.name}</span>
                                                 <span className="unit-game-genre">{g.genre}</span>
                                                 {g.rating && (
@@ -1559,6 +1671,22 @@ const BookingPage = () => {
                           <div className="check-indicator"><FiCheck /></div>
                         )}
                       </div>
+
+                      {/* Driving Sim Games Preview */}
+                      {!drivingSim && availableDriving && (
+                        <div className="driving-sim-games-preview">
+                          {allGames.filter(g => g.device_type === 'driving_sim' || (g.ps5_numbers || []).includes(4)).map(g => (
+                            <div key={g.id} className="driving-sim-game-chip">
+                              {getGameCover(g.name).img ? (
+                                <img src={getGameCover(g.name).img} alt={g.name} className="driving-chip-thumb" />
+                              ) : (
+                                <span className="driving-chip-emoji">{getGameCover(g.name).emoji}</span>
+                              )}
+                              <span>{g.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                       <AnimatePresence>
                         {drivingSim && availableDriving && (
