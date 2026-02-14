@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus } from '../services/api';
+import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus, getGames } from '../services/api';
 import { formatDate, getToday, formatDuration, formatPrice, formatTime12Hour, isValidName, isValidPhone } from '../utils/helpers';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -53,9 +53,19 @@ const BookingPage = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [bookingId, setBookingId] = useState(null);
 
+  // Game selection state
+  const [allGames, setAllGames] = useState([]);
+  const [gamesLoading, setGamesLoading] = useState(false);
+  const [selectedGame, setSelectedGame] = useState(null); // Game user wants to play
+  const [gameSearchQuery, setGameSearchQuery] = useState('');
+  const [activeGenreFilter, setActiveGenreFilter] = useState('All');
+  const [selectionMode, setSelectionMode] = useState('game'); // 'game' or 'device' - start with game-first flow
+  const [showGamePicker, setShowGamePicker] = useState(false); // For mobile game picker modal
+
   // Check user session on component mount
   useEffect(() => {
     checkUserSession();
+    loadGames();
   }, []);
 
   // Load slots when date changes
@@ -120,6 +130,73 @@ const BookingPage = () => {
     } catch (err) {
       console.error('Session check error:', err);
       // Not logged in, continue as guest
+    }
+  };
+
+  const loadGames = async () => {
+    try {
+      setGamesLoading(true);
+      const response = await getGames();
+      if (response.success) {
+        setAllGames(response.games || []);
+      }
+    } catch (err) {
+      console.error('Failed to load games:', err);
+      // Use fallback - empty array, game selection will be optional
+    } finally {
+      setGamesLoading(false);
+    }
+  };
+
+  // Compute unique genres from games
+  const gameGenres = useMemo(() => {
+    const genres = new Set(allGames.map(g => g.genre).filter(Boolean));
+    return ['All', ...Array.from(genres).sort()];
+  }, [allGames]);
+
+  // Filter games based on search and genre
+  const filteredGames = useMemo(() => {
+    let games = allGames;
+    if (activeGenreFilter !== 'All') {
+      games = games.filter(g => g.genre === activeGenreFilter);
+    }
+    if (gameSearchQuery.trim()) {
+      const q = gameSearchQuery.toLowerCase();
+      games = games.filter(g => 
+        g.name.toLowerCase().includes(q) || 
+        g.genre?.toLowerCase().includes(q)
+      );
+    }
+    return games;
+  }, [allGames, activeGenreFilter, gameSearchQuery]);
+
+  // Get PS5 units that have the selected game
+  const recommendedPS5Units = useMemo(() => {
+    if (!selectedGame) return [];
+    return (selectedGame.ps5_numbers || []).filter(n => availablePS5Units.includes(n));
+  }, [selectedGame, availablePS5Units]);
+
+  // Get games available on a specific PS5 unit
+  const getGamesForUnit = (unitNumber) => {
+    return allGames.filter(g => (g.ps5_numbers || []).includes(unitNumber));
+  };
+
+  // Handle game selection and auto-select recommended PS5
+  const handleGameSelect = (game) => {
+    if (selectedGame?.id === game.id) {
+      // Deselect
+      setSelectedGame(null);
+      return;
+    }
+    setSelectedGame(game);
+    setShowGamePicker(false);
+    
+    // Auto-select the first available PS5 that has this game (if none selected yet)
+    const availableUnitsWithGame = (game.ps5_numbers || []).filter(n => availablePS5Units.includes(n));
+    if (availableUnitsWithGame.length > 0 && ps5Bookings.length === 0) {
+      const unitNumber = availableUnitsWithGame[0];
+      setPs5Bookings([{ device_number: unitNumber, player_count: 1, duration: 60, game_preference: game.name }]);
+      setExpandedPS5(unitNumber);
     }
   };
 
@@ -257,6 +334,7 @@ const BookingPage = () => {
     setSelectedTime(time);
     setPs5Bookings([]);
     setDrivingSim(null);
+    setSelectedGame(null);
     setPrice(0);
     setError(null);
     
@@ -325,7 +403,7 @@ const BookingPage = () => {
         return;
       }
       
-      setPs5Bookings([...ps5Bookings, { device_number: deviceNumber, player_count: newCount, duration: 60 }]);
+      setPs5Bookings([...ps5Bookings, { device_number: deviceNumber, player_count: newCount, duration: 60, game_preference: selectedGame?.name || null }]);
     }
   };
   
@@ -890,16 +968,17 @@ const BookingPage = () => {
             </motion.div>
           )}
           
-          {/* STEP 2: Device & Player Selection */}
+          {/* STEP 2: Game & Device Selection - Redesigned */}
           {currentStep === 2 && (
             <motion.div
               key="step2"
-              className="booking-card"
+              className="booking-card step2-card"
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 50 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
             >
+              {/* Step 2 Header */}
               <div className="card-header with-back">
                 <button className="back-button" onClick={() => setCurrentStep(1)}>
                   <FiArrowLeft />
@@ -908,8 +987,8 @@ const BookingPage = () => {
                   <FiMonitor />
                 </div>
                 <div className="card-header-content">
-                  <h2 className="card-title">Select Your Equipment</h2>
-                  <p className="card-subtitle">Choose gaming stations and session duration</p>
+                  <h2 className="card-title">Choose Your Experience</h2>
+                  <p className="card-subtitle">Pick a game or select your gaming station</p>
                 </div>
                 <div className="header-session-info">
                   <div className="session-badge">
@@ -960,6 +1039,24 @@ const BookingPage = () => {
                 </div>
               ) : (
                 <>
+                  {/* Mode Toggle Tabs */}
+                  <div className="selection-mode-tabs">
+                    <button 
+                      className={`mode-tab ${selectionMode === 'game' ? 'active' : ''}`}
+                      onClick={() => setSelectionMode('game')}
+                    >
+                      <FiGrid className="mode-tab-icon" />
+                      <span>Browse by Game</span>
+                    </button>
+                    <button 
+                      className={`mode-tab ${selectionMode === 'device' ? 'active' : ''}`}
+                      onClick={() => setSelectionMode('device')}
+                    >
+                      <FiMonitor className="mode-tab-icon" />
+                      <span>Choose by Console</span>
+                    </button>
+                  </div>
+
                   {/* Availability Warning */}
                   {(availablePS5Units.length < 3 || !availableDriving) && (
                     <motion.div 
@@ -977,116 +1074,461 @@ const BookingPage = () => {
                       </div>
                     </motion.div>
                   )}
-                  
-                  {/* Device Selection Grid */}
-                  <div className="devices-section">
-                    <div className="devices-section-header">
-                        <h3 className="section-title" style={{ display: 'flex', alignItems: 'center' }}>
-                          <FiMonitor className="section-icon" />
-                          <span>PlayStation 5 Consoles</span>
-                        </h3>
-                    </div>
-                    
-                    <div className="devices-grid">
-                      {[1, 2, 3].map((unitNumber) => {
-                        const booking = ps5Bookings.find(b => b.device_number === unitNumber);
-                        const isExpanded = expandedPS5 === unitNumber;
-                        const isSelected = !!booking;
-                        const isAvailable = availablePS5Units.includes(unitNumber);
-                        
-                        return (
+
+                  <AnimatePresence mode="wait">
+                    {/* ===== GAME-FIRST MODE ===== */}
+                    {selectionMode === 'game' && (
+                      <motion.div
+                        key="game-mode"
+                        className="game-selection-section"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {/* Selected Game Banner */}
+                        {selectedGame && (
                           <motion.div 
-                            key={`ps5-${unitNumber}`}
-                            layout
-                            className={`device-card ${isSelected ? 'selected' : ''} ${!isAvailable ? 'unavailable' : ''} ${isExpanded ? 'expanded' : ''}`}
-                            onClick={() => isAvailable && handlePS5CardClick(unitNumber)}
-                            whileHover={isAvailable ? { y: -4 } : {}}
+                            className="selected-game-banner"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
                           >
-                            {!isAvailable && (
-                              <div className="unavailable-badge">
-                                <span>BOOKED</span>
+                            <div className="sgb-content">
+                              <div className="sgb-game-icon">🎮</div>
+                              <div className="sgb-info">
+                                <span className="sgb-label">Playing</span>
+                                <span className="sgb-name">{selectedGame.name}</span>
+                                <span className="sgb-meta">
+                                  {selectedGame.genre} • Up to {selectedGame.max_players}P
+                                  {recommendedPS5Units.length > 0 && (
+                                    <span className="sgb-available"> • Available on Unit{recommendedPS5Units.length > 1 ? 's' : ''} {recommendedPS5Units.join(', ')}</span>
+                                  )}
+                                </span>
                               </div>
-                            )}
-                            {isSelected && (
-                              <div className="selected-badge">
-                                <FiCheck /> Selected
-                              </div>
-                            )}
-                            
-                            <div className="device-header">
-                              <div className="device-icon-wrapper ps5">
-                                <FiMonitor className="device-icon" />
-                              </div>
-                              <div className="device-details">
-                                <h4 className="device-name">PlayStation 5</h4>
-                                <span className="device-unit">Unit {unitNumber}</span>
-                              </div>
-                              {isAvailable && (
-                                <div className={`expand-icon ${isExpanded ? 'rotated' : ''}`}>
-                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                                    <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="2" fill="none"/>
-                                  </svg>
-                                </div>
-                              )}
+                              <button className="sgb-change" onClick={() => { setSelectedGame(null); setPs5Bookings([]); }}>
+                                <FiX /> Change
+                              </button>
                             </div>
-                            
-                            <AnimatePresence>
-                              {isExpanded && isAvailable && (
-                                <motion.div 
-                                  className="device-options"
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: 'auto' }}
-                                  exit={{ opacity: 0, height: 0 }}
-                                  transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }} // Smoother bezier curve
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <div className="option-group">
-                                    <label className="option-label">
-                                      <FiUsers className="option-icon" />
-                                      Number of Players
-                                    </label>
-                                    <div className="player-buttons">
-                                      {[0, 1, 2, 3].map((idx) => (
-                                        <button
-                                          key={idx}
-                                          className={`player-btn ${booking && booking.player_count >= idx + 1 ? 'active' : ''}`}
-                                          onClick={() => handlePlayerSelect(unitNumber, idx)}
-                                        >
-                                          {idx + 1}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  </div>
+                          </motion.div>
+                        )}
+
+                        {/* Game Search & Filter */}
+                        {!selectedGame && (
+                          <div className="game-browser">
+                            <div className="game-browser-header">
+                              <h3 className="section-title">
+                                <FiStar className="section-icon" />
+                                <span>What do you want to play?</span>
+                              </h3>
+                              <div className="game-search-box">
+                                <FiSearch className="search-icon" />
+                                <input
+                                  type="text"
+                                  placeholder="Search games..."
+                                  value={gameSearchQuery}
+                                  onChange={(e) => setGameSearchQuery(e.target.value)}
+                                  className="game-search-input"
+                                />
+                                {gameSearchQuery && (
+                                  <button className="search-clear" onClick={() => setGameSearchQuery('')}>
+                                    <FiX />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Genre Filter Pills */}
+                            <div className="genre-filter-scroll">
+                              <div className="genre-filter-pills">
+                                {gameGenres.map(genre => (
+                                  <button
+                                    key={genre}
+                                    className={`genre-pill ${activeGenreFilter === genre ? 'active' : ''}`}
+                                    onClick={() => setActiveGenreFilter(genre)}
+                                  >
+                                    {genre}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Games Grid */}
+                            {gamesLoading ? (
+                              <div className="loading-container" style={{ padding: '30px' }}>
+                                <div className="loader"><div className="loader-ring"></div><div className="loader-ring"></div></div>
+                                <p className="loading-text">Loading games...</p>
+                              </div>
+                            ) : (
+                              <motion.div 
+                                className="games-grid"
+                                variants={staggerContainer}
+                                initial="initial"
+                                animate="animate"
+                              >
+                                {filteredGames.map((game) => {
+                                  const gameAvailableUnits = (game.ps5_numbers || []).filter(n => availablePS5Units.includes(n));
+                                  const isGameAvailable = gameAvailableUnits.length > 0;
                                   
-                                  {booking && (
-                                    <div className="option-group">
-                                      <label className="option-label">
-                                        <FiClock className="option-icon" />
-                                        Session Duration
-                                      </label>
-                                      <div className="duration-buttons">
-                                        {[30, 60, 90, 120].map(dur => (
-                                          <button
-                                            key={dur}
-                                            className={`duration-btn ${booking.duration === dur || (!booking.duration && dur === 60) ? 'active' : ''}`}
-                                            onClick={() => handlePS5DurationChange(unitNumber, dur)}
-                                          >
-                                            <span className="dur-value">{dur < 60 ? dur : dur / 60}</span>
-                                            <span className="dur-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
-                                          </button>
-                                        ))}
+                                  return (
+                                    <motion.div
+                                      key={game.id}
+                                      variants={fadeInUp}
+                                      className={`game-card ${!isGameAvailable ? 'game-unavailable' : ''} ${selectedGame?.id === game.id ? 'game-selected' : ''}`}
+                                      onClick={() => isGameAvailable && handleGameSelect(game)}
+                                      whileHover={isGameAvailable ? { y: -6, scale: 1.02 } : {}}
+                                      whileTap={isGameAvailable ? { scale: 0.98 } : {}}
+                                    >
+                                      <div className="game-card-visual">
+                                        <div className="game-card-gradient"></div>
+                                        <div className="game-card-emoji">🎮</div>
+                                        {game.rating && (
+                                          <div className="game-rating-badge">
+                                            <FiStar className="rating-star" />
+                                            <span>{game.rating}</span>
+                                          </div>
+                                        )}
+                                        {!isGameAvailable && (
+                                          <div className="game-unavail-overlay">
+                                            <span>Unavailable</span>
+                                          </div>
+                                        )}
                                       </div>
+                                      <div className="game-card-info">
+                                        <h4 className="game-card-name">{game.name}</h4>
+                                        <div className="game-card-meta">
+                                          <span className="game-genre-tag">{game.genre}</span>
+                                          <span className="game-players-tag">
+                                            <FiUsers className="tag-icon" />
+                                            {game.max_players}P
+                                          </span>
+                                        </div>
+                                        <div className="game-card-units">
+                                          {(game.ps5_numbers || []).map(n => (
+                                            <span 
+                                              key={n} 
+                                              className={`unit-chip ${availablePS5Units.includes(n) ? 'available' : 'booked'}`}
+                                            >
+                                              PS5-{n}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </motion.div>
+                                  );
+                                })}
+                                {filteredGames.length === 0 && (
+                                  <div className="no-games-found">
+                                    <span className="no-games-emoji">🔍</span>
+                                    <p>No games found matching your search</p>
+                                    <button className="reset-filters-btn" onClick={() => { setGameSearchQuery(''); setActiveGenreFilter('All'); }}>
+                                      Reset Filters
+                                    </button>
+                                  </div>
+                                )}
+                              </motion.div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* PS5 Unit Selection (shown after game is picked) */}
+                        {selectedGame && (
+                          <motion.div 
+                            className="post-game-device-select"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.15 }}
+                          >
+                            <h3 className="section-title">
+                              <FiMonitor className="section-icon" />
+                              <span>Configure Your Session</span>
+                            </h3>
+                            
+                            <div className="recommended-units-grid">
+                              {[1, 2, 3].map((unitNumber) => {
+                                const booking = ps5Bookings.find(b => b.device_number === unitNumber);
+                                const isExpanded = expandedPS5 === unitNumber;
+                                const isSelected = !!booking;
+                                const isAvailable = availablePS5Units.includes(unitNumber);
+                                const hasGame = (selectedGame.ps5_numbers || []).includes(unitNumber);
+                                const isRecommended = hasGame && isAvailable;
+                                
+                                if (!hasGame) return null;
+                                
+                                return (
+                                  <motion.div 
+                                    key={`ps5-game-${unitNumber}`}
+                                    layout
+                                    className={`device-card ${isSelected ? 'selected' : ''} ${!isAvailable ? 'unavailable' : ''} ${isExpanded ? 'expanded' : ''} ${isRecommended ? 'recommended' : ''}`}
+                                    onClick={() => isAvailable && handlePS5CardClick(unitNumber)}
+                                    whileHover={isAvailable ? { y: -4 } : {}}
+                                  >
+                                    {isRecommended && !isSelected && (
+                                      <div className="recommended-tag">
+                                        <FiZap /> Best Match
+                                      </div>
+                                    )}
+                                    {!isAvailable && (
+                                      <div className="unavailable-badge"><span>BOOKED</span></div>
+                                    )}
+                                    {isSelected && (
+                                      <div className="selected-badge"><FiCheck /> Selected</div>
+                                    )}
+                                    
+                                    <div className="device-header">
+                                      <div className="device-icon-wrapper ps5">
+                                        <FiMonitor className="device-icon" />
+                                      </div>
+                                      <div className="device-details">
+                                        <h4 className="device-name">PlayStation 5</h4>
+                                        <span className="device-unit">Unit {unitNumber}</span>
+                                      </div>
+                                      {isAvailable && (
+                                        <div className={`expand-icon ${isExpanded ? 'rotated' : ''}`}>
+                                          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                                            <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                                          </svg>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {!isExpanded && isAvailable && (
+                                      <div className="device-games-preview">
+                                        {getGamesForUnit(unitNumber).slice(0, 3).map(g => (
+                                          <span key={g.id} className={`mini-game-tag ${g.id === selectedGame?.id ? 'highlight' : ''}`}>
+                                            {g.name}
+                                          </span>
+                                        ))}
+                                        {getGamesForUnit(unitNumber).length > 3 && (
+                                          <span className="mini-game-tag more">+{getGamesForUnit(unitNumber).length - 3} more</span>
+                                        )}
+                                      </div>
+                                    )}
+                                    
+                                    <AnimatePresence>
+                                      {isExpanded && isAvailable && (
+                                        <motion.div 
+                                          className="device-options"
+                                          initial={{ opacity: 0, height: 0 }}
+                                          animate={{ opacity: 1, height: 'auto' }}
+                                          exit={{ opacity: 0, height: 0 }}
+                                          transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <div className="option-group">
+                                            <label className="option-label">
+                                              <FiUsers className="option-icon" />
+                                              Number of Players
+                                            </label>
+                                            <div className="player-buttons">
+                                              {[0, 1, 2, 3].map((idx) => (
+                                                <button
+                                                  key={idx}
+                                                  className={`player-btn ${booking && booking.player_count >= idx + 1 ? 'active' : ''}`}
+                                                  onClick={() => handlePlayerSelect(unitNumber, idx)}
+                                                >
+                                                  {idx + 1}
+                                                </button>
+                                              ))}
+                                            </div>
+                                          </div>
+                                          
+                                          {booking && (
+                                            <div className="option-group">
+                                              <label className="option-label">
+                                                <FiClock className="option-icon" />
+                                                Session Duration
+                                              </label>
+                                              <div className="duration-buttons">
+                                                {[30, 60, 90, 120].map(dur => (
+                                                  <button
+                                                    key={dur}
+                                                    className={`duration-btn ${booking.duration === dur || (!booking.duration && dur === 60) ? 'active' : ''}`}
+                                                    onClick={() => handlePS5DurationChange(unitNumber, dur)}
+                                                  >
+                                                    <span className="dur-value">{dur < 60 ? dur : dur / 60}</span>
+                                                    <span className="dur-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
+                                                  </button>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    )}
+
+                    {/* ===== DEVICE-FIRST MODE ===== */}
+                    {selectionMode === 'device' && (
+                      <motion.div
+                        key="device-mode"
+                        className="devices-section"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="devices-section-header">
+                          <h3 className="section-title" style={{ display: 'flex', alignItems: 'center' }}>
+                            <FiMonitor className="section-icon" />
+                            <span>PlayStation 5 Consoles</span>
+                          </h3>
+                        </div>
+                        
+                        <div className="devices-grid">
+                          {[1, 2, 3].map((unitNumber) => {
+                            const booking = ps5Bookings.find(b => b.device_number === unitNumber);
+                            const isExpanded = expandedPS5 === unitNumber;
+                            const isSelected = !!booking;
+                            const isAvailable = availablePS5Units.includes(unitNumber);
+                            const unitGames = getGamesForUnit(unitNumber);
+                            
+                            return (
+                              <motion.div 
+                                key={`ps5-${unitNumber}`}
+                                layout
+                                className={`device-card ${isSelected ? 'selected' : ''} ${!isAvailable ? 'unavailable' : ''} ${isExpanded ? 'expanded' : ''}`}
+                                onClick={() => isAvailable && handlePS5CardClick(unitNumber)}
+                                whileHover={isAvailable ? { y: -4 } : {}}
+                              >
+                                {!isAvailable && (
+                                  <div className="unavailable-badge"><span>BOOKED</span></div>
+                                )}
+                                {isSelected && (
+                                  <div className="selected-badge"><FiCheck /> Selected</div>
+                                )}
+                                
+                                <div className="device-header">
+                                  <div className="device-icon-wrapper ps5">
+                                    <FiMonitor className="device-icon" />
+                                  </div>
+                                  <div className="device-details">
+                                    <h4 className="device-name">PlayStation 5</h4>
+                                    <span className="device-unit">Unit {unitNumber}</span>
+                                  </div>
+                                  {isAvailable && (
+                                    <div className={`expand-icon ${isExpanded ? 'rotated' : ''}`}>
+                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                                        <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                                      </svg>
                                     </div>
                                   )}
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                    
-                    {/* Driving Simulator */}
+                                </div>
+
+                                {!isExpanded && isAvailable && unitGames.length > 0 && (
+                                  <div className="device-games-preview">
+                                    {unitGames.slice(0, 3).map(g => (
+                                      <span key={g.id} className="mini-game-tag">{g.name}</span>
+                                    ))}
+                                    {unitGames.length > 3 && (
+                                      <span className="mini-game-tag more">+{unitGames.length - 3} more</span>
+                                    )}
+                                  </div>
+                                )}
+                                
+                                <AnimatePresence>
+                                  {isExpanded && isAvailable && (
+                                    <motion.div 
+                                      className="device-options"
+                                      initial={{ opacity: 0, height: 0 }}
+                                      animate={{ opacity: 1, height: 'auto' }}
+                                      exit={{ opacity: 0, height: 0 }}
+                                      transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      {unitGames.length > 0 && (
+                                        <div className="option-group">
+                                          <label className="option-label">
+                                            <FiStar className="option-icon" />
+                                            Available Games
+                                          </label>
+                                          <div className="unit-games-list">
+                                            {unitGames.map(g => (
+                                              <div 
+                                                key={g.id} 
+                                                className={`unit-game-item ${booking?.game_preference === g.name ? 'chosen' : ''}`}
+                                                onClick={() => {
+                                                  if (booking) {
+                                                    setPs5Bookings(ps5Bookings.map(b => 
+                                                      b.device_number === unitNumber 
+                                                        ? { ...b, game_preference: booking.game_preference === g.name ? null : g.name } 
+                                                        : b
+                                                    ));
+                                                  }
+                                                  setSelectedGame(g);
+                                                }}
+                                              >
+                                                <span className="unit-game-name">{g.name}</span>
+                                                <span className="unit-game-genre">{g.genre}</span>
+                                                {g.rating && (
+                                                  <span className="unit-game-rating">
+                                                    <FiStar className="mini-star" /> {g.rating}
+                                                  </span>
+                                                )}
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      <div className="option-group">
+                                        <label className="option-label">
+                                          <FiUsers className="option-icon" />
+                                          Number of Players
+                                        </label>
+                                        <div className="player-buttons">
+                                          {[0, 1, 2, 3].map((idx) => (
+                                            <button
+                                              key={idx}
+                                              className={`player-btn ${booking && booking.player_count >= idx + 1 ? 'active' : ''}`}
+                                              onClick={() => handlePlayerSelect(unitNumber, idx)}
+                                            >
+                                              {idx + 1}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                      
+                                      {booking && (
+                                        <div className="option-group">
+                                          <label className="option-label">
+                                            <FiClock className="option-icon" />
+                                            Session Duration
+                                          </label>
+                                          <div className="duration-buttons">
+                                            {[30, 60, 90, 120].map(dur => (
+                                              <button
+                                                key={dur}
+                                                className={`duration-btn ${booking.duration === dur || (!booking.duration && dur === 60) ? 'active' : ''}`}
+                                                onClick={() => handlePS5DurationChange(unitNumber, dur)}
+                                              >
+                                                <span className="dur-value">{dur < 60 ? dur : dur / 60}</span>
+                                                <span className="dur-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
+                                              </button>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </motion.div>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Driving Simulator - Always visible */}
+                  <div className="devices-section" style={{ marginTop: selectionMode === 'game' && !selectedGame ? 0 : 8 }}>
                     <h3 className="section-title driving-title">
                       <FiCpu className="section-icon" />
                       Racing Simulator
@@ -1099,14 +1541,10 @@ const BookingPage = () => {
                       whileHover={availableDriving ? { y: -4 } : {}}
                     >
                       {!availableDriving && (
-                        <div className="unavailable-badge">
-                          <span>BOOKED</span>
-                        </div>
+                        <div className="unavailable-badge"><span>BOOKED</span></div>
                       )}
                       {drivingSim && (
-                        <div className="selected-badge">
-                          <FiCheck /> Selected
-                        </div>
+                        <div className="selected-badge"><FiCheck /> Selected</div>
                       )}
 
                       <div className="device-header">
@@ -1118,9 +1556,7 @@ const BookingPage = () => {
                           <span className="device-unit">Pro Setup with Wheel & Pedals</span>
                         </div>
                         {availableDriving && drivingSim && (
-                          <div className="check-indicator">
-                            <FiCheck />
-                          </div>
+                          <div className="check-indicator"><FiCheck /></div>
                         )}
                       </div>
 
@@ -1181,38 +1617,38 @@ const BookingPage = () => {
                         )}
                       </AnimatePresence>
                     </motion.div>
-
-                    {/* Desktop & Mobile Price Footer */}
-                    {(ps5Bookings.length > 0 || drivingSim) && (
-                      <motion.div 
-                          className="pf-fixed-footer"
-                          initial={{ opacity: 0, y: 100 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 100 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      >
-                          <div className="pf-container">
-                              <div className="pf-price-section">
-                                  <span className="pf-label">TOTAL</span>
-                                  <span className="pf-amount">
-                                    {discountInfo ? (
-                                      <span style={{ color: '#10b981' }}>{formatPrice(price)}</span> 
-                                    ) : (
-                                      formatPrice(price)
-                                    )}
-                                  </span>
-                              </div>
-                              <button 
-                                  className="pf-next-btn"
-                                  onClick={() => setCurrentStep(3)}
-                              >
-                                  <span>Review Booking</span>
-                                  <FiArrowRight />
-                              </button>
-                          </div>
-                      </motion.div>
-                    )}
                   </div>
+
+                  {/* Fixed Price Footer */}
+                  {(ps5Bookings.length > 0 || drivingSim) && (
+                    <motion.div 
+                        className="pf-fixed-footer"
+                        initial={{ opacity: 0, y: 100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 100 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    >
+                        <div className="pf-container">
+                            <div className="pf-price-section">
+                                <span className="pf-label">TOTAL</span>
+                                <span className="pf-amount">
+                                  {discountInfo ? (
+                                    <span style={{ color: '#10b981' }}>{formatPrice(price)}</span> 
+                                  ) : (
+                                    formatPrice(price)
+                                  )}
+                                </span>
+                            </div>
+                            <button 
+                                className="pf-next-btn"
+                                onClick={() => setCurrentStep(3)}
+                            >
+                                <span>Review Booking</span>
+                                <FiArrowRight />
+                            </button>
+                        </div>
+                    </motion.div>
+                  )}
                 </>
               )}
             </motion.div>
@@ -1404,13 +1840,22 @@ const BookingPage = () => {
                     
                     <div className="summary-section-v2">
                       <span className="section-title-v2">Selected Equipment</span>
+                      {selectedGame && (
+                        <div className="summary-game-badge">
+                          <span className="summary-game-label">🎮 Game:</span>
+                          <span className="summary-game-name">{selectedGame.name}</span>
+                        </div>
+                      )}
                       <div className="items-list-v2">
                         {ps5Bookings.map((b) => (
                           <div key={b.device_number} className="item-row-v2">
                             <div className="item-icon-v2 ps5"><FiMonitor /></div>
                             <div className="item-details-v2">
                               <span className="item-name-v2">PS5 - Unit {b.device_number}</span>
-                              <span className="item-meta-v2">{b.player_count}P • {formatDuration(b.duration || 60)}</span>
+                              <span className="item-meta-v2">
+                                {b.player_count}P • {formatDuration(b.duration || 60)}
+                                {b.game_preference && ` • ${b.game_preference}`}
+                              </span>
                             </div>
                             <span className="item-price-v2">{formatPrice(calculatePS5Price(b))}</span>
                           </div>
