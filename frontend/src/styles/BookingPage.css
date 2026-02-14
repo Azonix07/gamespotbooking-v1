@@ -5288,3 +5288,407 @@ span.device-unit {
     height: 18px;
   }
 }
+
+/* ============================================
+   BOOKING TYPE TOGGLE (Regular vs Party)
+   ============================================ */
+
+.booking-type-toggle {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.booking-type-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.booking-type-btn:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.booking-type-btn.active {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  color: #fff;
+}
+
+.booking-type-btn.party.active {
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.1));
+}
+
+.type-btn-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.booking-type-btn.active .type-btn-icon {
+  color: #6366f1;
+}
+
+.booking-type-btn.party.active .type-btn-icon {
+  color: #f59e0b;
+}
+
+.type-btn-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.type-btn-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.type-btn-desc {
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
+/* ============================================
+   PARTY CONFIG SECTION (Step 1)
+   ============================================ */
+
+.party-config-section {
+  padding: 0 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.party-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(239, 68, 68, 0.08));
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  margin-bottom: 1rem;
+}
+
+.party-info-icon {
+  font-size: 2rem;
+}
+
+.party-info-text h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f59e0b;
+  margin: 0 0 0.2rem 0;
+}
+
+.party-info-text p {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.party-hours-selector {
+  margin-bottom: 1rem;
+}
+
+.party-hours-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.6rem;
+}
+
+.party-label-icon {
+  color: #f59e0b;
+}
+
+.party-hours-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.party-hour-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.875rem 0.75rem;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.party-hour-btn:hover {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.party-hour-btn.active {
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.1));
+  color: #fff;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+}
+
+.party-hour-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.party-hour-unit {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.party-hour-price {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f59e0b;
+  margin-top: 0.2rem;
+}
+
+.party-includes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.party-includes-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.party-includes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.party-include-item {
+  font-size: 0.72rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ============================================
+   PARTY STEP 2 - Confirmation
+   ============================================ */
+
+.party-step2 {
+  border: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+.party-booking-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.party-summary-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.party-summary-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem 0;
+  color: #f59e0b;
+}
+
+.party-summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.party-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.party-detail-icon {
+  color: #f59e0b;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.party-detail-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+  min-width: 60px;
+}
+
+.party-detail-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.party-devices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.party-device-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #a5b4fc;
+}
+
+.party-device-chip.driving {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+.party-price-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.1));
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.party-price-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.25rem;
+}
+
+.party-price-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #f59e0b;
+  line-height: 1;
+}
+
+.party-price-breakdown {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 0.25rem;
+}
+
+.party-form-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.party-submit-btn {
+  background: linear-gradient(135deg, #f59e0b, #ef4444) !important;
+  font-size: 0.95rem !important;
+}
+
+.party-submit-btn:hover {
+  box-shadow: 0 4px 25px rgba(245, 158, 11, 0.3) !important;
+}
+
+/* ============================================
+   CONSOLE CONFLICT WARNING
+   ============================================ */
+
+.console-conflict-warning {
+  margin: 0 1.5rem 0.75rem;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+}
+
+.console-conflict-warning strong {
+  color: #f59e0b;
+  font-size: 0.82rem;
+}
+
+.console-conflict-warning p {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0.25rem 0 0;
+  line-height: 1.4;
+}
+
+/* ============================================
+   RESPONSIVE - Party Booking
+   ============================================ */
+
+@media (max-width: 768px) {
+  .booking-type-toggle {
+    flex-direction: column;
+    padding: 0 1rem;
+  }
+  
+  .booking-type-btn {
+    padding: 0.75rem;
+  }
+  
+  .party-config-section {
+    padding: 0 1rem;
+  }
+  
+  .party-hours-buttons {
+    gap: 0.5rem;
+  }
+  
+  .party-hour-btn {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .party-hour-value {
+    font-size: 1.25rem;
+  }
+  
+  .party-booking-layout {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  .party-devices-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .console-conflict-warning {
+    margin: 0 1rem 0.75rem;
+  }
+}

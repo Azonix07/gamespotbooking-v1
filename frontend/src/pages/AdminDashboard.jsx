@@ -42,7 +42,9 @@ import {
   getGameLeaderboard,
   getGameStats,
   approveMembership,
-  rejectMembership
+  rejectMembership,
+  getPartyBookings,
+  deletePartyBooking
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -92,6 +94,9 @@ const AdminDashboard = () => {
   const [gameLeaderboard, setGameLeaderboard] = useState([]);
   const [gameStats, setGameStats] = useState(null);
   const [gamePeriod, setGamePeriod] = useState('all');
+  
+  // Party Bookings
+  const [partyBookings, setPartyBookings] = useState([]);
   
   // Loading & Error
   const [loading, setLoading] = useState(true);
@@ -143,6 +148,7 @@ const AdminDashboard = () => {
       await loadRentals();
       await loadCollegeBookings();
       await loadGameLeaderboard();
+      await loadPartyBookings();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -188,6 +194,26 @@ const AdminDashboard = () => {
   }
 };
 
+  const loadPartyBookings = async () => {
+    try {
+      const data = await getPartyBookings();
+      setPartyBookings(data.party_bookings || []);
+    } catch (err) {
+      console.error("Error loading party bookings:", err);
+    }
+  };
+
+  const handleDeletePartyBooking = async (bookingId) => {
+    if (!window.confirm('Are you sure you want to delete this party booking?')) return;
+    try {
+      setError(null);
+      await deletePartyBooking(bookingId);
+      loadPartyBookings();
+      loadAllData(); // Refresh overall stats too
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   const applyBookingFilters = () => {
     let filtered = [...bookings];
@@ -1440,6 +1466,90 @@ const AdminDashboard = () => {
     </div>
   );
 
+  // Render Party Bookings
+  const renderPartyBookings = () => (
+    <div className="admin-section fade-in">
+      <div className="section-header-mobile">
+        <h2 className="section-title">🎉 Party Bookings</h2>
+        <span className="badge">{partyBookings.length} total</span>
+      </div>
+      
+      {partyBookings.length === 0 ? (
+        <div className="empty-state">
+          <span style={{ fontSize: '3rem' }}>🎉</span>
+          <h3>No Party Bookings</h3>
+          <p>Party bookings (full shop reservations) will appear here.</p>
+        </div>
+      ) : (
+        <div className="table-wrapper">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Duration</th>
+                <th>Price</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {partyBookings.map(booking => (
+                <tr key={booking.id}>
+                  <td>
+                    <span className="badge" style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)', color: '#fff', padding: '2px 8px', borderRadius: 6, fontSize: '0.75rem' }}>
+                      🎉 #{booking.id}
+                    </span>
+                  </td>
+                  <td>{booking.customer_name}</td>
+                  <td>{booking.customer_phone}</td>
+                  <td>{new Date(booking.booking_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                  <td>{formatTime12Hour(booking.start_time)}</td>
+                  <td>
+                    <span className="badge" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
+                      {booking.hours || booking.duration_minutes / 60} hr{(booking.hours || booking.duration_minutes / 60) > 1 ? 's' : ''}
+                    </span>
+                  </td>
+                  <td><strong>₹{booking.total_price.toLocaleString()}</strong></td>
+                  <td>{new Date(booking.created_at).toLocaleDateString()}</td>
+                  <td>
+                    <button 
+                      className="btn btn-sm btn-danger" 
+                      onClick={() => handleDeletePartyBooking(booking.id)}
+                      title="Delete party booking"
+                    >
+                      <FiTrash2 /> Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      
+      {partyBookings.length > 0 && (
+        <div className="admin-summary-bar" style={{ marginTop: '1rem' }}>
+          <div className="summary-stat">
+            <span className="summary-label">Total Party Revenue</span>
+            <span className="summary-value" style={{ color: '#f59e0b' }}>
+              ₹{partyBookings.reduce((sum, b) => sum + b.total_price, 0).toLocaleString()}
+            </span>
+          </div>
+          <div className="summary-stat">
+            <span className="summary-label">Total Hours Booked</span>
+            <span className="summary-value">
+              {partyBookings.reduce((sum, b) => sum + (b.hours || b.duration_minutes / 60), 0)} hrs
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   // Show loading while checking authentication
   if (authLoading) {
     return (
@@ -1460,6 +1570,7 @@ const AdminDashboard = () => {
       case 'college': return renderCollegeEvents();
       case 'leaderboard': return renderGameLeaderboard();
       case 'analytics': return renderAnalytics();
+      case 'party': return renderPartyBookings();
       default: return renderDashboard();
     }
   };
@@ -1499,6 +1610,11 @@ const AdminDashboard = () => {
 
           <div className="nav-section">
             <span className="nav-section-title">Sections</span>
+            <button className={`sidebar-nav-item ${activeTab === 'party' ? 'active' : ''}`} onClick={() => setActiveTab('party')}>
+              <FiZap className="nav-icon" />
+              <span className="nav-label">Party Bookings</span>
+              {partyBookings.length > 0 && <span className="nav-badge">{partyBookings.length}</span>}
+            </button>
             <button className={`sidebar-nav-item ${activeTab === 'rentals' ? 'active' : ''}`} onClick={() => setActiveTab('rentals')}>
               <FiPackage className="nav-icon" />
               <span className="nav-label">Rentals</span>
@@ -1543,6 +1659,7 @@ const AdminDashboard = () => {
               {activeTab === 'bookings' && '📋 Booking Management'}
               {activeTab === 'users' && '👥 User Management'}
               {activeTab === 'memberships' && '💳 Memberships'}
+              {activeTab === 'party' && '🎉 Party Bookings'}
               {activeTab === 'rentals' && '📦 Rentals'}
               {activeTab === 'college' && '🎓 College Events'}
               {activeTab === 'leaderboard' && '🎯 Game Leaderboard'}

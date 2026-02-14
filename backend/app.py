@@ -40,6 +40,7 @@ from routes.instagram_promotion import instagram_promo_bp  # Instagram promotion
 from routes.setup_promo import setup_bp  # One-time setup for Instagram promotions
 from routes.promo_codes import promo_bp  # Promo codes system
 from routes.user_routes import user_bp  # User profile and rewards system
+from routes.party_booking import party_booking_bp  # Party/full-shop bookings
 
 # Create Flask app
 app = Flask(__name__)
@@ -168,6 +169,7 @@ app.register_blueprint(instagram_promo_bp)  # Instagram promotions
 app.register_blueprint(setup_bp)  # One-time setup for Instagram promotions
 app.register_blueprint(promo_bp)  # Promo codes system
 app.register_blueprint(user_bp)  # User profile and rewards system
+app.register_blueprint(party_booking_bp)  # Party/full-shop bookings
 
 # Create uploads directory for profile pictures
 os.makedirs('static/uploads/profiles', exist_ok=True)

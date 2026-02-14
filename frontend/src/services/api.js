@@ -475,3 +475,25 @@ export const googleLogin = async (credential) => {
     body: JSON.stringify({ credential }),
   });
 };
+
+// =======================================================
+// Party Booking API
+// =======================================================
+
+export const createPartyBooking = async (bookingData) => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/party-booking`, {
+    method: "POST",
+    body: JSON.stringify(bookingData),
+  });
+};
+
+export const getPartyBookings = async () => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/party-booking`);
+};
+
+export const deletePartyBooking = async (bookingId) => {
+  return fetchWithCredentials(
+    `${API_BASE_URL}/api/party-booking?id=${bookingId}`,
+    { method: "DELETE" }
+  );
+};

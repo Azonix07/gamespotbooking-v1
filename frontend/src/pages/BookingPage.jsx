@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus, getGames } from '../services/api';
+import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus, getGames, createPartyBooking } from '../services/api';
 import { formatDate, getToday, formatDuration, formatPrice, formatTime12Hour, isValidName, isValidPhone } from '../utils/helpers';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -131,6 +131,12 @@ const BookingPage = () => {
   const [selectionMode, setSelectionMode] = useState('game'); // 'game' or 'device' - start with game-first flow
   const [showGamePicker, setShowGamePicker] = useState(false); // For mobile game picker modal
   const [gameInfoModal, setGameInfoModal] = useState(null); // Game detail modal
+  const [consoleConflictWarning, setConsoleConflictWarning] = useState(null); // Warning when games can't share a console
+
+  // Party booking state
+  const [bookingType, setBookingType] = useState('regular'); // 'regular' or 'party'
+  const [partyHours, setPartyHours] = useState(1); // 1, 2, or 3 hours
+  const [partySubmitting, setPartySubmitting] = useState(false);
 
   // Check user session on component mount
   useEffect(() => {
@@ -267,6 +273,25 @@ const BookingPage = () => {
       // Deselect
       newSelectedGames = selectedGames.filter(g => g.id !== game.id);
       setSelectedGames(newSelectedGames);
+      setConsoleConflictWarning(null); // Clear warning on deselect
+      // Re-check conflict after deselect
+      const ps5GamesAfter = newSelectedGames.filter(g => {
+        const units = (g.ps5_numbers || []).filter(n => n !== 4);
+        return units.length > 0;
+      });
+      if (ps5GamesAfter.length >= 2) {
+        let commonUnits = (ps5GamesAfter[0].ps5_numbers || []).filter(n => n !== 4);
+        for (let i = 1; i < ps5GamesAfter.length; i++) {
+          const gameUnits = (ps5GamesAfter[i].ps5_numbers || []).filter(n => n !== 4);
+          commonUnits = commonUnits.filter(u => gameUnits.includes(u));
+        }
+        if (commonUnits.length === 0) {
+          const gameNames = ps5GamesAfter.map(g => g.name).join(', ');
+          setConsoleConflictWarning(
+            `⚠️ "${gameNames}" are not available on a single console. You'll need separate PS5 units or sessions to play all of them.`
+          );
+        }
+      }
       // If no games left, reset PS5 bookings
       if (newSelectedGames.length === 0) {
         setPs5Bookings([]);
@@ -278,6 +303,34 @@ const BookingPage = () => {
     newSelectedGames = [...selectedGames, game];
     setSelectedGames(newSelectedGames);
     setShowGamePicker(false);
+    
+    // --- Console Conflict Warning ---
+    // Check if all selected PS5 games (non-driving-sim) share at least one common PS5 unit
+    const ps5Games = newSelectedGames.filter(g => {
+      const units = (g.ps5_numbers || []).filter(n => n !== 4);
+      return units.length > 0; // Only games that are on PS5 (not driving-sim-only)
+    });
+    
+    if (ps5Games.length >= 2) {
+      // Find intersection of PS5 units across all selected PS5 games
+      let commonUnits = (ps5Games[0].ps5_numbers || []).filter(n => n !== 4);
+      for (let i = 1; i < ps5Games.length; i++) {
+        const gameUnits = (ps5Games[i].ps5_numbers || []).filter(n => n !== 4);
+        commonUnits = commonUnits.filter(u => gameUnits.includes(u));
+      }
+      
+      if (commonUnits.length === 0) {
+        // No single console has all selected games — show warning
+        const gameNames = ps5Games.map(g => g.name).join(', ');
+        setConsoleConflictWarning(
+          `⚠️ "${gameNames}" are not available on a single console. You'll need separate PS5 units or sessions to play all of them. Consider removing one, or book multiple PS5 units.`
+        );
+      } else {
+        setConsoleConflictWarning(null);
+      }
+    } else {
+      setConsoleConflictWarning(null);
+    }
     
     // If game is a driving sim only game (all its units are unit 4), auto-select the driving simulator
     const isOnlyDrivingSim = game.device_type === 'driving_sim' || (game.ps5_numbers || []).every(n => n === 4);
@@ -453,8 +506,35 @@ const BookingPage = () => {
     setSelectedGames([]);
     setPrice(0);
     setError(null);
+    setConsoleConflictWarning(null);
     
-    // Fetch availability data for this time slot
+    // For party bookings, check availability for the full party duration
+    if (bookingType === 'party') {
+      try {
+        setLoading(true);
+        const partyDuration = partyHours * 60;
+        const response = await getSlotDetails(selectedDate, time, partyDuration);
+        
+        // Party booking needs ALL devices free
+        if (response.available_ps5_units.length < 3 || !response.available_driving) {
+          setError('Not all devices are available for this time slot. Party booking requires the entire shop to be free.');
+          setLoading(false);
+          return;
+        }
+        
+        setAvailablePS5Units(response.available_ps5_units);
+        setAvailableDriving(response.available_driving);
+        setTotalPlayers(response.total_ps5_players_booked);
+        setCurrentStep(2); // Go to party confirmation step
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+    
+    // Regular booking: Fetch availability data for this time slot
     try {
       setLoading(true);
       const response = await getSlotDetails(selectedDate, time, 60);
@@ -623,6 +703,40 @@ const BookingPage = () => {
     setBonusMinutes(0);
     setPromoCodeError('');
     setPromoCodeSuccess('');
+  };
+
+  // Party Booking Submit Handler
+  const handlePartySubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!isValidName(customerName)) {
+      setError('Please enter a valid name (minimum 2 characters)');
+      return;
+    }
+    if (!isValidPhone(customerPhone)) {
+      setError('Please enter a valid phone number (minimum 10 digits)');
+      return;
+    }
+    
+    try {
+      setPartySubmitting(true);
+      setError(null);
+      
+      const response = await createPartyBooking({
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        booking_date: selectedDate,
+        start_time: selectedTime,
+        hours: partyHours,
+      });
+      
+      setBookingId(response.booking_id);
+      setShowSuccessModal(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setPartySubmitting(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -1005,6 +1119,79 @@ const BookingPage = () => {
                 </motion.div>
               )}
               
+              {/* Booking Type Toggle */}
+              <div className="booking-type-toggle">
+                <button 
+                  className={`booking-type-btn ${bookingType === 'regular' ? 'active' : ''}`}
+                  onClick={() => setBookingType('regular')}
+                >
+                  <FiMonitor className="type-btn-icon" />
+                  <div className="type-btn-content">
+                    <span className="type-btn-title">Regular Booking</span>
+                    <span className="type-btn-desc">Book individual consoles</span>
+                  </div>
+                </button>
+                <button 
+                  className={`booking-type-btn party ${bookingType === 'party' ? 'active' : ''}`}
+                  onClick={() => setBookingType('party')}
+                >
+                  <FiZap className="type-btn-icon" />
+                  <div className="type-btn-content">
+                    <span className="type-btn-title">🎉 Party / Full Book</span>
+                    <span className="type-btn-desc">Book entire shop • ₹600/hr</span>
+                  </div>
+                </button>
+              </div>
+
+              {/* Party Hours Selector (only in party mode) */}
+              {bookingType === 'party' && (
+                <motion.div 
+                  className="party-config-section"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="party-info-banner">
+                    <div className="party-info-icon">🎉</div>
+                    <div className="party-info-text">
+                      <h4>Full Shop Party Booking</h4>
+                      <p>Get all 3 PS5 units + Racing Simulator for your exclusive event!</p>
+                    </div>
+                  </div>
+                  
+                  <div className="party-hours-selector">
+                    <label className="party-hours-label">
+                      <FiClock className="party-label-icon" />
+                      How many hours?
+                    </label>
+                    <div className="party-hours-buttons">
+                      {[1, 2, 3].map(h => (
+                        <button
+                          key={h}
+                          className={`party-hour-btn ${partyHours === h ? 'active' : ''}`}
+                          onClick={() => setPartyHours(h)}
+                        >
+                          <span className="party-hour-value">{h}</span>
+                          <span className="party-hour-unit">hour{h > 1 ? 's' : ''}</span>
+                          <span className="party-hour-price">₹{h * 600}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="party-includes">
+                    <span className="party-includes-label">Includes:</span>
+                    <div className="party-includes-list">
+                      <span className="party-include-item">🎮 PS5 Unit 1</span>
+                      <span className="party-include-item">🎮 PS5 Unit 2</span>
+                      <span className="party-include-item">🎮 PS5 Unit 3</span>
+                      <span className="party-include-item">🏎️ Racing Simulator</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               <div className="step-content-wrapper">
                 {/* Time Slots */}
                 <div className="time-section-full">
@@ -1084,8 +1271,155 @@ const BookingPage = () => {
             </motion.div>
           )}
           
+          {/* STEP 2 - PARTY MODE: Confirmation */}
+          {currentStep === 2 && bookingType === 'party' && (
+            <motion.div
+              key="step2-party"
+              className="booking-card step2-card party-step2"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
+              <div className="card-header with-back">
+                <button className="back-button" onClick={() => setCurrentStep(1)}>
+                  <FiArrowLeft />
+                </button>
+                <div className="card-icon" style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}>
+                  <FiZap />
+                </div>
+                <div className="card-header-content">
+                  <h2 className="card-title">🎉 Party Booking Confirmation</h2>
+                  <p className="card-subtitle">Book the entire shop for your exclusive event</p>
+                </div>
+              </div>
+
+              {error && (
+                <motion.div 
+                  className="alert alert-error"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <span className="alert-icon">⚠️</span>
+                  <span>{error}</span>
+                </motion.div>
+              )}
+
+              <div className="party-booking-layout">
+                {/* Party Summary */}
+                <div className="party-summary-card">
+                  <h3 className="party-summary-title">🎉 Party Package</h3>
+                  
+                  <div className="party-summary-details">
+                    <div className="party-detail-row">
+                      <FiCalendar className="party-detail-icon" />
+                      <span className="party-detail-label">Date</span>
+                      <span className="party-detail-value">{new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+                    </div>
+                    <div className="party-detail-row">
+                      <FiClock className="party-detail-icon" />
+                      <span className="party-detail-label">Time</span>
+                      <span className="party-detail-value">{formatTime12Hour(selectedTime)} — {(() => {
+                        const [h, m] = selectedTime.split(':').map(Number);
+                        const endMin = h * 60 + m + (partyHours * 60);
+                        return formatTime12Hour(`${String(Math.floor(endMin / 60) % 24).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`);
+                      })()}</span>
+                    </div>
+                    <div className="party-detail-row">
+                      <FiClock className="party-detail-icon" />
+                      <span className="party-detail-label">Duration</span>
+                      <span className="party-detail-value">{partyHours} hour{partyHours > 1 ? 's' : ''}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="party-devices-grid">
+                    <div className="party-device-chip"><FiMonitor /> PS5 Unit 1</div>
+                    <div className="party-device-chip"><FiMonitor /> PS5 Unit 2</div>
+                    <div className="party-device-chip"><FiMonitor /> PS5 Unit 3</div>
+                    <div className="party-device-chip driving"><FiCpu /> Racing Sim</div>
+                  </div>
+                  
+                  <div className="party-price-box">
+                    <span className="party-price-label">Total Price</span>
+                    <span className="party-price-amount">₹{partyHours * 600}</span>
+                    <span className="party-price-breakdown">₹600 × {partyHours} hour{partyHours > 1 ? 's' : ''}</span>
+                  </div>
+                </div>
+
+                {/* Customer Form */}
+                <div className="party-form-section">
+                  <form onSubmit={handlePartySubmit}>
+                    {isLoggedIn && user ? (
+                      <div className="user-profile-card">
+                        <div className="profile-avatar"><FiUser /></div>
+                        <div className="profile-info">
+                          <span className="profile-greeting">Welcome back,</span>
+                          <span className="profile-name">{user.name}</span>
+                        </div>
+                        <div className="profile-verified">
+                          <FiCheckCircle />
+                          <span>Verified</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <h3 className="form-title-v2">Enter Your Details</h3>
+                    )}
+                    
+                    <div className="form-section-v2">
+                      <div className="form-group-v2">
+                        <label htmlFor="partyName" className="form-label-v2">Full Name</label>
+                        <div className="input-wrapper-v2">
+                          <FiUser className="input-icon-v2" />
+                          <input
+                            id="partyName"
+                            type="text"
+                            className={`form-input-v2 ${isLoggedIn ? 'filled' : ''}`}
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            required
+                            placeholder="e.g., John Doe"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="form-group-v2">
+                        <label htmlFor="partyPhone" className="form-label-v2">Phone Number</label>
+                        <div className="input-wrapper-v2">
+                          <FiPhone className="input-icon-v2" />
+                          <input
+                            id="partyPhone"
+                            type="tel"
+                            className={`form-input-v2 ${isLoggedIn ? 'filled' : ''}`}
+                            value={customerPhone}
+                            onChange={(e) => setCustomerPhone(e.target.value)}
+                            required
+                            placeholder="e.g., 9876543210"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <button 
+                      type="submit"
+                      className="submit-btn-v2 party-submit-btn"
+                      disabled={partySubmitting}
+                    >
+                      {partySubmitting ? 'Booking...' : `🎉 Confirm Party Booking — ₹${partyHours * 600}`}
+                      {!partySubmitting && <FiCheck />}
+                    </button>
+                    
+                    <p className="payment-note-v2" style={{ textAlign: 'center', marginTop: '0.75rem' }}>
+                      <FiCheckCircle style={{ verticalAlign: 'middle', marginRight: 6 }} />
+                      No payment required now — pay at venue
+                    </p>
+                  </form>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* STEP 2: Game & Device Selection - Redesigned */}
-          {currentStep === 2 && (
+          {currentStep === 2 && bookingType === 'regular' && (
             <motion.div
               key="step2"
               className="booking-card step2-card"
@@ -1239,6 +1573,23 @@ const BookingPage = () => {
                                   <FiX /> Clear All
                                 </button>
                               </div>
+                            </div>
+                          </motion.div>
+                        )}
+
+                        {/* Console Conflict Warning */}
+                        {consoleConflictWarning && (
+                          <motion.div 
+                            className="alert alert-warning console-conflict-warning"
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                          >
+                            <span className="alert-icon">🎮</span>
+                            <div>
+                              <strong>Console Conflict</strong>
+                              <p>{consoleConflictWarning}</p>
                             </div>
                           </motion.div>
                         )}
