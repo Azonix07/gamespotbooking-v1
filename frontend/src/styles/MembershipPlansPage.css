@@ -1,4 +1,4 @@
-/* MembershipPlansPage.css - Warm Orange Theme (matches BookingPage) */
+/* MembershipPlansPage.css — Flipping Card Design */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 /* ============================================
@@ -6,8 +6,8 @@
    ============================================ */
 .membership-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #ffffff 0%, #fff5f0 30%, #ffe8dc 60%, #ffffff 100%);
-  color: #212529;
+  background: linear-gradient(180deg, #0f0f14 0%, #1a1a2e 40%, #16213e 70%, #0f0f14 100%);
+  color: #e2e8f0;
   position: relative;
   overflow-x: hidden;
 }
@@ -15,14 +15,10 @@
 .membership-page::before {
   content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background:
-    linear-gradient(rgba(255, 107, 53, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 107, 53, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
+    radial-gradient(ellipse 600px 400px at 20% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 600px 400px at 80% 80%, rgba(234, 88, 12, 0.06) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
@@ -41,18 +37,19 @@
 .membership-header {
   text-align: center;
   margin-bottom: 2.5rem;
+  padding-top: 1rem;
 }
 
 .membership-header h1 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: 700;
-  color: #212529;
+  color: #ffffff;
   margin-bottom: 0.75rem;
 }
 
 .membership-header h1 span {
-  background: linear-gradient(135deg, #ff6b35, #ff9966);
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -60,9 +57,9 @@
 
 .membership-header p {
   font-family: 'Inter', sans-serif;
-  color: #6c757d;
+  color: #94a3b8;
   font-size: 1.1rem;
-  max-width: 600px;
+  max-width: 500px;
   margin: 0 auto;
 }
 
@@ -70,528 +67,653 @@
    STATUS BANNERS
    ============================================ */
 .membership-status-banner {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
   border-radius: 16px;
-  padding: 1.5rem 2rem;
-  margin-bottom: 2.5rem;
-  border: 1px solid rgba(255, 107, 53, 0.2);
-  box-shadow: 0 4px 6px -1px rgba(255, 107, 53, 0.1);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
-.membership-status-banner.active {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.05);
-}
-
-.membership-status-banner.pending {
-  border-color: #f59e0b;
-  background: rgba(245, 158, 11, 0.05);
-}
-
-.membership-status-banner.rejected {
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.05);
-}
+.membership-status-banner.active { border-color: #10b981; background: rgba(16, 185, 129, 0.08); }
+.membership-status-banner.pending { border-color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
 
 .status-banner-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
-
-.status-banner-header .status-icon {
-  font-size: 1.5rem;
-}
-
+.status-banner-header .status-icon { font-size: 1.3rem; }
 .status-banner-header h3 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin: 0;
 }
-
-.membership-status-banner.active .status-banner-header h3 {
-  color: #10b981;
-}
-
-.membership-status-banner.pending .status-banner-header h3 {
-  color: #f59e0b;
-}
-
-.membership-status-banner.rejected .status-banner-header h3 {
-  color: #ef4444;
-}
+.membership-status-banner.active .status-banner-header h3 { color: #10b981; }
+.membership-status-banner.pending .status-banner-header h3 { color: #f59e0b; }
 
 .status-banner-details {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: 1.25rem;
   font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  color: #495057;
+  font-size: 0.9rem;
+  color: #94a3b8;
 }
-
-.status-banner-details span strong {
-  color: #212529;
-}
+.status-banner-details span strong { color: #e2e8f0; }
 
 /* ============================================
    LOGIN PROMPT
    ============================================ */
 .membership-login-prompt {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 107, 53, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 1.5rem 2rem;
-  margin-bottom: 2.5rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(255, 107, 53, 0.1);
 }
-
 .membership-login-prompt h3 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  color: #212529;
-  margin: 0 0 0.25rem 0;
+  color: #e2e8f0;
+  margin: 0 0 0.2rem 0;
 }
-
 .membership-login-prompt p {
   font-family: 'Inter', sans-serif;
-  color: #6c757d;
+  color: #94a3b8;
   margin: 0;
-  font-size: 0.9rem;
-}
-
-.login-prompt-buttons {
-  display: flex;
-  gap: 0.75rem;
-}
-
-/* ============================================
-   ERROR MESSAGE
-   ============================================ */
-.membership-error {
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  margin-bottom: 2rem;
-  color: #ef4444;
-  text-align: center;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-}
-
-.membership-success {
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  margin-bottom: 2rem;
-  color: #10b981;
-  text-align: center;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-}
-
-/* ============================================
-   PLANS GRID
-   ============================================ */
-.membership-plans-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  margin-bottom: 3rem;
-}
-
-/* ============================================
-   PLAN CARD
-   ============================================ */
-.membership-plan-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 107, 53, 0.15);
-  border-radius: 20px;
-  padding: 2rem;
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px -1px rgba(255, 107, 53, 0.08);
-}
-
-.membership-plan-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(255, 107, 53, 0.15), 0 10px 10px -5px rgba(255, 107, 53, 0.08);
-  border-color: rgba(255, 107, 53, 0.3);
-}
-
-.membership-plan-card.popular {
-  border: 2px solid #ff6b35;
-  transform: scale(1.04);
-  box-shadow: 0 20px 25px -5px rgba(255, 107, 53, 0.2), 0 10px 10px -5px rgba(255, 107, 53, 0.1);
-}
-
-.membership-plan-card.popular:hover {
-  transform: scale(1.04) translateY(-4px);
-  box-shadow: 0 0 40px rgba(255, 107, 53, 0.3);
-}
-
-.popular-badge {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(135deg, #ff6b35 0%, #ff9966 100%);
-  color: white;
-  padding: 0.3rem 1.25rem;
-  border-radius: 20px;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-}
-
-.plan-card-header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.plan-card-header h3 {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #212529;
-  margin-bottom: 0.5rem;
-}
-
-.plan-price {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 2.8rem;
-  font-weight: 700;
-  color: #ff6b35;
-  line-height: 1;
-  margin-bottom: 0.3rem;
-}
-
-.plan-duration {
-  font-family: 'Inter', sans-serif;
-  color: #6c757d;
-  font-size: 0.9rem;
-}
-
-.plan-discount-badge {
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 153, 102, 0.15));
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  border: 1px solid rgba(255, 107, 53, 0.15);
-}
-
-.plan-discount-badge .discount-value {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #ff6b35;
-}
-
-.plan-discount-badge .discount-label {
-  font-family: 'Inter', sans-serif;
-  color: #6c757d;
   font-size: 0.85rem;
 }
-
-/* ============================================
-   SPECIAL MEMBERSHIP CARDS
-   ============================================ */
-/* Story Game Pass Card */
-.membership-plan-card[data-type="story_game"],
-.membership-plan-card[data-type="driving_sim"] {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 250, 245, 0.9) 100%);
-  border: 2px solid #ff6b35;
-  position: relative;
-  overflow: hidden;
-}
-
-.membership-plan-card[data-type="story_game"]::before,
-.membership-plan-card[data-type="driving_sim"]::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #ff6b35, #ff9966);
-}
-
-/* Story Game Pass - Purple accent */
-.membership-plan-card[data-type="story_game"] {
-  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15), 0 4px 6px -1px rgba(255, 107, 53, 0.08);
-}
-
-.membership-plan-card[data-type="story_game"]:hover {
-  box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2), 0 10px 10px -5px rgba(255, 107, 53, 0.1);
-  border-color: #8b5cf6;
-}
-
-/* Driving Sim Pass - Orange accent */
-.membership-plan-card[data-type="driving_sim"] {
-  box-shadow: 0 8px 30px rgba(255, 107, 53, 0.15), 0 4px 6px -1px rgba(255, 107, 53, 0.08);
-}
-
-.membership-plan-card[data-type="driving_sim"]:hover {
-  box-shadow: 0 20px 40px rgba(255, 107, 53, 0.25), 0 10px 10px -5px rgba(255, 107, 53, 0.1);
-}
-
-/* Add icon to card headers */
-.membership-plan-card[data-type="story_game"] .plan-card-header::before {
-  content: '🏆';
-  display: block;
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.membership-plan-card[data-type="driving_sim"] .plan-card-header::before {
-  content: '🏎️';
-  display: block;
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.membership-plan-card[data-type="story_game"] .plan-price {
-  color: #8b5cf6;
-}
-
-.membership-plan-card[data-type="driving_sim"] .plan-price {
-  color: #ff6b35;
-}
-
-/* Special badge for story game and driving sim */
-.membership-plan-card[data-type="story_game"] .plan-discount-badge,
-.membership-plan-card[data-type="driving_sim"] .plan-discount-badge {
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.12), rgba(255, 153, 102, 0.18));
-  border: 2px solid rgba(255, 107, 53, 0.25);
-}
-
-/* ============================================
-   FEATURES LIST
-   ============================================ */
-.plan-features {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 2rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.plan-features li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.65rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  color: #334155;
-  margin-bottom: 0;
-  line-height: 1.5;
-  padding: 0.5rem;
-  border-radius: 8px;
-  background: rgba(255, 107, 53, 0.04);
-  border-left: 3px solid #ff6b35;
-}
-
-.plan-features li .check-icon {
-  color: #ff6b35;
-  font-weight: 700;
-  flex-shrink: 0;
-  margin-top: 2px;
-  font-size: 1.1rem;
-}
-
-/* ============================================
-   BUTTONS
-   ============================================ */
-.membership-btn {
-  width: 100%;
-  padding: 0.85rem 1.5rem;
-  border: none;
-  border-radius: 12px;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.membership-btn.primary {
-  background: linear-gradient(135deg, #ff6b35 0%, #ff9966 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-}
-
-.membership-btn.primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
-}
-
-.membership-btn.upgrade {
-  background: linear-gradient(135deg, #ffb84d 0%, #ff9966 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(255, 184, 77, 0.3);
-}
-
-.membership-btn.upgrade:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 184, 77, 0.4);
-}
-
-.membership-btn.current {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border: 2px solid #10b981;
-  cursor: default;
-}
-
-.membership-btn.pending-btn {
-  background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
-  border: 2px solid #f59e0b;
-  cursor: default;
-}
-
-.membership-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.membership-btn.secondary {
-  background: rgba(255, 255, 255, 0.8);
-  color: #ff6b35;
-  border: 2px solid #ff6b35;
-}
-
-.membership-btn.secondary:hover {
-  background: #ff6b35;
-  color: white;
-}
+.login-prompt-buttons { display: flex; gap: 0.75rem; }
 
 .login-btn-orange {
-  padding: 0.6rem 1.5rem;
+  padding: 0.55rem 1.3rem;
   border: none;
   border-radius: 10px;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, #ff6b35 0%, #ff9966 100%);
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
   color: white;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
-
 .login-btn-orange:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
 }
 
 .signup-btn-outline {
-  padding: 0.6rem 1.5rem;
-  border: 2px solid #ff6b35;
+  padding: 0.55rem 1.3rem;
+  border: 2px solid #8b5cf6;
   border-radius: 10px;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   background: transparent;
-  color: #ff6b35;
+  color: #a78bfa;
 }
+.signup-btn-outline:hover { background: #8b5cf6; color: white; }
 
-.signup-btn-outline:hover {
-  background: #ff6b35;
-  color: white;
+/* ============================================
+   ALERTS
+   ============================================ */
+.membership-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  color: #fca5a5;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+.membership-success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  color: #6ee7b7;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 /* ============================================
-   HOW IT WORKS SECTION
+   PASS CATEGORY SECTION
+   ============================================ */
+.pass-category {
+  margin-bottom: 3.5rem;
+}
+
+.pass-category-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pass-category-icon {
+  font-size: 2.5rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+}
+
+.story-theme .pass-category-icon {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(109, 40, 217, 0.1));
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.driving-theme .pass-category-icon {
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.15), rgba(194, 65, 12, 0.1));
+  border: 1px solid rgba(234, 88, 12, 0.25);
+}
+
+.pass-category-text h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.story-theme .pass-category-text h2 { color: #a78bfa; }
+.driving-theme .pass-category-text h2 { color: #fb923c; }
+
+.pass-category-text p {
+  font-family: 'Inter', sans-serif;
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0.15rem 0 0 0;
+}
+
+/* ============================================
+   CARDS ROW
+   ============================================ */
+.pass-cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+  perspective: 1200px;
+}
+
+/* ============================================
+   CARD WRAPPER & FLIP
+   ============================================ */
+.pass-card-wrapper {
+  position: relative;
+}
+
+.popular-ribbon {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.popular-ribbon span {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1a2e;
+  padding: 0.25rem 1.2rem;
+  border-radius: 20px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+}
+
+.pass-card {
+  width: 100%;
+  aspect-ratio: 1.586 / 1;
+  position: relative;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pass-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.pass-card-face {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 20px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+/* ============================================
+   FRONT FACE — Credit Card Style
+   ============================================ */
+.pass-card-front {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  color: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.pass-card-front::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse 200px 150px at 10% 10%, rgba(255, 255, 255, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 150px 100px at 90% 90%, rgba(0, 0, 0, 0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Card Chip (like a credit card chip) */
+.card-chip {
+  width: 42px;
+  height: 30px;
+  background: linear-gradient(135deg, #e8d5a3, #c9a94e);
+  border-radius: 6px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.chip-lines {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.chip-line {
+  width: 100%;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 1px;
+}
+
+/* Card Front Content */
+.card-front-content {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.1rem;
+}
+
+.card-tier-badge {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.12);
+  padding: 0.15rem 0.6rem;
+  border-radius: 4px;
+  margin-bottom: 0.2rem;
+}
+
+.card-plan-icon {
+  font-size: 1.6rem;
+  margin-bottom: 0.1rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.card-plan-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  line-height: 1.2;
+}
+
+.card-plan-tagline {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+}
+
+/* Card Front Price */
+.card-front-price {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+}
+
+.price-symbol {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.price-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.price-period {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-left: 0.15rem;
+}
+
+/* Card Front Bottom */
+.card-front-bottom {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.75);
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.card-divider { opacity: 0.4; }
+
+/* Tap Hint */
+.card-tap-hint {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.75rem;
+  z-index: 3;
+}
+
+.card-tap-hint span {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.4);
+  animation: tapPulse 2s ease-in-out infinite;
+}
+
+@keyframes tapPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* ============================================
+   BACK FACE — Details & Action
+   ============================================ */
+.pass-card-back {
+  transform: rotateY(180deg);
+  background: #1e1e30;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pass-card-back::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+.card-back-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.card-back-icon {
+  font-size: 1.4rem;
+}
+
+.card-back-header h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+  flex: 1;
+}
+
+.card-back-price {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.card-back-price span {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  color: #94a3b8;
+}
+
+/* Feature List */
+.card-back-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.card-back-features li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  line-height: 1.3;
+}
+
+.feature-check {
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* Action Button */
+.card-action-btn {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.6rem;
+  position: relative;
+  z-index: 5;
+}
+
+.card-action-btn.primary {
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.card-action-btn.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.card-action-btn.upgrade {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1a2e;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+.card-action-btn.upgrade:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+}
+
+.card-action-btn.current {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1.5px solid #10b981;
+  cursor: default;
+}
+
+.card-action-btn.pending-btn {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1.5px solid #f59e0b;
+  cursor: default;
+}
+
+.card-action-btn.lower {
+  background: rgba(100, 116, 139, 0.15);
+  color: #64748b;
+  border: 1.5px solid rgba(100, 116, 139, 0.3);
+  cursor: default;
+}
+
+.card-action-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.back-hint {
+  position: static;
+  text-align: center;
+  margin-top: 0.35rem;
+}
+
+.back-hint span {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* ============================================
+   PREMIUM TIER GLOW
+   ============================================ */
+.pass-card-wrapper:has(.tier-premium) .pass-card-front {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35), 0 0 30px rgba(109, 40, 217, 0.15);
+}
+
+.story-theme .pass-card-wrapper:has(.tier-premium) .pass-card-front {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35), 0 0 40px rgba(109, 40, 217, 0.2);
+}
+
+.driving-theme .pass-card-wrapper:has(.tier-premium) .pass-card-front {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35), 0 0 40px rgba(194, 65, 12, 0.2);
+}
+
+/* ============================================
+   HOVER LIFT
+   ============================================ */
+.pass-card:not(.flipped):hover {
+  transform: translateY(-6px);
+  transition: transform 0.3s ease;
+}
+
+.pass-card:not(.flipped):hover .pass-card-front {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================
+   HOW IT WORKS
    ============================================ */
 .membership-how-it-works {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 107, 53, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 2.5rem;
   text-align: center;
+  margin-top: 1rem;
 }
-
 .membership-how-it-works h3 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 600;
-  color: #212529;
-  margin-bottom: 0.5rem;
+  color: #e2e8f0;
+  margin-bottom: 0.4rem;
 }
-
 .membership-how-it-works .subtitle {
   font-family: 'Inter', sans-serif;
-  color: #6c757d;
-  font-size: 0.95rem;
+  color: #64748b;
+  font-size: 0.9rem;
   margin-bottom: 2rem;
 }
-
 .how-it-works-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
 }
-
-.how-it-works-step {
-  text-align: center;
-}
+.how-it-works-step { text-align: center; }
 
 .step-number {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #ff6b35 0%, #ff9966 100%);
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  margin: 0 auto 0.75rem;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  margin: 0 auto 0.6rem;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
-
-.how-it-works-step .step-icon {
-  font-size: 1.8rem;
-  margin-bottom: 0.5rem;
-}
-
+.how-it-works-step .step-icon { font-size: 1.6rem; margin-bottom: 0.4rem; }
 .how-it-works-step h4 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: #212529;
-  margin-bottom: 0.25rem;
+  color: #e2e8f0;
+  margin-bottom: 0.2rem;
 }
-
 .how-it-works-step p {
   font-family: 'Inter', sans-serif;
-  color: #6c757d;
-  font-size: 0.85rem;
+  color: #64748b;
+  font-size: 0.8rem;
   line-height: 1.4;
 }
 
@@ -606,111 +728,113 @@
   padding: 4rem 2rem;
   text-align: center;
 }
-
 .membership-loading .spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid rgba(255, 107, 53, 0.2);
-  border-top: 4px solid #ff6b35;
+  border: 4px solid rgba(139, 92, 246, 0.2);
+  border-top: 4px solid #8b5cf6;
   border-radius: 50%;
   animation: membership-spin 0.8s linear infinite;
   margin-bottom: 1rem;
 }
-
-@keyframes membership-spin {
-  to { transform: rotate(360deg); }
-}
-
+@keyframes membership-spin { to { transform: rotate(360deg); } }
 .membership-loading p {
   font-family: 'Inter', sans-serif;
-  color: #6c757d;
+  color: #64748b;
   font-size: 1rem;
 }
 
 /* ============================================
-   RESPONSIVE
+   RESPONSIVE — Tablet
    ============================================ */
 @media (max-width: 992px) {
-  .membership-plans-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .pass-cards-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
   }
-  
-  .membership-plan-card.popular {
-    transform: scale(1);
-  }
-  
-  .membership-plan-card.popular:hover {
-    transform: translateY(-4px);
-  }
-  
+
   .how-it-works-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .card-plan-name { font-size: 1.25rem; }
+  .price-value { font-size: 2rem; }
 }
 
-@media (max-width: 640px) {
+/* ============================================
+   RESPONSIVE — Mobile
+   ============================================ */
+@media (max-width: 768px) {
   .membership-container {
     padding: 1.5rem 1rem 3rem;
   }
-  
-  .membership-header h1 {
-    font-size: 1.8rem;
-  }
-  
-  .membership-plans-grid {
+  .membership-header h1 { font-size: 2rem; }
+
+  .pass-cards-row {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  
-  .membership-plan-card {
-    padding: 1.5rem;
+    gap: 2rem;
+    max-width: 380px;
+    margin: 0 auto;
   }
 
-  .plan-card-header h3 {
-    font-size: 1.2rem;
+  .pass-card {
+    aspect-ratio: 1.586 / 1;
   }
 
-  .plan-price {
-    font-size: 2.2rem;
-  }
-
-  .plan-features {
-    gap: 0.75rem;
-    margin: 0 0 1.5rem 0;
-  }
-
-  .plan-features li {
-    font-size: 0.85rem;
-    padding: 0.4rem;
-    gap: 0.5rem;
-    border-left-width: 2px;
-  }
-
-  .plan-features li .check-icon {
-    font-size: 0.9rem;
-    margin-top: 0;
-  }
-  
-  .membership-plan-card.popular {
-    transform: scale(1);
-  }
-  
-  .how-it-works-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-  
   .membership-login-prompt {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .membership-status-banner {
-    padding: 1.25rem;
+    padding: 1rem;
   }
-  
+
   .status-banner-details {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
+
+  .how-it-works-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .pass-category-header {
+    gap: 0.75rem;
+  }
+
+  .pass-category-icon {
+    font-size: 2rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  .pass-category-text h2 {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pass-cards-row {
+    max-width: 340px;
+  }
+
+  .pass-card-front {
+    padding: 1.2rem;
+  }
+
+  .pass-card-back {
+    padding: 1rem 1.2rem;
+  }
+
+  .card-plan-name { font-size: 1.3rem; }
+  .price-value { font-size: 2rem; }
+  .card-chip { width: 36px; height: 26px; }
+  .card-plan-icon { font-size: 1.3rem; }
+  .card-front-bottom { font-size: 0.65rem; gap: 0.35rem; }
+  .card-back-features li { font-size: 0.72rem; gap: 0.35rem; }
+  .card-action-btn { font-size: 0.82rem; padding: 0.5rem 0.8rem; }
+  .card-back-header h3 { font-size: 1rem; }
 }
