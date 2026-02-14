@@ -216,12 +216,6 @@ const MembershipPlansPage = () => {
                   {/* ─── BACK FACE ─── */}
                   <div className="pass-card-face pass-card-back" style={{ '--accent': plan.accent }}>
                     <div className="card-back-top">
-                      {/* Compact plan info */}
-                      <div className="card-back-plan-info">
-                        <span className="back-plan-name">{plan.chip_icon} {plan.name}</span>
-                        <span className="back-plan-price" style={{ color: plan.accent }}>₹{plan.price}<small>/mo</small></span>
-                      </div>
-
                       <div className="card-back-action">
                         <button
                           className={`card-action-btn ${btnState.className}`}
