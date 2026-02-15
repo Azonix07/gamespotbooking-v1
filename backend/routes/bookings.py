@@ -70,19 +70,46 @@ def handle_bookings():
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
             
+            # Check if game_preference column exists in booking_devices
+            has_bd_game_pref = True
+            try:
+                cursor.execute("""
+                    SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'booking_devices' AND COLUMN_NAME = 'game_preference'
+                """)
+                if not cursor.fetchone():
+                    has_bd_game_pref = False
+            except Exception:
+                has_bd_game_pref = False
+            
             # Get all bookings with devices
-            query = """
-                SELECT 
-                    b.*,
-                    bd.id as device_id,
-                    bd.device_type,
-                    bd.device_number,
-                    bd.player_count,
-                    bd.price as device_price
-                FROM bookings b
-                LEFT JOIN booking_devices bd ON b.id = bd.booking_id
-                ORDER BY b.booking_date DESC, b.start_time DESC, b.id
-            """
+            if has_bd_game_pref:
+                query = """
+                    SELECT 
+                        b.*,
+                        bd.id as device_id,
+                        bd.device_type,
+                        bd.device_number,
+                        bd.player_count,
+                        bd.price as device_price,
+                        bd.game_preference as device_game_preference
+                    FROM bookings b
+                    LEFT JOIN booking_devices bd ON b.id = bd.booking_id
+                    ORDER BY b.booking_date DESC, b.start_time DESC, b.id
+                """
+            else:
+                query = """
+                    SELECT 
+                        b.*,
+                        bd.id as device_id,
+                        bd.device_type,
+                        bd.device_number,
+                        bd.player_count,
+                        bd.price as device_price
+                    FROM bookings b
+                    LEFT JOIN booking_devices bd ON b.id = bd.booking_id
+                    ORDER BY b.booking_date DESC, b.start_time DESC, b.id
+                """
             
             cursor.execute(query)
             all_rows = cursor.fetchall()
@@ -107,12 +134,16 @@ def handle_bookings():
                     }
                 
                 if row['device_id']:
-                    bookings_map[booking_id]['devices'].append({
+                    device_data = {
                         'device_type': row['device_type'],
                         'device_number': int(row['device_number']) if row['device_number'] else None,
                         'player_count': int(row['player_count']),
                         'price': float(row['device_price'])
-                    })
+                    }
+                    # Include game_preference if the column exists
+                    if 'device_game_preference' in row and row['device_game_preference']:
+                        device_data['game_preference'] = row['device_game_preference']
+                    bookings_map[booking_id]['devices'].append(device_data)
             
             bookings = list(bookings_map.values())
             
@@ -348,30 +379,82 @@ def handle_bookings():
             
             booking_id = cursor.lastrowid
             
+            # Check if game_preference column exists in booking_devices
+            has_game_pref_column = True
+            try:
+                cursor.execute("""
+                    SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'booking_devices' AND COLUMN_NAME = 'game_preference'
+                """)
+                if not cursor.fetchone():
+                    has_game_pref_column = False
+            except Exception:
+                has_game_pref_column = False
+            
             # Insert PS5 bookings
             if ps5_bookings:
-                query = """
-                    INSERT INTO booking_devices (booking_id, device_type, device_number, player_count, price)
-                    VALUES (%s, 'ps5', %s, %s, %s)
-                """
-                
-                for ps5 in ps5_bookings:
-                    price = calculate_ps5_price(ps5['player_count'], duration_minutes)
-                    cursor.execute(query, (
-                        booking_id,
-                        ps5['device_number'],
-                        ps5['player_count'],
-                        price
-                    ))
+                if has_game_pref_column:
+                    query = """
+                        INSERT INTO booking_devices (booking_id, device_type, device_number, player_count, price, game_preference)
+                        VALUES (%s, 'ps5', %s, %s, %s, %s)
+                    """
+                    
+                    for ps5 in ps5_bookings:
+                        price = calculate_ps5_price(ps5['player_count'], duration_minutes)
+                        game_pref = ps5.get('game_preference')
+                        cursor.execute(query, (
+                            booking_id,
+                            ps5['device_number'],
+                            ps5['player_count'],
+                            price,
+                            game_pref
+                        ))
+                else:
+                    query = """
+                        INSERT INTO booking_devices (booking_id, device_type, device_number, player_count, price)
+                        VALUES (%s, 'ps5', %s, %s, %s)
+                    """
+                    
+                    for ps5 in ps5_bookings:
+                        price = calculate_ps5_price(ps5['player_count'], duration_minutes)
+                        cursor.execute(query, (
+                            booking_id,
+                            ps5['device_number'],
+                            ps5['player_count'],
+                            price
+                        ))
+            
+            # Collect all game requests for the booking record
+            all_game_requests = [
+                ps5.get('game_preference', '') 
+                for ps5 in ps5_bookings 
+                if ps5.get('game_preference', '').startswith('[Requested]')
+            ]
+            if all_game_requests:
+                try:
+                    requests_text = '; '.join(all_game_requests)
+                    cursor.execute(
+                        "UPDATE bookings SET game_requests = %s WHERE id = %s",
+                        (requests_text, booking_id)
+                    )
+                except Exception:
+                    pass  # Column might not exist yet
             
             # Insert driving simulator booking
             if driving_sim:
                 price = calculate_driving_price(duration_minutes)
-                query = """
-                    INSERT INTO booking_devices (booking_id, device_type, device_number, player_count, price)
-                    VALUES (%s, 'driving_sim', NULL, 1, %s)
-                """
-                cursor.execute(query, (booking_id, price))
+                if has_game_pref_column:
+                    query = """
+                        INSERT INTO booking_devices (booking_id, device_type, device_number, player_count, price, game_preference)
+                        VALUES (%s, 'driving_sim', NULL, 1, %s, NULL)
+                    """
+                    cursor.execute(query, (booking_id, price))
+                else:
+                    query = """
+                        INSERT INTO booking_devices (booking_id, device_type, device_number, player_count, price)
+                        VALUES (%s, 'driving_sim', NULL, 1, %s)
+                    """
+                    cursor.execute(query, (booking_id, price))
             
             conn.commit()
             

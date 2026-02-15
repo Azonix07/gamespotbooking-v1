@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo, FiAward } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo, FiAward, FiEdit2, FiSend } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus, getGames, createPartyBooking, getQuestPassStatus, subscribeQuestPass } from '../services/api';
 import { formatDate, getToday, formatDuration, formatPrice, formatTime12Hour, isValidName, isValidPhone } from '../utils/helpers';
@@ -146,6 +146,10 @@ const BookingPage = () => {
   const [showQuestPassModal, setShowQuestPassModal] = useState(false);
   const [priceLoading, setPriceLoading] = useState(false);
 
+  // Game request state — for requesting games not in the library
+  const [gameRequests, setGameRequests] = useState({}); // { [device_number]: "requested game name" }
+  const [showGameRequestInput, setShowGameRequestInput] = useState(false); // For game-first mode "no results" request
+
   // Refs for cancelling stale async operations
   const priceUpdateIdRef = useRef(0);
   const priceDebounceRef = useRef(null);
@@ -185,7 +189,7 @@ const BookingPage = () => {
       setPriceLoading(true);
       priceDebounceRef.current = setTimeout(() => {
         updatePrice();
-      }, 150); // 150ms debounce — fast enough to feel instant, slow enough to batch rapid changes
+      }, 80); // 80ms debounce — single API call is fast, just batch rapid clicks
     } else {
       setPrice(0);
       setOriginalPrice(0);
@@ -486,82 +490,46 @@ const BookingPage = () => {
     try {
       setPriceLoading(true);
       
-      // Build all price calculation promises in parallel instead of serial loop
-      const pricePromises = [];
+      // SINGLE API call with ALL bookings — no more N separate calls
+      // The backend already loops through all ps5_bookings in the payload
+      // Use the max PS5 duration (or driving sim duration) for the API
+      const maxPS5Duration = ps5Bookings.length > 0 
+        ? Math.max(...ps5Bookings.map(b => b.duration || 60))
+        : 60;
+      const duration = drivingSim && !ps5Bookings.length 
+        ? (drivingSim.duration || 60) 
+        : maxPS5Duration;
       
-      // PS5 price promises
-      for (const ps5 of ps5Bookings) {
-        pricePromises.push(
-          calculatePrice([ps5], false, ps5.duration || 60).then(response => ({
-            type: 'ps5',
-            original: response.original_price || response.total_price,
-            final: response.total_price,
-            discount: response.has_discount ? {
-              percentage: response.discount_percentage,
-              membership: response.membership
-            } : null,
-            hoursWarning: response.hours_warning ? response.hours_warning_message : null
-          }))
-        );
-      }
+      const response = await calculatePrice(
+        ps5Bookings, 
+        !!drivingSim, 
+        duration
+      );
       
-      // Driving sim price promise
-      if (drivingSim) {
-        pricePromises.push(
-          calculatePrice([], true, drivingSim.duration || 60).then(response => ({
-            type: 'driving',
-            original: response.original_price || response.total_price,
-            final: response.total_price,
-            discount: response.has_discount ? {
-              percentage: response.discount_percentage,
-              membership: response.membership
-            } : null,
-            hoursWarning: response.hours_warning ? response.hours_warning_message : null
-          }))
-        );
-      }
-      
-      // Wait for ALL prices at once (parallel, not serial)
-      const results = await Promise.all(pricePromises);
-      
-      // Check if this is still the latest update — if not, discard the results
+      // Check if this is still the latest update
       if (updateId !== priceUpdateIdRef.current) {
-        return; // A newer updatePrice() call has been made, ignore these stale results
+        return; // Stale — a newer call has been made
       }
       
-      // Aggregate results
-      let totalOriginalPrice = 0;
-      let totalFinalPrice = 0;
-      let lastDiscountInfo = null;
-      let lastHoursWarning = null;
+      setOriginalPrice(response.original_price || response.total_price);
+      setPrice(response.total_price);
       
-      for (const result of results) {
-        totalOriginalPrice += result.original;
-        totalFinalPrice += result.final;
-        if (result.discount) lastDiscountInfo = result.discount;
-        if (result.hoursWarning) lastHoursWarning = result.hoursWarning;
-      }
-      
-      setOriginalPrice(totalOriginalPrice);
-      setPrice(totalFinalPrice);
-      
-      if (lastDiscountInfo) {
+      if (response.has_discount) {
         setDiscountInfo({
-          ...lastDiscountInfo,
-          amount: totalOriginalPrice - totalFinalPrice
+          percentage: response.discount_percentage,
+          membership: response.membership,
+          amount: (response.original_price || response.total_price) - response.total_price
         });
       } else {
         setDiscountInfo(null);
       }
       
-      setHoursWarning(lastHoursWarning);
+      setHoursWarning(response.hours_warning ? response.hours_warning_message : null);
     } catch (err) {
-      // Only log errors for the latest request
       if (updateId === priceUpdateIdRef.current) {
         console.error('Price calculation error:', err);
       }
     } finally {
-      // Only clear loading for the latest request
       if (updateId === priceUpdateIdRef.current) {
         setPriceLoading(false);
       }
@@ -569,21 +537,25 @@ const BookingPage = () => {
   };
 
   // Helper functions to calculate individual item prices (for display in summary)
+  // Uses the ACTUAL price table from the backend to match real prices exactly
+  const PS5_PRICE_TABLE = {
+    1: {30: 70, 60: 130, 90: 170, 120: 210},
+    2: {30: 90, 60: 150, 90: 200, 120: 240},
+    3: {30: 90, 60: 150, 90: 200, 120: 240},
+    4: {30: 150, 60: 210, 90: 270, 120: 300}
+  };
+  
+  const DRIVING_PRICE_TABLE = {30: 100, 60: 170, 90: 200, 120: 200};
+
   const calculatePS5Price = (ps5Booking) => {
-    // Base rate: ₹100 per player per 30 minutes
-    const baseRate = 100;
     const duration = ps5Booking.duration || 60;
     const players = ps5Booking.player_count || 1;
-    const durationMultiplier = duration / 30;
-    return baseRate * players * durationMultiplier;
+    return (PS5_PRICE_TABLE[players] || PS5_PRICE_TABLE[1])[duration] || 0;
   };
 
   const calculateDrivingPrice = (drivingBooking) => {
-    // Base rate: ₹100 per 30 minutes for driving sim
-    const baseRate = 100;
     const duration = drivingBooking?.duration || 60;
-    const durationMultiplier = duration / 30;
-    return baseRate * durationMultiplier;
+    return DRIVING_PRICE_TABLE[duration] || 0;
   };
 
   const handleTimeSelect = async (time, status) => {
@@ -2015,6 +1987,116 @@ const BookingPage = () => {
                                     <button className="reset-filters-btn" onClick={() => { setGameSearchQuery(''); setActiveGenreFilter('All'); }}>
                                       Reset Filters
                                     </button>
+                                    
+                                    {/* Request a Game Section */}
+                                    <div className="game-request-section" style={{
+                                      marginTop: '16px',
+                                      padding: '16px',
+                                      background: 'rgba(99, 102, 241, 0.08)',
+                                      borderRadius: '12px',
+                                      border: '1px solid rgba(99, 102, 241, 0.2)',
+                                      width: '100%'
+                                    }}>
+                                      <p style={{ 
+                                        color: '#a5b4fc', 
+                                        fontSize: '0.85rem', 
+                                        marginBottom: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                      }}>
+                                        <FiEdit2 style={{ color: '#818cf8' }} />
+                                        Can't find your game? Request it!
+                                      </p>
+                                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <input
+                                          type="text"
+                                          placeholder="Type game name you want to play..."
+                                          value={gameRequests['global'] || ''}
+                                          onChange={(e) => setGameRequests(prev => ({ ...prev, global: e.target.value }))}
+                                          style={{
+                                            flex: 1,
+                                            padding: '10px 14px',
+                                            background: 'rgba(15, 23, 42, 0.6)',
+                                            border: '1px solid rgba(99, 102, 241, 0.3)',
+                                            borderRadius: '8px',
+                                            color: '#e2e8f0',
+                                            fontSize: '0.9rem',
+                                            outline: 'none',
+                                            transition: 'border-color 0.2s'
+                                          }}
+                                          onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+                                          onBlur={(e) => e.target.style.borderColor = 'rgba(99, 102, 241, 0.3)'}
+                                        />
+                                        {gameRequests['global'] && (
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              // Apply the requested game to the first available PS5 unit
+                                              const firstAvailable = availablePS5Units[0] || 1;
+                                              setGameRequests(prev => ({ ...prev, [firstAvailable]: prev.global }));
+                                              // Auto-select the unit with this request
+                                              if (ps5Bookings.length === 0) {
+                                                setPs5Bookings([{ 
+                                                  device_number: firstAvailable, 
+                                                  player_count: 1, 
+                                                  duration: 60, 
+                                                  game_preference: `[Requested] ${gameRequests['global']}` 
+                                                }]);
+                                                setExpandedPS5(firstAvailable);
+                                              } else {
+                                                // Add game_preference to existing booking
+                                                const existing = ps5Bookings.find(b => b.device_number === firstAvailable);
+                                                if (existing) {
+                                                  setPs5Bookings(ps5Bookings.map(b => 
+                                                    b.device_number === firstAvailable 
+                                                      ? { ...b, game_preference: `[Requested] ${gameRequests['global']}` } 
+                                                      : b
+                                                  ));
+                                                } else {
+                                                  setPs5Bookings([...ps5Bookings, { 
+                                                    device_number: firstAvailable, 
+                                                    player_count: 1, 
+                                                    duration: 60, 
+                                                    game_preference: `[Requested] ${gameRequests['global']}` 
+                                                  }]);
+                                                }
+                                                setExpandedPS5(firstAvailable);
+                                              }
+                                              setShowGameRequestInput(true);
+                                            }}
+                                            style={{
+                                              padding: '10px 16px',
+                                              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                              border: 'none',
+                                              borderRadius: '8px',
+                                              color: '#fff',
+                                              fontSize: '0.85rem',
+                                              cursor: 'pointer',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: '6px',
+                                              whiteSpace: 'nowrap',
+                                              fontWeight: 600
+                                            }}
+                                          >
+                                            <FiSend style={{ fontSize: '14px' }} /> Request
+                                          </button>
+                                        )}
+                                      </div>
+                                      {showGameRequestInput && gameRequests['global'] && (
+                                        <p style={{ 
+                                          color: '#4ade80', 
+                                          fontSize: '0.8rem', 
+                                          marginTop: '8px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '4px' 
+                                        }}>
+                                          <FiCheck /> Game requested! Configure your session below.
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
                                 )}
                               </motion.div>
@@ -2106,6 +2188,109 @@ const BookingPage = () => {
                                           transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
                                           onClick={(e) => e.stopPropagation()}
                                         >
+                                          {/* Change Game / Request a Different Game */}
+                                          <div className="option-group">
+                                            <label className="option-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                              <FiEdit2 className="option-icon" />
+                                              {booking?.game_preference?.startsWith('[Requested]') ? 'Game Requested' : 'Want a different game?'}
+                                            </label>
+                                            {booking?.game_preference?.startsWith('[Requested]') ? (
+                                              <div style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                padding: '8px 12px',
+                                                background: 'rgba(74, 222, 128, 0.1)',
+                                                borderRadius: '8px',
+                                                border: '1px solid rgba(74, 222, 128, 0.25)'
+                                              }}>
+                                                <FiCheck style={{ color: '#4ade80', flexShrink: 0 }} />
+                                                <span style={{ color: '#4ade80', fontSize: '0.85rem', flex: 1 }}>
+                                                  {booking.game_preference.replace('[Requested] ', '')}
+                                                </span>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    setPs5Bookings(ps5Bookings.map(b => 
+                                                      b.device_number === unitNumber 
+                                                        ? { ...b, game_preference: selectedGames.find(sg => (sg.ps5_numbers || []).includes(unitNumber))?.name || null } 
+                                                        : b
+                                                    ));
+                                                    setGameRequests(prev => ({ ...prev, [unitNumber]: '' }));
+                                                  }}
+                                                  style={{
+                                                    background: 'rgba(239, 68, 68, 0.15)',
+                                                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                    borderRadius: '6px',
+                                                    color: '#f87171',
+                                                    padding: '4px 8px',
+                                                    fontSize: '0.75rem',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                  }}
+                                                >
+                                                  <FiX style={{ fontSize: '12px' }} /> Change
+                                                </button>
+                                              </div>
+                                            ) : (
+                                              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                                <input
+                                                  type="text"
+                                                  placeholder="Request a game not listed..."
+                                                  value={gameRequests[unitNumber] || ''}
+                                                  onChange={(e) => setGameRequests(prev => ({ ...prev, [unitNumber]: e.target.value }))}
+                                                  style={{
+                                                    flex: 1,
+                                                    padding: '8px 12px',
+                                                    background: 'rgba(15, 23, 42, 0.6)',
+                                                    border: '1px solid rgba(99, 102, 241, 0.25)',
+                                                    borderRadius: '8px',
+                                                    color: '#e2e8f0',
+                                                    fontSize: '0.85rem',
+                                                    outline: 'none',
+                                                    transition: 'border-color 0.2s'
+                                                  }}
+                                                  onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+                                                  onBlur={(e) => e.target.style.borderColor = 'rgba(99, 102, 241, 0.25)'}
+                                                />
+                                                {gameRequests[unitNumber] && (
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                      const requestedName = gameRequests[unitNumber].trim();
+                                                      if (!requestedName) return;
+                                                      if (booking) {
+                                                        setPs5Bookings(ps5Bookings.map(b => 
+                                                          b.device_number === unitNumber 
+                                                            ? { ...b, game_preference: `[Requested] ${requestedName}` } 
+                                                            : b
+                                                        ));
+                                                      }
+                                                    }}
+                                                    style={{
+                                                      padding: '8px 12px',
+                                                      background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                                      border: 'none',
+                                                      borderRadius: '8px',
+                                                      color: '#fff',
+                                                      fontSize: '0.8rem',
+                                                      cursor: 'pointer',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      gap: '4px',
+                                                      whiteSpace: 'nowrap',
+                                                      fontWeight: 600
+                                                    }}
+                                                  >
+                                                    <FiSend style={{ fontSize: '12px' }} /> Request
+                                                  </button>
+                                                )}
+                                              </div>
+                                            )}
+                                          </div>
+
                                           <div className="option-group">
                                             <label className="option-label">
                                               <FiUsers className="option-icon" />
@@ -2276,6 +2461,117 @@ const BookingPage = () => {
                                           </div>
                                         </div>
                                       )}
+
+                                      {/* Request a Game - for games not in the library */}
+                                      <div className="option-group">
+                                        <label className="option-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                          <FiEdit2 className="option-icon" />
+                                          {booking?.game_preference?.startsWith('[Requested]') ? 'Game Requested' : "Can't find your game?"}
+                                        </label>
+                                        {booking?.game_preference?.startsWith('[Requested]') ? (
+                                          <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            padding: '8px 12px',
+                                            background: 'rgba(74, 222, 128, 0.1)',
+                                            borderRadius: '8px',
+                                            border: '1px solid rgba(74, 222, 128, 0.25)'
+                                          }}>
+                                            <FiCheck style={{ color: '#4ade80', flexShrink: 0 }} />
+                                            <span style={{ color: '#4ade80', fontSize: '0.85rem', flex: 1 }}>
+                                              {booking.game_preference.replace('[Requested] ', '')}
+                                            </span>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setPs5Bookings(ps5Bookings.map(b => 
+                                                  b.device_number === unitNumber 
+                                                    ? { ...b, game_preference: null } 
+                                                    : b
+                                                ));
+                                                setGameRequests(prev => ({ ...prev, [unitNumber]: '' }));
+                                              }}
+                                              style={{
+                                                background: 'rgba(239, 68, 68, 0.15)',
+                                                border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                borderRadius: '6px',
+                                                color: '#f87171',
+                                                padding: '4px 8px',
+                                                fontSize: '0.75rem',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '4px'
+                                              }}
+                                            >
+                                              <FiX style={{ fontSize: '12px' }} /> Change
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                            <input
+                                              type="text"
+                                              placeholder="Type a game name to request..."
+                                              value={gameRequests[unitNumber] || ''}
+                                              onChange={(e) => setGameRequests(prev => ({ ...prev, [unitNumber]: e.target.value }))}
+                                              style={{
+                                                flex: 1,
+                                                padding: '8px 12px',
+                                                background: 'rgba(15, 23, 42, 0.6)',
+                                                border: '1px solid rgba(99, 102, 241, 0.25)',
+                                                borderRadius: '8px',
+                                                color: '#e2e8f0',
+                                                fontSize: '0.85rem',
+                                                outline: 'none',
+                                                transition: 'border-color 0.2s'
+                                              }}
+                                              onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+                                              onBlur={(e) => e.target.style.borderColor = 'rgba(99, 102, 241, 0.25)'}
+                                            />
+                                            {gameRequests[unitNumber] && (
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  const requestedName = gameRequests[unitNumber].trim();
+                                                  if (!requestedName) return;
+                                                  if (booking) {
+                                                    setPs5Bookings(ps5Bookings.map(b => 
+                                                      b.device_number === unitNumber 
+                                                        ? { ...b, game_preference: `[Requested] ${requestedName}` } 
+                                                        : b
+                                                    ));
+                                                  } else {
+                                                    // Auto-select the unit
+                                                    setPs5Bookings([...ps5Bookings, { 
+                                                      device_number: unitNumber, 
+                                                      player_count: 1, 
+                                                      duration: 60, 
+                                                      game_preference: `[Requested] ${requestedName}` 
+                                                    }]);
+                                                  }
+                                                }}
+                                                style={{
+                                                  padding: '8px 12px',
+                                                  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                                  border: 'none',
+                                                  borderRadius: '8px',
+                                                  color: '#fff',
+                                                  fontSize: '0.8rem',
+                                                  cursor: 'pointer',
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  gap: '4px',
+                                                  whiteSpace: 'nowrap',
+                                                  fontWeight: 600
+                                                }}
+                                              >
+                                                <FiSend style={{ fontSize: '12px' }} /> Request
+                                              </button>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
 
                                       <div className="option-group">
                                         <label className="option-label">
@@ -2675,8 +2971,25 @@ const BookingPage = () => {
                               <span className="item-name-v2">PS5 - Unit {b.device_number}</span>
                               <span className="item-meta-v2">
                                 {b.player_count}P • {formatDuration(b.duration || 60)}
-                                {b.game_preference && ` • ${b.game_preference}`}
+                                {b.game_preference && !b.game_preference.startsWith('[Requested]') && ` • ${b.game_preference}`}
                               </span>
+                              {b.game_preference?.startsWith('[Requested]') && (
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  fontSize: '0.75rem',
+                                  color: '#818cf8',
+                                  background: 'rgba(99, 102, 241, 0.1)',
+                                  padding: '2px 8px',
+                                  borderRadius: '6px',
+                                  marginTop: '2px',
+                                  border: '1px solid rgba(99, 102, 241, 0.2)'
+                                }}>
+                                  <FiEdit2 style={{ fontSize: '10px' }} />
+                                  Requested: {b.game_preference.replace('[Requested] ', '')}
+                                </span>
+                              )}
                             </div>
                             <span className="item-price-v2">{formatPrice(calculatePS5Price(b))}</span>
                           </div>

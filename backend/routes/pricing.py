@@ -76,38 +76,47 @@ def calculate_pricing():
 
         ps5_bookings = data.get('ps5_bookings', [])
         driving_sim = data.get('driving_sim', False)
-        duration_minutes = data.get('duration_minutes', 0)
+        duration_minutes = data.get('duration_minutes', 0)  # Fallback/default duration
 
-        # Validate duration
+        # Validate fallback duration
         if duration_minutes not in [30, 60, 90, 120]:
-            return jsonify({'success': False, 'error': 'Invalid duration'}), 400
+            duration_minutes = 60  # Safe default
 
         ps5_price = 0
         driving_price = 0
         breakdown = []
 
-        # Calculate PS5 prices (normal rate)
+        # Calculate PS5 prices (normal rate) — use per-unit duration if available
         if isinstance(ps5_bookings, list):
             for ps5 in ps5_bookings:
                 player_count = ps5.get('player_count', 0)
                 device_number = ps5.get('device_number', 0)
+                # Each unit can have its own duration; fall back to the request-level duration
+                unit_duration = ps5.get('duration', duration_minutes) or duration_minutes
+                if unit_duration not in [30, 60, 90, 120]:
+                    unit_duration = 60
 
                 if 1 <= player_count <= 4:
-                    price = calculate_ps5_price(player_count, duration_minutes)
+                    price = calculate_ps5_price(player_count, unit_duration)
                     ps5_price += price
 
                     breakdown.append({
                         'device': f'PS5 Unit {device_number}',
                         'players': player_count,
+                        'duration': unit_duration,
                         'price': price
                     })
 
         # Calculate driving simulator price (normal rate)
         if driving_sim:
-            driving_price = calculate_driving_price(duration_minutes)
+            driving_duration = duration_minutes
+            if driving_duration not in [30, 60, 90, 120]:
+                driving_duration = 60
+            driving_price = calculate_driving_price(driving_duration)
             breakdown.append({
                 'device': 'Driving Simulator',
                 'players': 1,
+                'duration': driving_duration,
                 'price': driving_price
             })
 
@@ -138,7 +147,15 @@ def calculate_pricing():
         hours_warning_message = ''
         active_membership_info = None
 
-        booking_hours = duration_minutes / 60.0
+        # Calculate total booking hours from the max PS5 unit duration
+        # (membership hours are deducted once per session, not per unit)
+        max_ps5_duration = 0
+        if isinstance(ps5_bookings, list) and ps5_bookings:
+            max_ps5_duration = max(
+                ps5.get('duration', duration_minutes) or duration_minutes 
+                for ps5 in ps5_bookings
+            )
+        booking_hours = max(max_ps5_duration, duration_minutes) / 60.0 if (ps5_bookings or driving_sim) else duration_minutes / 60.0
 
         # Apply story membership to PS5 bookings
         # IMPORTANT: Membership pass covers ONLY the pass holder (1 player).
@@ -159,16 +176,19 @@ def calculate_pricing():
                 membership_ps5_final = 0
                 for ps5 in (ps5_bookings if isinstance(ps5_bookings, list) else []):
                     player_count = ps5.get('player_count', 1)
+                    unit_dur = ps5.get('duration', duration_minutes) or duration_minutes
+                    if unit_dur not in [30, 60, 90, 120]:
+                        unit_dur = 60
                     # Membership rate applies to covered players
                     members_covered = min(player_count, covered_players)
                     extra_players = max(0, player_count - covered_players)
 
                     # Covered players at membership rate
-                    member_price = calculate_membership_price(duration_minutes, rate)
+                    member_price = calculate_membership_price(unit_dur, rate)
                     # Extra players at normal rate (calculate normal price for extras)
                     if extra_players > 0:
-                        normal_full = calculate_ps5_price(player_count, duration_minutes)
-                        normal_covered_only = calculate_ps5_price(members_covered, duration_minutes)
+                        normal_full = calculate_ps5_price(player_count, unit_dur)
+                        normal_covered_only = calculate_ps5_price(members_covered, unit_dur)
                         extra_price = normal_full - normal_covered_only
                     else:
                         extra_price = 0
