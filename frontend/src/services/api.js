@@ -538,6 +538,13 @@ export const cancelQuestPass = async () => {
   });
 };
 
+export const requestQuestPassGameChange = async (gameName) => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/quest-pass/change-game`, {
+    method: "POST",
+    body: JSON.stringify({ game_name: gameName }),
+  });
+};
+
 export const getAdminQuestPasses = async () => {
   return fetchWithCredentials(`${API_BASE_URL}/api/admin/quest-pass`);
 };
@@ -560,5 +567,17 @@ export const updateQuestProgress = async (passId, hoursPlayed, progressNotes) =>
   return fetchWithCredentials(`${API_BASE_URL}/api/admin/quest-pass/progress/${passId}`, {
     method: "POST",
     body: JSON.stringify({ hours_played: hoursPlayed, progress_notes: progressNotes }),
+  });
+};
+
+export const approveQuestPassGameChange = async (passId) => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/admin/quest-pass/approve-game-change/${passId}`, {
+    method: "POST",
+  });
+};
+
+export const rejectQuestPassGameChange = async (passId) => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/admin/quest-pass/reject-game-change/${passId}`, {
+    method: "POST",
   });
 };

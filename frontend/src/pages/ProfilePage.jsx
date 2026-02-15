@@ -12,11 +12,14 @@ import {
   FiClock,
   FiMonitor,
   FiCheckCircle,
-  FiStar
+  FiStar,
+  FiRefreshCw,
+  FiX
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch, getAuthToken } from '../services/apiClient';
+import { getQuestPassStatus, getGames, requestQuestPassGameChange } from '../services/api';
 import '../styles/ProfilePage.css';
 
 const ProfilePage = () => {
@@ -31,6 +34,13 @@ const ProfilePage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // Quest Pass state
+  const [questPass, setQuestPass] = useState(null);
+  const [allGames, setAllGames] = useState([]);
+  const [showGameChangeModal, setShowGameChangeModal] = useState(false);
+  const [newGameChoice, setNewGameChoice] = useState('');
+  const [gameChangeSubmitting, setGameChangeSubmitting] = useState(false);
 
   const API_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
 
@@ -66,6 +76,26 @@ const ProfilePage = () => {
           }
         } catch (memErr) {
           console.log('No active membership');
+        }
+
+        // Fetch Quest Pass status
+        try {
+          const questData = await getQuestPassStatus();
+          if (questData.success && (questData.has_active || questData.has_pending)) {
+            setQuestPass(questData);
+          }
+        } catch (qErr) {
+          console.log('No quest pass data');
+        }
+
+        // Fetch games list (for game change dropdown)
+        try {
+          const gamesData = await getGames();
+          if (gamesData.success) {
+            setAllGames(gamesData.games || []);
+          }
+        } catch (gErr) {
+          console.log('Could not load games');
         }
       } catch (err) {
         console.error('Profile fetch error:', err);
@@ -170,6 +200,38 @@ const ProfilePage = () => {
     } catch (err) {
       console.error('Redeem error:', err);
       setError('Failed to redeem reward');
+    }
+  };
+
+  // Game Change Request Handler
+  const handleGameChangeRequest = async () => {
+    if (!newGameChoice.trim()) {
+      setError('Please select a game');
+      return;
+    }
+    try {
+      setGameChangeSubmitting(true);
+      setError(null);
+      const response = await requestQuestPassGameChange(newGameChoice);
+      if (response.success) {
+        setShowGameChangeModal(false);
+        setNewGameChoice('');
+        setSuccess(response.message);
+        setTimeout(() => setSuccess(null), 5000);
+        // Refresh quest pass status
+        const questData = await getQuestPassStatus();
+        if (questData.success) {
+          setQuestPass(questData);
+        }
+      } else {
+        setError(response.error || 'Game change request failed');
+        setTimeout(() => setError(null), 5000);
+      }
+    } catch (err) {
+      setError(err.message || 'Game change request failed');
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setGameChangeSubmitting(false);
     }
   };
 
@@ -371,6 +433,210 @@ const ProfilePage = () => {
                     <span style={{ fontWeight: '600', color: '#fff' }}>
                       {membershipData.days_remaining || 0} days
                     </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Quest Pass Card */}
+              {questPass?.has_active && (
+                <div className="profile-card quest-pass-card" style={{
+                  background: 'linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #4a1d6e 100%)',
+                  color: '#fff',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  {/* Decorative circle */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '-20px',
+                    right: '-20px',
+                    width: '100px',
+                    height: '100px',
+                    borderRadius: '50%',
+                    background: 'rgba(139, 92, 246, 0.15)',
+                    pointerEvents: 'none'
+                  }} />
+
+                  {/* Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <div>
+                      <p style={{ fontSize: '0.75rem', color: '#b39ddb', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        🏆 Quest Pass
+                      </p>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: '700', margin: 0 }}>
+                        Dedicated Console
+                      </h3>
+                    </div>
+                    <span style={{
+                      background: '#00c853',
+                      color: '#fff',
+                      padding: '4px 10px',
+                      borderRadius: '12px',
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      textTransform: 'uppercase'
+                    }}>
+                      Active
+                    </span>
+                  </div>
+
+                  {/* Current Game */}
+                  <div style={{
+                    background: 'rgba(139, 92, 246, 0.15)',
+                    border: '1px solid rgba(139, 92, 246, 0.3)',
+                    borderRadius: '12px',
+                    padding: '14px',
+                    marginBottom: '14px'
+                  }}>
+                    <p style={{ fontSize: '0.7rem', color: '#b39ddb', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Current Game
+                    </p>
+                    <p style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0, color: '#e0b0ff' }}>
+                      🎮 {questPass.active_pass?.game_name || 'Not set'}
+                    </p>
+                    <p style={{ fontSize: '0.75rem', color: '#b39ddb', marginTop: '4px' }}>
+                      PS5-{questPass.active_pass?.device_number} • ₹{questPass.active_pass?.play_rate || 50}/hr
+                    </p>
+                  </div>
+
+                  {/* Game Change Pending Notice */}
+                  {questPass.active_pass?.game_change_requested && (
+                    <div style={{
+                      background: 'rgba(255, 152, 0, 0.15)',
+                      border: '1px solid rgba(255, 152, 0, 0.3)',
+                      borderRadius: '10px',
+                      padding: '10px 14px',
+                      marginBottom: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{ fontSize: '1.1rem' }}>⏳</span>
+                      <div>
+                        <p style={{ fontSize: '0.75rem', color: '#ffb74d', margin: 0, fontWeight: '600' }}>
+                          Game Change Pending
+                        </p>
+                        <p style={{ fontSize: '0.75rem', color: '#aaa', margin: 0 }}>
+                          Requested: <strong style={{ color: '#fff' }}>{questPass.active_pass.game_change_requested}</strong>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Days Remaining */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#ccc', marginBottom: '14px' }}>
+                    <span><FiClock style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Days Remaining</span>
+                    <span style={{ fontWeight: '600', color: '#fff' }}>
+                      {questPass.active_pass?.days_remaining || 0} days
+                    </span>
+                  </div>
+
+                  {/* Change Game Button */}
+                  {!questPass.active_pass?.game_change_requested && (
+                    <button
+                      onClick={() => setShowGameChangeModal(true)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 16px',
+                        border: '1px solid rgba(139, 92, 246, 0.5)',
+                        background: 'rgba(139, 92, 246, 0.2)',
+                        color: '#e0b0ff',
+                        borderRadius: '10px',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <FiRefreshCw size={16} /> Change Game
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Quest Pass Pending */}
+              {questPass?.has_pending && !questPass?.has_active && (
+                <div className="profile-card" style={{
+                  background: 'linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 100%)',
+                  color: '#fff',
+                  borderRadius: '16px',
+                  padding: '24px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '1.4rem' }}>🏆</span>
+                    <div>
+                      <h3 style={{ fontSize: '1rem', fontWeight: '700', margin: 0 }}>Quest Pass</h3>
+                      <p style={{ fontSize: '0.75rem', color: '#b39ddb', margin: 0 }}>Awaiting Admin Approval</p>
+                    </div>
+                  </div>
+                  <div style={{
+                    background: 'rgba(255, 152, 0, 0.12)',
+                    border: '1px solid rgba(255, 152, 0, 0.25)',
+                    borderRadius: '10px',
+                    padding: '10px',
+                    fontSize: '0.8rem',
+                    color: '#ffb74d'
+                  }}>
+                    ⏳ Request pending for "<strong>{questPass.pending_pass?.game_name}</strong>"
+                  </div>
+                </div>
+              )}
+
+              {/* Game Change Modal */}
+              {showGameChangeModal && (
+                <div className="quest-game-change-overlay" onClick={() => setShowGameChangeModal(false)}>
+                  <div className="quest-game-change-modal" onClick={e => e.stopPropagation()}>
+                    <div className="quest-modal-header">
+                      <div>
+                        <h3>🎮 Change Your Game</h3>
+                        <p>Select a new game for your Quest Pass console</p>
+                      </div>
+                      <button className="quest-modal-close" onClick={() => setShowGameChangeModal(false)}>
+                        <FiX size={20} />
+                      </button>
+                    </div>
+
+                    <div className="quest-modal-current">
+                      <span className="quest-modal-label">Current Game</span>
+                      <span className="quest-modal-game">{questPass?.active_pass?.game_name}</span>
+                    </div>
+
+                    <div className="quest-modal-select-group">
+                      <label className="quest-modal-label">New Game</label>
+                      <select
+                        className="quest-modal-select"
+                        value={newGameChoice}
+                        onChange={(e) => setNewGameChoice(e.target.value)}
+                      >
+                        <option value="">Select a game...</option>
+                        {allGames
+                          .filter(g => (g.ps5_numbers || []).some(n => [1, 2, 3].includes(n)))
+                          .filter(g => g.name !== questPass?.active_pass?.game_name)
+                          .map(g => (
+                            <option key={g.id} value={g.name}>{g.name}</option>
+                          ))
+                        }
+                      </select>
+                    </div>
+
+                    <div className="quest-modal-note">
+                      <FiRefreshCw size={14} />
+                      <span>Your request will be sent to admin. They'll update your console with the new game.</span>
+                    </div>
+
+                    <button
+                      className="quest-modal-submit"
+                      onClick={handleGameChangeRequest}
+                      disabled={gameChangeSubmitting || !newGameChoice}
+                    >
+                      {gameChangeSubmitting ? '⏳ Submitting...' : '✓ Request Game Change'}
+                    </button>
                   </div>
                 </div>
               )}

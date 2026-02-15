@@ -52,6 +52,14 @@ def ensure_quest_tables(cursor):
         )
     """)
 
+    # Add game_change_requested column if missing (for game change requests)
+    try:
+        cursor.execute("""
+            ALTER TABLE quest_pass ADD COLUMN game_change_requested VARCHAR(255) DEFAULT NULL
+        """)
+    except Exception:
+        pass  # Column already exists
+
 
 # ─── GET /api/quest-pass/info ─── Public plan info
 @quest_pass_bp.route('/api/quest-pass/info', methods=['GET', 'OPTIONS'])
@@ -97,7 +105,8 @@ def quest_pass_status():
         cursor.execute("""
             SELECT id, status, device_number, game_name, start_date, end_date,
                    price, play_rate, admin_notes,
-                   DATEDIFF(end_date, CURDATE()) as days_remaining
+                   DATEDIFF(end_date, CURDATE()) as days_remaining,
+                   game_change_requested
             FROM quest_pass
             WHERE user_id = %s AND status = 'active' AND end_date >= CURDATE()
             ORDER BY end_date DESC LIMIT 1
@@ -256,6 +265,69 @@ def cancel_quest_pass():
         return jsonify({'success': True, 'message': 'Quest Pass cancelled successfully'})
 
     except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+# ─── POST /api/quest-pass/change-game ─── Request a game change on active Quest Pass
+@quest_pass_bp.route('/api/quest-pass/change-game', methods=['POST', 'OPTIONS'])
+@require_login
+def request_game_change():
+    """Request to change the dedicated game on an active Quest Pass (pending admin approval)."""
+    if request.method == 'OPTIONS':
+        return '', 200
+    conn = None
+    cursor = None
+    try:
+        user_id = session.get('user_id')
+        data = request.get_json() or {}
+        new_game = data.get('game_name', '').strip()
+
+        if not new_game:
+            return jsonify({'success': False, 'error': 'Please select a new game'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        ensure_quest_tables(cursor)
+        conn.commit()
+
+        # Get active quest pass
+        cursor.execute("""
+            SELECT id, game_name, game_change_requested
+            FROM quest_pass
+            WHERE user_id = %s AND status = 'active' AND end_date >= CURDATE()
+            ORDER BY end_date DESC LIMIT 1
+        """, (user_id,))
+        qp = cursor.fetchone()
+
+        if not qp:
+            return jsonify({'success': False, 'error': 'No active Quest Pass found'}), 404
+
+        if qp['game_name'] and qp['game_name'].lower() == new_game.lower():
+            return jsonify({'success': False, 'error': 'That is already your current game'}), 400
+
+        if qp.get('game_change_requested'):
+            return jsonify({
+                'success': False,
+                'error': f'You already have a pending game change request to "{qp["game_change_requested"]}". Please wait for admin approval.'
+            }), 400
+
+        cursor.execute("""
+            UPDATE quest_pass SET game_change_requested = %s WHERE id = %s
+        """, (new_game, qp['id']))
+        conn.commit()
+
+        return jsonify({
+            'success': True,
+            'message': f'Game change request submitted! "{qp["game_name"]}" → "{new_game}". Admin will update your console.'
+        })
+
+    except Exception as e:
+        print(f"Game change request error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
     finally:
         if cursor: cursor.close()
@@ -451,6 +523,96 @@ def admin_update_progress(pass_id):
 
         conn.commit()
         return jsonify({'success': True, 'message': 'Progress updated'})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+# POST /api/admin/quest-pass/approve-game-change/:id — Approve a game change request
+@quest_pass_bp.route('/api/admin/quest-pass/approve-game-change/<int:pass_id>', methods=['POST', 'OPTIONS'])
+def admin_approve_game_change(pass_id):
+    if request.method == 'OPTIONS':
+        return '', 200
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        ensure_quest_tables(cursor)
+        conn.commit()
+
+        cursor.execute("""
+            SELECT id, game_name, game_change_requested, user_id, device_number
+            FROM quest_pass WHERE id = %s AND status = 'active'
+        """, (pass_id,))
+        qp = cursor.fetchone()
+
+        if not qp:
+            return jsonify({'success': False, 'error': 'Quest Pass not found or not active'}), 404
+        if not qp.get('game_change_requested'):
+            return jsonify({'success': False, 'error': 'No game change request pending'}), 400
+
+        old_game = qp['game_name']
+        new_game = qp['game_change_requested']
+
+        # Update game name and clear request
+        cursor.execute("""
+            UPDATE quest_pass SET game_name = %s, game_change_requested = NULL WHERE id = %s
+        """, (new_game, pass_id))
+
+        # Update progress tracking
+        cursor.execute("""
+            UPDATE quest_progress SET game_name = %s WHERE quest_pass_id = %s
+            ORDER BY created_at DESC LIMIT 1
+        """, (new_game, pass_id))
+
+        conn.commit()
+
+        return jsonify({
+            'success': True,
+            'message': f'Game changed from "{old_game}" to "{new_game}" for Quest Pass #{pass_id}'
+        })
+
+    except Exception as e:
+        print(f"Admin approve game change error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+# POST /api/admin/quest-pass/reject-game-change/:id — Reject a game change request
+@quest_pass_bp.route('/api/admin/quest-pass/reject-game-change/<int:pass_id>', methods=['POST', 'OPTIONS'])
+def admin_reject_game_change(pass_id):
+    if request.method == 'OPTIONS':
+        return '', 200
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        ensure_quest_tables(cursor)
+        conn.commit()
+
+        cursor.execute("""
+            SELECT id, game_change_requested FROM quest_pass WHERE id = %s AND status = 'active'
+        """, (pass_id,))
+        qp = cursor.fetchone()
+
+        if not qp or not qp.get('game_change_requested'):
+            return jsonify({'success': False, 'error': 'No game change request pending'}), 400
+
+        cursor.execute("""
+            UPDATE quest_pass SET game_change_requested = NULL WHERE id = %s
+        """, (pass_id,))
+        conn.commit()
+
+        return jsonify({'success': True, 'message': 'Game change request rejected'})
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

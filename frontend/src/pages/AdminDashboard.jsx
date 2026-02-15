@@ -50,7 +50,9 @@ import {
   getAdminQuestPasses,
   approveQuestPass,
   rejectQuestPass,
-  updateQuestProgress
+  updateQuestProgress,
+  approveQuestPassGameChange,
+  rejectQuestPassGameChange
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -284,6 +286,28 @@ const AdminDashboard = () => {
     try {
       setError(null);
       await updateQuestProgress(passId, parseFloat(hours), notes);
+      loadQuestPasses();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleApproveGameChange = async (passId, oldGame, newGame) => {
+    if (!window.confirm(`Approve game change?\n"${oldGame}" → "${newGame}"`)) return;
+    try {
+      setError(null);
+      await approveQuestPassGameChange(passId);
+      loadQuestPasses();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleRejectGameChange = async (passId) => {
+    if (!window.confirm('Reject this game change request?')) return;
+    try {
+      setError(null);
+      await rejectQuestPassGameChange(passId);
       loadQuestPasses();
     } catch (err) {
       setError(err.message);
@@ -1568,7 +1592,15 @@ const AdminDashboard = () => {
                       <small style={{ color: '#64748b' }}>{qp.user_phone || qp.user_email || ''}</small>
                     </div>
                   </td>
-                  <td><strong style={{ color: '#334155' }}>{qp.game_name}</strong></td>
+                  <td>
+                    <strong style={{ color: '#334155' }}>{qp.game_name}</strong>
+                    {qp.game_change_requested && (
+                      <div style={{ marginTop: '4px', padding: '4px 8px', background: 'rgba(255, 152, 0, 0.1)', border: '1px solid rgba(255, 152, 0, 0.3)', borderRadius: '6px', fontSize: '0.72rem' }}>
+                        <span style={{ color: '#f57c00' }}>🔄 Change → </span>
+                        <strong style={{ color: '#e65100' }}>{qp.game_change_requested}</strong>
+                      </div>
+                    )}
+                  </td>
                   <td>
                     {qp.device_number ? (
                       <span style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#7c3aed', padding: '3px 10px', borderRadius: 8, fontSize: '0.82rem', fontWeight: 600 }}>
@@ -1616,6 +1648,23 @@ const AdminDashboard = () => {
                         >
                           <FiEdit2 /> Log Progress
                         </button>
+                      )}
+                      {qp.status === 'active' && qp.game_change_requested && (
+                        <>
+                          <button
+                            className="btn btn-sm"
+                            style={{ background: 'linear-gradient(135deg, #ff9800, #f57c00)', color: '#fff', border: 'none', padding: '5px 12px', borderRadius: 8, fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
+                            onClick={() => handleApproveGameChange(qp.id, qp.game_name, qp.game_change_requested)}
+                          >
+                            ✅ Approve Game Change
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => handleRejectGameChange(qp.id)}
+                          >
+                            ❌ Reject Change
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>
