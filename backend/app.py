@@ -584,14 +584,27 @@ def smtp_status():
         # Test the connection based on send method
         if email_service.send_method == 'resend':
             try:
+                # Test by sending a test request to the emails endpoint (GET returns 405, which is fine)
+                # A 403 means auth failed, 405 means auth worked but method not allowed
                 from urllib.request import Request, urlopen
                 req = Request(
-                    'https://api.resend.com/domains',
+                    'https://api.resend.com/emails',
                     headers={'Authorization': f'Bearer {email_service.resend_api_key}'},
                     method='GET'
                 )
-                resp = urlopen(req, timeout=10)
-                status['connection_test'] = 'SUCCESS — Resend API key is valid'
+                try:
+                    resp = urlopen(req, timeout=10)
+                    status['connection_test'] = 'SUCCESS — Resend API key is valid'
+                except Exception as e:
+                    error_str = str(e)
+                    # HTTP 405 Method Not Allowed means auth worked but GET not supported (expected)
+                    if '405' in error_str:
+                        status['connection_test'] = 'SUCCESS — Resend API key is valid (405 = auth OK)'
+                    # HTTP 403 means invalid/missing API key
+                    elif '403' in error_str:
+                        status['connection_test'] = 'FAILED — Resend API key is invalid or expired (403 Forbidden)'
+                    else:
+                        status['connection_test'] = f'FAILED — {error_str}'
             except Exception as e:
                 status['connection_test'] = f'FAILED — {str(e)}'
         elif email_service.enabled:
