@@ -76,54 +76,62 @@ def calculate_pricing():
 
         ps5_bookings = data.get('ps5_bookings', [])
         driving_sim = data.get('driving_sim', False)
-        duration_minutes = data.get('duration_minutes', 0)  # Fallback/default duration
+        duration_minutes = data.get('duration_minutes', 0)
 
-        # Validate fallback duration
+        # Lenient duration validation — default to 60 if invalid so pricing doesn't break
         if duration_minutes not in [30, 60, 90, 120]:
-            duration_minutes = 60  # Safe default
+            duration_minutes = 60
 
         ps5_price = 0
         driving_price = 0
         breakdown = []
 
-        # Calculate PS5 prices (normal rate) — use per-unit duration if available
+        # Calculate PS5 prices — each unit can have its own duration
         if isinstance(ps5_bookings, list):
             for ps5 in ps5_bookings:
                 player_count = ps5.get('player_count', 0)
                 device_number = ps5.get('device_number', 0)
-                # Each unit can have its own duration; fall back to the request-level duration
-                unit_duration = ps5.get('duration', duration_minutes) or duration_minutes
-                if unit_duration not in [30, 60, 90, 120]:
-                    unit_duration = 60
+                # Per-unit duration: use unit's own duration, fallback to global
+                unit_dur = ps5.get('duration', duration_minutes)
+                if unit_dur not in [30, 60, 90, 120]:
+                    unit_dur = duration_minutes
 
                 if 1 <= player_count <= 4:
-                    price = calculate_ps5_price(player_count, unit_duration)
+                    price = calculate_ps5_price(player_count, unit_dur)
                     ps5_price += price
 
                     breakdown.append({
                         'device': f'PS5 Unit {device_number}',
                         'players': player_count,
-                        'duration': unit_duration,
+                        'duration': unit_dur,
                         'price': price
                     })
 
         # Calculate driving simulator price (normal rate)
         if driving_sim:
-            driving_duration = duration_minutes
-            if driving_duration not in [30, 60, 90, 120]:
-                driving_duration = 60
-            driving_price = calculate_driving_price(driving_duration)
+            driving_price = calculate_driving_price(duration_minutes)
             breakdown.append({
                 'device': 'Driving Simulator',
                 'players': 1,
-                'duration': driving_duration,
                 'price': driving_price
             })
 
         original_price = ps5_price + driving_price
 
         # ─── Check membership-based pricing ───
+        # Try session first, then JWT token (mobile browsers)
         user_id = session.get('user_id')
+        if not user_id:
+            auth_header = request.headers.get('Authorization', '')
+            if auth_header.startswith('Bearer ') and len(auth_header) > 7:
+                try:
+                    from middleware.auth import verify_token
+                    token = auth_header[7:].strip()
+                    payload = verify_token(token)
+                    if payload and payload.get('user_id'):
+                        user_id = payload['user_id']
+                except Exception:
+                    pass
         memberships = get_user_active_memberships(user_id)
 
         # Find relevant memberships by category
@@ -147,15 +155,13 @@ def calculate_pricing():
         hours_warning_message = ''
         active_membership_info = None
 
-        # Calculate total booking hours from the max PS5 unit duration
-        # (membership hours are deducted once per session, not per unit)
-        max_ps5_duration = 0
-        if isinstance(ps5_bookings, list) and ps5_bookings:
-            max_ps5_duration = max(
-                ps5.get('duration', duration_minutes) or duration_minutes 
-                for ps5 in ps5_bookings
-            )
-        booking_hours = max(max_ps5_duration, duration_minutes) / 60.0 if (ps5_bookings or driving_sim) else duration_minutes / 60.0
+        # booking_hours = max duration across all PS5 units (or driving duration)
+        # This is used to check if the user has enough membership hours
+        max_ps5_duration = max(
+            [ps5.get('duration', duration_minutes) for ps5 in (ps5_bookings if isinstance(ps5_bookings, list) else [])],
+            default=duration_minutes
+        )
+        booking_hours = max(max_ps5_duration, duration_minutes) / 60.0
 
         # Apply story membership to PS5 bookings
         # IMPORTANT: Membership pass covers ONLY the pass holder (1 player).
@@ -176,16 +182,17 @@ def calculate_pricing():
                 membership_ps5_final = 0
                 for ps5 in (ps5_bookings if isinstance(ps5_bookings, list) else []):
                     player_count = ps5.get('player_count', 1)
-                    unit_dur = ps5.get('duration', duration_minutes) or duration_minutes
+                    unit_dur = ps5.get('duration', duration_minutes)
                     if unit_dur not in [30, 60, 90, 120]:
-                        unit_dur = 60
+                        unit_dur = duration_minutes
+
                     # Membership rate applies to covered players
                     members_covered = min(player_count, covered_players)
                     extra_players = max(0, player_count - covered_players)
 
                     # Covered players at membership rate
                     member_price = calculate_membership_price(unit_dur, rate)
-                    # Extra players at normal rate (calculate normal price for extras)
+                    # Extra players at normal rate (difference between full price and covered-only price)
                     if extra_players > 0:
                         normal_full = calculate_ps5_price(player_count, unit_dur)
                         normal_covered_only = calculate_ps5_price(members_covered, unit_dur)
