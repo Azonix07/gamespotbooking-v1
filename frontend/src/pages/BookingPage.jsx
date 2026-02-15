@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo, FiAward } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -144,6 +144,11 @@ const BookingPage = () => {
   const [questPassGame, setQuestPassGame] = useState(''); // Game name for new subscription
   const [questPassSubmitting, setQuestPassSubmitting] = useState(false);
   const [showQuestPassModal, setShowQuestPassModal] = useState(false);
+  const [priceLoading, setPriceLoading] = useState(false);
+
+  // Refs for cancelling stale async operations
+  const priceUpdateIdRef = useRef(0);
+  const priceDebounceRef = useRef(null);
 
   // Check user session on component mount
   useEffect(() => {
@@ -156,6 +161,13 @@ const BookingPage = () => {
     loadSlots();
   }, [selectedDate]);
 
+  // Stable serialized key for bookings — avoids re-triggering on same data with new references
+  const bookingsKey = useMemo(() => {
+    const ps5Key = ps5Bookings.map(b => `${b.device_number}:${b.player_count || 1}:${b.duration || 60}`).join('|');
+    const drivingKey = drivingSim ? `ds:${drivingSim.duration || 60}:${drivingSim.afterPS5 || false}` : '';
+    return `${ps5Key}__${drivingKey}`;
+  }, [ps5Bookings, drivingSim]);
+
   // Check availability when device durations change (not on initial time select)
   useEffect(() => {
     if (selectedTime && currentStep === 2 && (ps5Bookings.length > 0 || drivingSim)) {
@@ -163,12 +175,30 @@ const BookingPage = () => {
     }
   }, [ps5Bookings.map(b => b.duration).join(','), drivingSim?.duration, drivingSim?.afterPS5]);
 
-  // Calculate price when selections change
+  // Calculate price when selections change — debounced to avoid racing API calls
   useEffect(() => {
     if (ps5Bookings.length > 0 || drivingSim) {
-      updatePrice();
+      // Clear any pending debounce
+      if (priceDebounceRef.current) {
+        clearTimeout(priceDebounceRef.current);
+      }
+      setPriceLoading(true);
+      priceDebounceRef.current = setTimeout(() => {
+        updatePrice();
+      }, 150); // 150ms debounce — fast enough to feel instant, slow enough to batch rapid changes
+    } else {
+      setPrice(0);
+      setOriginalPrice(0);
+      setDiscountInfo(null);
+      setHoursWarning(null);
+      setPriceLoading(false);
     }
-  }, [ps5Bookings, drivingSim]);
+    return () => {
+      if (priceDebounceRef.current) {
+        clearTimeout(priceDebounceRef.current);
+      }
+    };
+  }, [bookingsKey]);
 
   const loadSlots = async () => {
     try {
@@ -401,11 +431,16 @@ const BookingPage = () => {
       setAvailablePS5Units(ps5Response.available_ps5_units);
       setTotalPlayers(ps5Response.total_ps5_players_booked);
       
-      // Reset PS5 selections if not available
+      // Reset PS5 selections if not available — only update state if bookings actually changed
       const validPS5 = ps5Bookings.filter(b => 
         ps5Response.available_ps5_units.includes(b.device_number)
       );
-      setPs5Bookings(validPS5);
+      // Compare by device numbers to avoid creating a new reference unnecessarily
+      const currentDevices = ps5Bookings.map(b => b.device_number).sort().join(',');
+      const validDevices = validPS5.map(b => b.device_number).sort().join(',');
+      if (currentDevices !== validDevices) {
+        setPs5Bookings(validPS5);
+      }
       
       // Check Driving Sim availability based on "Play After PS5" setting
       if (drivingSim && drivingSim.afterPS5 && ps5Bookings.length > 0) {
@@ -445,51 +480,66 @@ const BookingPage = () => {
   };
 
   const updatePrice = async () => {
+    // Increment the update ID — any stale calls with older IDs will be ignored
+    const updateId = ++priceUpdateIdRef.current;
+    
     try {
-      // Calculate price for each device separately and sum them
+      setPriceLoading(true);
+      
+      // Build all price calculation promises in parallel instead of serial loop
+      const pricePromises = [];
+      
+      // PS5 price promises
+      for (const ps5 of ps5Bookings) {
+        pricePromises.push(
+          calculatePrice([ps5], false, ps5.duration || 60).then(response => ({
+            type: 'ps5',
+            original: response.original_price || response.total_price,
+            final: response.total_price,
+            discount: response.has_discount ? {
+              percentage: response.discount_percentage,
+              membership: response.membership
+            } : null,
+            hoursWarning: response.hours_warning ? response.hours_warning_message : null
+          }))
+        );
+      }
+      
+      // Driving sim price promise
+      if (drivingSim) {
+        pricePromises.push(
+          calculatePrice([], true, drivingSim.duration || 60).then(response => ({
+            type: 'driving',
+            original: response.original_price || response.total_price,
+            final: response.total_price,
+            discount: response.has_discount ? {
+              percentage: response.discount_percentage,
+              membership: response.membership
+            } : null,
+            hoursWarning: response.hours_warning ? response.hours_warning_message : null
+          }))
+        );
+      }
+      
+      // Wait for ALL prices at once (parallel, not serial)
+      const results = await Promise.all(pricePromises);
+      
+      // Check if this is still the latest update — if not, discard the results
+      if (updateId !== priceUpdateIdRef.current) {
+        return; // A newer updatePrice() call has been made, ignore these stale results
+      }
+      
+      // Aggregate results
       let totalOriginalPrice = 0;
       let totalFinalPrice = 0;
       let lastDiscountInfo = null;
       let lastHoursWarning = null;
       
-      // Calculate PS5 prices
-      for (const ps5 of ps5Bookings) {
-        const response = await calculatePrice([ps5], false, ps5.duration || 60);
-        totalOriginalPrice += response.original_price || response.total_price;
-        totalFinalPrice += response.total_price;
-        
-        // Capture discount info from last response
-        if (response.has_discount) {
-          lastDiscountInfo = {
-            percentage: response.discount_percentage,
-            membership: response.membership
-          };
-        }
-        
-        // Capture hours warning
-        if (response.hours_warning) {
-          lastHoursWarning = response.hours_warning_message;
-        }
-      }
-      
-      // Calculate Driving Sim price
-      if (drivingSim) {
-        const response = await calculatePrice([], true, drivingSim.duration || 60);
-        totalOriginalPrice += response.original_price || response.total_price;
-        totalFinalPrice += response.total_price;
-        
-        // Capture discount info from last response
-        if (response.has_discount) {
-          lastDiscountInfo = {
-            percentage: response.discount_percentage,
-            membership: response.membership
-          };
-        }
-        
-        // Capture hours warning
-        if (response.hours_warning) {
-          lastHoursWarning = response.hours_warning_message;
-        }
+      for (const result of results) {
+        totalOriginalPrice += result.original;
+        totalFinalPrice += result.final;
+        if (result.discount) lastDiscountInfo = result.discount;
+        if (result.hoursWarning) lastHoursWarning = result.hoursWarning;
       }
       
       setOriginalPrice(totalOriginalPrice);
@@ -506,7 +556,15 @@ const BookingPage = () => {
       
       setHoursWarning(lastHoursWarning);
     } catch (err) {
-      console.error('Price calculation error:', err);
+      // Only log errors for the latest request
+      if (updateId === priceUpdateIdRef.current) {
+        console.error('Price calculation error:', err);
+      }
+    } finally {
+      // Only clear loading for the latest request
+      if (updateId === priceUpdateIdRef.current) {
+        setPriceLoading(false);
+      }
     }
   };
 
@@ -2388,7 +2446,12 @@ const BookingPage = () => {
                         <div className="pf-container">
                             <div className="pf-price-section">
                                 <span className="pf-label">TOTAL</span>
-                                <span className="pf-amount">
+                                <span className="pf-amount" style={{ 
+                                  transition: 'opacity 0.15s ease', 
+                                  opacity: priceLoading ? 0.5 : 1,
+                                  minWidth: '60px',
+                                  display: 'inline-block'
+                                }}>
                                   {discountInfo ? (
                                     <span style={{ color: '#10b981' }}>{formatPrice(price)}</span> 
                                   ) : (
@@ -2399,6 +2462,7 @@ const BookingPage = () => {
                             <button 
                                 className="pf-next-btn"
                                 onClick={() => setCurrentStep(3)}
+                                disabled={priceLoading}
                             >
                                 <span>Review Booking</span>
                                 <FiArrowRight />
