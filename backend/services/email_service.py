@@ -19,12 +19,10 @@ FRONTEND_URL   - Frontend URL for email links
 
 import os
 import sys
-import smtplib
 import json
+import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
 
 
 # Connection timeout to prevent request hanging if SMTP is unreachable
@@ -99,35 +97,38 @@ class EmailService:
 
     def _send_via_resend(self, to_email, subject, html_body):
         """Send email using Resend HTTP API (works even when SMTP ports are blocked)."""
+        import requests as _requests
+
         from_email = self.smtp_email or 'onboarding@resend.dev'
 
-        payload = json.dumps({
-            'from': f'GameSpot <{from_email}>',
-            'to': [to_email],
-            'subject': subject,
-            'html': html_body
-        }).encode('utf-8')
-
-        req = Request(
-            'https://api.resend.com/emails',
-            data=payload,
-            headers={
-                'Authorization': f'Bearer {self.resend_api_key}',
-                'Content-Type': 'application/json'
-            },
-            method='POST'
-        )
-
         try:
-            resp = urlopen(req, timeout=15)
-            result = json.loads(resp.read().decode('utf-8'))
-            sys.stderr.write(f"[Email] ✅ Resend sent to {to_email}: {subject} (id: {result.get('id', '?')})\n")
-            return True, 'Email sent via Resend'
-        except HTTPError as e:
-            body = e.read().decode('utf-8', errors='replace')
-            sys.stderr.write(f"[Email] ❌ Resend API error {e.code}: {body}\n")
-            return False, f'Resend API error: {body}'
-        except (URLError, TimeoutError) as e:
+            resp = _requests.post(
+                'https://api.resend.com/emails',
+                headers={
+                    'Authorization': f'Bearer {self.resend_api_key}',
+                    'Content-Type': 'application/json',
+                },
+                json={
+                    'from': f'GameSpot <{from_email}>',
+                    'to': [to_email],
+                    'subject': subject,
+                    'html': html_body
+                },
+                timeout=15
+            )
+
+            if resp.status_code == 200:
+                result = resp.json()
+                sys.stderr.write(f"[Email] ✅ Resend sent to {to_email}: {subject} (id: {result.get('id', '?')})\n")
+                return True, 'Email sent via Resend'
+            else:
+                sys.stderr.write(f"[Email] ❌ Resend API error {resp.status_code}: {resp.text}\n")
+                return False, f'Resend API error {resp.status_code}: {resp.text}'
+
+        except _requests.exceptions.Timeout:
+            sys.stderr.write(f"[Email] ❌ Resend request timed out\n")
+            return False, 'Resend request timed out'
+        except Exception as e:
             sys.stderr.write(f"[Email] ❌ Resend request failed: {e}\n")
             return False, f'Resend request failed: {str(e)}'
 

@@ -583,36 +583,23 @@ def smtp_status():
         
         # Test the connection based on send method
         if email_service.send_method == 'resend':
-            # Resend keys may be "send only" — GET requests return 403 but POST works fine
-            # Best test: try to send to an invalid address (will fail with clear error)
             try:
-                import json as _json
-                from urllib.request import Request as _Req, urlopen as _open
-                from urllib.error import HTTPError as _HErr
-                
-                test_payload = _json.dumps({
-                    'from': f'GameSpot <{email_service.smtp_email or "onboarding@resend.dev"}>',
-                    'to': ['delivered@resend.dev'],  # Resend's test inbox
-                    'subject': 'GameSpot SMTP Test',
-                    'html': '<p>This is a test email from GameSpot diagnostic.</p>'
-                }).encode('utf-8')
-                
-                req = _Req(
+                import requests as _req
+                resp = _req.post(
                     'https://api.resend.com/emails',
-                    data=test_payload,
-                    headers={
-                        'Authorization': f'Bearer {email_service.resend_api_key}',
-                        'Content-Type': 'application/json'
+                    headers={'Authorization': f'Bearer {email_service.resend_api_key}'},
+                    json={
+                        'from': f'GameSpot <{email_service.smtp_email or "onboarding@resend.dev"}>',
+                        'to': ['delivered@resend.dev'],
+                        'subject': 'GameSpot SMTP Test',
+                        'html': '<p>Test email from GameSpot diagnostic.</p>'
                     },
-                    method='POST'
+                    timeout=15
                 )
-                try:
-                    resp = _open(req, timeout=15)
-                    result = _json.loads(resp.read().decode('utf-8'))
-                    status['connection_test'] = f'SUCCESS — Test email sent (id: {result.get("id", "?")})'
-                except _HErr as he:
-                    error_body = he.read().decode('utf-8', errors='replace')
-                    status['connection_test'] = f'FAILED — Resend {he.code}: {error_body}'
+                if resp.status_code == 200:
+                    status['connection_test'] = f'SUCCESS — Test email sent (id: {resp.json().get("id", "?")})'
+                else:
+                    status['connection_test'] = f'FAILED — Resend {resp.status_code}: {resp.text}'
             except Exception as e:
                 status['connection_test'] = f'FAILED — {str(e)}'
         elif email_service.enabled:
