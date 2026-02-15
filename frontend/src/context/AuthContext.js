@@ -202,6 +202,11 @@ export const AuthProvider = ({ children }) => {
       });
       
       if (data.success) {
+        // Check if email verification is needed (new flow)
+        if (data.needs_verification) {
+          return { success: true, needs_verification: true, message: data.message };
+        }
+        
         // MOBILE FIX: Mark this as a recent login to prevent session check from clearing state
         recentLoginTimestamp = Date.now();
         

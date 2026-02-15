@@ -242,6 +242,147 @@ Do not share this code with anyone.
 
         return self.send_email(to_email, subject, html_body, text_body)
 
+    def send_verification_email(self, to_email, token, user_name):
+        """
+        Send email verification link after signup.
+
+        Args:
+            to_email: Recipient email
+            token: Verification token (URL-safe)
+            user_name: User's display name
+
+        Returns:
+            tuple: (success: bool, message: str)
+        """
+        verify_link = f"{self.frontend_url}/verify-email?token={token}"
+
+        subject = "Verify Your Email — GameSpot"
+
+        html_body = f"""
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#ff6b35,#ff9966);padding:32px 40px;text-align:center;">
+            <h1 style="margin:0;color:#fff;font-size:24px;">🎮 GameSpot</h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:40px;">
+            <h2 style="margin:0 0 16px;color:#1a1a2e;font-size:20px;">Verify Your Email</h2>
+            <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px;">
+              Hi <strong>{user_name}</strong>,<br><br>
+              Welcome to GameSpot! Please verify your email address to activate your account:
+            </p>
+            <div style="text-align:center;margin:32px 0;">
+              <a href="{verify_link}"
+                 style="display:inline-block;background:#ff6b35;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:16px;font-weight:600;">
+                Verify Email
+              </a>
+            </div>
+            <p style="color:#888;font-size:13px;line-height:1.5;margin:24px 0 0;">
+              This link expires in <strong>24 hours</strong>.<br>
+              If you didn't create this account, you can safely ignore this email.
+            </p>
+            <hr style="border:none;border-top:1px solid #eee;margin:28px 0 16px;">
+            <p style="color:#aaa;font-size:12px;margin:0;text-align:center;">
+              Can't click the button? Copy and paste this URL:<br>
+              <a href="{verify_link}" style="color:#ff6b35;word-break:break-all;">{verify_link}</a>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#fafafa;padding:20px 40px;text-align:center;">
+            <p style="margin:0;color:#aaa;font-size:12px;">© 2026 GameSpot Gaming Lounge. All rights reserved.</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+        text_body = f"""Hi {user_name},
+
+Welcome to GameSpot! Please verify your email address by visiting:
+
+{verify_link}
+
+This link expires in 24 hours.
+If you didn't create this account, you can safely ignore this email.
+
+— GameSpot Team"""
+
+        return self.send_email(to_email, subject, html_body, text_body)
+
+    def send_forgot_password_otp(self, to_email, otp, user_name):
+        """
+        Send 6-digit OTP for forgot-password flow via email.
+
+        Args:
+            to_email: Recipient email
+            otp: 6-digit OTP code
+            user_name: User's display name
+
+        Returns:
+            tuple: (success: bool, message: str)
+        """
+        subject = "Password Reset OTP — GameSpot"
+
+        html_body = f"""
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#ff6b35,#ff9966);padding:32px 40px;text-align:center;">
+            <h1 style="margin:0;color:#fff;font-size:24px;">🎮 GameSpot</h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:40px;text-align:center;">
+            <h2 style="margin:0 0 16px;color:#1a1a2e;font-size:20px;">Password Reset OTP</h2>
+            <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px;">
+              Hi <strong>{user_name}</strong>, use this code to reset your password:
+            </p>
+            <div style="background:#f8f9fa;border:2px dashed #ff6b35;border-radius:12px;padding:24px;margin:24px auto;max-width:200px;">
+              <span style="font-size:36px;font-weight:700;letter-spacing:8px;color:#1a1a2e;">{otp}</span>
+            </div>
+            <p style="color:#888;font-size:13px;line-height:1.5;margin:24px 0 0;">
+              This code expires in <strong>10 minutes</strong>.<br>
+              Do not share this code with anyone.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#fafafa;padding:20px 40px;text-align:center;">
+            <p style="margin:0;color:#aaa;font-size:12px;">© 2026 GameSpot Gaming Lounge. All rights reserved.</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+        text_body = f"""Hi {user_name},
+
+Your GameSpot password reset OTP is: {otp}
+
+This code expires in 10 minutes.
+Do not share this code with anyone.
+
+— GameSpot Team"""
+
+        return self.send_email(to_email, subject, html_body, text_body)
+
 
 # Singleton instance
 email_service = EmailService()

@@ -5,6 +5,7 @@ Handles user registration, login, password management
 
 import bcrypt
 import secrets
+import sys
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from config.database import get_db_connection
@@ -48,16 +49,8 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 def register_user(name: str, email: str, phone: str, password: str) -> Dict[str, Any]:
     """
-    Register a new user
-    
-    Args:
-        name: User's full name
-        email: User's email (must be unique)
-        phone: User's phone number
-        password: Plain text password (will be hashed)
-        
-    Returns:
-        Dict with success status and user data or error message
+    Register a new user with email verification token.
+    Does NOT auto-login — user must verify email first.
     """
     conn = None
     cursor = None
@@ -73,33 +66,51 @@ def register_user(name: str, email: str, phone: str, password: str) -> Dict[str,
         # Hash password
         password_hash = hash_password(password)
         
-        # Insert user
+        # Generate email verification token
+        verification_token = secrets.token_urlsafe(32)
+        
+        # Insert user with is_verified=FALSE
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
         query = '''
-            INSERT INTO users (name, email, phone, password_hash)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO users (name, email, phone, password_hash, is_verified, verification_token)
+            VALUES (%s, %s, %s, %s, FALSE, %s)
         '''
-        cursor.execute(query, (name, email, phone, password_hash))
+        cursor.execute(query, (name, email, phone, password_hash, verification_token))
         conn.commit()
         
         user_id = cursor.lastrowid
         
-        # ============================================================
-        # LINK PAST GUEST BOOKINGS TO THIS NEW USER
-        # If they booked as a guest with this phone number before
-        # signing up, claim those bookings and award retroactive points
-        # ============================================================
+        # Link past guest bookings
         try:
             _link_guest_bookings_to_user(cursor, conn, user_id, phone)
         except Exception as link_err:
             import sys
             sys.stderr.write(f"[Signup] Non-critical: failed to link guest bookings: {link_err}\n")
         
+        # Send verification email (best-effort)
+        try:
+            from services.email_service import email_service
+            if email_service.enabled:
+                success_email, msg = email_service.send_verification_email(email, verification_token, name)
+                if success_email:
+                    import sys
+                    sys.stderr.write(f"[Signup] ✅ Verification email sent to {email}\n")
+                else:
+                    import sys
+                    sys.stderr.write(f"[Signup] ⚠️ Verification email failed: {msg}\n")
+            else:
+                import sys
+                sys.stderr.write(f"[Signup] ⚠️ SMTP not configured — verification token: {verification_token}\n")
+        except Exception as email_err:
+            import sys
+            sys.stderr.write(f"[Signup] ⚠️ Email send error: {email_err}\n")
+        
         return {
             'success': True,
-            'message': 'Registration successful',
+            'message': 'Registration successful. Please check your email to verify your account.',
+            'needs_verification': True,
             'user': {
                 'id': user_id,
                 'name': name,
@@ -238,14 +249,8 @@ def link_guest_bookings_on_login(user_id, phone):
 
 def login_user(identifier: str, password: str) -> Dict[str, Any]:
     """
-    Authenticate a user by email OR phone number and password
-    
-    Args:
-        identifier: User's email or phone number
-        password: Plain text password
-        
-    Returns:
-        Dict with success status and user data or error message
+    Authenticate a user by email OR phone number and password.
+    Enforces: email verification, account blocking, failed attempt limits (8/day).
     """
     conn = None
     cursor = None
@@ -258,35 +263,84 @@ def login_user(identifier: str, password: str) -> Dict[str, Any]:
         cursor = conn.cursor(dictionary=True)
         
         # Detect if identifier is a phone number or email
-        # Phone: digits only (optionally with + prefix), at least 10 digits
         clean_identifier = identifier.strip()
         is_phone = clean_identifier.replace('+', '').replace(' ', '').replace('-', '').isdigit() and len(clean_identifier.replace('+', '').replace(' ', '').replace('-', '')) >= 10
         
         if is_phone:
-            # Strip non-digit characters for matching (keep last 10 digits)
             phone_digits = clean_identifier.replace('+', '').replace(' ', '').replace('-', '')
-            # Try exact match first, then last-10-digits match
             query = 'SELECT * FROM users WHERE phone = %s'
             cursor.execute(query, (phone_digits,))
             user = cursor.fetchone()
             
             if not user and len(phone_digits) > 10:
-                # Try matching last 10 digits (e.g., +91 prefix)
                 last10 = phone_digits[-10:]
                 cursor.execute('SELECT * FROM users WHERE phone LIKE %s', (f'%{last10}',))
                 user = cursor.fetchone()
         else:
-            # Email-based lookup
             query = 'SELECT * FROM users WHERE email = %s'
             cursor.execute(query, (clean_identifier.lower(),))
             user = cursor.fetchone()
         
         if not user:
+            return {'success': False, 'error': 'Email is not registered.'}
+        
+        # ── Check if account is blocked ──
+        is_blocked = user.get('is_blocked', False)
+        if is_blocked:
+            return {'success': False, 'error': 'Your account is blocked. Contact admin.'}
+        
+        # ── Check email verification (skip for OAuth/OTP users) ──
+        is_verified = user.get('is_verified')
+        pw_hash = user.get('password_hash', '')
+        is_oauth_user = pw_hash in ('GOOGLE_OAUTH', 'APPLE_OAUTH', 'OTP_LOGIN')
+        # is_verified may be None if column doesn't exist yet — treat as verified
+        if is_verified is not None and not is_verified and not is_oauth_user:
+            return {'success': False, 'error': 'Your email is not verified. Please verify before logging in.'}
+        
+        # ── Verify password ──
+        if not verify_password(password, pw_hash):
+            # Failed login — update attempt counters
+            try:
+                from datetime import date
+                today = date.today()
+                last_failed = user.get('last_failed_attempt')
+                current_attempts = user.get('failed_attempts', 0) or 0
+                
+                # Reset counter if last failure was not today
+                if last_failed is None or (hasattr(last_failed, 'date') and last_failed.date() != today):
+                    current_attempts = 0
+                
+                current_attempts += 1
+                
+                if current_attempts >= 8:
+                    # Block the account
+                    cursor.execute(
+                        "UPDATE users SET failed_attempts = %s, last_failed_attempt = NOW(), is_blocked = TRUE WHERE id = %s",
+                        (current_attempts, user['id'])
+                    )
+                    conn.commit()
+                    return {'success': False, 'error': 'Account blocked due to multiple failed login attempts.'}
+                else:
+                    cursor.execute(
+                        "UPDATE users SET failed_attempts = %s, last_failed_attempt = NOW() WHERE id = %s",
+                        (current_attempts, user['id'])
+                    )
+                    conn.commit()
+            except Exception as fa_err:
+                import sys
+                sys.stderr.write(f"[Login] Failed attempt tracking error: {fa_err}\n")
+            
             return {'success': False, 'error': 'Invalid email/phone or password'}
         
-        # Verify password
-        if not verify_password(password, user['password_hash']):
-            return {'success': False, 'error': 'Invalid email/phone or password'}
+        # ── Password correct — reset failed attempts ──
+        try:
+            cursor.execute(
+                "UPDATE users SET failed_attempts = 0 WHERE id = %s",
+                (user['id'],)
+            )
+            conn.commit()
+        except Exception:
+            pass
         
         # Remove password hash from response
         user_data = {
@@ -776,6 +830,281 @@ def send_reset_email(email: str, token: str, user_name: str) -> bool:
     return False
 
 
+# ─── Email Verification ─────────────────────────────────────────────────
+def verify_email_token(token: str) -> Dict[str, Any]:
+    """
+    Verify a user's email via the verification token sent during signup.
+    Sets is_verified=TRUE and clears the token.
+    """
+    conn = None
+    cursor = None
+    try:
+        if not token:
+            return {'success': False, 'error': 'Verification token is required.'}
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT id, name, email, is_verified FROM users WHERE verification_token = %s",
+            (token,)
+        )
+        user = cursor.fetchone()
+
+        if not user:
+            return {'success': False, 'error': 'Invalid or expired verification link.'}
+
+        if user.get('is_verified'):
+            return {'success': True, 'message': 'Email is already verified. You can login.'}
+
+        cursor.execute(
+            "UPDATE users SET is_verified = TRUE, verification_token = NULL WHERE id = %s",
+            (user['id'],)
+        )
+        conn.commit()
+
+        sys.stderr.write(f"[VerifyEmail] ✅ Email verified for user {user['id']} ({user['email']})\n")
+        return {'success': True, 'message': 'Email verified successfully! You can now login.'}
+
+    except Exception as e:
+        sys.stderr.write(f"[VerifyEmail] ❌ Error: {e}\n")
+        return {'success': False, 'error': 'Verification failed. Please try again.'}
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+# ─── Forgot Password Email OTP ─────────────────────────────────────────
+def create_email_otp(email: str) -> Dict[str, Any]:
+    """
+    Generate a 6-digit OTP for forgot-password, store it on the user row,
+    and send it via email. OTP expires in 10 minutes.
+    """
+    conn = None
+    cursor = None
+    try:
+        if not email:
+            return {'success': False, 'error': 'Email is required.'}
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT id, name, email FROM users WHERE email = %s", (email.strip().lower(),))
+        user = cursor.fetchone()
+
+        if not user:
+            # Don't reveal whether the email exists
+            return {'success': True, 'message': 'If the email is registered, an OTP has been sent.'}
+
+        import random
+        otp = str(random.randint(100000, 999999))
+
+        cursor.execute(
+            "UPDATE users SET reset_otp = %s, otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = %s",
+            (otp, user['id'])
+        )
+        conn.commit()
+
+        # Send OTP email
+        try:
+            from services.email_service import email_service
+            if email_service.enabled:
+                success, msg = email_service.send_forgot_password_otp(user['email'], otp, user['name'])
+                if success:
+                    sys.stderr.write(f"[ForgotPW] ✅ OTP email sent to {user['email']}\n")
+                else:
+                    sys.stderr.write(f"[ForgotPW] ⚠️ Email send failed: {msg}\n")
+            else:
+                sys.stderr.write(f"[ForgotPW] ⚠️ SMTP not configured. OTP for {user['email']}: {otp}\n")
+        except Exception as mail_err:
+            sys.stderr.write(f"[ForgotPW] ⚠️ Email error: {mail_err}. OTP for {user['email']}: {otp}\n")
+
+        return {'success': True, 'message': 'If the email is registered, an OTP has been sent.'}
+
+    except Exception as e:
+        sys.stderr.write(f"[ForgotPW] ❌ Error: {e}\n")
+        return {'success': False, 'error': 'Failed to send OTP. Please try again.'}
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+def verify_reset_otp(email: str, otp: str) -> Dict[str, Any]:
+    """
+    Verify the 6-digit OTP for a forgot-password request.
+    Does NOT reset the password — just confirms OTP is correct.
+    """
+    conn = None
+    cursor = None
+    try:
+        if not email or not otp:
+            return {'success': False, 'error': 'Email and OTP are required.'}
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT id, reset_otp, otp_expiry FROM users WHERE email = %s",
+            (email.strip().lower(),)
+        )
+        user = cursor.fetchone()
+
+        if not user:
+            return {'success': False, 'error': 'Invalid email or OTP.'}
+
+        stored_otp = user.get('reset_otp')
+        otp_expiry = user.get('otp_expiry')
+
+        if not stored_otp or not otp_expiry:
+            return {'success': False, 'error': 'No OTP found. Please request a new one.'}
+
+        from datetime import datetime
+        now = datetime.now()
+        if hasattr(otp_expiry, 'timestamp'):
+            if now > otp_expiry:
+                return {'success': False, 'error': 'OTP has expired. Please request a new one.'}
+
+        if stored_otp != otp.strip():
+            return {'success': False, 'error': 'Invalid OTP. Please try again.'}
+
+        sys.stderr.write(f"[VerifyOTP] ✅ OTP verified for {email}\n")
+        return {'success': True, 'message': 'OTP verified. You can now reset your password.'}
+
+    except Exception as e:
+        sys.stderr.write(f"[VerifyOTP] ❌ Error: {e}\n")
+        return {'success': False, 'error': 'Verification failed. Please try again.'}
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+def reset_password_after_otp(email: str, otp: str, new_password: str) -> Dict[str, Any]:
+    """
+    Reset password after OTP is verified.
+    Re-verifies OTP, hashes new password, updates DB, clears OTP fields.
+    """
+    conn = None
+    cursor = None
+    try:
+        if not email or not otp or not new_password:
+            return {'success': False, 'error': 'Email, OTP, and new password are required.'}
+
+        if len(new_password) < 6:
+            return {'success': False, 'error': 'Password must be at least 6 characters.'}
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT id, reset_otp, otp_expiry FROM users WHERE email = %s",
+            (email.strip().lower(),)
+        )
+        user = cursor.fetchone()
+
+        if not user:
+            return {'success': False, 'error': 'Invalid request.'}
+
+        stored_otp = user.get('reset_otp')
+        otp_expiry = user.get('otp_expiry')
+
+        if not stored_otp or not otp_expiry:
+            return {'success': False, 'error': 'No OTP found. Please request a new one.'}
+
+        from datetime import datetime
+        now = datetime.now()
+        if hasattr(otp_expiry, 'timestamp') and now > otp_expiry:
+            return {'success': False, 'error': 'OTP has expired. Please request a new one.'}
+
+        if stored_otp != otp.strip():
+            return {'success': False, 'error': 'Invalid OTP.'}
+
+        # ✅ OTP valid — reset password
+        new_hash = hash_password(new_password)
+
+        cursor.execute(
+            "UPDATE users SET password_hash = %s, reset_otp = NULL, otp_expiry = NULL WHERE id = %s",
+            (new_hash, user['id'])
+        )
+        conn.commit()
+
+        sys.stderr.write(f"[ResetPW] ✅ Password reset for user {user['id']} ({email})\n")
+        return {'success': True, 'message': 'Password reset successful! You can now login with your new password.'}
+
+    except Exception as e:
+        sys.stderr.write(f"[ResetPW] ❌ Error: {e}\n")
+        return {'success': False, 'error': 'Password reset failed. Please try again.'}
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+def resend_verification_email(email: str) -> Dict[str, Any]:
+    """
+    Resend the verification email for a user who hasn't verified yet.
+    """
+    conn = None
+    cursor = None
+    try:
+        if not email:
+            return {'success': False, 'error': 'Email is required.'}
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT id, name, email, is_verified, verification_token FROM users WHERE email = %s",
+            (email.strip().lower(),)
+        )
+        user = cursor.fetchone()
+
+        if not user:
+            return {'success': True, 'message': 'If the email is registered, a verification email has been sent.'}
+
+        if user.get('is_verified'):
+            return {'success': False, 'error': 'Email is already verified. You can login.'}
+
+        # Generate new token if missing
+        token = user.get('verification_token')
+        if not token:
+            token = secrets.token_urlsafe(32)
+            cursor.execute(
+                "UPDATE users SET verification_token = %s WHERE id = %s",
+                (token, user['id'])
+            )
+            conn.commit()
+
+        # Send email
+        try:
+            from services.email_service import email_service
+            if email_service.enabled:
+                success, msg = email_service.send_verification_email(user['email'], token, user['name'])
+                if success:
+                    sys.stderr.write(f"[ResendVerify] ✅ Verification email resent to {user['email']}\n")
+                else:
+                    sys.stderr.write(f"[ResendVerify] ⚠️ Email failed: {msg}\n")
+        except Exception as mail_err:
+            sys.stderr.write(f"[ResendVerify] ⚠️ Email error: {mail_err}\n")
+
+        return {'success': True, 'message': 'If the email is registered, a verification email has been sent.'}
+
+    except Exception as e:
+        sys.stderr.write(f"[ResendVerify] ❌ Error: {e}\n")
+        return {'success': False, 'error': 'Failed to resend. Please try again.'}
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
 # Export functions
 __all__ = [
     'hash_password',
@@ -789,4 +1118,9 @@ __all__ = [
     'link_guest_bookings_on_login',
     'create_phone_otp',
     'verify_phone_otp_and_reset',
+    'verify_email_token',
+    'create_email_otp',
+    'verify_reset_otp',
+    'reset_password_after_otp',
+    'resend_verification_email',
 ]

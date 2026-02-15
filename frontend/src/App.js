@@ -22,6 +22,7 @@ const InstagramPromoPage = lazy(() => import('./pages/InstagramPromoPage.jsx'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx'));
 const SignupPage = lazy(() => import('./pages/SignupPage.jsx'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage.jsx'));
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage.jsx'));
 const MembershipPlansPage = lazy(() => import('./pages/MembershipPlansPage.jsx'));
 const GamesPage = lazy(() => import('./pages/GamesPage.jsx'));
 const FeedbackPage = lazy(() => import('./pages/FeedbackPage.jsx'));
@@ -138,6 +139,7 @@ function App() {
               <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
               <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
               <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute>} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
 
               {/* ========== PROTECTED ROUTES (Login required for account features) ========== */}
               <Route path="/membership" element={<MembershipPlansPage />} />

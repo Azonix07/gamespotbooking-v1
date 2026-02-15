@@ -1119,3 +1119,74 @@ def get_full_dashboard_stats():
             cursor.close()
         if conn:
             conn.close()
+
+
+# ============================================================
+# ADMIN: UNBLOCK USER
+# ============================================================
+
+@admin_bp.route('/api/admin/unblock-user', methods=['POST', 'OPTIONS'])
+def unblock_user():
+    """
+    Unblock a user account that was blocked due to too many failed login attempts.
+    Resets failed_attempts to 0 and is_blocked to FALSE.
+    
+    POST body:
+    { "user_id": 123 }
+    or
+    { "email": "user@example.com" }
+    """
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        email = data.get('email', '').strip().lower()
+        
+        if not user_id and not email:
+            return jsonify({'success': False, 'error': 'user_id or email is required'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        if user_id:
+            cursor.execute("SELECT id, name, email, is_blocked FROM users WHERE id = %s", (user_id,))
+        else:
+            cursor.execute("SELECT id, name, email, is_blocked FROM users WHERE email = %s", (email,))
+        
+        user = cursor.fetchone()
+        
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        
+        cursor.execute(
+            "UPDATE users SET is_blocked = FALSE, failed_attempts = 0 WHERE id = %s",
+            (user['id'],)
+        )
+        conn.commit()
+        
+        import sys
+        sys.stderr.write(f"[Admin] ✅ User unblocked: {user['email']} (id={user['id']})\n")
+        
+        return jsonify({
+            'success': True,
+            'message': f"User {user['name']} ({user['email']}) has been unblocked."
+        })
+    
+    except Exception as e:
+        import sys
+        sys.stderr.write(f"[Admin] ❌ Unblock user error: {e}\n")
+        return jsonify({'success': False, 'error': 'Failed to unblock user'}), 500
+    
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

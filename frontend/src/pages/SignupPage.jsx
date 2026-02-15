@@ -34,6 +34,7 @@ const SignupPage = () => {
   const [success, setSuccess] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
 
   // Redirect if already authenticated (but not right after a signup)
   useEffect(() => {
@@ -115,10 +116,16 @@ const SignupPage = () => {
       const result = await signup(formData);
       
       if (result.success) {
-        setSuccess('Account created successfully! Redirecting...');
-        setTimeout(() => {
-          navigate('/', { replace: true });
-        }, 1500);
+        if (result.needs_verification) {
+          // Email verification required — show message, don't redirect
+          setNeedsVerification(true);
+          setSuccess(result.message || 'Account created! Please check your email to verify your account before logging in.');
+        } else {
+          setSuccess('Account created successfully! Redirecting...');
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 1500);
+        }
       } else {
         setError(result.error || 'Signup failed. Please try again.');
       }
@@ -195,7 +202,21 @@ const SignupPage = () => {
               </div>
             )}
 
+            {needsVerification && (
+              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                <FiMail style={{ fontSize: '2.5rem', color: '#00e5ff', marginBottom: '0.5rem' }} />
+                <p style={{ color: '#b0b0b0', fontSize: '0.95rem', marginBottom: '1rem' }}>
+                  We sent a verification link to <strong style={{ color: '#fff' }}>{formData.email}</strong>. 
+                  Please check your inbox and click the link to verify your account.
+                </p>
+                <Link to="/login" className="btn-primary" style={{ display: 'inline-block', textDecoration: 'none', padding: '0.75rem 2rem' }}>
+                  Go to Login
+                </Link>
+              </div>
+            )}
+
             {/* Signup Form */}
+            {!needsVerification && (
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="name" className="form-label">
@@ -354,13 +375,17 @@ const SignupPage = () => {
                 )}
               </button>
             </form>
+            )}
 
             {/* Divider */}
+            {!needsVerification && (
             <div className="divider">
               <span>OR</span>
             </div>
+            )}
 
             {/* Google Signup Button */}
+            {!needsVerification && (
             <div className="social-login">
               <div className="google-btn-wrapper">
                 <GoogleLogin
@@ -376,6 +401,7 @@ const SignupPage = () => {
                 />
               </div>
             </div>
+            )}
 
             {/* Login Link */}
             <div className="signup-prompt">

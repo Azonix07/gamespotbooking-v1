@@ -26,6 +26,8 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [showResendVerification, setShowResendVerification] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   // Redirect if already authenticated (but not right after login)
   useEffect(() => {
@@ -65,13 +67,38 @@ const LoginPage = () => {
           }
         }, 150);
       } else {
-        setError(result.error || 'Login failed. Please check your credentials.');
+        const errMsg = result.error || 'Login failed. Please check your credentials.';
+        setError(errMsg);
+        // Show resend verification button if account is not verified
+        setShowResendVerification(errMsg.toLowerCase().includes('not verified'));
       }
     } catch (err) {
       setError('Login failed. Please try again.');
       console.error('Login error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    const emailValue = identifier.trim();
+    if (!emailValue || !emailValue.includes('@')) {
+      setError('Please enter your email address to resend verification.');
+      return;
+    }
+    try {
+      setResendLoading(true);
+      setError(null);
+      const data = await apiFetch('/api/auth/resend-verification', {
+        method: 'POST',
+        body: JSON.stringify({ email: emailValue })
+      });
+      setSuccess(data.message || 'Verification email sent! Please check your inbox.');
+      setShowResendVerification(false);
+    } catch (err) {
+      setError(err.message || 'Failed to resend verification email.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -133,6 +160,33 @@ const LoginPage = () => {
                 <FiAlertCircle className="alert-icon" />
                 <span>{error}</span>
               </div>
+            )}
+
+            {showResendVerification && (
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendLoading}
+                style={{
+                  width: '100%',
+                  padding: '0.65rem',
+                  marginBottom: '1rem',
+                  background: 'transparent',
+                  border: '1.5px solid #00e5ff',
+                  borderRadius: '10px',
+                  color: '#00e5ff',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  cursor: resendLoading ? 'default' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.4rem'
+                }}
+              >
+                <FiMail size={15} />
+                {resendLoading ? 'Sending...' : 'Resend Verification Email'}
+              </button>
             )}
 
             {success && (

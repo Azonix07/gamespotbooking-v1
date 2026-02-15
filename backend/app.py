@@ -412,6 +412,14 @@ def create_missing_tables():
             "ALTER TABLE users ADD COLUMN oauth_provider VARCHAR(50) NULL",
             "ALTER TABLE users ADD COLUMN oauth_provider_id VARCHAR(255) NULL",
             "ALTER TABLE users ADD COLUMN gamespot_points INT DEFAULT 0",
+            # ── Email verification & login security columns ──
+            "ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE users ADD COLUMN verification_token VARCHAR(255) NULL",
+            "ALTER TABLE users ADD COLUMN failed_attempts INT DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN last_failed_attempt DATETIME NULL",
+            "ALTER TABLE users ADD COLUMN is_blocked BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE users ADD COLUMN reset_otp VARCHAR(6) NULL",
+            "ALTER TABLE users ADD COLUMN otp_expiry DATETIME NULL",
         ]
         for sql in user_alter_statements:
             try:
@@ -420,6 +428,16 @@ def create_missing_tables():
                 print(f"✅ Added missing user column: {sql}")
             except Exception:
                 pass  # Column already exists, skip silently
+        
+        # Auto-verify all existing users (they registered before email verification was added)
+        try:
+            cursor.execute("UPDATE users SET is_verified = TRUE WHERE is_verified = FALSE AND created_at < '2026-02-15'")
+            affected = cursor.rowcount
+            conn.commit()
+            if affected > 0:
+                print(f"✅ Auto-verified {affected} existing users (pre-email-verification)")
+        except Exception:
+            pass
         
         # Migrate memberships status ENUM to support pending/rejected flows
         try:
