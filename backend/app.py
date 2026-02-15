@@ -570,6 +570,7 @@ def smtp_status():
         masked_email = smtp_email[:3] + '***' + smtp_email[smtp_email.index('@'):] if smtp_email and '@' in smtp_email else '(not set)'
         has_password = bool(email_service.smtp_password)
         has_resend = bool(email_service.resend_api_key)
+        has_brevo = bool(email_service.brevo_api_key)
         
         status = {
             'enabled': email_service.enabled,
@@ -579,10 +580,32 @@ def smtp_status():
             'smtp_email': masked_email,
             'smtp_password_set': has_password,
             'resend_api_key_set': has_resend,
+            'brevo_api_key_set': has_brevo,
         }
         
         # Test the connection based on send method
-        if email_service.send_method == 'resend':
+        if email_service.send_method == 'brevo':
+            try:
+                import requests as _req
+                # Brevo: test by fetching account info (doesn't send an email)
+                resp = _req.get(
+                    'https://api.brevo.com/v3/account',
+                    headers={'api-key': email_service.brevo_api_key, 'Accept': 'application/json'},
+                    timeout=15
+                )
+                if resp.status_code == 200:
+                    acct = resp.json()
+                    plan = acct.get('plan', [{}])
+                    plan_type = plan[0].get('type', '?') if isinstance(plan, list) and plan else '?'
+                    credits_left = plan[0].get('credits', '?') if isinstance(plan, list) and plan else '?'
+                    status['connection_test'] = f'SUCCESS — Brevo account OK (plan: {plan_type}, credits: {credits_left})'
+                    status['sender_email'] = masked_email
+                    status['note'] = 'Make sure your sender email is verified in Brevo dashboard → Senders & IPs'
+                else:
+                    status['connection_test'] = f'FAILED — Brevo {resp.status_code}: {resp.text}'
+            except Exception as e:
+                status['connection_test'] = f'FAILED — {str(e)}'
+        elif email_service.send_method == 'resend':
             try:
                 import requests as _req
                 resp = _req.post(
@@ -598,6 +621,7 @@ def smtp_status():
                 )
                 if resp.status_code == 200:
                     status['connection_test'] = f'SUCCESS — Test email sent (id: {resp.json().get("id", "?")})'
+                    status['warning'] = 'NOTE: onboarding@resend.dev can ONLY send to your own Resend account email. To send to real users, verify a custom domain at resend.com/domains'
                 else:
                     status['connection_test'] = f'FAILED — Resend {resp.status_code}: {resp.text}'
             except Exception as e:
@@ -609,10 +633,9 @@ def smtp_status():
                 status['connection_test'] = 'SUCCESS — SMTP login OK'
             except Exception as conn_err:
                 status['connection_test'] = f'FAILED — {str(conn_err)}'
-                # Show which ports were attempted
                 status['note'] = 'Auto-fallback tries both port 587 (STARTTLS) and 465 (SSL)'
         else:
-            status['connection_test'] = 'SKIPPED — SMTP not configured'
+            status['connection_test'] = 'SKIPPED — Email not configured'
         
         return jsonify(status), 200
     except Exception as e:

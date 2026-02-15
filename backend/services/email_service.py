@@ -1,18 +1,24 @@
 """
 Email Service for GameSpot
-Sends emails via SMTP or Resend HTTP API (for hosts that block SMTP ports).
+Sends emails via Brevo, Resend, or SMTP HTTP APIs (for hosts that block SMTP ports).
 
-Option A — SMTP (Gmail, Outlook, etc.):
+Option A — Brevo / Sendinblue (RECOMMENDED — easiest setup):
+  BREVO_API_KEY  - API key from https://brevo.com (free: 300 emails/day)
+  SMTP_EMAIL     - Sender email (just verify this address in Brevo — NO domain needed)
+
+Option B — Resend HTTP API:
+  RESEND_API_KEY - API key from https://resend.com (free: 100 emails/day)
+  NOTE: Requires a VERIFIED DOMAIN. The test sender onboarding@resend.dev can
+        only send emails to YOUR OWN Resend account email — not to real users.
+
+Option C — SMTP (Gmail, Outlook, etc.):
   SMTP_HOST      - SMTP server (default: smtp.gmail.com)
   SMTP_PORT      - SMTP port (default: 587 for TLS, 465 for SSL)
   SMTP_EMAIL     - Sender email address
   SMTP_PASSWORD  - App password (NOT your regular password)
+  NOTE: Railway blocks SMTP ports 587/465 — use Brevo or Resend instead.
 
-Option B — Resend HTTP API (works on Railway, Vercel, etc.):
-  RESEND_API_KEY - API key from https://resend.com (free: 100 emails/day)
-  SMTP_EMAIL     - Sender email (must be verified in Resend, or use onboarding@resend.dev)
-
-Priority: Resend (if RESEND_API_KEY set) → SMTP → disabled
+Priority: Brevo → Resend → SMTP → disabled
 
 FRONTEND_URL   - Frontend URL for email links
 """
@@ -40,16 +46,21 @@ class EmailService:
         self.smtp_email = os.getenv('SMTP_EMAIL', '')
         self.smtp_password = os.getenv('SMTP_PASSWORD', '')
         self.resend_api_key = os.getenv('RESEND_API_KEY', '')
+        self.brevo_api_key = os.getenv('BREVO_API_KEY', '')
         self.frontend_url = os.getenv(
             'FRONTEND_URL',
             'https://gamespotweb-production.up.railway.app'
         )
 
-        # Determine sending method: Resend API > SMTP > disabled
-        if self.resend_api_key:
+        # Determine sending method: Brevo > Resend > SMTP > disabled
+        if self.brevo_api_key and self.smtp_email:
+            self.enabled = True
+            self.send_method = 'brevo'
+            sys.stderr.write(f"[Email] ✅ Brevo API configured (from: {self.smtp_email})\n")
+        elif self.resend_api_key:
             self.enabled = True
             self.send_method = 'resend'
-            from_email = self.smtp_email or 'onboarding@resend.dev'
+            from_email = os.getenv('RESEND_FROM_EMAIL', 'onboarding@resend.dev')
             sys.stderr.write(f"[Email] ✅ Resend API configured (from: {from_email})\n")
         elif self.smtp_email and self.smtp_password:
             self.enabled = True
@@ -58,7 +69,7 @@ class EmailService:
         else:
             self.enabled = False
             self.send_method = None
-            sys.stderr.write("[Email] ⚠️ Email not configured (set RESEND_API_KEY or SMTP_EMAIL + SMTP_PASSWORD)\n")
+            sys.stderr.write("[Email] ⚠️ Email not configured (set BREVO_API_KEY + SMTP_EMAIL, or RESEND_API_KEY, or SMTP_EMAIL + SMTP_PASSWORD)\n")
 
     def _get_smtp_connection(self):
         """
@@ -94,6 +105,53 @@ class EmailService:
                 sys.stderr.write(f"[Email] ⚠️ Port {port} failed: {e}\n")
                 continue
         raise last_error
+
+    def _send_via_brevo(self, to_email, subject, html_body):
+        """Send email using Brevo (Sendinblue) HTTP API.
+        
+        Brevo advantages over Resend:
+        - Can send from ANY verified email address (e.g. your Gmail)
+        - No custom domain required — just verify the sender email in Brevo dashboard
+        - Free tier: 300 emails/day
+        - Works on Railway (uses HTTPS, not SMTP)
+        """
+        import requests as _requests
+
+        from_email = self.smtp_email  # Must be verified in Brevo dashboard
+        from_name = 'GameSpot'
+
+        try:
+            resp = _requests.post(
+                'https://api.brevo.com/v3/smtp/email',
+                headers={
+                    'api-key': self.brevo_api_key,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                json={
+                    'sender': {'name': from_name, 'email': from_email},
+                    'to': [{'email': to_email}],
+                    'subject': subject,
+                    'htmlContent': html_body
+                },
+                timeout=15
+            )
+
+            if resp.status_code in (200, 201):
+                result = resp.json()
+                msg_id = result.get('messageId', '?')
+                sys.stderr.write(f"[Email] ✅ Brevo sent to {to_email}: {subject} (id: {msg_id})\n")
+                return True, 'Email sent via Brevo'
+            else:
+                sys.stderr.write(f"[Email] ❌ Brevo API error {resp.status_code}: {resp.text}\n")
+                return False, f'Brevo API error {resp.status_code}: {resp.text}'
+
+        except _requests.exceptions.Timeout:
+            sys.stderr.write(f"[Email] ❌ Brevo request timed out\n")
+            return False, 'Brevo request timed out'
+        except Exception as e:
+            sys.stderr.write(f"[Email] ❌ Brevo request failed: {e}\n")
+            return False, f'Brevo request failed: {str(e)}'
 
     def _send_via_resend(self, to_email, subject, html_body):
         """Send email using Resend HTTP API (works even when SMTP ports are blocked)."""
@@ -148,7 +206,11 @@ class EmailService:
             sys.stderr.write("[Email] ❌ Cannot send — email not configured\n")
             return False, 'Email service not configured'
 
-        # Route to Resend API if configured (preferred — works on Railway)
+        # Route to Brevo API if configured (preferred — works on Railway, no domain needed)
+        if self.send_method == 'brevo':
+            return self._send_via_brevo(to_email, subject, html_body)
+
+        # Route to Resend API if configured (requires verified domain)
         if self.send_method == 'resend':
             return self._send_via_resend(to_email, subject, html_body)
 
