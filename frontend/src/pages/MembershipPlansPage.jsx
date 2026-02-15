@@ -253,10 +253,13 @@ const MembershipPlansPage = () => {
                 )}
                 <div
                   className={`pass-card ${isFlipped ? 'flipped' : ''} tier-${plan.tier}`}
-                  onClick={() => toggleFlip(plan.type)}
                 >
                   {/* ─── FRONT FACE ─── */}
-                  <div className="pass-card-face pass-card-front" style={{ background: plan.gradient, color: plan.font_color || '#ffffff' }}>
+                  <div
+                    className="pass-card-face pass-card-front"
+                    style={{ background: plan.gradient, color: plan.font_color || '#ffffff' }}
+                    onClick={() => toggleFlip(plan.type)}
+                  >
                     {/* Card Content */}
                     <div className="card-front-content">
                       <div className="card-tier-badge" style={plan.tier === 'premium' ? { color: '#d4a017', background: 'rgba(212, 160, 23, 0.15)', border: '1px solid rgba(212, 160, 23, 0.3)' } : plan.tier === 'standard' ? { color: '#1a1a2e', background: 'rgba(0,0,0,0.12)' } : {}}>{tierLabel}</div>
@@ -296,8 +299,6 @@ const MembershipPlansPage = () => {
                           style={
                             btnState.className === 'primary'
                               ? { background: plan.gradient }
-                              : btnState.className === 'upgrade'
-                              ? {}
                               : {}
                           }
                           onClick={(e) => {
@@ -305,7 +306,7 @@ const MembershipPlansPage = () => {
                             e.preventDefault();
                             if (btnState.action) btnState.action();
                           }}
-                          onTouchEnd={(e) => {
+                          onPointerDown={(e) => {
                             e.stopPropagation();
                           }}
                           disabled={btnState.disabled || subscribing === plan.type}
@@ -330,7 +331,7 @@ const MembershipPlansPage = () => {
                       </ul>
                     </div>
 
-                    <div className="card-back-bottom">
+                    <div className="card-back-bottom" onClick={() => toggleFlip(plan.type)}>
                       <div className="back-hint">
                         <span>TAP TO FLIP BACK</span>
                       </div>

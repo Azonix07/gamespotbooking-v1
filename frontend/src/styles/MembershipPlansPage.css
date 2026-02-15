@@ -292,7 +292,6 @@
   width: 100%;
   min-height: 240px;
   position: relative;
-  cursor: pointer;
   transform-style: preserve-3d;
   transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -335,6 +334,7 @@
   color: white;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
 }
 
 .pass-card-front::before {
@@ -541,10 +541,19 @@
   flex-shrink: 0;
 }
 
-/* Back card bottom section (hint only) */
+/* Back card bottom section — flip-back trigger */
 .card-back-bottom {
   padding: 0.5rem 1.4rem 0.7rem;
   text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-top: 1px solid #f0f0f0;
+}
+.card-back-bottom:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+.card-back-bottom:active {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 /* Action Button */
