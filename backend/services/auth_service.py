@@ -1014,8 +1014,9 @@ def verify_reset_otp(email: str, otp: str) -> Dict[str, Any]:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
+        # Let MySQL compare times (avoids Python↔MySQL timezone mismatch)
         cursor.execute(
-            "SELECT id, reset_otp, otp_expiry FROM users WHERE email = %s",
+            "SELECT id, reset_otp, otp_expiry, NOW() as db_now, (otp_expiry > NOW()) as otp_valid FROM users WHERE email = %s",
             (email.strip().lower(),)
         )
         user = cursor.fetchone()
@@ -1029,11 +1030,12 @@ def verify_reset_otp(email: str, otp: str) -> Dict[str, Any]:
         if not stored_otp or not otp_expiry:
             return {'success': False, 'error': 'No OTP found. Please request a new one.'}
 
-        from datetime import datetime
-        now = datetime.now()
-        if hasattr(otp_expiry, 'timestamp'):
-            if now > otp_expiry:
-                return {'success': False, 'error': 'OTP has expired. Please request a new one.'}
+        # Use MySQL's own time comparison (otp_valid = 1 means not expired)
+        otp_valid = user.get('otp_valid', 0)
+        sys.stderr.write(f"[VerifyOTP] email={email}, db_now={user.get('db_now')}, otp_expiry={otp_expiry}, otp_valid={otp_valid}\n")
+
+        if not otp_valid:
+            return {'success': False, 'error': 'OTP has expired. Please request a new one.'}
 
         if stored_otp != otp.strip():
             return {'success': False, 'error': 'Invalid OTP. Please try again.'}
@@ -1068,8 +1070,9 @@ def reset_password_after_otp(email: str, otp: str, new_password: str) -> Dict[st
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
+        # Let MySQL compare times (avoids Python↔MySQL timezone mismatch)
         cursor.execute(
-            "SELECT id, reset_otp, otp_expiry FROM users WHERE email = %s",
+            "SELECT id, reset_otp, otp_expiry, (otp_expiry > NOW()) as otp_valid FROM users WHERE email = %s",
             (email.strip().lower(),)
         )
         user = cursor.fetchone()
@@ -1083,9 +1086,10 @@ def reset_password_after_otp(email: str, otp: str, new_password: str) -> Dict[st
         if not stored_otp or not otp_expiry:
             return {'success': False, 'error': 'No OTP found. Please request a new one.'}
 
-        from datetime import datetime
-        now = datetime.now()
-        if hasattr(otp_expiry, 'timestamp') and now > otp_expiry:
+        otp_valid = user.get('otp_valid', 0)
+        sys.stderr.write(f"[ResetPW] email={email}, otp_expiry={otp_expiry}, otp_valid={otp_valid}\n")
+
+        if not otp_valid:
             return {'success': False, 'error': 'OTP has expired. Please request a new one.'}
 
         if stored_otp != otp.strip():
