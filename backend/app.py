@@ -569,17 +569,32 @@ def smtp_status():
         smtp_email = email_service.smtp_email
         masked_email = smtp_email[:3] + '***' + smtp_email[smtp_email.index('@'):] if smtp_email and '@' in smtp_email else '(not set)'
         has_password = bool(email_service.smtp_password)
+        has_resend = bool(email_service.resend_api_key)
         
         status = {
             'enabled': email_service.enabled,
+            'send_method': email_service.send_method,
             'smtp_host': email_service.smtp_host,
             'smtp_port': email_service.smtp_port,
             'smtp_email': masked_email,
             'smtp_password_set': has_password,
+            'resend_api_key_set': has_resend,
         }
         
-        # Try a real SMTP connection test if enabled
-        if email_service.enabled:
+        # Test the connection based on send method
+        if email_service.send_method == 'resend':
+            try:
+                from urllib.request import Request, urlopen
+                req = Request(
+                    'https://api.resend.com/domains',
+                    headers={'Authorization': f'Bearer {email_service.resend_api_key}'},
+                    method='GET'
+                )
+                resp = urlopen(req, timeout=10)
+                status['connection_test'] = 'SUCCESS — Resend API key is valid'
+            except Exception as e:
+                status['connection_test'] = f'FAILED — {str(e)}'
+        elif email_service.enabled:
             try:
                 server = email_service._get_smtp_connection()
                 server.quit()

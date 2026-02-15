@@ -1,25 +1,30 @@
 """
 Email Service for GameSpot
-Sends emails via SMTP (Gmail, Outlook, or any SMTP provider)
+Sends emails via SMTP or Resend HTTP API (for hosts that block SMTP ports).
 
-Required environment variables:
+Option A — SMTP (Gmail, Outlook, etc.):
   SMTP_HOST      - SMTP server (default: smtp.gmail.com)
   SMTP_PORT      - SMTP port (default: 587 for TLS, 465 for SSL)
   SMTP_EMAIL     - Sender email address
   SMTP_PASSWORD  - App password (NOT your regular password)
-  FRONTEND_URL   - Frontend URL for links
 
-For Gmail:
-  1. Go to https://myaccount.google.com/apppasswords
-  2. Generate an App Password for "Mail"
-  3. Set SMTP_EMAIL=youremail@gmail.com and SMTP_PASSWORD=<16-char-app-password>
+Option B — Resend HTTP API (works on Railway, Vercel, etc.):
+  RESEND_API_KEY - API key from https://resend.com (free: 100 emails/day)
+  SMTP_EMAIL     - Sender email (must be verified in Resend, or use onboarding@resend.dev)
+
+Priority: Resend (if RESEND_API_KEY set) → SMTP → disabled
+
+FRONTEND_URL   - Frontend URL for email links
 """
 
 import os
 import sys
 import smtplib
+import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from urllib.request import Request, urlopen
+from urllib.error import URLError, HTTPError
 
 
 # Connection timeout to prevent request hanging if SMTP is unreachable
@@ -31,22 +36,31 @@ class EmailService:
         self._load_config()
 
     def _load_config(self):
-        """Load/reload SMTP config from environment variables."""
+        """Load/reload SMTP and Resend config from environment variables."""
         self.smtp_host = os.getenv('SMTP_HOST', 'smtp.gmail.com')
         self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
         self.smtp_email = os.getenv('SMTP_EMAIL', '')
         self.smtp_password = os.getenv('SMTP_PASSWORD', '')
+        self.resend_api_key = os.getenv('RESEND_API_KEY', '')
         self.frontend_url = os.getenv(
             'FRONTEND_URL',
             'https://gamespotweb-production.up.railway.app'
         )
 
-        if self.smtp_email and self.smtp_password:
+        # Determine sending method: Resend API > SMTP > disabled
+        if self.resend_api_key:
             self.enabled = True
+            self.send_method = 'resend'
+            from_email = self.smtp_email or 'onboarding@resend.dev'
+            sys.stderr.write(f"[Email] ✅ Resend API configured (from: {from_email})\n")
+        elif self.smtp_email and self.smtp_password:
+            self.enabled = True
+            self.send_method = 'smtp'
             sys.stderr.write(f"[Email] ✅ SMTP configured: {self.smtp_host}:{self.smtp_port} from {self.smtp_email}\n")
         else:
             self.enabled = False
-            sys.stderr.write("[Email] ⚠️ SMTP not configured (set SMTP_EMAIL + SMTP_PASSWORD env vars)\n")
+            self.send_method = None
+            sys.stderr.write("[Email] ⚠️ Email not configured (set RESEND_API_KEY or SMTP_EMAIL + SMTP_PASSWORD)\n")
 
     def _get_smtp_connection(self):
         """
@@ -83,9 +97,43 @@ class EmailService:
                 continue
         raise last_error
 
+    def _send_via_resend(self, to_email, subject, html_body):
+        """Send email using Resend HTTP API (works even when SMTP ports are blocked)."""
+        from_email = self.smtp_email or 'onboarding@resend.dev'
+
+        payload = json.dumps({
+            'from': f'GameSpot <{from_email}>',
+            'to': [to_email],
+            'subject': subject,
+            'html': html_body
+        }).encode('utf-8')
+
+        req = Request(
+            'https://api.resend.com/emails',
+            data=payload,
+            headers={
+                'Authorization': f'Bearer {self.resend_api_key}',
+                'Content-Type': 'application/json'
+            },
+            method='POST'
+        )
+
+        try:
+            resp = urlopen(req, timeout=15)
+            result = json.loads(resp.read().decode('utf-8'))
+            sys.stderr.write(f"[Email] ✅ Resend sent to {to_email}: {subject} (id: {result.get('id', '?')})\n")
+            return True, 'Email sent via Resend'
+        except HTTPError as e:
+            body = e.read().decode('utf-8', errors='replace')
+            sys.stderr.write(f"[Email] ❌ Resend API error {e.code}: {body}\n")
+            return False, f'Resend API error: {body}'
+        except (URLError, TimeoutError) as e:
+            sys.stderr.write(f"[Email] ❌ Resend request failed: {e}\n")
+            return False, f'Resend request failed: {str(e)}'
+
     def send_email(self, to_email, subject, html_body, text_body=None):
         """
-        Send an email via SMTP.
+        Send an email via Resend API or SMTP (auto-detected from config).
         Returns: tuple (success: bool, message: str)
         """
         # Re-check env vars if not enabled (in case vars were added after boot)
@@ -93,9 +141,14 @@ class EmailService:
             self._load_config()
 
         if not self.enabled:
-            sys.stderr.write("[Email] ❌ Cannot send — SMTP not configured\n")
+            sys.stderr.write("[Email] ❌ Cannot send — email not configured\n")
             return False, 'Email service not configured'
 
+        # Route to Resend API if configured (preferred — works on Railway)
+        if self.send_method == 'resend':
+            return self._send_via_resend(to_email, subject, html_body)
+
+        # Otherwise use SMTP
         try:
             msg = MIMEMultipart('alternative')
             msg['From'] = f'GameSpot <{self.smtp_email}>'
