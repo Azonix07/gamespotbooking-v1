@@ -193,7 +193,8 @@ class EmailService:
 
     def send_email(self, to_email, subject, html_body, text_body=None):
         """
-        Send an email via Resend API or SMTP (auto-detected from config).
+        Send an email via Resend API, Brevo, or SMTP (auto-detected from config).
+        Auto-fallback: if the primary method fails, tries the next available one.
         Returns: tuple (success: bool, message: str)
         """
         # Re-check env vars if not enabled (in case vars were added after boot)
@@ -204,43 +205,50 @@ class EmailService:
             sys.stderr.write("[Email] ❌ Cannot send — email not configured\n")
             return False, 'Email service not configured'
 
-        # Route to Resend API if configured (preferred — verified domain gamespotkdlr.com)
-        if self.send_method == 'resend':
-            return self._send_via_resend(to_email, subject, html_body)
+        last_error = None
 
-        # Route to Brevo API if configured (fallback — no domain needed)
-        if self.send_method == 'brevo':
-            return self._send_via_brevo(to_email, subject, html_body)
+        # Try Resend API first (if configured)
+        if self.resend_api_key:
+            success, msg = self._send_via_resend(to_email, subject, html_body)
+            if success:
+                return True, msg
+            last_error = msg
+            sys.stderr.write(f"[Email] ⚠️ Resend failed, trying fallback...\n")
 
-        # Otherwise use SMTP
-        try:
-            msg = MIMEMultipart('alternative')
-            msg['From'] = f'GameSpot <{self.smtp_email}>'
-            msg['To'] = to_email
-            msg['Subject'] = subject
+        # Try Brevo API (if configured)
+        if self.brevo_api_key and self.smtp_email:
+            success, msg = self._send_via_brevo(to_email, subject, html_body)
+            if success:
+                return True, msg
+            last_error = msg
+            sys.stderr.write(f"[Email] ⚠️ Brevo failed, trying fallback...\n")
 
-            if text_body:
-                msg.attach(MIMEText(text_body, 'plain'))
-            msg.attach(MIMEText(html_body, 'html'))
+        # Try SMTP (if configured)
+        if self.smtp_email and self.smtp_password:
+            try:
+                msg_obj = MIMEMultipart('alternative')
+                msg_obj['From'] = f'GameSpot <{self.smtp_email}>'
+                msg_obj['To'] = to_email
+                msg_obj['Subject'] = subject
 
-            with self._get_smtp_connection() as server:
-                server.sendmail(self.smtp_email, to_email, msg.as_string())
+                if text_body:
+                    msg_obj.attach(MIMEText(text_body, 'plain'))
+                msg_obj.attach(MIMEText(html_body, 'html'))
 
-            sys.stderr.write(f"[Email] ✅ Sent to {to_email}: {subject}\n")
-            return True, 'Email sent successfully'
+                with self._get_smtp_connection() as server:
+                    server.sendmail(self.smtp_email, to_email, msg_obj.as_string())
 
-        except smtplib.SMTPAuthenticationError as e:
-            sys.stderr.write(f"[Email] ❌ SMTP auth failed: {e}\n")
-            return False, 'SMTP authentication failed — check SMTP_EMAIL and SMTP_PASSWORD'
-        except smtplib.SMTPConnectError as e:
-            sys.stderr.write(f"[Email] ❌ SMTP connect failed: {e}\n")
-            return False, 'Cannot connect to SMTP server'
-        except TimeoutError:
-            sys.stderr.write(f"[Email] ❌ SMTP timeout after {SMTP_TIMEOUT_SECONDS}s\n")
-            return False, 'SMTP connection timed out'
-        except Exception as e:
-            sys.stderr.write(f"[Email] ❌ Send failed: {e}\n")
-            return False, f'Email send failed: {str(e)}'
+                sys.stderr.write(f"[Email] ✅ Sent via SMTP to {to_email}: {subject}\n")
+                return True, 'Email sent via SMTP'
+
+            except Exception as smtp_err:
+                last_error = str(smtp_err)
+                sys.stderr.write(f"[Email] ⚠️ SMTP also failed: {smtp_err}\n")
+
+        # All methods failed
+        error_msg = last_error or 'No email provider available'
+        sys.stderr.write(f"[Email] ❌ All send methods failed for {to_email}: {error_msg}\n")
+        return False, error_msg
 
     def send_password_reset(self, to_email, token, user_name):
         """
