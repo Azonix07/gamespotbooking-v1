@@ -72,7 +72,13 @@ const ForgotPasswordPage = () => {
         setError(data.error || 'Failed to send OTP. Please try again.');
       }
     } catch (err) {
-      setError(err.message || 'Failed to send OTP. Please try again.');
+      const errMsg = err.message || 'Failed to send OTP. Please try again.';
+      // Show a more helpful message for email delivery failures
+      if (errMsg.toLowerCase().includes('email') && (errMsg.toLowerCase().includes('delivery') || errMsg.toLowerCase().includes('unavailable') || errMsg.toLowerCase().includes('failed'))) {
+        setError('Email service is currently down. Please contact the shop directly to reset your password, or try again later.');
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setLoading(false);
     }

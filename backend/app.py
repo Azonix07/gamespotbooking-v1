@@ -611,6 +611,7 @@ def smtp_status():
             try:
                 import requests as _req
                 from_email = os.getenv('RESEND_FROM_EMAIL', 'noreply@gamespotkdlr.com')
+                # Test with both custom domain and onboarding sender
                 resp = _req.post(
                     'https://api.resend.com/emails',
                     headers={'Authorization': f'Bearer {email_service.resend_api_key}'},
@@ -627,6 +628,35 @@ def smtp_status():
                     status['sender_domain'] = from_email.split('@')[1] if '@' in from_email else '?'
                 else:
                     status['connection_test'] = f'FAILED — Resend {resp.status_code}: {resp.text}'
+                    # Also test with onboarding@resend.dev
+                    resp2 = _req.post(
+                        'https://api.resend.com/emails',
+                        headers={'Authorization': f'Bearer {email_service.resend_api_key}'},
+                        json={
+                            'from': 'GameSpot <onboarding@resend.dev>',
+                            'to': ['delivered@resend.dev'],
+                            'subject': 'GameSpot Email Test (fallback)',
+                            'html': '<p>Test email from GameSpot diagnostic (fallback sender).</p>'
+                        },
+                        timeout=15
+                    )
+                    if resp2.status_code == 200:
+                        status['fallback_test'] = f'SUCCESS — onboarding@resend.dev works (but only to Resend account owner email)'
+                    else:
+                        status['fallback_test'] = f'FAILED — onboarding@resend.dev also failed: {resp2.status_code}'
+                    
+                    # Add fix instructions
+                    status['how_to_fix'] = [
+                        '1. FASTEST: Set up Brevo (free, no domain needed):',
+                        '   a. Go to https://brevo.com and create free account',
+                        '   b. Get API key from Settings > SMTP & API > API Keys',
+                        '   c. Set BREVO_API_KEY on Railway backend env vars',
+                        '   d. Verify your sender email in Brevo: Senders & IPs',
+                        '2. OR: Verify gamespotkdlr.com domain in Resend:',
+                        '   a. Go to https://resend.com/domains',
+                        '   b. Add DNS records (SPF + DKIM) to your domain registrar',
+                        '   c. Wait for DNS propagation (can take up to 48 hours)',
+                    ]
             except Exception as e:
                 status['connection_test'] = f'FAILED — {str(e)}'
         elif email_service.enabled:
