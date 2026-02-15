@@ -316,6 +316,31 @@
   overflow: hidden;
 }
 
+/*
+ * CRITICAL FIX: When the card is NOT flipped, the back face is hidden
+ * but still sits in the DOM at the same position as the front face.
+ * It can steal clicks from the front face. Disable its pointer events.
+ *
+ * When the card IS flipped, the front face is hidden but still covers
+ * the back face and steals clicks from the button. Disable its pointer events.
+ */
+
+/* When NOT flipped: front receives clicks, back does not */
+.pass-card:not(.flipped) .pass-card-front {
+  pointer-events: auto;
+}
+.pass-card:not(.flipped) .pass-card-back {
+  pointer-events: none;
+}
+
+/* When FLIPPED: back receives clicks (button!), front does not */
+.pass-card.flipped .pass-card-front {
+  pointer-events: none;
+}
+.pass-card.flipped .pass-card-back {
+  pointer-events: auto;
+}
+
 /* Back face needs to define its own height */
 .pass-card-back {
   position: absolute;
