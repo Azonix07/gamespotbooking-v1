@@ -52,16 +52,36 @@ class EmailService:
         """
         Create SMTP connection with correct TLS/SSL handling.
         Port 465 = implicit SSL (SMTP_SSL), Port 587 = STARTTLS, others = try STARTTLS.
+        Auto-fallback: if configured port fails, try the other port (587↔465).
         """
-        if self.smtp_port == 465:
-            server = smtplib.SMTP_SSL(self.smtp_host, self.smtp_port, timeout=SMTP_TIMEOUT_SECONDS)
+        ports_to_try = [self.smtp_port]
+        # Add fallback port
+        if self.smtp_port == 587:
+            ports_to_try.append(465)
+        elif self.smtp_port == 465:
+            ports_to_try.append(587)
         else:
-            server = smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=SMTP_TIMEOUT_SECONDS)
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-        server.login(self.smtp_email, self.smtp_password)
-        return server
+            ports_to_try.extend([465, 587])
+
+        last_error = None
+        for port in ports_to_try:
+            try:
+                if port == 465:
+                    server = smtplib.SMTP_SSL(self.smtp_host, port, timeout=SMTP_TIMEOUT_SECONDS)
+                else:
+                    server = smtplib.SMTP(self.smtp_host, port, timeout=SMTP_TIMEOUT_SECONDS)
+                    server.ehlo()
+                    server.starttls()
+                    server.ehlo()
+                server.login(self.smtp_email, self.smtp_password)
+                if port != self.smtp_port:
+                    sys.stderr.write(f"[Email] ℹ️ Port {self.smtp_port} failed, using fallback port {port}\n")
+                return server
+            except (OSError, smtplib.SMTPConnectError, TimeoutError) as e:
+                last_error = e
+                sys.stderr.write(f"[Email] ⚠️ Port {port} failed: {e}\n")
+                continue
+        raise last_error
 
     def send_email(self, to_email, subject, html_body, text_body=None):
         """

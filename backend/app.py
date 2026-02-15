@@ -586,6 +586,8 @@ def smtp_status():
                 status['connection_test'] = 'SUCCESS — SMTP login OK'
             except Exception as conn_err:
                 status['connection_test'] = f'FAILED — {str(conn_err)}'
+                # Show which ports were attempted
+                status['note'] = 'Auto-fallback tries both port 587 (STARTTLS) and 465 (SSL)'
         else:
             status['connection_test'] = 'SKIPPED — SMTP not configured'
         
