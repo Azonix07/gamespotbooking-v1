@@ -141,17 +141,40 @@ def calculate_pricing():
         booking_hours = duration_minutes / 60.0
 
         # Apply story membership to PS5 bookings
+        # IMPORTANT: Membership pass covers ONLY the pass holder (1 player).
+        # Exception: god_mode allows bringing 1 friend free (covers 2 players).
+        # Extra players beyond the covered count are charged at normal rates.
         if story_membership and ps5_price > 0:
             total_h = float(story_membership['total_hours'])
             used_h = float(story_membership['hours_used'])
             remaining_h = max(0, total_h - used_h)
             rate = story_membership['_plan_info'].get('rate', 0)
+            plan_type = story_membership['plan_type']
+
+            # god_mode covers 2 players (pass holder + 1 friend), others cover 1
+            covered_players = 2 if plan_type == 'god_mode' else 1
 
             if remaining_h >= booking_hours:
-                # Full membership rate for each PS5 unit
+                # Calculate membership price per PS5 unit considering player count
                 membership_ps5_final = 0
                 for ps5 in (ps5_bookings if isinstance(ps5_bookings, list) else []):
-                    membership_ps5_final += calculate_membership_price(duration_minutes, rate)
+                    player_count = ps5.get('player_count', 1)
+                    # Membership rate applies to covered players
+                    members_covered = min(player_count, covered_players)
+                    extra_players = max(0, player_count - covered_players)
+
+                    # Covered players at membership rate
+                    member_price = calculate_membership_price(duration_minutes, rate)
+                    # Extra players at normal rate (calculate normal price for extras)
+                    if extra_players > 0:
+                        normal_full = calculate_ps5_price(player_count, duration_minutes)
+                        normal_covered_only = calculate_ps5_price(members_covered, duration_minutes)
+                        extra_price = normal_full - normal_covered_only
+                    else:
+                        extra_price = 0
+
+                    membership_ps5_final += member_price + extra_price
+
                 membership_applied = True
                 active_membership_info = {
                     'id': story_membership['id'],
@@ -160,7 +183,8 @@ def calculate_pricing():
                     'rate_per_hour': rate,
                     'hours_remaining': remaining_h,
                     'hours_this_booking': booking_hours,
-                    'days_remaining': story_membership['days_remaining']
+                    'days_remaining': story_membership['days_remaining'],
+                    'covered_players': covered_players
                 }
             else:
                 # Hours exceeded — normal price + warning

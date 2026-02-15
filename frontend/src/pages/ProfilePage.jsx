@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import { apiFetch, getAuthToken } from '../services/apiClient';
 import '../styles/ProfilePage.css';
 
 const ProfilePage = () => {
@@ -33,17 +34,6 @@ const ProfilePage = () => {
 
   const API_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
 
-  // Helper to build auth headers (session + JWT for mobile)
-  const getAuthHeaders = (contentType = 'application/json') => {
-    const headers = {};
-    if (contentType) headers['Content-Type'] = contentType;
-    try {
-      const token = localStorage.getItem('gamespot_auth_token');
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-    } catch (e) {}
-    return headers;
-  };
-
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -51,22 +41,14 @@ const ProfilePage = () => {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  // Fetch profile data
+  // Fetch profile data using centralized apiFetch (handles JWT refresh + session cookies)
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`${API_URL}/api/user/profile`, {
-          credentials: 'include',
-          headers: getAuthHeaders()
-        });
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
+        const data = await apiFetch('/api/user/profile');
         
         if (data.success) {
           setProfileData(data.profile);
@@ -78,11 +60,7 @@ const ProfilePage = () => {
         
         // Fetch membership status
         try {
-          const memRes = await fetch(`${API_URL}/api/membership/status`, {
-            credentials: 'include',
-            headers: getAuthHeaders()
-          });
-          const memData = await memRes.json();
+          const memData = await apiFetch('/api/membership/status');
           if (memData.success && memData.has_membership) {
             setMembershipData(memData.membership);
           }
@@ -123,12 +101,10 @@ const ProfilePage = () => {
       const formData = new FormData();
       formData.append('profile_picture', file);
 
-      // For file uploads, don't set Content-Type (browser sets multipart boundary)
+      // For file uploads, use raw fetch with auth token (apiFetch auto-sets JSON content type)
       const uploadHeaders = {};
-      try {
-        const token = localStorage.getItem('gamespot_auth_token');
-        if (token) uploadHeaders['Authorization'] = `Bearer ${token}`;
-      } catch (e) {}
+      const token = getAuthToken();
+      if (token) uploadHeaders['Authorization'] = `Bearer ${token}`;
 
       const response = await fetch(`${API_URL}/api/user/profile-picture`, {
         method: 'POST',
@@ -157,13 +133,9 @@ const ProfilePage = () => {
   const handleInstagramShare = async () => {
     try {
       setError(null);
-      const response = await fetch(`${API_URL}/api/rewards/instagram-share`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: getAuthHeaders()
+      const data = await apiFetch('/api/rewards/instagram-share', {
+        method: 'POST'
       });
-
-      const data = await response.json();
 
       if (data.success) {
         setRewards(data.rewards);
@@ -182,14 +154,10 @@ const ProfilePage = () => {
   const handleRedeemReward = async (rewardType) => {
     try {
       setError(null);
-      const response = await fetch(`${API_URL}/api/rewards/redeem`, {
+      const data = await apiFetch('/api/rewards/redeem', {
         method: 'POST',
-        credentials: 'include',
-        headers: getAuthHeaders(),
         body: JSON.stringify({ reward_type: rewardType })
       });
-
-      const data = await response.json();
 
       if (data.success) {
         setRewards(data.rewards);

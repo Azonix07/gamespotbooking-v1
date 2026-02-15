@@ -10,38 +10,18 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-// Loading spinner shown while checking auth state — gaming-themed loader
+// Loading spinner shown while checking auth state — clean loader with GameSpot branding
 const AuthLoader = () => (
   <div style={{
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     height: '100vh',
-    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+    background: '#0f172a',
     overflow: 'hidden',
     position: 'relative'
   }}>
-    {/* Animated background orbs */}
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      <div style={{
-        position: 'absolute', width: '250px', height: '250px', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,107,53,0.12) 0%, transparent 70%)',
-        top: '-80px', right: '-40px', animation: 'gOrbFloat 6s ease-in-out infinite'
-      }}></div>
-      <div style={{
-        position: 'absolute', width: '200px', height: '200px', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,153,102,0.08) 0%, transparent 70%)',
-        bottom: '-60px', left: '-40px', animation: 'gOrbFloat 8s ease-in-out infinite reverse'
-      }}></div>
-    </div>
     <div style={{ textAlign: 'center', zIndex: 1 }}>
-      {/* Lock/Shield animation */}
-      <div style={{ marginBottom: '24px', animation: 'gBounce 2s ease-in-out infinite' }}>
-        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 0 16px rgba(255,107,53,0.4))' }}>
-          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="#1e293b" stroke="#ff6b35" strokeWidth="1.5"/>
-          <path d="M10 12l2 2 4-4" stroke="#ff9966" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
       {/* Logo */}
       <img src="/assets/images/logo.png" alt="GameSpot" style={{
         width: '130px', marginBottom: '24px', opacity: 0.9,
@@ -52,9 +32,9 @@ const AuthLoader = () => (
         {[0, 1, 2, 3, 4].map(i => (
           <div key={i} style={{
             width: '10px', height: '10px', borderRadius: '50%',
-            background: 'linear-gradient(135deg, #ff6b35, #ff9966)',
+            background: 'linear-gradient(135deg, #6366f1, #a855f7)',
             animation: `gDot 1.4s ease-in-out ${i * 0.15}s infinite`,
-            boxShadow: '0 0 8px rgba(255,107,53,0.4)'
+            boxShadow: '0 0 8px rgba(99,102,241,0.4)'
           }}></div>
         ))}
       </div>
@@ -64,10 +44,6 @@ const AuthLoader = () => (
         animation: 'gFadeInOut 2s ease-in-out infinite'
       }}>Verifying Access</p>
       <style>{`
-        @keyframes gBounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
         @keyframes gPulse {
           0%, 100% { opacity: 0.9; transform: scale(1); }
           50% { opacity: 0.6; transform: scale(0.97); }
@@ -79,10 +55,6 @@ const AuthLoader = () => (
         @keyframes gFadeInOut {
           0%, 100% { opacity: 0.35; }
           50% { opacity: 0.75; }
-        }
-        @keyframes gOrbFloat {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(30px, 20px) scale(1.1); }
         }
       `}</style>
     </div>

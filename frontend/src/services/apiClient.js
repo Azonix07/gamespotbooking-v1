@@ -44,7 +44,7 @@ export const setAccessToken = (token) => {
  * Get the current access token
  * Prefers in-memory token; falls back to localStorage for existing sessions
  */
-const getAuthToken = () => {
+export const getAuthToken = () => {
   if (_accessToken) return _accessToken;
   try {
     return localStorage.getItem('gamespot_auth_token');
