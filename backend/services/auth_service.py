@@ -849,17 +849,30 @@ def verify_email_token(token: str) -> Dict[str, Any]:
         if not token:
             return {'success': False, 'error': 'Verification token is required.'}
 
+        sys.stderr.write(f"[VerifyEmail] Looking up token: {token[:20]}...\n")
+
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute(
-            "SELECT id, name, email, is_verified FROM users WHERE verification_token = %s",
+            "SELECT id, name, email, is_verified, verification_token FROM users WHERE verification_token = %s",
             (token,)
         )
         user = cursor.fetchone()
 
         if not user:
-            return {'success': False, 'error': 'Invalid or expired verification link.'}
+            # Check if a user exists with this email who is already verified (token was cleared)
+            sys.stderr.write(f"[VerifyEmail] ❌ No user found with this token. It may have been auto-verified or already used.\n")
+            
+            # Try to find if any user was recently auto-verified
+            cursor.execute(
+                "SELECT id, email, is_verified, verification_token FROM users ORDER BY id DESC LIMIT 5"
+            )
+            recent = cursor.fetchall()
+            for u in recent:
+                sys.stderr.write(f"[VerifyEmail] Recent user: id={u['id']}, email={u['email']}, verified={u['is_verified']}, has_token={'yes' if u.get('verification_token') else 'no'}\n")
+
+            return {'success': False, 'error': 'Invalid or expired verification link. Your account may already be verified — try logging in.'}
 
         if user.get('is_verified'):
             return {'success': True, 'message': 'Email is already verified. You can login.'}

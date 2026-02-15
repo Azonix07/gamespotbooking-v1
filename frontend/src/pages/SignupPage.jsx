@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
 import { 
   FiUser,
   FiMail,
@@ -14,12 +13,12 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
-import { apiFetch, setAccessToken } from '../services/apiClient';
+import { apiFetch } from '../services/apiClient';
 import '../styles/LoginPage.css';
 
 const SignupPage = () => {
   const navigate = useNavigate();
-  const { signup, setAuthState, isAuthenticated, loading: authLoading } = useAuth();
+  const { signup, isAuthenticated, loading: authLoading } = useAuth();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -131,47 +130,6 @@ const SignupPage = () => {
       }
     } catch (err) {
       setError(err.message || 'An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const data = await apiFetch('/api/auth/google-login', {
-        method: 'POST',
-        body: JSON.stringify({ 
-          credential: credentialResponse.credential 
-        })
-      });
-      
-      if (data.success) {
-        setSuccess('Account created successfully! Redirecting...');
-        
-        // Store JWT token properly
-        if (data.token) {
-          setAccessToken(data.token);
-          try {
-            localStorage.setItem('gamespot_logged_in', 'true');
-            localStorage.setItem('gamespot_user_type', data.user_type || data.userType || 'customer');
-          } catch (e) {}
-        }
-        
-        // Set auth state directly from Google response
-        setAuthState(data.user, data.user_type || data.userType || 'customer');
-        
-        setTimeout(() => {
-          navigate('/', { replace: true });
-        }, 500);
-      } else {
-        setError(data.error || 'Google signup failed');
-      }
-    } catch (err) {
-      setError(err.message || 'Google signup failed. Please try again.');
-      console.error('Google signup error:', err);
     } finally {
       setLoading(false);
     }
@@ -375,32 +333,6 @@ const SignupPage = () => {
                 )}
               </button>
             </form>
-            )}
-
-            {/* Divider */}
-            {!needsVerification && (
-            <div className="divider">
-              <span>OR</span>
-            </div>
-            )}
-
-            {/* Google Signup Button */}
-            {!needsVerification && (
-            <div className="social-login">
-              <div className="google-btn-wrapper">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => setError('Google signup failed')}
-                  useOneTap={false}
-                  size="large"
-                  text="signup_with"
-                  shape="rectangular"
-                  logo_alignment="left"
-                  width={340}
-                  itp_support
-                />
-              </div>
-            </div>
             )}
 
             {/* Login Link */}
