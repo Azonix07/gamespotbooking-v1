@@ -7,25 +7,25 @@ Instagram promotion tables don't exist in Railway database.
 
 ### Option 1: Using curl (Terminal/Command Prompt)
 ```bash
-curl -X POST https://gamespotbooking-v1-production.up.railway.app/api/admin/setup-instagram-promo
+curl -X POST https://gamespotkdlr.com/api/admin/setup-instagram-promo
 ```
 
 ### Option 2: Using your browser
 Just visit this URL (it will show "Method Not Allowed" but you need POST):
 ```
-https://gamespotbooking-v1-production.up.railway.app/api/admin/setup-instagram-promo
+https://gamespotkdlr.com/api/admin/setup-instagram-promo
 ```
 
 ### Option 3: Using Postman or Insomnia
 - Method: **POST**
-- URL: `https://gamespotbooking-v1-production.up.railway.app/api/admin/setup-instagram-promo`
+- URL: `https://gamespotkdlr.com/api/admin/setup-instagram-promo`
 - Click **Send**
 
 ### Option 4: Using Thunder Client (VS Code Extension)
 - Install Thunder Client extension
 - Create new request
 - Method: **POST**  
-- URL: `https://gamespotbooking-v1-production.up.railway.app/api/admin/setup-instagram-promo`
+- URL: `https://gamespotkdlr.com/api/admin/setup-instagram-promo`
 - Send
 
 ---
@@ -72,12 +72,12 @@ After running the POST request, check:
 
 1. **Check tables exist:**
    ```bash
-   curl https://gamespotbooking-v1-production.up.railway.app/api/admin/check-instagram-tables
+   curl https://gamespotkdlr.com/api/admin/check-instagram-tables
    ```
 
 2. **Check promotion is active:**
    ```bash
-   curl https://gamespotbooking-v1-production.up.railway.app/api/instagram-promo/active
+   curl https://gamespotkdlr.com/api/instagram-promo/active
    ```
 
 3. **Visit your website:**
@@ -99,7 +99,7 @@ After running the POST request, check:
 **Just copy and paste this in your terminal:**
 
 ```bash
-sleep 120 && curl -X POST https://gamespotbooking-v1-production.up.railway.app/api/admin/setup-instagram-promo
+sleep 120 && curl -X POST https://gamespotkdlr.com/api/admin/setup-instagram-promo
 ```
 
 This waits 2 minutes for Railway to deploy, then automatically sets up everything! ⏰

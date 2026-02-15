@@ -824,7 +824,7 @@ def send_reset_email(email: str, token: str, user_name: str) -> bool:
 
     # Fallback: log to console (visible in Railway logs)
     import os
-    frontend_url = os.getenv('FRONTEND_URL', 'https://gamespotweb-production.up.railway.app')
+    frontend_url = os.getenv('FRONTEND_URL', 'https://gamespotkdlr.com')
     reset_link = f"{frontend_url}/reset-password?token={token}"
 
     sys.stderr.write("\n" + "="*80 + "\n")

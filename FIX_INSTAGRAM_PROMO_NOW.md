@@ -40,7 +40,7 @@ The `instagram_promotions` table doesn't exist in Railway database.
 
 ### Step 5: Verify It Worked
 1. Open new browser tab
-2. Go to: `https://gamespotbooking-v1-production.up.railway.app/api/instagram-promo/active`
+2. Go to: `https://gamespotkdlr.com/api/instagram-promo/active`
 3. You should see JSON with promotion data (not an error)
 
 ### Step 6: Check Your Website

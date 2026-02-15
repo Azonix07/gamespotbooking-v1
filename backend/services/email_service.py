@@ -49,7 +49,7 @@ class EmailService:
         self.brevo_api_key = os.getenv('BREVO_API_KEY', '')
         self.frontend_url = os.getenv(
             'FRONTEND_URL',
-            'https://gamespotweb-production.up.railway.app'
+            'https://gamespotkdlr.com'
         )
 
         # Determine sending method: Resend > Brevo > SMTP > disabled

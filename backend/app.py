@@ -78,6 +78,8 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload size
 
 # Allowed origins (whitelist)
 ALLOWED_ORIGINS = [
+    'https://gamespotkdlr.com',
+    'https://www.gamespotkdlr.com',
     'https://gamespot.in',
     'https://www.gamespot.in',
     'https://gamespotbooking-v1-production.up.railway.app',

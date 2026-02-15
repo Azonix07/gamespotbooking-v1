@@ -42,7 +42,7 @@ const ProfilePage = () => {
   const [newGameChoice, setNewGameChoice] = useState('');
   const [gameChangeSubmitting, setGameChangeSubmitting] = useState(false);
 
-  const API_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+  const API_URL = process.env.REACT_APP_API_URL || 'https://gamespotkdlr.com';
 
   // Redirect if not authenticated
   useEffect(() => {

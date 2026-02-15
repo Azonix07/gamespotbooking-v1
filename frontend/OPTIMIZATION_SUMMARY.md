@@ -76,10 +76,10 @@ npm uninstall @chakra-ui/react @emotion/react @emotion/styled
 
 **Added to index.html:**
 ```html
-<link rel="preconnect" href="https://gamespotbooking-v1-production.up.railway.app" />
+<link rel="preconnect" href="https://gamespotkdlr.com" />
 <link rel="preload" href="/assets/images/logo.png" as="image" />
 <link rel="preload" href="/assets/videos/background.mp4" as="video" />
-<link rel="dns-prefetch" href="https://gamespotbooking-v1-production.up.railway.app" />
+<link rel="dns-prefetch" href="https://gamespotkdlr.com" />
 ```
 
 **Impact:**

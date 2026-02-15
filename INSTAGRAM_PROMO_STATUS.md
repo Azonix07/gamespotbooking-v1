@@ -21,7 +21,7 @@
 
 ### Test API:
 ```bash
-curl "https://gamespotbooking-v1-production.up.railway.app/api/instagram-promo/active"
+curl "https://gamespotkdlr.com/api/instagram-promo/active"
 ```
 
 **Response:**
@@ -73,7 +73,7 @@ Open this file in your browser to test:
 
 ### Test 2: Check Your Live Site
 
-**Production URL:** `https://gamespotbooking-v1-production.up.railway.app/win-free-game`
+**Production URL:** `https://gamespotkdlr.com/win-free-game`
 
 **What You Should See:**
 
@@ -106,7 +106,7 @@ Open this file in your browser to test:
 **Check:**
 ```bash
 # Test API directly
-curl "https://gamespotbooking-v1-production.up.railway.app/api/instagram-promo/active"
+curl "https://gamespotkdlr.com/api/instagram-promo/active"
 ```
 **Expected:** JSON with promotion data
 **If you get error:** Run setup again (see below)
@@ -165,12 +165,12 @@ When you book, 30-minute discount applies automatically!
 
 ### Check Pending Claims:
 ```bash
-curl "https://gamespotbooking-v1-production.up.railway.app/api/instagram-promo/admin/redemptions"
+curl "https://gamespotkdlr.com/api/instagram-promo/admin/redemptions"
 ```
 
 ### Verify a Claim:
 ```bash
-curl -X POST "https://gamespotbooking-v1-production.up.railway.app/api/instagram-promo/admin/verify/1"
+curl -X POST "https://gamespotkdlr.com/api/instagram-promo/admin/verify/1"
 -H "Content-Type: application/json"
 -d '{"verified": true}'
 ```
@@ -210,7 +210,7 @@ curl -X POST "https://gamespotbooking-v1-production.up.railway.app/api/instagram
 
 Test the API yourself:
 ```
-https://gamespotbooking-v1-production.up.railway.app/api/instagram-promo/active
+https://gamespotkdlr.com/api/instagram-promo/active
 ```
 
 This URL should return the promotion data in JSON format! 🚀

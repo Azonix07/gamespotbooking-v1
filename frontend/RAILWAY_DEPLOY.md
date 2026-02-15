@@ -14,7 +14,7 @@ The server is likely failing to start or Railway can't connect to it.
 ### 2. Environment Variables
 Add these in the Variables tab:
 ```
-REACT_APP_API_URL=https://gamespotbooking-v1-production.up.railway.app
+REACT_APP_API_URL=https://gamespotkdlr.com
 NODE_ENV=production
 PORT=(should be automatically set by Railway)
 ```
