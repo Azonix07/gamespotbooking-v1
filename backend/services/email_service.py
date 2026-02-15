@@ -28,6 +28,10 @@ SMTP_TIMEOUT_SECONDS = 15
 
 class EmailService:
     def __init__(self):
+        self._load_config()
+
+    def _load_config(self):
+        """Load/reload SMTP config from environment variables."""
         self.smtp_host = os.getenv('SMTP_HOST', 'smtp.gmail.com')
         self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
         self.smtp_email = os.getenv('SMTP_EMAIL', '')
@@ -64,6 +68,10 @@ class EmailService:
         Send an email via SMTP.
         Returns: tuple (success: bool, message: str)
         """
+        # Re-check env vars if not enabled (in case vars were added after boot)
+        if not self.enabled:
+            self._load_config()
+
         if not self.enabled:
             sys.stderr.write("[Email] ❌ Cannot send — SMTP not configured\n")
             return False, 'Email service not configured'

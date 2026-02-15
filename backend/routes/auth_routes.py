@@ -403,7 +403,10 @@ def forgot_password():
         
         result = create_email_otp(email)
         
-        return jsonify(result)
+        if result.get('success'):
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 500
         
     except Exception as e:
         sys.stderr.write(f"[ForgotPassword] Error: {e}\n")

@@ -558,6 +558,41 @@ create_missing_tables()
 def health_check():
     return {'status': 'healthy', 'message': 'GameSpot Python Backend is running'}, 200
 
+# SMTP diagnostic endpoint (admin only — check if email service is working)
+@app.route('/api/admin/smtp-status', methods=['GET'])
+def smtp_status():
+    try:
+        from services.email_service import email_service
+        # Re-check env vars
+        email_service._load_config()
+        
+        smtp_email = email_service.smtp_email
+        masked_email = smtp_email[:3] + '***' + smtp_email[smtp_email.index('@'):] if smtp_email and '@' in smtp_email else '(not set)'
+        has_password = bool(email_service.smtp_password)
+        
+        status = {
+            'enabled': email_service.enabled,
+            'smtp_host': email_service.smtp_host,
+            'smtp_port': email_service.smtp_port,
+            'smtp_email': masked_email,
+            'smtp_password_set': has_password,
+        }
+        
+        # Try a real SMTP connection test if enabled
+        if email_service.enabled:
+            try:
+                server = email_service._get_smtp_connection()
+                server.quit()
+                status['connection_test'] = 'SUCCESS — SMTP login OK'
+            except Exception as conn_err:
+                status['connection_test'] = f'FAILED — {str(conn_err)}'
+        else:
+            status['connection_test'] = 'SKIPPED — SMTP not configured'
+        
+        return jsonify(status), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # Root endpoint - minimal info (don't expose API structure)
 @app.route('/', methods=['GET'])
 def root():
