@@ -99,6 +99,10 @@ function GetOffersPage() {
       navigate('/login', { state: { from: '/get-offers' } });
       return;
     }
+    if (!instaPromo || !instaPromo.id) {
+      alert('Promotion data not loaded yet. Please wait a moment and try again.');
+      return;
+    }
     if (!instaUsername.trim()) return;
     if (shareCount < requiredCount) return;
 
@@ -215,7 +219,7 @@ function GetOffersPage() {
 
   const requiredCount = instaPromo?.required_friends_count || 5;
   const progressPercent = (shareCount / requiredCount) * 100;
-  const canClaim = shareCount >= requiredCount && instaUsername.trim() && hasFollowed;
+  const canClaim = shareCount >= requiredCount && instaUsername.trim() && hasFollowed && instaPromo;
 
   const totalShareMethods = Object.values(hasSharedVia).filter(Boolean).length;
 
