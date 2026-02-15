@@ -34,6 +34,7 @@ const ForgotPasswordPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [countdown, setCountdown] = useState(0);
+  const [fallbackOtp, setFallbackOtp] = useState(null); // Shown when email service is unavailable
 
   // Check if URL has a reset token (legacy email link flow)
   useEffect(() => {
@@ -58,14 +59,22 @@ const ForgotPasswordPage = () => {
       setLoading(true);
       setError(null);
       setSuccess(null);
+      setFallbackOtp(null);
 
-      await apiFetch('/api/auth/forgot-password', {
+      const data = await apiFetch('/api/auth/forgot-password', {
         method: 'POST',
         body: JSON.stringify({ email })
       });
 
       setStep('enter-otp');
-      setSuccess('If an account exists with this email, an OTP has been sent. Check your inbox!');
+
+      if (data.email_sent === false && data.otp) {
+        // Email service unavailable — show OTP directly
+        setFallbackOtp(data.otp);
+        setSuccess('Email service is currently unavailable. Use the OTP shown below.');
+      } else {
+        setSuccess('If an account exists with this email, an OTP has been sent. Check your inbox!');
+      }
       setCountdown(60);
     } catch (err) {
       setError(err.message || 'Failed to send OTP. Please try again.');
@@ -80,13 +89,19 @@ const ForgotPasswordPage = () => {
     try {
       setLoading(true);
       setError(null);
+      setFallbackOtp(null);
 
-      await apiFetch('/api/auth/forgot-password', {
+      const data = await apiFetch('/api/auth/forgot-password', {
         method: 'POST',
         body: JSON.stringify({ email })
       });
 
-      setSuccess('OTP resent! Check your inbox.');
+      if (data.email_sent === false && data.otp) {
+        setFallbackOtp(data.otp);
+        setSuccess('Email service is currently unavailable. Use the new OTP shown below.');
+      } else {
+        setSuccess('OTP resent! Check your inbox.');
+      }
       setCountdown(60);
     } catch (err) {
       setError(err.message || 'Failed to resend OTP.');
@@ -313,7 +328,9 @@ const ForgotPasswordPage = () => {
             ) : step === 'enter-otp' ? (
               <>
                 <h2 className="form-title">Enter OTP</h2>
-                <p className="form-subtitle">Check your email for the 6-digit code</p>
+                <p className="form-subtitle">
+                  {fallbackOtp ? 'Use the OTP shown below' : 'Check your email for the 6-digit code'}
+                </p>
               </>
             ) : (
               <>
@@ -386,8 +403,37 @@ const ForgotPasswordPage = () => {
                 color: '#c2410c'
               }}>
                 <FiShield size={16} />
-                <span>OTP sent to <strong>{email}</strong></span>
+                <span>{fallbackOtp ? 'Enter the OTP shown below' : <>OTP sent to <strong>{email}</strong></>}</span>
               </div>
+
+              {/* Fallback OTP display when email service is unavailable */}
+              {fallbackOtp && (
+                <div style={{
+                  background: 'linear-gradient(135deg, #1e293b, #334155)',
+                  border: '2px solid #6366f1',
+                  borderRadius: '12px',
+                  padding: '1.25rem',
+                  marginBottom: '1.25rem',
+                  textAlign: 'center'
+                }}>
+                  <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: '500' }}>
+                    Your OTP Code
+                  </p>
+                  <p style={{
+                    color: '#fff',
+                    fontSize: '2rem',
+                    fontWeight: '700',
+                    letterSpacing: '0.5em',
+                    fontFamily: 'monospace',
+                    margin: 0
+                  }}>
+                    {fallbackOtp}
+                  </p>
+                  <p style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                    Copy this code and enter it below
+                  </p>
+                </div>
+              )}
 
               {/* OTP Input */}
               <div className="form-group">

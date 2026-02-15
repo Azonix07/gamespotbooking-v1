@@ -93,7 +93,11 @@ const LoginPage = () => {
         method: 'POST',
         body: JSON.stringify({ email: emailValue })
       });
-      setSuccess(data.message || 'Verification email sent! Please check your inbox.');
+      if (data.auto_verified) {
+        setSuccess('Your account has been verified! You can now login.');
+      } else {
+        setSuccess(data.message || 'Verification email sent! Please check your inbox.');
+      }
       setShowResendVerification(false);
     } catch (err) {
       setError(err.message || 'Failed to resend verification email.');

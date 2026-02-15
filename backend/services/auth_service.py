@@ -90,27 +90,34 @@ def register_user(name: str, email: str, phone: str, password: str) -> Dict[str,
             sys.stderr.write(f"[Signup] Non-critical: failed to link guest bookings: {link_err}\n")
         
         # Send verification email (best-effort)
+        email_sent = False
         try:
             from services.email_service import email_service
             if email_service.enabled:
                 success_email, msg = email_service.send_verification_email(email, verification_token, name)
                 if success_email:
-                    import sys
+                    email_sent = True
                     sys.stderr.write(f"[Signup] ✅ Verification email sent to {email}\n")
                 else:
-                    import sys
                     sys.stderr.write(f"[Signup] ⚠️ Verification email failed: {msg}\n")
             else:
-                import sys
-                sys.stderr.write(f"[Signup] ⚠️ SMTP not configured — verification token: {verification_token}\n")
+                sys.stderr.write(f"[Signup] ⚠️ SMTP not configured — auto-verifying user\n")
         except Exception as email_err:
-            import sys
             sys.stderr.write(f"[Signup] ⚠️ Email send error: {email_err}\n")
+        
+        # If email couldn't be sent, auto-verify the user so they aren't stuck
+        if not email_sent:
+            try:
+                cursor.execute("UPDATE users SET is_verified = TRUE, verification_token = NULL WHERE id = %s", (user_id,))
+                conn.commit()
+                sys.stderr.write(f"[Signup] ✅ Auto-verified user {user_id} (email delivery unavailable)\n")
+            except Exception:
+                pass
         
         return {
             'success': True,
-            'message': 'Registration successful. Please check your email to verify your account.',
-            'needs_verification': True,
+            'message': 'Registration successful.' + (' Please check your email to verify your account.' if email_sent else ''),
+            'needs_verification': email_sent,  # Only require verification if email was actually sent
             'user': {
                 'id': user_id,
                 'name': name,
@@ -908,11 +915,13 @@ def create_email_otp(email: str) -> Dict[str, Any]:
         conn.commit()
 
         # Send OTP email
+        email_sent = False
         try:
             from services.email_service import email_service
             if email_service.enabled:
                 success, msg = email_service.send_forgot_password_otp(user['email'], otp, user['name'])
                 if success:
+                    email_sent = True
                     sys.stderr.write(f"[ForgotPW] ✅ OTP email sent to {user['email']}\n")
                 else:
                     sys.stderr.write(f"[ForgotPW] ⚠️ Email send failed: {msg}\n")
@@ -921,7 +930,11 @@ def create_email_otp(email: str) -> Dict[str, Any]:
         except Exception as mail_err:
             sys.stderr.write(f"[ForgotPW] ⚠️ Email error: {mail_err}. OTP for {user['email']}: {otp}\n")
 
-        return {'success': True, 'message': 'If the email is registered, an OTP has been sent.'}
+        if email_sent:
+            return {'success': True, 'email_sent': True, 'message': 'If the email is registered, an OTP has been sent.'}
+        else:
+            # SMTP not working — return OTP directly so user isn't stuck
+            return {'success': True, 'email_sent': False, 'otp': otp, 'message': 'Email service is temporarily unavailable. Use the OTP shown below.'}
 
     except Exception as e:
         sys.stderr.write(f"[ForgotPW] ❌ Error: {e}\n")
@@ -1082,16 +1095,30 @@ def resend_verification_email(email: str) -> Dict[str, Any]:
             conn.commit()
 
         # Send email
+        email_sent = False
         try:
             from services.email_service import email_service
             if email_service.enabled:
                 success, msg = email_service.send_verification_email(user['email'], token, user['name'])
                 if success:
+                    email_sent = True
                     sys.stderr.write(f"[ResendVerify] ✅ Verification email resent to {user['email']}\n")
                 else:
                     sys.stderr.write(f"[ResendVerify] ⚠️ Email failed: {msg}\n")
+            else:
+                sys.stderr.write(f"[ResendVerify] ⚠️ SMTP not configured — auto-verifying user\n")
         except Exception as mail_err:
             sys.stderr.write(f"[ResendVerify] ⚠️ Email error: {mail_err}\n")
+
+        # If email couldn't be sent, auto-verify the user so they aren't stuck
+        if not email_sent:
+            try:
+                cursor.execute("UPDATE users SET is_verified = TRUE, verification_token = NULL WHERE id = %s", (user['id'],))
+                conn.commit()
+                sys.stderr.write(f"[ResendVerify] ✅ Auto-verified user {user['id']} (email delivery unavailable)\n")
+                return {'success': True, 'message': 'Your account has been verified. You can now login.', 'auto_verified': True}
+            except Exception:
+                pass
 
         return {'success': True, 'message': 'If the email is registered, a verification email has been sent.'}
 
