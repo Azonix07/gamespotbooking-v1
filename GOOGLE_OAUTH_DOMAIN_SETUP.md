@@ -10,7 +10,7 @@ Failed to load resource: the server responded with a status of 403
 
 ## Why This Happens
 
-Google OAuth has **strict security** — it only allows sign-in from domains you explicitly authorize in Google Cloud Console. Your OAuth Client ID (`377614306435-te2kkpi5p7glk1tfe7halc24svv14l32`) was configured for the old Railway URLs, but NOT for `gamespotkdlr.com`.
+Google OAuth has **strict security** — it only allows sign-in from domains you explicitly authorize in Google Cloud Console. Your OAuth Client ID (`556892794157-0ou93bns5ok2n32nk3nruhhnf4juog1h`) was configured for the old Railway URLs, but NOT for `gamespotkdlr.com`.
 
 ## How Google OAuth Works in Your App
 
@@ -53,7 +53,7 @@ Backend returns session + JWT to frontend
 
 ### Step 2: Find Your OAuth Client
 - Click on: **`Web client (auto created by Google Service)`** 
-- Or the one with ID: `377614306435-te2kkpi5p7glk1tfe7halc24svv14l32`
+- Or the one with ID: `556892794157-0ou93bns5ok2n32nk3nruhhnf4juog1h`
 
 ### Step 3: Add Authorized JavaScript Origins
 Scroll to **Authorized JavaScript origins** and click **+ ADD URI**
@@ -139,7 +139,7 @@ Google needs **a few minutes** to propagate the changes globally. Usually takes 
 
 ### Your OAuth Client ID
 ```
-377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com
+556892794157-0ou93bns5ok2n32nk3nruhhnf4juog1h.apps.googleusercontent.com
 ```
 
 ### Where It's Used
@@ -164,7 +164,7 @@ POST https://gamespotbooking-v1-production.up.railway.app/api/auth/google-login
 ## Summary Checklist
 
 - [ ] Go to [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials)
-- [ ] Find OAuth 2.0 Client ID: `377614306435-te2kkpi5p7glk1tfe7halc24svv14l32`
+- [ ] Find OAuth 2.0 Client ID: `556892794157-0ou93bns5ok2n32nk3nruhhnf4juog1h`
 - [ ] Add to **Authorized JavaScript origins**:
   - `https://gamespotkdlr.com`
   - `https://www.gamespotkdlr.com`

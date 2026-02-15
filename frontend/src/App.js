@@ -30,7 +30,7 @@ class ErrorBoundary extends Component {
 }
 
 // Google OAuth Client ID
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '556892794157-0ou93bns5ok2n32nk3nruhhnf4juog1h.apps.googleusercontent.com';
 
 // Lazy load all other pages - load only when visited
 

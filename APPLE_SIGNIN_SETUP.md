@@ -58,7 +58,7 @@ Update `frontend/.env`:
 
 ```bash
 REACT_APP_API_URL=http://localhost:8000
-REACT_APP_GOOGLE_CLIENT_ID=377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com
+REACT_APP_GOOGLE_CLIENT_ID=556892794157-0ou93bns5ok2n32nk3nruhhnf4juog1h.apps.googleusercontent.com
 REACT_APP_APPLE_CLIENT_ID=com.gamespot.booking.web
 REACT_APP_APPLE_REDIRECT_URI=http://localhost:3000
 ```

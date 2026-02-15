@@ -612,7 +612,7 @@ def google_login():
             return jsonify({'success': False, 'error': 'No credential provided'}), 400
         
         # Verify the Google token
-        google_client_id = os.getenv('GOOGLE_CLIENT_ID', '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com')
+        google_client_id = os.getenv('GOOGLE_CLIENT_ID', '556892794157-0ou93bns5ok2n32nk3nruhhnf4juog1h.apps.googleusercontent.com')
         idinfo = id_token.verify_oauth2_token(
             credential, 
             google_requests.Request(),
