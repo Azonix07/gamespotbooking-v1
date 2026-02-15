@@ -45,6 +45,8 @@ import {
   getGameStats,
   approveMembership,
   rejectMembership,
+  approveGameRequest,
+  rejectGameRequest,
   getPartyBookings,
   deletePartyBooking,
   getAdminQuestPasses,
@@ -457,6 +459,41 @@ const AdminDashboard = () => {
     } catch (err) {
       console.error('Error rejecting membership:', err);
       alert('❌ Error rejecting membership');
+    }
+  };
+
+  // Handle game request approval
+  const handleApproveGameRequest = async (membershipId, gameName) => {
+    try {
+      const result = await approveGameRequest(membershipId);
+      if (result.success) {
+        alert(`✅ Game "${gameName}" approved!`);
+        const membershipsData = await getAdminMemberships();
+        setMemberships(membershipsData.memberships || []);
+      } else {
+        alert('❌ ' + (result.error || 'Failed to approve game request'));
+      }
+    } catch (err) {
+      console.error('Error approving game request:', err);
+      alert('❌ Error approving game request');
+    }
+  };
+
+  // Handle game request rejection
+  const handleRejectGameRequest = async (membershipId, gameName) => {
+    if (!window.confirm(`Reject game request "${gameName}"?`)) return;
+    try {
+      const result = await rejectGameRequest(membershipId);
+      if (result.success) {
+        alert(`Game request "${gameName}" rejected.`);
+        const membershipsData = await getAdminMemberships();
+        setMemberships(membershipsData.memberships || []);
+      } else {
+        alert('❌ ' + (result.error || 'Failed to reject game request'));
+      }
+    } catch (err) {
+      console.error('Error rejecting game request:', err);
+      alert('❌ Error rejecting game request');
     }
   };
 
@@ -968,6 +1005,7 @@ const AdminDashboard = () => {
                   <th>Phone</th>
                   <th>Plan</th>
                   <th>Hours</th>
+                  <th>Dedicated Game</th>
                   <th>Start Date</th>
                   <th>End Date</th>
                   <th>Status</th>
@@ -990,6 +1028,40 @@ const AdminDashboard = () => {
                         {membership.total_hours > 0 ? (
                           <span>{membership.hours_used || 0}/{membership.total_hours} hrs</span>
                         ) : '-'}
+                      </td>
+                      <td data-label="DEDICATED GAME">
+                        {membership.dedicated_game ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{membership.dedicated_game}</span>
+                            {membership.dedicated_game_status === 'pending' && (
+                              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                                <span style={{ color: '#d97706', fontSize: '0.75rem', fontWeight: 600 }}>⏳ Pending</span>
+                                <button
+                                  className="btn btn-sm btn-success"
+                                  style={{ fontSize: '0.7rem', padding: '2px 8px' }}
+                                  onClick={() => handleApproveGameRequest(membership.id, membership.dedicated_game)}
+                                >
+                                  ✅
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-danger"
+                                  style={{ fontSize: '0.7rem', padding: '2px 8px' }}
+                                  onClick={() => handleRejectGameRequest(membership.id, membership.dedicated_game)}
+                                >
+                                  ❌
+                                </button>
+                              </div>
+                            )}
+                            {membership.dedicated_game_status === 'approved' && (
+                              <span style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 600 }}>✅ Approved</span>
+                            )}
+                            {membership.dedicated_game_status === 'rejected' && (
+                              <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 600 }}>❌ Rejected</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>—</span>
+                        )}
                       </td>
                       <td data-label="START DATE">
                         {membership.status === 'pending' ? <em style={{ color: '#94a3b8' }}>On approval</em> : new Date(membership.start_date).toLocaleDateString()}

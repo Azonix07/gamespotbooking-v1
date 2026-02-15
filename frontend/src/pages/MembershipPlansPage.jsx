@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import '../styles/MembershipPlansPage.css';
 import { apiFetch } from "../services/apiClient";
 import { useAuth } from "../context/AuthContext";
+import { getGames, requestDedicatedGame } from "../services/api";
 
 
 const MembershipPlansPage = () => {
@@ -22,6 +23,12 @@ const MembershipPlansPage = () => {
   const [cardFeedback, setCardFeedback] = useState({}); // per-card inline feedback
   const [showConfirm, setShowConfirm] = useState(null); // { planType, planName, price, action: 'subscribe'|'upgrade' }
   const messageBannerRef = useRef(null);
+
+  // Dedicated game request state
+  const [allGames, setAllGames] = useState([]);
+  const [selectedGame, setSelectedGame] = useState('');
+  const [gameRequesting, setGameRequesting] = useState(false);
+  const [showGameModal, setShowGameModal] = useState(false);
 
   // Plan rank map for upgrade logic
   const planRankMap = {
@@ -50,6 +57,15 @@ const MembershipPlansPage = () => {
           setCurrentMembership(statusData.has_membership ? statusData.membership : null);
           setPendingMembership(statusData.has_pending ? statusData.pending_membership : null);
         }
+      }
+      // Load games list for dedicated game request
+      try {
+        const gamesData = await getGames();
+        if (gamesData.success) {
+          setAllGames(gamesData.games || []);
+        }
+      } catch (gErr) {
+        console.log('Could not load games list');
       }
     } catch (err) {
       console.error("Error loading data:", err);
@@ -83,6 +99,36 @@ const MembershipPlansPage = () => {
       await doUpgrade(planType);
     } else {
       await doSubscribe(planType);
+    }
+  };
+
+  // Dedicated Game Request handler
+  const handleGameRequest = async () => {
+    if (!selectedGame.trim()) {
+      setError('Please select a game');
+      scrollToMessage();
+      return;
+    }
+    try {
+      setGameRequesting(true);
+      setError(null);
+      setSuccessMsg(null);
+      const data = await requestDedicatedGame(selectedGame);
+      if (data.success) {
+        setSuccessMsg(data.message);
+        setShowGameModal(false);
+        setSelectedGame('');
+        scrollToMessage();
+        await loadData(); // Refresh membership status
+      } else {
+        setError(data.error || 'Game request failed');
+        scrollToMessage();
+      }
+    } catch (err) {
+      setError(err.message || 'Game request failed');
+      scrollToMessage();
+    } finally {
+      setGameRequesting(false);
     }
   };
 
@@ -466,8 +512,110 @@ const MembershipPlansPage = () => {
               )}
             </div>
             <p className="status-banner-note">You can upgrade to a higher tier within the same category below.</p>
+
+            {/* Dedicated Game Request Section */}
+            <div className="dedicated-game-section">
+              <div className="dedicated-game-header">
+                <span className="dedicated-game-icon">🎮</span>
+                <div>
+                  <h4>Dedicated Game</h4>
+                  <p className="dedicated-game-subtitle">Request a game to be kept ready on your console</p>
+                </div>
+              </div>
+
+              {/* Current game status */}
+              {currentMembership.dedicated_game && currentMembership.dedicated_game_status === 'approved' && (
+                <div className="dedicated-game-status approved">
+                  <span>✅ <strong>{currentMembership.dedicated_game}</strong> — Approved & Ready</span>
+                </div>
+              )}
+              {currentMembership.dedicated_game && currentMembership.dedicated_game_status === 'pending' && (
+                <div className="dedicated-game-status pending">
+                  <span>⏳ <strong>{currentMembership.dedicated_game}</strong> — Awaiting Admin Approval</span>
+                </div>
+              )}
+              {currentMembership.dedicated_game && currentMembership.dedicated_game_status === 'rejected' && (
+                <div className="dedicated-game-status rejected">
+                  <span>❌ <strong>{currentMembership.dedicated_game}</strong> — Request Rejected</span>
+                </div>
+              )}
+              {(!currentMembership.dedicated_game || currentMembership.dedicated_game_status === 'none') && (
+                <div className="dedicated-game-status none">
+                  <span>No game requested yet</span>
+                </div>
+              )}
+
+              {/* Request / Change Game Button */}
+              {currentMembership.dedicated_game_status !== 'pending' && (
+                <button
+                  className="dedicated-game-btn"
+                  onClick={() => {
+                    setSelectedGame(currentMembership.dedicated_game || '');
+                    setShowGameModal(true);
+                  }}
+                >
+                  {currentMembership.dedicated_game && currentMembership.dedicated_game_status === 'approved'
+                    ? '🔄 Change Game'
+                    : '🎮 Request a Game'}
+                </button>
+              )}
+            </div>
           </div>
         )}
+
+        {/* Game Request Modal */}
+        <AnimatePresence>
+          {showGameModal && (
+            <motion.div
+              className="membership-confirm-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowGameModal(false)}
+            >
+              <motion.div
+                className="membership-confirm-dialog"
+                style={{ maxWidth: '440px' }}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="confirm-icon">🎮</div>
+                <h3>{currentMembership?.dedicated_game && currentMembership?.dedicated_game_status === 'approved' ? 'Change Dedicated Game' : 'Request Dedicated Game'}</h3>
+                <p className="confirm-note" style={{ marginBottom: '1rem' }}>
+                  Choose a game you want kept ready on your dedicated console. Admin will review and approve your request.
+                </p>
+
+                <div className="game-select-wrapper">
+                  <select
+                    className="game-select-input"
+                    value={selectedGame}
+                    onChange={(e) => setSelectedGame(e.target.value)}
+                  >
+                    <option value="">Select a game...</option>
+                    {allGames.map(g => (
+                      <option key={g.id} value={g.name}>{g.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="confirm-buttons" style={{ marginTop: '1rem' }}>
+                  <button
+                    className="confirm-btn confirm-yes"
+                    onClick={handleGameRequest}
+                    disabled={gameRequesting || !selectedGame.trim()}
+                  >
+                    {gameRequesting ? '⏳ Sending...' : '✓ Submit Request'}
+                  </button>
+                  <button className="confirm-btn confirm-no" onClick={() => setShowGameModal(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Pending request */}
         {pendingMembership && (

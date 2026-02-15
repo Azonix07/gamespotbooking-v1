@@ -208,6 +208,9 @@ def get_all_memberships():
                 COALESCE(m.total_hours, 0) as total_hours,
                 COALESCE(m.hours_used, 0) as hours_used,
                 m.created_at,
+                m.dedicated_game,
+                COALESCE(m.dedicated_game_status, 'none') as dedicated_game_status,
+                m.game_request_date,
                 u.name as user_name,
                 u.email as user_email,
                 u.phone as user_phone,
@@ -226,6 +229,8 @@ def get_all_memberships():
             membership['start_date'] = membership['start_date'].isoformat()
             membership['end_date'] = membership['end_date'].isoformat()
             membership['created_at'] = membership['created_at'].isoformat()
+            if membership.get('game_request_date'):
+                membership['game_request_date'] = membership['game_request_date'].isoformat()
         
         return jsonify({
             'success': True,
@@ -351,6 +356,113 @@ def reject_membership(membership_id):
         
     except Exception as e:
         print(f"Error rejecting membership: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/membership/approve-game/<int:membership_id>', methods=['POST', 'OPTIONS'])
+def approve_game_request(membership_id):
+    """Approve a dedicated game request for a membership"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute(
+            'SELECT id, dedicated_game, dedicated_game_status FROM memberships WHERE id = %s AND status = %s',
+            (membership_id, 'active')
+        )
+        membership = cursor.fetchone()
+        
+        if not membership:
+            return jsonify({'success': False, 'error': 'Active membership not found'}), 404
+        
+        if membership.get('dedicated_game_status') != 'pending':
+            return jsonify({'success': False, 'error': 'No pending game request found'}), 400
+        
+        cursor.execute(
+            'UPDATE memberships SET dedicated_game_status = %s WHERE id = %s',
+            ('approved', membership_id)
+        )
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Game request "{membership["dedicated_game"]}" approved for membership #{membership_id}'
+        })
+        
+    except Exception as e:
+        print(f"Error approving game request: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
+        
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/membership/reject-game/<int:membership_id>', methods=['POST', 'OPTIONS'])
+def reject_game_request(membership_id):
+    """Reject a dedicated game request for a membership"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute(
+            'SELECT id, dedicated_game, dedicated_game_status FROM memberships WHERE id = %s AND status = %s',
+            (membership_id, 'active')
+        )
+        membership = cursor.fetchone()
+        
+        if not membership:
+            return jsonify({'success': False, 'error': 'Active membership not found'}), 404
+        
+        if membership.get('dedicated_game_status') != 'pending':
+            return jsonify({'success': False, 'error': 'No pending game request found'}), 400
+        
+        # Reject: reset to none / keep the old game name but mark as rejected
+        cursor.execute(
+            'UPDATE memberships SET dedicated_game_status = %s WHERE id = %s',
+            ('rejected', membership_id)
+        )
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Game request "{membership["dedicated_game"]}" rejected for membership #{membership_id}'
+        })
+        
+    except Exception as e:
+        print(f"Error rejecting game request: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': 'An error occurred'}), 500

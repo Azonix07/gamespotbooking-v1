@@ -292,6 +292,30 @@ export const rejectMembership = async (membershipId) => {
   );
 };
 
+export const approveGameRequest = async (membershipId) => {
+  return fetchWithCredentials(
+    `${API_BASE_URL}/api/admin/membership/approve-game/${membershipId}`,
+    { method: "POST" }
+  );
+};
+
+export const rejectGameRequest = async (membershipId) => {
+  return fetchWithCredentials(
+    `${API_BASE_URL}/api/admin/membership/reject-game/${membershipId}`,
+    { method: "POST" }
+  );
+};
+
+export const requestDedicatedGame = async (gameName) => {
+  return fetchWithCredentials(
+    `${API_BASE_URL}/api/membership/request-game`,
+    {
+      method: "POST",
+      body: JSON.stringify({ game_name: gameName }),
+    }
+  );
+};
+
 export const getAdminStats = async () => {
   return fetchWithCredentials(`${API_BASE_URL}/api/admin/stats`);
 };

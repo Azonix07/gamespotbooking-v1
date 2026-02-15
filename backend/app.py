@@ -472,6 +472,20 @@ def create_missing_tables():
             except Exception:
                 pass  # Column/change already exists
         
+        # ── Dedicated Game Request columns on memberships ──
+        game_request_alters = [
+            "ALTER TABLE memberships ADD COLUMN dedicated_game VARCHAR(255) DEFAULT NULL",
+            "ALTER TABLE memberships ADD COLUMN dedicated_game_status ENUM('none','pending','approved','rejected') DEFAULT 'none'",
+            "ALTER TABLE memberships ADD COLUMN game_request_date DATETIME DEFAULT NULL",
+        ]
+        for sql in game_request_alters:
+            try:
+                cursor.execute(sql)
+                conn.commit()
+                print(f"✅ Game Request: {sql[:60]}...")
+            except Exception:
+                pass  # Column already exists
+        
         # ── One-time cleanup: Delete ALL old membership records for a fresh start ──
         # Old records have plan_type = 'monthly'/'quarterly'/'annual' which don't
         # exist in the new VALID_PLANS system. They block new subscriptions.

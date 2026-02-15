@@ -346,7 +346,10 @@ def get_status():
                 status, discount_percentage,
                 COALESCE(total_hours, 0) as total_hours,
                 COALESCE(hours_used, 0) as hours_used,
-                DATEDIFF(end_date, CURDATE()) as days_remaining
+                DATEDIFF(end_date, CURDATE()) as days_remaining,
+                dedicated_game,
+                COALESCE(dedicated_game_status, 'none') as dedicated_game_status,
+                game_request_date
             FROM memberships
             WHERE user_id = %s
             AND status = 'active'
@@ -392,6 +395,9 @@ def get_status():
             active_membership['rate_per_hour'] = plan_meta.get('rate', 0)
             active_membership['category'] = plan_meta.get('category', '')
             active_membership['plan_price'] = plan_meta.get('price', 0)
+            # Serialize game_request_date
+            if active_membership.get('game_request_date'):
+                active_membership['game_request_date'] = active_membership['game_request_date'].isoformat()
             result['has_membership'] = True
             result['membership'] = active_membership
 
@@ -605,6 +611,93 @@ def request_upgrade():
 
     except Exception as e:
         print(f"Error in request_upgrade: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@membership_bp.route('/api/membership/request-game', methods=['POST', 'OPTIONS'])
+@require_login
+def request_dedicated_game():
+    """
+    Request or change a dedicated game for an active membership.
+    POST body: { "game_name": "God of War Ragnarok" }
+    Each request sets status to 'pending' for admin approval.
+    """
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    conn = None
+    cursor = None
+
+    try:
+        data = request.get_json()
+        game_name = (data.get('game_name') or '').strip()
+        user_id = session.get('user_id')
+
+        if not game_name:
+            return jsonify({'success': False, 'error': 'Please select a game'}), 400
+
+        if len(game_name) > 255:
+            return jsonify({'success': False, 'error': 'Game name too long'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Find user's active membership
+        query = '''
+            SELECT id, plan_type, dedicated_game, dedicated_game_status
+            FROM memberships
+            WHERE user_id = %s
+            AND status = 'active'
+            AND end_date >= CURDATE()
+            AND plan_type IN ('solo_quest','legend_mode','god_mode','ignition','turbo','apex')
+            ORDER BY end_date DESC
+            LIMIT 1
+        '''
+        cursor.execute(query, (user_id,))
+        membership = cursor.fetchone()
+
+        if not membership:
+            return jsonify({
+                'success': False,
+                'error': 'You need an active membership to request a dedicated game'
+            }), 400
+
+        # Check if there's already a pending game request
+        if membership.get('dedicated_game_status') == 'pending':
+            return jsonify({
+                'success': False,
+                'error': 'You already have a pending game request. Please wait for admin approval.'
+            }), 400
+
+        # Update membership with game request
+        update_query = '''
+            UPDATE memberships
+            SET dedicated_game = %s,
+                dedicated_game_status = 'pending',
+                game_request_date = NOW()
+            WHERE id = %s
+        '''
+        cursor.execute(update_query, (game_name, membership['id']))
+        conn.commit()
+
+        action = 'changed' if membership.get('dedicated_game') else 'requested'
+        return jsonify({
+            'success': True,
+            'message': f'Game "{game_name}" {action} successfully! Waiting for admin approval.',
+            'dedicated_game': game_name,
+            'dedicated_game_status': 'pending'
+        }), 200
+
+    except Exception as e:
+        print(f"Error in request_dedicated_game: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': 'An error occurred'}), 500
