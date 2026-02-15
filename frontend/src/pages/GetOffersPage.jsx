@@ -9,20 +9,56 @@ import { useAuth } from '../context/AuthContext';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
 
+// Helper to persist offer progress so it survives tab-switches (WhatsApp etc.)
+const STORAGE_KEY = 'gamespot_offer_progress';
+
+function loadSavedProgress() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    // Expire saved progress after 30 minutes
+    if (data._ts && Date.now() - data._ts > 30 * 60 * 1000) {
+      sessionStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    return data;
+  } catch { return null; }
+}
+
+function saveProgress(fields) {
+  try {
+    const existing = loadSavedProgress() || {};
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...existing, ...fields, _ts: Date.now() }));
+  } catch { /* quota exceeded etc. */ }
+}
+
+function clearProgress() {
+  try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+}
+
 function GetOffersPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
+  // Restore saved progress (survives WhatsApp tab-switch / page reload)
+  const saved = loadSavedProgress();
+
   const [instaPromo, setInstaPromo] = useState(null);
   const [instaLoading, setInstaLoading] = useState(false);
-  const [instaUsername, setInstaUsername] = useState('');
-  const [hasFollowed, setHasFollowed] = useState(false);
-  const [shareCount, setShareCount] = useState(0);
-  const [hasSharedVia, setHasSharedVia] = useState({ whatsapp: false, copy: false, native: false });
+  const [instaUsername, setInstaUsername] = useState(saved?.instaUsername || '');
+  const [hasFollowed, setHasFollowed] = useState(saved?.hasFollowed || false);
+  const [shareCount, setShareCount] = useState(saved?.shareCount || 0);
+  const [hasSharedVia, setHasSharedVia] = useState(saved?.hasSharedVia || { whatsapp: false, copy: false, native: false });
   const [claimResult, setClaimResult] = useState(null);
   const [claimLoading, setClaimLoading] = useState(false);
   const [copiedCode, setCopiedCode] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Persist progress whenever key fields change
+  useEffect(() => {
+    saveProgress({ instaUsername, hasFollowed, shareCount, hasSharedVia });
+  }, [instaUsername, hasFollowed, shareCount, hasSharedVia]);
 
   useEffect(() => {
     loadInstaPromo();
@@ -78,6 +114,7 @@ function GetOffersPage() {
       const data = await response.json();
       if (data.success) {
         setClaimResult(data.redemption);
+        clearProgress(); // Clear saved progress after successful claim
       } else {
         if (data.error && data.error.toLowerCase().includes('login')) {
           navigate('/login', { state: { from: '/get-offers' } });
@@ -104,23 +141,33 @@ function GetOffersPage() {
   const shareText = '🎮 Check out GameSpot Gaming Lounge! Follow them on Instagram and get a FREE gaming hour! 🔥\n\n👉 ' + instaUrl + '\n\nBook your slot at gamespot now!';
 
   const openInstagram = () => {
+    // Persist state before opening external app
+    saveProgress({ instaUsername, hasFollowed: true, shareCount, hasSharedVia });
     window.open(instaUrl, '_blank', 'noopener');
     setTimeout(() => setHasFollowed(true), 2000);
   };
 
   const shareViaWhatsApp = () => {
     const waUrl = 'https://wa.me/?text=' + encodeURIComponent(shareText);
+    // Update state first
+    const newSharedVia = { ...hasSharedVia, whatsapp: true };
+    const newCount = Math.min(shareCount + 3, requiredCount);
+    setHasSharedVia(newSharedVia);
+    setShareCount(newCount);
+    // Persist BEFORE opening external app (mobile may suspend the page)
+    saveProgress({ instaUsername, hasFollowed, shareCount: newCount, hasSharedVia: newSharedVia });
     window.open(waUrl, '_blank', 'noopener');
-    setHasSharedVia(prev => ({ ...prev, whatsapp: true }));
-    setShareCount(prev => Math.min(prev + 3, requiredCount));
   };
 
   const shareViaCopyLink = () => {
     navigator.clipboard.writeText(shareText).then(() => {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2500);
-      setHasSharedVia(prev => ({ ...prev, copy: true }));
-      setShareCount(prev => Math.min(prev + 2, requiredCount));
+      const newSharedVia = { ...hasSharedVia, copy: true };
+      const newCount = Math.min(shareCount + 2, requiredCount);
+      setHasSharedVia(newSharedVia);
+      setShareCount(newCount);
+      saveProgress({ instaUsername, hasFollowed, shareCount: newCount, hasSharedVia: newSharedVia });
     });
   };
 
@@ -132,8 +179,11 @@ function GetOffersPage() {
           text: '🎮 Follow GameSpot on Instagram & get a FREE gaming hour!',
           url: instaUrl,
         });
-        setHasSharedVia(prev => ({ ...prev, native: true }));
-        setShareCount(prev => Math.min(prev + 3, requiredCount));
+        const newSharedVia = { ...hasSharedVia, native: true };
+        const newCount = Math.min(shareCount + 3, requiredCount);
+        setHasSharedVia(newSharedVia);
+        setShareCount(newCount);
+        saveProgress({ instaUsername, hasFollowed, shareCount: newCount, hasSharedVia: newSharedVia });
       } catch (e) {
         // user cancelled
       }
@@ -142,7 +192,9 @@ function GetOffersPage() {
 
   const confirmManualShare = () => {
     if (shareCount < requiredCount) {
-      setShareCount(prev => Math.min(prev + 1, requiredCount));
+      const newCount = Math.min(shareCount + 1, requiredCount);
+      setShareCount(newCount);
+      saveProgress({ instaUsername, hasFollowed, shareCount: newCount, hasSharedVia });
     }
   };
 
