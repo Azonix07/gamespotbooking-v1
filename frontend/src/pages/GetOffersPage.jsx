@@ -6,8 +6,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import '../styles/GetOffersPage.css';
 import { useAuth } from '../context/AuthContext';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+import { apiFetch } from '../services/apiClient';
 
 // Helper to persist offer progress so it survives tab-switches (WhatsApp etc.)
 const STORAGE_KEY = 'gamespot_offer_progress';
@@ -62,15 +61,16 @@ function GetOffersPage() {
 
   useEffect(() => {
     loadInstaPromo();
-  }, []);
+    // If user is logged in, check if they already have a pending/existing claim
+    if (isAuthenticated) {
+      checkExistingClaim();
+    }
+  }, [isAuthenticated]);
 
   const loadInstaPromo = async () => {
     try {
       setInstaLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/instagram-promo/active`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const data = await apiFetch('/api/instagram-promo/active');
       if (data.success && data.promotions?.length > 0) {
         setInstaPromo(data.promotions[0]);
       }
@@ -78,6 +78,19 @@ function GetOffersPage() {
       console.error('Error loading Instagram promo:', err);
     } finally {
       setInstaLoading(false);
+    }
+  };
+
+  const checkExistingClaim = async () => {
+    try {
+      const data = await apiFetch('/api/instagram-promo/check-eligibility');
+      if (data.success && data.redemption) {
+        // User already has a claim — show its status
+        setClaimResult(data.redemption);
+        if (data.promotion) setInstaPromo(data.promotion);
+      }
+    } catch (err) {
+      console.error('Error checking existing claim:', err);
     }
   };
 
@@ -101,17 +114,14 @@ function GetOffersPage() {
 
     try {
       setClaimLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/instagram-promo/claim`, {
+      const data = await apiFetch('/api/instagram-promo/claim', {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           promotion_id: instaPromo.id,
           instagram_username: instaUsername.trim(),
           shared_with_friends: shareEvidence,
         }),
       });
-      const data = await response.json();
       if (data.success) {
         setClaimResult(data.redemption);
         clearProgress(); // Clear saved progress after successful claim
@@ -123,7 +133,12 @@ function GetOffersPage() {
         }
       }
     } catch (err) {
-      alert('Failed to claim. Please try again.');
+      // Check if it's an auth error
+      if (err.message && err.message.toLowerCase().includes('authentication')) {
+        navigate('/login', { state: { from: '/get-offers' } });
+      } else {
+        alert(err.message || 'Failed to claim. Please try again.');
+      }
     } finally {
       setClaimLoading(false);
     }
@@ -232,36 +247,61 @@ function GetOffersPage() {
 
         {claimResult ? (
           <div className="offers-success-card">
-            <div className="offers-success-confetti">🎉</div>
-            <h2 className="offers-success-title">You Did It!</h2>
-            <p className="offers-success-desc">
-              {"You've earned a "}
-              <strong>
-                {claimResult.discount_type === 'percentage'
-                  ? claimResult.discount_value + '% discount'
-                  : '\u20B9' + claimResult.discount_value + ' off'}
-              </strong>
-              {" on your next booking!"}
-            </p>
+            {claimResult.verification_status === 'pending' ? (
+              <>
+                <div className="offers-success-confetti">⏳</div>
+                <h2 className="offers-success-title">Request Submitted!</h2>
+                <p className="offers-success-desc">
+                  Your claim for <strong>30 minutes FREE gaming</strong> has been sent to the admin for review.
+                  You'll get the free minutes once approved!
+                </p>
+                <div className="offers-pending-badge">
+                  <FiClock style={{ marginRight: 6 }} />
+                  Pending Admin Approval
+                </div>
+                <p className="offers-pending-note" style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#888' }}>
+                  This usually takes a few hours. Check back on this page to see your status.
+                </p>
+                <button className="offers-book-btn" onClick={() => navigate('/')} style={{ marginTop: '1.5rem' }}>
+                  Back to Home <FiArrowRight />
+                </button>
+              </>
+            ) : claimResult.verification_status === 'verified' ? (
+              <>
+                <div className="offers-success-confetti">🎉</div>
+                <h2 className="offers-success-title">Approved!</h2>
+                <p className="offers-success-desc">
+                  You've earned <strong>30 minutes of FREE gaming!</strong> Use this code when booking.
+                </p>
 
-            <div className="offers-code-box" onClick={() => copyToClipboard(claimResult.redemption_code)}>
-              <span className="offers-code-text">{claimResult.redemption_code}</span>
-              <span className="offers-code-action">
-                {copiedCode === claimResult.redemption_code ? (
-                  <><FiCheck /> Copied!</>
-                ) : (
-                  <><FiCopy /> Tap to copy</>
-                )}
-              </span>
-            </div>
+                <div className="offers-code-box" onClick={() => copyToClipboard(claimResult.redemption_code)}>
+                  <span className="offers-code-text">{claimResult.redemption_code}</span>
+                  <span className="offers-code-action">
+                    {copiedCode === claimResult.redemption_code ? (
+                      <><FiCheck /> Copied!</>
+                    ) : (
+                      <><FiCopy /> Tap to copy</>
+                    )}
+                  </span>
+                </div>
 
-            <p className="offers-code-expiry">
-              <FiClock /> Valid until {new Date(claimResult.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </p>
+                <p className="offers-code-expiry">
+                  <FiClock /> Valid until {new Date(claimResult.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
 
-            <button className="offers-book-btn" onClick={() => navigate('/booking')}>
-              Book Now & Use Code <FiArrowRight />
-            </button>
+                <button className="offers-book-btn" onClick={() => navigate('/booking')}>
+                  Book Now & Use Code <FiArrowRight />
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="offers-success-confetti">❌</div>
+                <h2 className="offers-success-title">Claim Rejected</h2>
+                <p className="offers-success-desc">
+                  Sorry, your claim was not approved. Please make sure you've actually followed our Instagram page and shared with friends.
+                </p>
+              </>
+            )}
           </div>
 
         ) : (

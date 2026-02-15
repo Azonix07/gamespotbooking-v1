@@ -26,7 +26,8 @@ import {
   FiTarget,
   FiZap,
   FiCheckCircle,
-  FiMenu
+  FiMenu,
+  FiGift
 } from 'react-icons/fi';
 import { 
   getAllBookings, 
@@ -54,7 +55,10 @@ import {
   rejectQuestPass,
   updateQuestProgress,
   approveQuestPassGameChange,
-  rejectQuestPassGameChange
+  rejectQuestPassGameChange,
+  getOfferClaims,
+  approveOfferClaim,
+  rejectOfferClaim
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -112,6 +116,10 @@ const AdminDashboard = () => {
   // Quest Pass
   const [questPasses, setQuestPasses] = useState([]);
   const [questPassStats, setQuestPassStats] = useState({ total: 0, pending: 0, active: 0 });
+  
+  // Offer Claims (Instagram Promo)
+  const [offerClaims, setOfferClaims] = useState([]);
+  const [offerClaimStats, setOfferClaimStats] = useState({ total: 0, pending: 0, verified: 0, rejected: 0 });
   
   // Loading & Error
   const [loading, setLoading] = useState(true);
@@ -175,6 +183,7 @@ const AdminDashboard = () => {
       await loadGameLeaderboard();
       await loadPartyBookings();
       await loadQuestPasses();
+      await loadOfferClaims();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -311,6 +320,40 @@ const AdminDashboard = () => {
       setError(null);
       await rejectQuestPassGameChange(passId);
       loadQuestPasses();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // ─── Offer Claims (Instagram Promo) ───
+  const loadOfferClaims = async () => {
+    try {
+      const data = await getOfferClaims();
+      setOfferClaims(data.redemptions || []);
+      setOfferClaimStats(data.statistics || { total: 0, pending: 0, verified: 0, rejected: 0 });
+    } catch (err) {
+      console.error("Error loading offer claims:", err);
+    }
+  };
+
+  const handleApproveOfferClaim = async (id) => {
+    if (!window.confirm('Approve this claim? The user will get 30 free minutes.')) return;
+    try {
+      setError(null);
+      await approveOfferClaim(id, 'Approved by admin');
+      loadOfferClaims();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleRejectOfferClaim = async (id) => {
+    const reason = prompt('Reason for rejection (optional):') || '';
+    if (!window.confirm('Reject this claim?')) return;
+    try {
+      setError(null);
+      await rejectOfferClaim(id, reason);
+      loadOfferClaims();
     } catch (err) {
       setError(err.message);
     }
@@ -1868,6 +1911,126 @@ const AdminDashboard = () => {
     );
   }
 
+  // Render Offer Claims (Instagram Promo)
+  const renderOfferClaims = () => (
+    <div className="admin-section fade-in">
+      <div className="section-header-mobile">
+        <h2 className="section-title">🎁 Offer Claims</h2>
+        <span className="badge" style={{ background: 'rgba(255, 107, 53, 0.1)', color: '#ff6b35' }}>
+          {offerClaimStats.pending || 0} pending
+        </span>
+        <button className="btn-refresh" onClick={loadOfferClaims}>
+          <FiRefreshCw /> Refresh
+        </button>
+      </div>
+
+      {offerClaims.length === 0 ? (
+        <div className="empty-state">
+          <FiGift style={{ fontSize: '2rem', opacity: 0.3 }} />
+          <p>No offer claims yet</p>
+        </div>
+      ) : (
+        <div className="table-responsive">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Instagram</th>
+                <th>Shared With</th>
+                <th>Status</th>
+                <th>Code</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {offerClaims.map(claim => (
+                <tr key={claim.id}>
+                  <td>
+                    <strong>{claim.user_name || 'N/A'}</strong>
+                    <br />
+                    <small style={{ color: '#888' }}>{claim.user_phone || claim.user_email || ''}</small>
+                  </td>
+                  <td>
+                    <a
+                      href={`https://instagram.com/${(claim.instagram_username || '').replace('@', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#e1306c', fontWeight: 600 }}
+                    >
+                      @{claim.instagram_username || '?'}
+                    </a>
+                  </td>
+                  <td style={{ maxWidth: 180, fontSize: '0.8rem', wordBreak: 'break-word' }}>
+                    {claim.shared_with_friends || '-'}
+                  </td>
+                  <td>
+                    <span className={`status-badge status-${claim.verification_status}`}
+                      style={{
+                        display: 'inline-block',
+                        padding: '4px 10px',
+                        borderRadius: 8,
+                        fontWeight: 700,
+                        fontSize: '0.78rem',
+                        textTransform: 'uppercase',
+                        background: claim.verification_status === 'pending' ? '#fff3e0'
+                          : claim.verification_status === 'verified' ? '#e8f5e9'
+                          : '#fce4ec',
+                        color: claim.verification_status === 'pending' ? '#e65100'
+                          : claim.verification_status === 'verified' ? '#2e7d32'
+                          : '#c62828'
+                      }}
+                    >
+                      {claim.verification_status}
+                    </span>
+                  </td>
+                  <td>
+                    <code style={{ fontSize: '0.8rem', color: '#ff6b35' }}>{claim.redemption_code}</code>
+                  </td>
+                  <td style={{ fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                    {claim.created_at ? new Date(claim.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '-'}
+                  </td>
+                  <td>
+                    {claim.verification_status === 'pending' ? (
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          className="btn-approve"
+                          onClick={() => handleApproveOfferClaim(claim.id)}
+                          style={{
+                            background: '#4caf50', color: '#fff', border: 'none',
+                            borderRadius: 8, padding: '6px 14px', fontWeight: 700,
+                            fontSize: '0.8rem', cursor: 'pointer'
+                          }}
+                        >
+                          <FiCheckCircle style={{ marginRight: 4 }} /> Approve
+                        </button>
+                        <button
+                          className="btn-reject"
+                          onClick={() => handleRejectOfferClaim(claim.id)}
+                          style={{
+                            background: '#ef5350', color: '#fff', border: 'none',
+                            borderRadius: 8, padding: '6px 14px', fontWeight: 700,
+                            fontSize: '0.8rem', cursor: 'pointer'
+                          }}
+                        >
+                          <FiX style={{ marginRight: 4 }} /> Reject
+                        </button>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.82rem', color: '#888' }}>
+                        {claim.verification_status === 'verified' ? '✅ Approved' : '❌ Rejected'}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return renderDashboard();
@@ -1880,6 +2043,7 @@ const AdminDashboard = () => {
       case 'analytics': return renderAnalytics();
       case 'party': return renderPartyBookings();
       case 'questpass': return renderQuestPasses();
+      case 'offers': return renderOfferClaims();
       default: return renderDashboard();
     }
   };
@@ -1928,6 +2092,11 @@ const AdminDashboard = () => {
               <FiAward className="nav-icon" />
               <span className="nav-label">Quest Pass</span>
               {questPassStats.pending > 0 && <span className="nav-badge">{questPassStats.pending}</span>}
+            </button>
+            <button className={`sidebar-nav-item ${activeTab === 'offers' ? 'active' : ''}`} onClick={() => setActiveTab('offers')}>
+              <FiGift className="nav-icon" />
+              <span className="nav-label">Offer Claims</span>
+              {offerClaimStats.pending > 0 && <span className="nav-badge">{offerClaimStats.pending}</span>}
             </button>
             <button className={`sidebar-nav-item ${activeTab === 'rentals' ? 'active' : ''}`} onClick={() => setActiveTab('rentals')}>
               <FiPackage className="nav-icon" />
@@ -2016,6 +2185,10 @@ const AdminDashboard = () => {
           <button className={`mobile-nav-btn ${activeTab === 'questpass' ? 'active' : ''}`} onClick={() => setActiveTab('questpass')}>
             <FiAward /> <span>Quest</span>
             {questPassStats.pending > 0 && <span className="mobile-nav-badge">{questPassStats.pending}</span>}
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'offers' ? 'active' : ''}`} onClick={() => setActiveTab('offers')}>
+            <FiGift /> <span>Offers</span>
+            {offerClaimStats.pending > 0 && <span className="mobile-nav-badge">{offerClaimStats.pending}</span>}
           </button>
           <button className={`mobile-nav-btn ${activeTab === 'rentals' ? 'active' : ''}`} onClick={() => setActiveTab('rentals')}>
             <FiPackage /> <span>Rentals</span>

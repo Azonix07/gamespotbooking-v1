@@ -605,3 +605,28 @@ export const rejectQuestPassGameChange = async (passId) => {
     method: "POST",
   });
 };
+
+// =======================================================
+// Instagram Promo Offer Claims (Admin)
+// =======================================================
+
+export const getOfferClaims = async (status) => {
+  const url = status
+    ? `${API_BASE_URL}/api/admin/instagram-promo/redemptions?status=${status}`
+    : `${API_BASE_URL}/api/admin/instagram-promo/redemptions`;
+  return fetchWithCredentials(url);
+};
+
+export const approveOfferClaim = async (redemptionId, notes = '') => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/admin/instagram-promo/verify/${redemptionId}`, {
+    method: "PUT",
+    body: JSON.stringify({ status: 'verified', notes }),
+  });
+};
+
+export const rejectOfferClaim = async (redemptionId, notes = '') => {
+  return fetchWithCredentials(`${API_BASE_URL}/api/admin/instagram-promo/verify/${redemptionId}`, {
+    method: "PUT",
+    body: JSON.stringify({ status: 'rejected', notes }),
+  });
+};

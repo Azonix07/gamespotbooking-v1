@@ -251,7 +251,7 @@ def claim_promotion():
         # Set expiry (30 days from now)
         expires_at = datetime.now() + timedelta(days=30)
         
-        # Create redemption record
+        # Create redemption record as PENDING (admin must approve)
         cursor.execute('''
             INSERT INTO user_instagram_redemptions (
                 user_id,
@@ -261,7 +261,7 @@ def claim_promotion():
                 verification_status,
                 redemption_code,
                 expires_at
-            ) VALUES (%s, %s, %s, %s, 'verified', %s, %s)
+            ) VALUES (%s, %s, %s, %s, 'pending', %s, %s)
         ''', (
             user_id,
             promotion_id,
@@ -276,14 +276,14 @@ def claim_promotion():
         
         return jsonify({
             'success': True,
-            'message': 'Instagram promotion claimed successfully!',
+            'message': 'Your claim request has been submitted! The admin will review and approve it shortly.',
             'redemption': {
                 'id': redemption_id,
                 'redemption_code': redemption_code,
                 'discount_type': promotion['discount_type'],
                 'discount_value': float(promotion['discount_value']),
                 'expires_at': expires_at.isoformat(),
-                'verification_status': 'verified'
+                'verification_status': 'pending'
             }
         }), 201
         
@@ -518,16 +518,57 @@ def admin_verify_redemption(redemption_id):
             return jsonify({'success': False, 'error': 'Invalid status'}), 400
         
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
         
+        # Get the redemption with promotion info
         cursor.execute('''
-            UPDATE user_instagram_redemptions
-            SET verification_status = %s,
-                verification_notes = %s,
-                verified_by = %s,
-                verified_at = NOW()
-            WHERE id = %s
-        ''', (status, notes, admin_id, redemption_id))
+            SELECT r.*, p.discount_value, p.discount_type
+            FROM user_instagram_redemptions r
+            JOIN instagram_promotions p ON r.promotion_id = p.id
+            WHERE r.id = %s
+        ''', (redemption_id,))
+        redemption = cursor.fetchone()
+        
+        if not redemption:
+            return jsonify({'success': False, 'error': 'Redemption not found'}), 404
+        
+        if redemption['verification_status'] != 'pending':
+            return jsonify({'success': False, 'error': f'Redemption already {redemption["verification_status"]}'}), 400
+        
+        # Update the redemption status
+        if status == 'verified':
+            # Refresh expiry to 30 days from approval
+            new_expires = datetime.now() + timedelta(days=30)
+            cursor.execute('''
+                UPDATE user_instagram_redemptions
+                SET verification_status = 'verified',
+                    verification_notes = %s,
+                    verified_by = %s,
+                    verified_at = NOW(),
+                    expires_at = %s
+                WHERE id = %s
+            ''', (notes, admin_id, new_expires, redemption_id))
+            
+            # Also try to generate a promo_code entry for 30 free minutes
+            try:
+                promo_code = redemption['redemption_code']
+                cursor.execute('''
+                    INSERT INTO promo_codes (code, bonus_minutes, max_uses, current_uses, expires_at, created_by)
+                    VALUES (%s, 30, 1, 0, %s, %s)
+                ''', (promo_code, new_expires, admin_id or 0))
+            except Exception as promo_err:
+                # promo_codes table might not exist or code already exists — non-critical
+                import sys
+                sys.stderr.write(f"[InstaPromo] Promo code creation note: {promo_err}\n")
+        else:
+            cursor.execute('''
+                UPDATE user_instagram_redemptions
+                SET verification_status = 'rejected',
+                    verification_notes = %s,
+                    verified_by = %s,
+                    verified_at = NOW()
+                WHERE id = %s
+            ''', (notes, admin_id, redemption_id))
         
         conn.commit()
         
@@ -539,6 +580,8 @@ def admin_verify_redemption(redemption_id):
     except Exception as e:
         if conn:
             conn.rollback()
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
