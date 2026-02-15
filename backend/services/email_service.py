@@ -52,16 +52,16 @@ class EmailService:
             'https://gamespotweb-production.up.railway.app'
         )
 
-        # Determine sending method: Brevo > Resend > SMTP > disabled
-        if self.brevo_api_key and self.smtp_email:
+        # Determine sending method: Resend > Brevo > SMTP > disabled
+        if self.resend_api_key:
+            self.enabled = True
+            self.send_method = 'resend'
+            from_email = os.getenv('RESEND_FROM_EMAIL', 'noreply@gamespotkdlr.com')
+            sys.stderr.write(f"[Email] ✅ Resend API configured (from: {from_email})\n")
+        elif self.brevo_api_key and self.smtp_email:
             self.enabled = True
             self.send_method = 'brevo'
             sys.stderr.write(f"[Email] ✅ Brevo API configured (from: {self.smtp_email})\n")
-        elif self.resend_api_key:
-            self.enabled = True
-            self.send_method = 'resend'
-            from_email = os.getenv('RESEND_FROM_EMAIL', 'onboarding@resend.dev')
-            sys.stderr.write(f"[Email] ✅ Resend API configured (from: {from_email})\n")
         elif self.smtp_email and self.smtp_password:
             self.enabled = True
             self.send_method = 'smtp'
@@ -157,10 +157,8 @@ class EmailService:
         """Send email using Resend HTTP API (works even when SMTP ports are blocked)."""
         import requests as _requests
 
-        # Resend requires a verified domain. Use RESEND_FROM_EMAIL if set,
-        # otherwise use Resend's free test sender (onboarding@resend.dev).
-        # gmail.com/outlook.com etc. won't work — those domains aren't yours to verify.
-        from_email = os.getenv('RESEND_FROM_EMAIL', 'onboarding@resend.dev')
+        # Use verified domain. Default: noreply@gamespotkdlr.com
+        from_email = os.getenv('RESEND_FROM_EMAIL', 'noreply@gamespotkdlr.com')
 
         try:
             resp = _requests.post(
@@ -206,13 +204,13 @@ class EmailService:
             sys.stderr.write("[Email] ❌ Cannot send — email not configured\n")
             return False, 'Email service not configured'
 
-        # Route to Brevo API if configured (preferred — works on Railway, no domain needed)
-        if self.send_method == 'brevo':
-            return self._send_via_brevo(to_email, subject, html_body)
-
-        # Route to Resend API if configured (requires verified domain)
+        # Route to Resend API if configured (preferred — verified domain gamespotkdlr.com)
         if self.send_method == 'resend':
             return self._send_via_resend(to_email, subject, html_body)
+
+        # Route to Brevo API if configured (fallback — no domain needed)
+        if self.send_method == 'brevo':
+            return self._send_via_brevo(to_email, subject, html_body)
 
         # Otherwise use SMTP
         try:

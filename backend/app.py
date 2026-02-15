@@ -608,20 +608,21 @@ def smtp_status():
         elif email_service.send_method == 'resend':
             try:
                 import requests as _req
+                from_email = os.getenv('RESEND_FROM_EMAIL', 'noreply@gamespotkdlr.com')
                 resp = _req.post(
                     'https://api.resend.com/emails',
                     headers={'Authorization': f'Bearer {email_service.resend_api_key}'},
                     json={
-                        'from': f'GameSpot <{os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev")}>',
+                        'from': f'GameSpot <{from_email}>',
                         'to': ['delivered@resend.dev'],
-                        'subject': 'GameSpot SMTP Test',
+                        'subject': 'GameSpot Email Test',
                         'html': '<p>Test email from GameSpot diagnostic.</p>'
                     },
                     timeout=15
                 )
                 if resp.status_code == 200:
-                    status['connection_test'] = f'SUCCESS — Test email sent (id: {resp.json().get("id", "?")})'
-                    status['warning'] = 'NOTE: onboarding@resend.dev can ONLY send to your own Resend account email. To send to real users, verify a custom domain at resend.com/domains'
+                    status['connection_test'] = f'SUCCESS — Test email sent via {from_email} (id: {resp.json().get("id", "?")})'
+                    status['sender_domain'] = from_email.split('@')[1] if '@' in from_email else '?'
                 else:
                     status['connection_test'] = f'FAILED — Resend {resp.status_code}: {resp.text}'
             except Exception as e:
