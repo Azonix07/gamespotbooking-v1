@@ -21,16 +21,19 @@ def allowed_file(filename):
 @user_bp.route('/api/user/profile', methods=['GET'])
 @require_auth
 def get_profile(user):
-    """Get user profile, rewards data, and booking history"""
+    """Get user profile, rewards data, and booking history — optimized single-pass"""
     try:
         user_id = user.get('id') or session.get('user_id')
         
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # Get user profile
+        # Get user profile + rewards in ONE query (avoids 2 separate queries)
         cursor.execute("""
-            SELECT id, name, email, phone, profile_picture, created_at
+            SELECT id, name, email, phone, profile_picture, created_at,
+                   COALESCE(gamespot_points, 0) AS gamespot_points,
+                   COALESCE(instagram_shares, 0) AS instagram_shares,
+                   COALESCE(free_playtime_minutes, 0) AS free_playtime_minutes
             FROM users
             WHERE id = %s
         """, (user_id,))
@@ -38,42 +41,25 @@ def get_profile(user):
         profile = cursor.fetchone()
         
         if not profile:
+            cursor.close()
+            conn.close()
             return jsonify({'success': False, 'error': 'User not found'}), 404
         
-        # Convert datetime to string for JSON serialization
+        # Extract rewards from the same row
+        rewards = {
+            'gamespot_points': profile.pop('gamespot_points', 0),
+            'instagram_shares': profile.pop('instagram_shares', 0),
+            'free_playtime_minutes': profile.pop('free_playtime_minutes', 0)
+        }
+        
+        # Convert datetime to string
         if profile.get('created_at'):
             profile['created_at'] = profile['created_at'].strftime('%Y-%m-%d %H:%M:%S')
         
-        # Safely get rewards columns (they might not exist yet)
-        gp = 0
-        ig = 0
-        fpm = 0
-        try:
-            cursor.execute("""
-                SELECT gamespot_points, instagram_shares, free_playtime_minutes
-                FROM users WHERE id = %s
-            """, (user_id,))
-            rw = cursor.fetchone()
-            if rw:
-                gp = rw.get('gamespot_points') or 0
-                ig = rw.get('instagram_shares') or 0
-                fpm = rw.get('free_playtime_minutes') or 0
-        except Exception:
-            pass  # Rewards columns may not exist
-        
-        rewards = {
-            'gamespot_points': gp,
-            'instagram_shares': ig,
-            'free_playtime_minutes': fpm
-        }
-        
-        # Get user's phone for matching guest bookings
         user_phone = profile.get('phone', '')
         
-        # Get user's booking history
-        # Match by BOTH user_id AND customer_phone (to include guest bookings
-        # made with this phone number before or after account creation)
-        # Note: b.status and b.points_awarded may not exist — use safe query
+        # Get booking history with status + points_awarded in ONE query
+        # Uses COALESCE to handle missing columns gracefully
         try:
             cursor.execute("""
                 SELECT 
@@ -83,8 +69,9 @@ def get_profile(user):
                     b.start_time,
                     b.duration_minutes,
                     b.total_price,
-                    b.driving_after_ps5,
                     b.created_at,
+                    COALESCE(b.status, 'confirmed') AS status,
+                    COALESCE(b.points_awarded, 0) AS points_awarded,
                     GROUP_CONCAT(
                         CONCAT(bd.device_type, ':', COALESCE(bd.device_number, 'NA'), ':', bd.player_count)
                         SEPARATOR '|'
@@ -97,7 +84,7 @@ def get_profile(user):
                 LIMIT 50
             """, (user_id, user_phone))
         except Exception:
-            # Fallback: user_id column might not exist at all
+            # Fallback if status/points_awarded columns missing
             cursor.execute("""
                 SELECT 
                     b.id,
@@ -106,8 +93,9 @@ def get_profile(user):
                     b.start_time,
                     b.duration_minutes,
                     b.total_price,
-                    b.driving_after_ps5,
                     b.created_at,
+                    'confirmed' AS status,
+                    0 AS points_awarded,
                     GROUP_CONCAT(
                         CONCAT(bd.device_type, ':', COALESCE(bd.device_number, 'NA'), ':', bd.player_count)
                         SEPARATOR '|'
@@ -122,22 +110,7 @@ def get_profile(user):
         
         bookings = cursor.fetchall()
         
-        # Safely check if status/points_awarded columns exist
-        has_status = False
-        has_points_awarded = False
-        try:
-            cursor.execute("""
-                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' 
-                AND COLUMN_NAME IN ('status', 'points_awarded')
-            """)
-            existing_cols = [r['COLUMN_NAME'] for r in cursor.fetchall()]
-            has_status = 'status' in existing_cols
-            has_points_awarded = 'points_awarded' in existing_cols
-        except Exception:
-            pass
-        
-        # Format bookings data
+        # Format bookings — pure Python, NO extra DB queries
         formatted_bookings = []
         for booking in bookings:
             devices_list = []
@@ -154,40 +127,16 @@ def get_profile(user):
                 except Exception:
                     pass
             
-            # Get status safely
-            status = 'confirmed'
-            if has_status:
-                try:
-                    # Re-query individual booking for status
-                    cursor.execute("SELECT status FROM bookings WHERE id = %s", (booking['id'],))
-                    st = cursor.fetchone()
-                    if st and st.get('status'):
-                        status = st['status']
-                except Exception:
-                    pass
-            
-            # Get points_awarded safely
-            points_awarded = False
-            if has_points_awarded:
-                try:
-                    cursor.execute("SELECT points_awarded FROM bookings WHERE id = %s", (booking['id'],))
-                    pa = cursor.fetchone()
-                    if pa:
-                        points_awarded = bool(pa.get('points_awarded'))
-                except Exception:
-                    pass
-            
-            # Booking name — might differ from profile name (guest bookings)
-            booked_as_name = booking.get('customer_name', '')
+            points_awarded = bool(booking.get('points_awarded'))
             
             formatted_bookings.append({
                 'id': booking['id'],
-                'booked_as': booked_as_name,
+                'booked_as': booking.get('customer_name', ''),
                 'date': booking['booking_date'].strftime('%Y-%m-%d') if booking.get('booking_date') else '',
                 'time': str(booking.get('start_time', '')),
                 'duration': booking.get('duration_minutes', 0),
                 'price': float(booking.get('total_price', 0)),
-                'status': status,
+                'status': booking.get('status', 'confirmed'),
                 'devices': devices_list,
                 'points_earned': int(float(booking.get('total_price', 0)) * 0.50) if points_awarded else 0,
                 'created_at': booking['created_at'].strftime('%Y-%m-%d %H:%M:%S') if booking.get('created_at') else ''

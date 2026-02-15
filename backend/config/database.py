@@ -12,8 +12,8 @@ from mysql.connector import pooling
 # Global connection pool
 connection_pool = None
 
-# Pool configuration - increased for production
-POOL_SIZE = int(os.getenv("DB_POOL_SIZE", 32))  # Increased from 10 to 32
+# Pool configuration — tuned for Railway (limited MySQL connections)
+POOL_SIZE = int(os.getenv("DB_POOL_SIZE", 10))
 MAX_RETRIES = 3
 RETRY_DELAY = 0.5  # seconds
 
@@ -61,7 +61,7 @@ def init_db_pool():
         connection_pool = pooling.MySQLConnectionPool(
             pool_name="gamespot_pool",
             pool_size=POOL_SIZE,
-            pool_reset_session=True,
+            pool_reset_session=False,  # Saves a round-trip per connection checkout
             **db_config
         )
 

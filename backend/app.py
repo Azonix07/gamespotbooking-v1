@@ -191,7 +191,9 @@ os.makedirs('static/uploads/profiles', exist_ok=True)
 # This ensures the admin password is always correct.
 # ============================================================
 def fix_admin_credentials():
-    """Ensure admin user exists with correct password hash and email"""
+    """Ensure admin user exists with correct password hash and email.
+    Only re-hashes if the stored hash doesn't already match (avoids ~300ms bcrypt on every deploy).
+    """
     import bcrypt
     conn = None
     cursor = None
@@ -200,21 +202,28 @@ def fix_admin_credentials():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # Generate correct hash for password 9645136006
         correct_password = '9645136006'
-        correct_hash = bcrypt.hashpw(correct_password.encode('utf-8'), bcrypt.gensalt(rounds=12)).decode('utf-8')
         
         # Check if admin user exists
-        cursor.execute('SELECT id, username FROM admin_users WHERE username = %s', ('admin',))
+        cursor.execute('SELECT id, username, password_hash FROM admin_users WHERE username = %s', ('admin',))
         admin = cursor.fetchone()
         
         if admin:
-            # Update password hash to correct one
-            cursor.execute('UPDATE admin_users SET password_hash = %s WHERE username = %s', (correct_hash, 'admin'))
-            conn.commit()
-            print("✅ Admin password hash updated successfully")
+            # Only regenerate hash if current hash doesn't verify (saves ~300ms bcrypt)
+            existing_hash = admin.get('password_hash', '')
+            try:
+                if existing_hash and bcrypt.checkpw(correct_password.encode('utf-8'), existing_hash.encode('utf-8')):
+                    print("✅ Admin password hash already correct — skipped re-hash")
+                else:
+                    raise ValueError("mismatch")
+            except Exception:
+                correct_hash = bcrypt.hashpw(correct_password.encode('utf-8'), bcrypt.gensalt(rounds=12)).decode('utf-8')
+                cursor.execute('UPDATE admin_users SET password_hash = %s WHERE username = %s', (correct_hash, 'admin'))
+                conn.commit()
+                print("✅ Admin password hash updated successfully")
         else:
-            # Insert admin user
+            # Insert admin user (first-time only)
+            correct_hash = bcrypt.hashpw(correct_password.encode('utf-8'), bcrypt.gensalt(rounds=12)).decode('utf-8')
             cursor.execute(
                 'INSERT INTO admin_users (username, password_hash) VALUES (%s, %s)',
                 ('admin', correct_hash)
@@ -472,6 +481,11 @@ def create_missing_tables():
         index_statements = [
             "CREATE INDEX idx_customer_phone ON bookings (customer_phone)",
             "CREATE INDEX idx_oauth_provider_id ON users (oauth_provider_id)",
+            # ── Performance indexes for hot query paths ──
+            "CREATE INDEX idx_memberships_user_status ON memberships (user_id, status, end_date)",
+            "CREATE INDEX idx_bookings_date ON bookings (booking_date)",
+            "CREATE INDEX idx_booking_devices_booking ON booking_devices (booking_id)",
+            "CREATE INDEX idx_bookings_user ON bookings (user_id)",
         ]
         for sql in index_statements:
             try:

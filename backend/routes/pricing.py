@@ -1,12 +1,7 @@
 """
 Pricing API Route
 Handles price calculations with membership rate-based pricing.
-
-NEW SYSTEM: If user has an active membership, price uses rate_per_hour
-instead of a percentage discount.
-- Story Pass memberships apply to PS5 bookings
-- Driving Pass memberships apply to Driving Sim bookings
-- If hours are exhausted, booking proceeds at normal rate with a warning
+Optimized: skips DB query for anonymous users, single-pass computation.
 """
 
 from flask import Blueprint, request, jsonify, session
@@ -17,6 +12,23 @@ pricing_bp = Blueprint('pricing', __name__)
 
 # Import plan metadata
 from routes.membership_routes import VALID_PLANS
+
+
+def _get_user_id_from_request():
+    """Extract user_id from session or JWT — lightweight, no DB call."""
+    uid = session.get('user_id')
+    if uid:
+        return uid
+    auth_header = request.headers.get('Authorization', '')
+    if auth_header.startswith('Bearer ') and len(auth_header) > 7:
+        try:
+            from middleware.auth import verify_token
+            payload = verify_token(auth_header[7:].strip())
+            if payload and payload.get('user_id'):
+                return payload['user_id']
+        except Exception:
+            pass
+    return None
 
 
 def get_user_active_memberships(user_id):
@@ -36,7 +48,6 @@ def get_user_active_memberships(user_id):
                 COALESCE(total_hours, 0) as total_hours,
                 COALESCE(hours_used, 0) as hours_used,
                 discount_percentage,
-                end_date,
                 DATEDIFF(end_date, CURDATE()) as days_remaining
             FROM memberships
             WHERE user_id = %s
@@ -60,8 +71,7 @@ def get_user_active_memberships(user_id):
 
 def calculate_membership_price(duration_minutes, rate_per_hour):
     """Calculate price using membership hourly rate"""
-    hours = duration_minutes / 60.0
-    return round(rate_per_hour * hours, 2)
+    return round(rate_per_hour * duration_minutes / 60.0, 2)
 
 
 @pricing_bp.route('/api/pricing.php', methods=['POST', 'OPTIONS'])
@@ -119,20 +129,9 @@ def calculate_pricing():
         original_price = ps5_price + driving_price
 
         # ─── Check membership-based pricing ───
-        # Try session first, then JWT token (mobile browsers)
-        user_id = session.get('user_id')
-        if not user_id:
-            auth_header = request.headers.get('Authorization', '')
-            if auth_header.startswith('Bearer ') and len(auth_header) > 7:
-                try:
-                    from middleware.auth import verify_token
-                    token = auth_header[7:].strip()
-                    payload = verify_token(token)
-                    if payload and payload.get('user_id'):
-                        user_id = payload['user_id']
-                except Exception:
-                    pass
-        memberships = get_user_active_memberships(user_id)
+        # Skip DB call entirely for anonymous users (no session, no JWT)
+        user_id = _get_user_id_from_request()
+        memberships = get_user_active_memberships(user_id) if user_id else []
 
         # Find relevant memberships by category
         story_membership = None

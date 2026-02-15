@@ -1,6 +1,7 @@
 """
 Slots API Route
 Handles time slot availability checking
+Optimized: single DB query for all slots instead of N+1
 """
 
 from flask import Blueprint, request, jsonify
@@ -44,13 +45,9 @@ def get_slots():
             # Get all bookings that overlap with the requested time range
             query = """
                 SELECT 
-                    b.id,
-                    b.start_time,
-                    b.duration_minutes,
                     bd.device_type,
                     bd.device_number,
-                    bd.player_count,
-                    ADDTIME(b.start_time, SEC_TO_TIME(b.duration_minutes * 60)) as end_time
+                    bd.player_count
                 FROM bookings b
                 JOIN booking_devices bd ON b.id = bd.booking_id
                 WHERE b.booking_date = %s
@@ -75,8 +72,7 @@ def get_slots():
             
             # Available PS5 units (1, 2, 3 minus booked)
             all_ps5_units = [1, 2, 3]
-            available_ps5_units = list(set(all_ps5_units) - set(booked_ps5_units))
-            available_ps5_units.sort()
+            available_ps5_units = sorted(set(all_ps5_units) - set(booked_ps5_units))
             
             return jsonify({
                 'success': True,
@@ -85,51 +81,75 @@ def get_slots():
                 'total_ps5_players_booked': total_ps5_players
             })
         
-        # Get all slots for the date
+        # ─── OPTIMIZED: Single query for ALL bookings on this date ───
+        # Instead of querying N times (once per slot), fetch everything once
+        # and compute availability in Python.
+        query = """
+            SELECT 
+                b.start_time,
+                b.duration_minutes,
+                bd.device_type,
+                bd.device_number,
+                bd.player_count
+            FROM bookings b
+            JOIN booking_devices bd ON b.id = bd.booking_id
+            WHERE b.booking_date = %s
+        """
+        cursor.execute(query, (date,))
+        all_bookings = cursor.fetchall()
+
+        # Pre-convert booking times to minutes for fast overlap checks
+        booking_ranges = []
+        for b in all_bookings:
+            st = b['start_time']
+            # start_time could be timedelta or string
+            if hasattr(st, 'total_seconds'):
+                start_min = int(st.total_seconds()) // 60
+            else:
+                parts = str(st).split(':')
+                start_min = int(parts[0]) * 60 + int(parts[1])
+            end_min = start_min + int(b['duration_minutes'])
+            booking_ranges.append({
+                'start': start_min,
+                'end': end_min,
+                'device_type': b['device_type'],
+                'device_number': int(b['device_number']),
+                'player_count': int(b['player_count'])
+            })
+
+        # Generate all time slots and compute availability from cached data
         time_slots = generate_time_slots()
         slots_data = []
         
         for slot in time_slots:
-            # Get bookings for this specific slot
-            query = """
-                SELECT 
-                    bd.device_type,
-                    bd.device_number,
-                    bd.player_count
-                FROM bookings b
-                JOIN booking_devices bd ON b.id = bd.booking_id
-                WHERE b.booking_date = %s
-                AND b.start_time <= %s
-                AND ADDTIME(b.start_time, SEC_TO_TIME(b.duration_minutes * 60)) > %s
-            """
-            
-            slot_time = slot + ':00'
-            cursor.execute(query, (date, slot_time, slot_time))
-            bookings = cursor.fetchall()
-            
-            # Calculate availability
+            slot_parts = slot.split(':')
+            slot_min = int(slot_parts[0]) * 60 + int(slot_parts[1])
+
+            # Find overlapping bookings: booking that started before this
+            # slot minute AND ends after it
             booked_ps5_count = 0
-            booked_ps5_units = []
+            booked_ps5_units = set()
             total_ps5_players = 0
             driving_booked = False
-            
-            for booking in bookings:
-                if booking['device_type'] == 'ps5':
-                    booked_ps5_count += 1
-                    booked_ps5_units.append(int(booking['device_number']))
-                    total_ps5_players += int(booking['player_count'])
-                elif booking['device_type'] == 'driving_sim':
-                    driving_booked = True
-            
-            available_ps5 = 3 - booked_ps5_count
+
+            for br in booking_ranges:
+                if br['start'] <= slot_min < br['end']:
+                    if br['device_type'] == 'ps5':
+                        booked_ps5_count += 1
+                        booked_ps5_units.add(br['device_number'])
+                        total_ps5_players += br['player_count']
+                    elif br['device_type'] == 'driving_sim':
+                        driving_booked = True
+
+            available_ps5 = 3 - len(booked_ps5_units)
             
             # Determine status
-            if booked_ps5_count == 3 and driving_booked:
-                status = 'full'  # Red
-            elif booked_ps5_count > 0 or driving_booked:
-                status = 'partial'  # Yellow
+            if len(booked_ps5_units) == 3 and driving_booked:
+                status = 'full'
+            elif booked_ps5_units or driving_booked:
+                status = 'partial'
             else:
-                status = 'available'  # Green
+                status = 'available'
             
             slots_data.append({
                 'time': slot,
@@ -137,7 +157,7 @@ def get_slots():
                 'available_ps5': available_ps5,
                 'available_driving': not driving_booked,
                 'total_ps5_players': total_ps5_players,
-                'booked_ps5_units': sorted(list(set(booked_ps5_units)))
+                'booked_ps5_units': sorted(booked_ps5_units)
             })
         
         return jsonify({
