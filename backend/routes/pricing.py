@@ -164,8 +164,8 @@ def calculate_pricing():
 
         # Apply story membership to PS5 bookings
         # IMPORTANT: Membership pass covers ONLY the pass holder (1 player).
-        # Exception: god_mode allows bringing 1 friend free (covers 2 players).
-        # Extra players beyond the covered count are charged at normal rates.
+        # Exception: god_mode allows bringing 1 friend free (covers up to 2 players).
+        # If player_count exceeds covered count → full normal price (NO discount at all).
         if story_membership and ps5_price > 0:
             total_h = float(story_membership['total_hours'])
             used_h = float(story_membership['hours_used'])
@@ -179,39 +179,45 @@ def calculate_pricing():
             if remaining_h >= booking_hours:
                 # Calculate membership price per PS5 unit considering player count
                 membership_ps5_final = 0
+                any_unit_has_discount = False
+
                 for ps5 in (ps5_bookings if isinstance(ps5_bookings, list) else []):
                     player_count = ps5.get('player_count', 1)
                     unit_dur = ps5.get('duration', duration_minutes)
                     if unit_dur not in [30, 60, 90, 120]:
                         unit_dur = duration_minutes
 
-                    # Membership rate applies to covered players
-                    members_covered = min(player_count, covered_players)
-                    extra_players = max(0, player_count - covered_players)
-
-                    # Covered players at membership rate
-                    member_price = calculate_membership_price(unit_dur, rate)
-                    # Extra players at normal rate (difference between full price and covered-only price)
-                    if extra_players > 0:
-                        normal_full = calculate_ps5_price(player_count, unit_dur)
-                        normal_covered_only = calculate_ps5_price(members_covered, unit_dur)
-                        extra_price = normal_full - normal_covered_only
+                    if player_count <= covered_players:
+                        # All players covered by membership → use membership rate
+                        member_price = calculate_membership_price(unit_dur, rate)
+                        membership_ps5_final += member_price
+                        any_unit_has_discount = True
                     else:
-                        extra_price = 0
+                        # More players than membership covers → full normal price, NO discount
+                        normal_price = calculate_ps5_price(player_count, unit_dur)
+                        membership_ps5_final += normal_price
 
-                    membership_ps5_final += member_price + extra_price
-
-                membership_applied = True
-                active_membership_info = {
-                    'id': story_membership['id'],
-                    'plan_type': story_membership['plan_type'],
-                    'category': 'story',
-                    'rate_per_hour': rate,
-                    'hours_remaining': remaining_h,
-                    'hours_this_booking': booking_hours,
-                    'days_remaining': story_membership['days_remaining'],
-                    'covered_players': covered_players
-                }
+                # Only mark membership as applied if at least one unit got a discount
+                if any_unit_has_discount:
+                    membership_applied = True
+                    active_membership_info = {
+                        'id': story_membership['id'],
+                        'plan_type': story_membership['plan_type'],
+                        'category': 'story',
+                        'rate_per_hour': rate,
+                        'hours_remaining': remaining_h,
+                        'hours_this_booking': booking_hours,
+                        'days_remaining': story_membership['days_remaining'],
+                        'covered_players': covered_players
+                    }
+                else:
+                    # User has membership but all units have too many players
+                    if not hours_warning:
+                        hours_warning = True
+                        hours_warning_message = (
+                            f'Membership rate applies to {covered_players}-player bookings only. '
+                            f'Select 1 player to use your member rate.'
+                        )
             else:
                 # Hours exceeded — normal price + warning
                 hours_warning = True

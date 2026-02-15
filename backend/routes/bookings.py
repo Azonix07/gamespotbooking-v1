@@ -434,7 +434,22 @@ def handle_bookings():
                         # Only deduct if category matches devices AND hours are sufficient
                         should_deduct = False
                         if cat == 'story' and has_ps5 and remaining_h >= booking_hours:
-                            should_deduct = True
+                            # Membership only covers limited players:
+                            # god_mode covers 2 players, all others cover 1.
+                            # Only deduct hours if ALL PS5 units have player_count within coverage.
+                            covered_players = 2 if mem['plan_type'] == 'god_mode' else 1
+                            all_units_covered = all(
+                                ps5.get('player_count', 1) <= covered_players
+                                for ps5 in (ps5_bookings if isinstance(ps5_bookings, list) else [])
+                            )
+                            if all_units_covered:
+                                should_deduct = True
+                            else:
+                                sys.stderr.write(
+                                    f"[Booking] Skipping membership #{mem['id']} hour deduction — "
+                                    f"player count exceeds covered_players ({covered_players}) "
+                                    f"for booking #{booking_id}\n"
+                                )
                         elif cat == 'driving' and has_driving and remaining_h >= booking_hours:
                             should_deduct = True
 
@@ -463,8 +478,18 @@ def handle_bookings():
                                 pi = VALID_PLANS.get(mem['plan_type'], {})
                                 c = pi.get('category', '')
                                 rem = max(0, float(mem['total_hours']) - float(mem['hours_used']))
-                                if (c == 'story' and has_ps5 and rem >= 0) or \
-                                   (c == 'driving' and has_driving and rem >= 0):
+                                if c == 'story' and has_ps5 and rem >= 0:
+                                    # Check player count coverage before marking rate applied
+                                    cp = 2 if mem['plan_type'] == 'god_mode' else 1
+                                    all_ok = all(
+                                        ps5.get('player_count', 1) <= cp
+                                        for ps5 in (ps5_bookings if isinstance(ps5_bookings, list) else [])
+                                    )
+                                    if all_ok:
+                                        primary_mem_id = mem['id']
+                                        mem_rate_applied = True
+                                        break
+                                elif c == 'driving' and has_driving and rem >= 0:
                                     primary_mem_id = mem['id']
                                     mem_rate_applied = True
                                     break
