@@ -2,8 +2,7 @@
    HOME PAGE
    =================================== */
 
-/* Gaming Font - Russo One (Bold, Impactful, Similar to RefrigeratorDeluxeBold) */
-@import url('https://fonts.googleapis.com/css2?family=Russo+One&display=swap');
+/* Gaming Font - Russo One — loaded via index.html <link> for performance */
 
 /* ===================================
    HOMEPAGE HEADER WITH HAMBURGER MENU

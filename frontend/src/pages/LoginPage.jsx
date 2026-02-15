@@ -55,6 +55,7 @@ const LoginPage = () => {
       
       if (result.success) {
         setSuccess('Login successful! Redirecting...');
+        // Minimal delay for user feedback, then redirect immediately
         setTimeout(() => {
           const from = location.state?.from?.pathname || '/';
           if (result.userType === 'admin') {
@@ -62,7 +63,7 @@ const LoginPage = () => {
           } else {
             navigate(from, { replace: true });
           }
-        }, 500);
+        }, 150);
       } else {
         setError(result.error || 'Login failed. Please check your credentials.');
       }
@@ -104,7 +105,7 @@ const LoginPage = () => {
         setTimeout(() => {
           const from = location.state?.from?.pathname || '/';
           navigate(from, { replace: true });
-        }, 500);
+        }, 150);
       } else {
         setError(data.error || 'Google login failed');
       }

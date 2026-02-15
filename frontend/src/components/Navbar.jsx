@@ -83,7 +83,9 @@ const Navbar = ({ showCenter = true, variant = 'dark' }) => {
           <img 
             src="/assets/images/logo.png" 
             alt="GameSpot Logo" 
-            className="navbar-logo" 
+            className="navbar-logo"
+            width="140"
+            height="26"
           />
         </div>
         

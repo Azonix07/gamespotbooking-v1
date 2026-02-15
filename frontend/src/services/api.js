@@ -44,11 +44,26 @@ const fetchWithCredentials = async (url, options = {}) => {
     headers['Authorization'] = `Bearer ${token}`;
   }
   
-  const response = await fetch(url, {
-    ...options,
-    credentials: "include",
-    headers,
-  });
+  // Timeout for slow connections — 30 seconds
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      credentials: "include",
+      headers,
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out. Please check your internet connection and try again.');
+    }
+    throw new Error('Network error. Please check your internet connection.');
+  }
+  clearTimeout(timeoutId);
 
   // Check content type before parsing
   const contentType = response.headers.get("content-type");

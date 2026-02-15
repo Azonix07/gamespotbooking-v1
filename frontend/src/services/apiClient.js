@@ -117,11 +117,28 @@ export const apiFetch = async (path, options = {}, _isRetry = false) => {
     headers['Authorization'] = `Bearer ${token}`;
   }
   
-  const response = await fetch(url, {
-    ...options,
-    credentials: "include",
-    headers,
-  });
+  // Timeout for slow connections — 20s for login/auth, 30s for other requests
+  const isAuthPath = path.includes('/auth/');
+  const timeoutMs = isAuthPath ? 20000 : 30000;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      credentials: "include",
+      headers,
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out. Please check your internet connection and try again.');
+    }
+    throw new Error('Network error. Please check your internet connection.');
+  }
+  clearTimeout(timeoutId);
 
   const data = await response.json().catch(() => ({}));
 

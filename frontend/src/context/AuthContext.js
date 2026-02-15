@@ -239,6 +239,21 @@ export const AuthProvider = ({ children }) => {
   // Initial session check on mount
   useEffect(() => {
     mountedRef.current = true;
+    
+    // PERF: Check localStorage first for instant UI on slow networks
+    // The real session check will validate this in the background
+    try {
+      const wasLoggedIn = localStorage.getItem('gamespot_logged_in') === 'true';
+      const storedUserType = localStorage.getItem('gamespot_user_type');
+      if (wasLoggedIn) {
+        // Set optimistic auth state immediately (no network wait)
+        setIsAuthenticated(true);
+        setIsAdmin(storedUserType === 'admin');
+        setUser({ name: storedUserType === 'admin' ? 'Admin' : 'User' });
+        setLoading(false);
+      }
+    } catch (e) { /* ignore localStorage errors */ }
+    
     checkSession();
     
     return () => {

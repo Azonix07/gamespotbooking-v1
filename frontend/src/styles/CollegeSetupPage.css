@@ -1,7 +1,6 @@
 /* College Setup Page - Warm Orange Light Theme 2026 */
 /* Consistent with BookingPage design */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+/* Fonts loaded via index.html <link> for performance */
 
 /* === CSS Variables === */
 :root {
