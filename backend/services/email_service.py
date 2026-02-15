@@ -154,42 +154,60 @@ class EmailService:
             return False, f'Brevo request failed: {str(e)}'
 
     def _send_via_resend(self, to_email, subject, html_body):
-        """Send email using Resend HTTP API (works even when SMTP ports are blocked)."""
+        """Send email using Resend HTTP API (works even when SMTP ports are blocked).
+        If the verified domain fails, falls back to onboarding@resend.dev (only for testing)."""
         import requests as _requests
 
         # Use verified domain. Default: noreply@gamespotkdlr.com
         from_email = os.getenv('RESEND_FROM_EMAIL', 'noreply@gamespotkdlr.com')
 
-        try:
-            resp = _requests.post(
-                'https://api.resend.com/emails',
-                headers={
-                    'Authorization': f'Bearer {self.resend_api_key}',
-                    'Content-Type': 'application/json',
-                },
-                json={
-                    'from': f'GameSpot <{from_email}>',
-                    'to': [to_email],
-                    'subject': subject,
-                    'html': html_body
-                },
-                timeout=15
-            )
+        # Try with verified domain first, then fallback to onboarding sender
+        senders_to_try = [from_email]
+        if from_email != 'onboarding@resend.dev':
+            senders_to_try.append('onboarding@resend.dev')
 
-            if resp.status_code == 200:
-                result = resp.json()
-                sys.stderr.write(f"[Email] ✅ Resend sent to {to_email}: {subject} (id: {result.get('id', '?')})\n")
-                return True, 'Email sent via Resend'
-            else:
-                sys.stderr.write(f"[Email] ❌ Resend API error {resp.status_code}: {resp.text}\n")
-                return False, f'Resend API error {resp.status_code}: {resp.text}'
+        last_error = None
+        for sender in senders_to_try:
+            try:
+                resp = _requests.post(
+                    'https://api.resend.com/emails',
+                    headers={
+                        'Authorization': f'Bearer {self.resend_api_key}',
+                        'Content-Type': 'application/json',
+                    },
+                    json={
+                        'from': f'GameSpot <{sender}>',
+                        'to': [to_email],
+                        'subject': subject,
+                        'html': html_body
+                    },
+                    timeout=15
+                )
 
-        except _requests.exceptions.Timeout:
-            sys.stderr.write(f"[Email] ❌ Resend request timed out\n")
-            return False, 'Resend request timed out'
-        except Exception as e:
-            sys.stderr.write(f"[Email] ❌ Resend request failed: {e}\n")
-            return False, f'Resend request failed: {str(e)}'
+                if resp.status_code == 200:
+                    result = resp.json()
+                    sys.stderr.write(f"[Email] ✅ Resend sent to {to_email} via {sender}: {subject} (id: {result.get('id', '?')})\n")
+                    return True, f'Email sent via Resend ({sender})'
+                else:
+                    last_error = f'Resend API error {resp.status_code}: {resp.text}'
+                    sys.stderr.write(f"[Email] ⚠️ Resend {sender} failed {resp.status_code}: {resp.text}\n")
+                    # If domain not verified (403), try next sender
+                    if resp.status_code == 403 and sender != senders_to_try[-1]:
+                        sys.stderr.write(f"[Email] ↻ Trying fallback sender...\n")
+                        continue
+                    # For other errors, also try next sender
+                    if sender != senders_to_try[-1]:
+                        continue
+
+            except _requests.exceptions.Timeout:
+                last_error = 'Resend request timed out'
+                sys.stderr.write(f"[Email] ❌ Resend request timed out with {sender}\n")
+            except Exception as e:
+                last_error = f'Resend request failed: {str(e)}'
+                sys.stderr.write(f"[Email] ❌ Resend request failed with {sender}: {e}\n")
+
+        sys.stderr.write(f"[Email] ❌ All Resend senders failed: {last_error}\n")
+        return False, last_error or 'Resend: all senders failed'
 
     def send_email(self, to_email, subject, html_body, text_body=None):
         """

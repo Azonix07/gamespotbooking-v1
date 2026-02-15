@@ -118,8 +118,10 @@ export const apiFetch = async (path, options = {}, _isRetry = false) => {
   }
   
   // Timeout for slow connections — 20s for login/auth, 30s for other requests
+  // Forgot-password needs more time since it involves sending an email on the backend
   const isAuthPath = path.includes('/auth/');
-  const timeoutMs = isAuthPath ? 20000 : 30000;
+  const isForgotPassword = path.includes('/forgot-password') || path.includes('/reset-password') || path.includes('/verify-reset-otp');
+  const timeoutMs = isForgotPassword ? 45000 : isAuthPath ? 20000 : 30000;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   

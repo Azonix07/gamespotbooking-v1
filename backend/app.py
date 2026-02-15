@@ -644,6 +644,52 @@ def smtp_status():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Admin-only: Manual OTP for in-person password reset (when email is not working)
+@app.route('/api/admin/generate-reset-otp', methods=['POST'])
+def admin_generate_otp():
+    """Generate a reset OTP for a user manually (admin only, for when email is down)."""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Admin access required'}), 403
+    
+    try:
+        data = request.get_json()
+        email = data.get('email', '').strip().lower()
+        if not email:
+            return jsonify({'success': False, 'error': 'Email is required'}), 400
+        
+        from config.database import get_db_connection
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, name, email FROM users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        
+        if not user:
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        
+        import random
+        otp = str(random.randint(100000, 999999))
+        
+        cursor.execute(
+            "UPDATE users SET reset_otp = %s, otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = %s",
+            (otp, user['id'])
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'otp': otp,
+            'user_name': user['name'],
+            'user_email': user['email'],
+            'expires_in': '10 minutes',
+            'note': 'Tell the user this OTP. They can enter it on the forgot-password page.'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # Root endpoint - minimal info (don't expose API structure)
 @app.route('/', methods=['GET'])
 def root():

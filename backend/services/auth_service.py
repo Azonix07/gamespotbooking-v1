@@ -895,46 +895,100 @@ def create_email_otp(email: str) -> Dict[str, Any]:
         if not email:
             return {'success': False, 'error': 'Email is required.'}
 
+        sys.stderr.write(f"[ForgotPW] Looking up user: {email}\n")
+
         conn = get_db_connection()
+        if not conn:
+            sys.stderr.write(f"[ForgotPW] ❌ Could not get database connection\n")
+            return {'success': False, 'error': 'Database connection failed. Please try again.'}
+
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute("SELECT id, name, email FROM users WHERE email = %s", (email.strip().lower(),))
         user = cursor.fetchone()
 
         if not user:
+            sys.stderr.write(f"[ForgotPW] No user found for {email} — returning generic success\n")
             # Don't reveal whether the email exists
             return {'success': True, 'message': 'If the email is registered, an OTP has been sent.'}
+
+        sys.stderr.write(f"[ForgotPW] Found user id={user['id']} name={user['name']}\n")
 
         import random
         otp = str(random.randint(100000, 999999))
 
-        cursor.execute(
-            "UPDATE users SET reset_otp = %s, otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = %s",
-            (otp, user['id'])
-        )
-        conn.commit()
+        # Ensure reset_otp and otp_expiry columns exist (auto-migration may not have run yet)
+        try:
+            cursor.execute(
+                "UPDATE users SET reset_otp = %s, otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = %s",
+                (otp, user['id'])
+            )
+            conn.commit()
+            sys.stderr.write(f"[ForgotPW] OTP stored in DB for user {user['id']}\n")
+        except Exception as db_err:
+            sys.stderr.write(f"[ForgotPW] ❌ DB error storing OTP: {db_err}\n")
+            # Try adding the columns if they don't exist
+            try:
+                cursor.execute("ALTER TABLE users ADD COLUMN reset_otp VARCHAR(6) NULL")
+                conn.commit()
+            except Exception:
+                pass
+            try:
+                cursor.execute("ALTER TABLE users ADD COLUMN otp_expiry DATETIME NULL")
+                conn.commit()
+            except Exception:
+                pass
+            # Retry the update
+            try:
+                cursor.execute(
+                    "UPDATE users SET reset_otp = %s, otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = %s",
+                    (otp, user['id'])
+                )
+                conn.commit()
+                sys.stderr.write(f"[ForgotPW] OTP stored after column migration for user {user['id']}\n")
+            except Exception as retry_err:
+                sys.stderr.write(f"[ForgotPW] ❌ DB error even after migration: {retry_err}\n")
+                return {'success': False, 'error': 'Database error. Please try again.'}
 
         # Send OTP email
         email_sent = False
+        email_error_msg = 'Unknown error'
         try:
             from services.email_service import email_service
+            sys.stderr.write(f"[ForgotPW] Email service enabled: {email_service.enabled}, method: {email_service.send_method}\n")
             if email_service.enabled:
                 success, msg = email_service.send_forgot_password_otp(user['email'], otp, user['name'])
                 if success:
                     email_sent = True
                     sys.stderr.write(f"[ForgotPW] ✅ OTP email sent to {user['email']}\n")
                 else:
+                    email_error_msg = msg
                     sys.stderr.write(f"[ForgotPW] ⚠️ Email send failed: {msg}\n")
             else:
-                sys.stderr.write(f"[ForgotPW] ⚠️ SMTP not configured — cannot send OTP email\n")
+                email_error_msg = 'Email service not configured'
+                sys.stderr.write(f"[ForgotPW] ⚠️ Email not configured — cannot send OTP email\n")
+                # Try reloading config in case env vars were set after boot
+                email_service._load_config()
+                if email_service.enabled:
+                    success, msg = email_service.send_forgot_password_otp(user['email'], otp, user['name'])
+                    if success:
+                        email_sent = True
+                        sys.stderr.write(f"[ForgotPW] ✅ OTP email sent after config reload to {user['email']}\n")
+                    else:
+                        email_error_msg = msg
+                        sys.stderr.write(f"[ForgotPW] ⚠️ Email still failed after reload: {msg}\n")
         except Exception as mail_err:
+            email_error_msg = str(mail_err)
             sys.stderr.write(f"[ForgotPW] ⚠️ Email error: {mail_err}\n")
+            import traceback
+            traceback.print_exc()
 
         if email_sent:
-            return {'success': True, 'message': 'If the email is registered, an OTP has been sent. Check your inbox!'}
+            return {'success': True, 'message': 'OTP has been sent to your email. Check your inbox!'}
         else:
-            # SMTP not working — tell user email service is down (never expose OTP to client)
-            return {'success': False, 'error': 'Email service is temporarily unavailable. Please try again later or contact support.'}
+            # Email not working — tell user (never expose OTP to client)
+            sys.stderr.write(f"[ForgotPW] ❌ All email methods failed: {email_error_msg}\n")
+            return {'success': False, 'error': f'Email delivery failed. Please try again later or contact support.'}
 
     except Exception as e:
         sys.stderr.write(f"[ForgotPW] ❌ Error: {e}\n")

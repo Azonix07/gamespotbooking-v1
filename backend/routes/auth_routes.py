@@ -385,7 +385,7 @@ def check_session():
 
 
 @auth_bp.route('/api/auth/forgot-password', methods=['POST', 'OPTIONS'])
-@auth_rate_limit(max_attempts=3, window_seconds=600)
+@auth_rate_limit(max_attempts=10, window_seconds=600)
 def forgot_password():
     """
     Request password reset via email OTP.
@@ -396,24 +396,34 @@ def forgot_password():
     
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Invalid request'}), 400
+        
         email = data.get('email', '').strip().lower()
         
         if not email:
             return jsonify({'success': False, 'error': 'Email is required'}), 400
         
+        sys.stderr.write(f"[ForgotPassword] Request for email: {email}\n")
+        
         result = create_email_otp(email)
+        
+        sys.stderr.write(f"[ForgotPassword] Result: {result}\n")
         
         if result.get('success'):
             return jsonify(result), 200
         else:
-            return jsonify(result), 500
+            # Return 400 for user errors, not 500 (which implies server crash)
+            return jsonify(result), 400
         
     except Exception as e:
         sys.stderr.write(f"[ForgotPassword] Error: {e}\n")
+        import traceback
+        traceback.print_exc()
         return jsonify({
-            'success': True,
-            'message': 'If an account exists with this email, an OTP has been sent.'
-        })
+            'success': False,
+            'error': 'Something went wrong. Please try again.'
+        }), 500
 
 
 @auth_bp.route('/api/auth/verify-reset-otp', methods=['POST', 'OPTIONS'])

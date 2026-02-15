@@ -59,14 +59,18 @@ const ForgotPasswordPage = () => {
       setError(null);
       setSuccess(null);
 
-      await apiFetch('/api/auth/forgot-password', {
+      const data = await apiFetch('/api/auth/forgot-password', {
         method: 'POST',
         body: JSON.stringify({ email })
       });
 
-      setStep('enter-otp');
-      setSuccess('OTP has been sent to your email. Check your inbox!');
-      setCountdown(60);
+      if (data.success) {
+        setStep('enter-otp');
+        setSuccess(data.message || 'OTP has been sent to your email. Check your inbox!');
+        setCountdown(60);
+      } else {
+        setError(data.error || 'Failed to send OTP. Please try again.');
+      }
     } catch (err) {
       setError(err.message || 'Failed to send OTP. Please try again.');
     } finally {
@@ -81,13 +85,17 @@ const ForgotPasswordPage = () => {
       setLoading(true);
       setError(null);
 
-      await apiFetch('/api/auth/forgot-password', {
+      const data = await apiFetch('/api/auth/forgot-password', {
         method: 'POST',
         body: JSON.stringify({ email })
       });
 
-      setSuccess('OTP resent! Check your inbox.');
-      setCountdown(60);
+      if (data.success) {
+        setSuccess('OTP resent! Check your inbox.');
+        setCountdown(60);
+      } else {
+        setError(data.error || 'Failed to resend OTP.');
+      }
     } catch (err) {
       setError(err.message || 'Failed to resend OTP.');
     } finally {
