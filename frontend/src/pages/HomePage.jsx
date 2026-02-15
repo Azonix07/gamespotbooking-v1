@@ -17,15 +17,14 @@ const HomePage = () => {
       {/* Standard Navbar - same as other pages */}
       <Navbar />
 
-      {/* Video Background — preload="none" to avoid blocking LCP */}
+      {/* Video Background — preload="metadata" keeps video working without blocking LCP */}
       <video 
         className="hero-background-video"
         autoPlay 
         loop 
         muted 
         playsInline
-        preload="none"
-        poster="/assets/images/logo.png"
+        preload="metadata"
       >
         <source src="/assets/videos/background.mp4" type="video/mp4" />
         Your browser does not support the video tag.
