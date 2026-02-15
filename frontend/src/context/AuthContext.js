@@ -170,23 +170,29 @@ export const AuthProvider = ({ children }) => {
     // Reset the login timestamp to allow session checks to clear state
     recentLoginTimestamp = 0;
     
+    // Clear state IMMEDIATELY — don't wait for API call
+    setUser(null);
+    setIsAdmin(false);
+    setIsAuthenticated(false);
+    lastCheckTimeRef.current = 0;
+    
+    // Clear all tokens and localStorage indicators
+    clearTokens();
     try {
-      await apiFetch('/api/auth/logout', { method: 'POST' });
+      localStorage.removeItem('gamespot_logged_in');
+      localStorage.removeItem('gamespot_user_type');
+    } catch (e) {}
+    
+    // Fire-and-forget: notify server to clear session/cookie
+    // Don't await — user should not wait for this or see errors
+    try {
+      fetch(`${process.env.REACT_APP_API_URL || 'https://gamespotbooking-v1-production.up.railway.app'}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      }).catch(() => {}); // Silently ignore any errors
     } catch (err) {
-      // Logout error, continue cleanup
-    } finally {
-      // Clear state immediately
-      setUser(null);
-      setIsAdmin(false);
-      setIsAuthenticated(false);
-      lastCheckTimeRef.current = 0;
-      
-      // Clear all tokens and localStorage indicators
-      clearTokens();
-      try {
-        localStorage.removeItem('gamespot_logged_in');
-        localStorage.removeItem('gamespot_user_type');
-      } catch (e) {}
+      // Ignore — local cleanup is already done
     }
   }, []);
 
