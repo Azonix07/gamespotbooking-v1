@@ -926,15 +926,15 @@ def create_email_otp(email: str) -> Dict[str, Any]:
                 else:
                     sys.stderr.write(f"[ForgotPW] ⚠️ Email send failed: {msg}\n")
             else:
-                sys.stderr.write(f"[ForgotPW] ⚠️ SMTP not configured. OTP for {user['email']}: {otp}\n")
+                sys.stderr.write(f"[ForgotPW] ⚠️ SMTP not configured — cannot send OTP email\n")
         except Exception as mail_err:
-            sys.stderr.write(f"[ForgotPW] ⚠️ Email error: {mail_err}. OTP for {user['email']}: {otp}\n")
+            sys.stderr.write(f"[ForgotPW] ⚠️ Email error: {mail_err}\n")
 
         if email_sent:
-            return {'success': True, 'email_sent': True, 'message': 'If the email is registered, an OTP has been sent.'}
+            return {'success': True, 'message': 'If the email is registered, an OTP has been sent. Check your inbox!'}
         else:
-            # SMTP not working — return OTP directly so user isn't stuck
-            return {'success': True, 'email_sent': False, 'otp': otp, 'message': 'Email service is temporarily unavailable. Use the OTP shown below.'}
+            # SMTP not working — tell user email service is down (never expose OTP to client)
+            return {'success': False, 'error': 'Email service is temporarily unavailable. Please try again later or contact support.'}
 
     except Exception as e:
         sys.stderr.write(f"[ForgotPW] ❌ Error: {e}\n")
