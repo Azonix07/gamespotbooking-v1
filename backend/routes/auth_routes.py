@@ -679,12 +679,18 @@ def google_login():
             if has_oauth_cols:
                 try:
                     cursor.execute("""
-                        UPDATE users SET oauth_provider = 'google', oauth_provider_id = %s
+                        UPDATE users SET oauth_provider = 'google', oauth_provider_id = %s, is_verified = TRUE
                         WHERE id = %s AND (oauth_provider_id IS NULL OR oauth_provider_id = '')
                     """, (google_id, user['id']))
                     conn.commit()
                 except Exception:
                     pass
+            # Also ensure existing OAuth users are verified
+            try:
+                cursor.execute("UPDATE users SET is_verified = TRUE WHERE id = %s AND (is_verified = FALSE OR is_verified IS NULL)", (user['id'],))
+                conn.commit()
+            except Exception:
+                pass
         
         # Set session
         session.clear()
@@ -822,6 +828,13 @@ def apple_login():
                 'email': email,
                 'phone': ''
             }
+        else:
+            # Ensure existing Apple OAuth users are verified
+            try:
+                cursor.execute("UPDATE users SET is_verified = TRUE WHERE id = %s AND (is_verified = FALSE OR is_verified IS NULL)", (user['id'],))
+                conn.commit()
+            except Exception:
+                pass
         
         cursor.close()
         conn.close()

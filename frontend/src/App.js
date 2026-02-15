@@ -1,4 +1,4 @@
-import React, { useEffect, lazy, Suspense } from 'react';
+import React, { useEffect, lazy, Suspense, Component } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './context/AuthContext';
@@ -7,6 +7,27 @@ import { getTheme } from './services/api';
 import usePageTracking from './hooks/usePageTracking';
 import HomePage from './pages/HomePage.jsx';
 import LoginPage from './pages/LoginPage.jsx'; // Critical auth page - no lazy loading delay
+
+// Error boundary — prevents a broken lazy-loaded page from white-screening the entire app
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(err, info) { console.error('Page load error:', err, info); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'#0f172a', color:'#fff', flexDirection:'column', gap:'1rem' }}>
+          <h2 style={{ fontSize:'1.5rem' }}>Something went wrong</h2>
+          <button onClick={() => { this.setState({ hasError: false }); window.location.href = '/'; }}
+            style={{ padding:'0.75rem 2rem', background:'#6366f1', color:'#fff', border:'none', borderRadius:'8px', fontSize:'1rem', cursor:'pointer' }}>
+            Go Home
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // Google OAuth Client ID
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '377614306435-te2kkpi5p7glk1tfe7halc24svv14l32.apps.googleusercontent.com';
@@ -119,6 +140,7 @@ function App() {
       <AuthProvider>
         <Router>
           <PageTracker />
+          <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* ========== PUBLIC ROUTES (No auth required) ========== */}
@@ -154,6 +176,7 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
+          </ErrorBoundary>
         </Router>
       </AuthProvider>
     </GoogleOAuthProvider>
