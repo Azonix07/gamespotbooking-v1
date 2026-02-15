@@ -589,7 +589,7 @@ def smtp_status():
                     'https://api.resend.com/emails',
                     headers={'Authorization': f'Bearer {email_service.resend_api_key}'},
                     json={
-                        'from': f'GameSpot <{email_service.smtp_email or "onboarding@resend.dev"}>',
+                        'from': f'GameSpot <{os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev")}>',
                         'to': ['delivered@resend.dev'],
                         'subject': 'GameSpot SMTP Test',
                         'html': '<p>Test email from GameSpot diagnostic.</p>'

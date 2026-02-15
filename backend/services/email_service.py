@@ -99,7 +99,10 @@ class EmailService:
         """Send email using Resend HTTP API (works even when SMTP ports are blocked)."""
         import requests as _requests
 
-        from_email = self.smtp_email or 'onboarding@resend.dev'
+        # Resend requires a verified domain. Use RESEND_FROM_EMAIL if set,
+        # otherwise use Resend's free test sender (onboarding@resend.dev).
+        # gmail.com/outlook.com etc. won't work — those domains aren't yours to verify.
+        from_email = os.getenv('RESEND_FROM_EMAIL', 'onboarding@resend.dev')
 
         try:
             resp = _requests.post(
