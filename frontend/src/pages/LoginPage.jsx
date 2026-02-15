@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
 import { 
   FiMail, 
   FiLock, 
@@ -11,13 +10,13 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
-import { apiFetch, setAccessToken } from '../services/apiClient';
+import { apiFetch } from '../services/apiClient';
 import '../styles/LoginPage.css';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isAdmin, login, setAuthState, loading: authLoading } = useAuth();
+  const { isAuthenticated, isAdmin, login, loading: authLoading } = useAuth();
   
   // Email or Phone / Password Login fields
   const [identifier, setIdentifier] = useState('');
@@ -103,48 +102,6 @@ const LoginPage = () => {
       setError(err.message || 'Failed to resend verification email.');
     } finally {
       setResendLoading(false);
-    }
-  };
-
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const data = await apiFetch('/api/auth/google-login', {
-        method: 'POST',
-        body: JSON.stringify({ 
-          credential: credentialResponse.credential 
-        })
-      });
-      
-      if (data.success) {
-        setSuccess('Login successful! Redirecting...');
-        
-        // Store JWT token in memory + localStorage via setAccessToken
-        if (data.token) {
-          setAccessToken(data.token);
-          try {
-            localStorage.setItem('gamespot_logged_in', 'true');
-            localStorage.setItem('gamespot_user_type', data.user_type || data.userType || 'customer');
-          } catch (e) {}
-        }
-        
-        // Set auth state directly from Google response
-        setAuthState(data.user, data.user_type || data.userType || 'customer');
-        
-        setTimeout(() => {
-          const from = location.state?.from?.pathname || '/';
-          navigate(from, { replace: true });
-        }, 150);
-      } else {
-        setError(data.error || 'Google login failed');
-      }
-    } catch (err) {
-      setError(err.message || 'Google login failed. Please try again.');
-      console.error('Google login error:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -263,28 +220,6 @@ const LoginPage = () => {
                 )}
               </button>
             </form>
-
-            {/* Divider */}
-            <div className="divider">
-              <span>OR</span>
-            </div>
-
-            {/* Google Login Button */}
-            <div className="social-login">
-              <div className="google-btn-wrapper">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => setError('Google login failed')}
-                  useOneTap={false}
-                  size="large"
-                  text="continue_with"
-                  shape="rectangular"
-                  logo_alignment="left"
-                  width={340}
-                  itp_support
-                />
-              </div>
-            </div>
 
             {/* Sign Up Link */}
             <div className="signup-prompt">
