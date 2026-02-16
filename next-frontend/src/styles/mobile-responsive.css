@@ -1770,7 +1770,7 @@ html, body {
     font-size: 2rem;
   }
   
-  .games-grid {
+  .games-page .games-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1.25rem;
   }
@@ -1831,7 +1831,7 @@ html, body {
     flex-shrink: 0;
   }
   
-  .games-grid {
+  .games-page .games-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 1rem;
   }
@@ -1871,7 +1871,7 @@ html, body {
     font-size: 0.9rem;
   }
   
-  .games-grid {
+  .games-page .games-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
