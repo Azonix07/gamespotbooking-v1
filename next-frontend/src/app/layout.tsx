@@ -85,14 +85,16 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '48x48' },
-      { url: '/assets/images/favicon-64.png', sizes: '64x64', type: 'image/png' },
-      { url: '/assets/images/favicon-48.png', sizes: '48x48', type: 'image/png' },
-      { url: '/assets/images/favicon-32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/assets/images/favicon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/assets/images/favicon-128.png?v=3', sizes: '128x128', type: 'image/png' },
+      { url: '/assets/images/favicon-96.png?v=3', sizes: '96x96', type: 'image/png' },
+      { url: '/assets/images/favicon-64.png?v=3', sizes: '64x64', type: 'image/png' },
+      { url: '/assets/images/favicon-48.png?v=3', sizes: '48x48', type: 'image/png' },
+      { url: '/assets/images/favicon-32.png?v=3', sizes: '32x32', type: 'image/png' },
+      { url: '/assets/images/favicon-16.png?v=3', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.ico?v=3', sizes: 'any' },
     ],
-    apple: '/assets/images/GS-favicon.PNG',
-    shortcut: '/favicon.ico',
+    apple: '/assets/images/GS-favicon.PNG?v=3',
+    shortcut: '/assets/images/favicon-96.png?v=3',
   },
   manifest: '/manifest.json',
   verification: {
@@ -113,14 +115,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${rajdhani.variable}`}>
       <head>
-        {/* Favicon - Multiple sizes for better display (larger icons in tabs) */}
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="64x64" href="/assets/images/favicon-64.png" />
-        <link rel="icon" type="image/png" sizes="48x48" href="/assets/images/favicon-48.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/GS-favicon.PNG" />
-        <link rel="shortcut icon" href="/favicon.ico" />
+        {/* Favicon - Larger sizes prioritized for better visibility (v3 cache bust) */}
+        <link rel="icon" type="image/png" sizes="128x128" href="/assets/images/favicon-128.png?v=3" />
+        <link rel="icon" type="image/png" sizes="96x96" href="/assets/images/favicon-96.png?v=3" />
+        <link rel="icon" type="image/png" sizes="64x64" href="/assets/images/favicon-64.png?v=3" />
+        <link rel="icon" type="image/png" sizes="48x48" href="/assets/images/favicon-48.png?v=3" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png?v=3" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16.png?v=3" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/GS-favicon.PNG?v=3" />
+        <link rel="shortcut icon" href="/assets/images/favicon-96.png?v=3" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=3" />
         
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
