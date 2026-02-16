@@ -311,7 +311,7 @@
 }
 
 .profile-name {
-  color: var(--white);
+  color: #ffffff !important; /* White for dark navbar (homepage) */
   font-weight: 500;
   font-size: 0.95rem;
   max-width: 120px;
@@ -519,13 +519,13 @@
    =================================== */
 
 .navbar.navbar-light {
-  background: rgba(255, 255, 255, 0.85);
+  background: white;
   border-bottom: 1px solid rgba(255, 107, 53, 0.1);
   box-shadow: 0 4px 20px rgba(255, 107, 53, 0.06);
 }
 
 .navbar-light .navbar-item {
-  color: #495057;
+  color: #000000;
 }
 
 .navbar-light .navbar-item:hover {
@@ -534,7 +534,7 @@
 }
 
 .navbar-light .dropdown-arrow {
-  color: #6c757d;
+  color: #000000;
 }
 
 .navbar-light .dropdown-menu {
@@ -544,7 +544,7 @@
 }
 
 .navbar-light .dropdown-item {
-  color: #495057;
+  color: #000000;
 }
 
 .navbar-light .dropdown-item:hover {
@@ -554,7 +554,7 @@
 }
 
 .navbar-light .dropdown-title {
-  color: #212529;
+  color: #000000;
 }
 
 .navbar-light .dropdown-item:hover .dropdown-title {
@@ -585,7 +585,7 @@
 }
 
 .navbar-light .profile-name {
-  color: #212529;
+  color: #212529 !important; /* Dark text for light navbar (other pages) */
 }
 
 .navbar-light .profile-arrow {
