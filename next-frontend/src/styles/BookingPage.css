@@ -5992,7 +5992,7 @@ span.device-unit {
 @media (max-width: 768px) {
   .booking-type-toggle {
     flex-direction: row;
-    padding: 0 1rem;
+    /* padding: 0 1rem; */
     gap: 0.625rem;
   }
   

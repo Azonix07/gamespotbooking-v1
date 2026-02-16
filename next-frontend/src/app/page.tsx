@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import HomePageClient from './HomePageClient';
+import FAQSchema from '@/components/structured-data/FAQSchema';
+import BreadcrumbSchema from '@/components/structured-data/BreadcrumbSchema';
 
 export const metadata: Metadata = {
   title: 'GameSpot Kodungallur - #1 Premium Gaming Lounge | PS5, Xbox, VR Gaming',
@@ -117,6 +119,8 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
+      <FAQSchema />
+      <BreadcrumbSchema items={[{ name: 'Home', url: '/' }]} />
       <HomePageClient />
     </>
   );

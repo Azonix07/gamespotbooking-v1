@@ -532,7 +532,7 @@ html, body {
     gap: 8px;
     padding: 16px 20px;
     margin-bottom: 24px;
-    background: rgba(30, 41, 59, 0.5);
+    /* background: rgba(30, 41, 59, 0.5); */
     border-radius: 18px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     overflow-x: auto;
@@ -689,7 +689,7 @@ html, body {
     gap: 0;
     padding: 8px 12px;
     margin-bottom: 20px;
-    background: rgba(15, 23, 42, 0.8);
+    /* background: rgba(15, 23, 42, 0.8); */
     border-radius: 50px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     overflow: hidden;
