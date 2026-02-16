@@ -473,8 +473,9 @@
 }
 
 .hero-container {
-  height: 100vh;
-  height: 100dvh; /* Dynamic viewport height — accounts for mobile address bar */
+  height: calc(100vh - 80px); /* Account for navbar height */
+  height: calc(100dvh - 80px); /* Dynamic viewport height — accounts for mobile address bar and navbar */
+  margin-top: 80px; /* Push down below navbar */
   display: flex;
   flex-direction: column;
   position: relative;
