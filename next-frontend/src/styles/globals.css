@@ -1,0 +1,123 @@
+/* Global CSS - imports all stylesheets in correct order */
+@import './variables.css';
+@import './theme.css';
+@import './base.css';
+@import './buttons.css';
+@import './forms.css';
+@import './modal.css';
+@import './mobile-responsive.css';
+
+/* Loading animation */
+@import './loading.css';
+
+/* Component styles */
+@import './Navbar.css';
+@import './Footer.css';
+@import './AIChat.css';
+@import './ModernDatePicker.css';
+@import './ThemeSelector.css';
+@import './LatestUpdates.css';
+
+/* Page styles */
+@import './HomePage.css';
+@import './LoginPage.css';
+@import './BookingPage.css';
+@import './GamesPage.css';
+@import './MembershipPlansPage.css';
+@import './ProfilePage.css';
+@import './ContactPage.css';
+@import './FeedbackPage.css';
+@import './UpdatesPage.css';
+@import './RentalPage.css';
+@import './CollegeSetupPage.css';
+@import './InvitePage.css';
+@import './GetOffersPage.css';
+@import './AdminDashboard.css';
+
+/* App wrapper for layout */
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================================
+   GLOBAL TYPOGRAPHY OVERRIDES
+   Ensure all headings use the correct font
+   =================================== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Ensure buttons and inputs inherit proper font */
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+/* Remove underlines from navigation and general links */
+a,
+a:link,
+a:visited {
+  text-decoration: none;
+}
+
+.navbar-item,
+.navbar-item:hover,
+.nav-link,
+.nav-link:hover,
+.footer-link,
+.footer-link:hover {
+  text-decoration: none !important;
+}
+
+button {
+  text-decoration: none;
+}
+
+/* Page loading fallback */
+.page-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: var(--text-muted, #94a3b8);
+  font-size: 1.1rem;
+  font-family: var(--font-body);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(99, 102, 241, 0.3);
+  color: #fff;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.6);
+}

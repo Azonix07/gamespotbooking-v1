@@ -1,0 +1,16 @@
+{
+  "name": "GameSpot Kodungallur - Premium Gaming Lounge",
+  "short_name": "GameSpot",
+  "description": "Book PS5, Xbox, VR gaming sessions at Kodungallur's #1 gaming lounge. Premium gaming in Thrissur, Kerala.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#ff6b35",
+  "icons": [
+    {
+      "src": "/assets/images/logo.png",
+      "sizes": "400x75",
+      "type": "image/png"
+    }
+  ]
+}

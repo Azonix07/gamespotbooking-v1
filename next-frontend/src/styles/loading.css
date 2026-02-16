@@ -1,0 +1,186 @@
+/* ===================================
+   GAMING LOADING ANIMATION
+   GameSpot themed loading screen
+   =================================== */
+
+.gs-loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  background: #0f172a;
+  position: relative;
+  overflow: hidden;
+  gap: 2rem;
+}
+
+/* Subtle grid background */
+.gs-loading-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* Controller icon wrapper */
+.gs-loading-icon {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Rotating ring around the icon */
+.gs-loading-ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: #ff6b35;
+  border-right-color: rgba(255, 107, 53, 0.3);
+  animation: gs-spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.gs-loading-ring::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-bottom-color: #6366f1;
+  border-left-color: rgba(99, 102, 241, 0.3);
+  animation: gs-spin 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite reverse;
+}
+
+/* Controller SVG */
+.gs-loading-controller {
+  font-size: 2.5rem;
+  animation: gs-pulse-glow 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(255, 107, 53, 0.4));
+  z-index: 1;
+}
+
+/* Loading bar */
+.gs-loading-bar-track {
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.gs-loading-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, #ff6b35, #ff9966, #ff6b35);
+  border-radius: 4px;
+  animation: gs-bar-slide 1.2s ease-in-out infinite;
+}
+
+/* Loading text */
+.gs-loading-text {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: var(--font-heading);
+}
+
+/* Dot animation for the text */
+.gs-loading-dots::after {
+  content: '';
+  animation: gs-dots 1.5s steps(4, end) infinite;
+}
+
+/* ===================================
+   KEYFRAMES
+   =================================== */
+@keyframes gs-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gs-pulse-glow {
+  0%, 100% { 
+    transform: scale(1);
+    filter: drop-shadow(0 0 12px rgba(255, 107, 53, 0.4));
+  }
+  50% { 
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 20px rgba(255, 107, 53, 0.6));
+  }
+}
+
+@keyframes gs-bar-slide {
+  0%   { left: -40%; }
+  100% { left: 100%; }
+}
+
+@keyframes gs-dots {
+  0%   { content: ''; }
+  25%  { content: '.'; }
+  50%  { content: '..'; }
+  75%  { content: '...'; }
+}
+
+/* ===================================
+   ADMIN LOADING VARIANT (light theme)
+   =================================== */
+.gs-loading-screen.gs-loading-admin {
+  background: linear-gradient(135deg, #ffffff 0%, #fff5f0 100%);
+}
+
+.gs-loading-screen.gs-loading-admin::before {
+  background-image:
+    linear-gradient(rgba(255, 107, 53, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 107, 53, 0.04) 1px, transparent 1px);
+}
+
+.gs-loading-screen.gs-loading-admin .gs-loading-ring {
+  border-top-color: #ff6b35;
+  border-right-color: rgba(255, 107, 53, 0.2);
+}
+
+.gs-loading-screen.gs-loading-admin .gs-loading-ring::after {
+  border-bottom-color: #f59e0b;
+  border-left-color: rgba(245, 158, 11, 0.2);
+}
+
+.gs-loading-screen.gs-loading-admin .gs-loading-controller {
+  filter: drop-shadow(0 0 12px rgba(255, 107, 53, 0.3));
+}
+
+.gs-loading-screen.gs-loading-admin .gs-loading-text {
+  color: rgba(30, 41, 59, 0.45);
+}
+
+.gs-loading-screen.gs-loading-admin .gs-loading-bar-track {
+  background: rgba(255, 107, 53, 0.08);
+}
+
+.gs-loading-screen.gs-loading-admin .gs-loading-bar-fill {
+  background: linear-gradient(90deg, #ff6b35, #ffb84d, #ff6b35);
+}
+
+/* ===================================
+   PAGE TRANSITION — quick fade
+   =================================== */
+.gs-page-enter {
+  animation: gs-page-fade-in 0.25s ease-out;
+}
+
+@keyframes gs-page-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

@@ -1,0 +1,18 @@
+# Next.js build output
+.next/
+# Dependencies
+node_modules/
+# Environment variables
+.env*.local
+# IDE
+.vscode/
+.idea/
+# OS
+.DS_Store
+# Testing
+coverage/
+# Misc
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

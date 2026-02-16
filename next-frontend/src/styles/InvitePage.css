@@ -1,0 +1,285 @@
+/* ===== InvitePage — Warm Orange Theme (matches BookingPage) ===== */
+
+.invite-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #ffffff 0%, #fff5f0 30%, #ffe8dc 60%, #ffffff 100%);
+  font-family: var(--font-body);
+  position: relative;
+  overflow: hidden;
+  padding: 40px 20px;
+}
+
+/* Background Orbs */
+.invite-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.invite-bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.18;
+}
+
+.invite-bg-orb-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #ff6b35, transparent 70%);
+  top: -200px;
+  left: -150px;
+  animation: inviteOrb1 20s ease-in-out infinite;
+}
+
+.invite-bg-orb-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #ff9966, transparent 70%);
+  bottom: -150px;
+  right: -120px;
+  animation: inviteOrb2 25s ease-in-out infinite;
+}
+
+@keyframes inviteOrb1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(60px, 80px) scale(1.1); }
+}
+
+@keyframes inviteOrb2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-50px, -60px) scale(1.05); }
+}
+
+/* Content */
+.invite-content {
+  position: relative;
+  z-index: 1;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Logo */
+.invite-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #ff6b35, #ff9966);
+  box-shadow: 0 12px 40px rgba(255, 107, 53, 0.3);
+  margin-bottom: 24px;
+  animation: logoFloat 4s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.invite-logo-icon {
+  font-size: 36px;
+}
+
+/* Title */
+.invite-title {
+  font-family: var(--font-heading);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+
+.invite-brand {
+  background: linear-gradient(135deg, #ff6b35, #ff9966);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.invite-sub {
+  font-size: 1rem;
+  color: #777;
+  margin-bottom: 40px;
+  line-height: 1.5;
+}
+
+/* Card Grid */
+.invite-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 36px;
+}
+
+/* Card */
+.invite-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 107, 53, 0.12);
+  border-radius: 18px;
+  padding: 20px 22px;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  text-align: left;
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.05);
+}
+
+.invite-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(255, 107, 53, 0.12);
+  border-color: var(--card-accent, #ff6b35);
+}
+
+.invite-card:active {
+  transform: translateY(-1px);
+}
+
+/* Card Icon */
+.invite-card-icon-wrap {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--card-accent, #ff6b35), color-mix(in srgb, var(--card-accent, #ff6b35) 70%, #fff));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  color: #fff;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--card-accent, #ff6b35) 30%, transparent);
+  transition: transform 0.3s ease;
+}
+
+.invite-card:hover .invite-card-icon-wrap {
+  transform: scale(1.08);
+}
+
+/* Card Body */
+.invite-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.invite-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: #1a1a2e;
+  margin-bottom: 3px;
+}
+
+.invite-card-desc {
+  font-size: 0.82rem;
+  color: #888;
+  line-height: 1.45;
+}
+
+/* Card Arrow */
+.invite-card-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 107, 53, 0.08);
+  color: #ff6b35;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.invite-card:hover .invite-card-arrow {
+  background: var(--card-accent, #ff6b35);
+  color: #fff;
+  transform: translateX(3px);
+}
+
+/* Footer Text */
+.invite-footer-text {
+  font-size: 0.78rem;
+  color: #bbb;
+  letter-spacing: 0.5px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 560px) {
+  .invite-page {
+    padding: 30px 16px;
+    align-items: flex-start;
+    padding-top: 60px;
+  }
+
+  .invite-title {
+    font-size: 1.9rem;
+  }
+
+  .invite-sub {
+    font-size: 0.92rem;
+    margin-bottom: 32px;
+  }
+
+  .invite-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+  }
+
+  .invite-logo-icon {
+    font-size: 30px;
+  }
+
+  .invite-card {
+    padding: 16px 18px;
+    gap: 14px;
+    border-radius: 16px;
+  }
+
+  .invite-card-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 1.3rem;
+  }
+
+  .invite-card-title {
+    font-size: 0.95rem;
+  }
+
+  .invite-card-desc {
+    font-size: 0.78rem;
+  }
+
+  .invite-card-arrow {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .invite-title {
+    font-size: 1.6rem;
+  }
+
+  .invite-card-desc {
+    display: none;
+  }
+
+  .invite-card {
+    padding: 14px 16px;
+  }
+}
