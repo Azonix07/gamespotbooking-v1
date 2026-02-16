@@ -1,0 +1,13 @@
+# Railway Configuration for Next.js Frontend
+# This file must be at the repository root
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "cd next-frontend && npm start"
+restartPolicyType = "always"
+
+# Tell Railway where to find the Next.js app
+[build.env]
+RAILWAY_RUN_UID = "1000"

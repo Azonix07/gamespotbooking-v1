@@ -37,13 +37,14 @@ git push origin main
    - Select **"Deploy from GitHub repo"**
    - Choose `Azonix07/gamespotbooking-v1`
 
-3. **Configure Root Directory**
-   - Railway will detect the repo
-   - Click **"Settings"** tab
-   - Under **"Build"**, set:
-     - **Root Directory**: `next-frontend`
-     - **Build Command**: `npm run build` (or leave empty, Railway auto-detects)
-     - **Start Command**: `npm start`
+3. **Configure Root Directory** ⚠️ **CRITICAL STEP**
+   - After selecting the repo, Railway will try to build
+   - **IMMEDIATELY** click **"Settings"** tab (before the build fails)
+   - Scroll down to **"Service Settings"** section
+   - Find **"Root Directory"** field
+   - Enter: `next-frontend`
+   - Click **"Update"** to save
+   - Railway will automatically restart the build from the correct directory
 
 4. **Add Environment Variables**
    - Go to **"Variables"** tab
@@ -227,6 +228,18 @@ Railway automatically redeploys on git push:
 ---
 
 ## 🐛 Troubleshooting
+
+### ❌ "No start command was found" Error
+
+**Problem**: Railway is building from the root directory instead of `next-frontend/`
+
+**Solution**:
+1. Go to Railway dashboard
+2. Click **"Settings"** tab
+3. Scroll to **"Service Settings"**
+4. Set **"Root Directory"** to: `next-frontend`
+5. Click **"Update"**
+6. Railway will automatically redeploy from the correct directory
 
 ### Build Fails
 - Check Railway logs for specific error
