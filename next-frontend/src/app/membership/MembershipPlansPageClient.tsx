@@ -339,7 +339,7 @@ const MembershipPlansPage = () => {
                   </div>
 
                   {/* ─── BACK FACE ─── */}
-                  <div className="pass-card-face pass-card-back" style={{ '--accent': plan.accent }}>
+                  <div className="pass-card-face pass-card-back" style={{ '--accent': plan.accent } as React.CSSProperties}>
                     <div className="card-back-top">
                       <div className="card-back-action">
                         <button

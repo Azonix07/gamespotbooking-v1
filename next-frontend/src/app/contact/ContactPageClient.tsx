@@ -20,7 +20,7 @@ const ContactPage = () => {
   const [activeQuickMsg, setActiveQuickMsg] = useState(null);
   const [visibleSections, setVisibleSections] = useState(new Set());
   const [currentStat, setCurrentStat] = useState(0);
-  const sectionRefs = useRef({});
+  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
   const contactInfo = {
     phone: '+91 70121 25919',
@@ -76,7 +76,7 @@ const ContactPage = () => {
       { threshold: 0.12 }
     );
     Object.values(sectionRefs.current).forEach((ref) => {
-      if (ref) observer.observe(ref);
+      if (ref) observer.observe(ref as Element);
     });
     return () => observer.disconnect();
   }, []);
@@ -165,7 +165,7 @@ const ContactPage = () => {
       <div className="contact-main-container">
 
         {/* ═══ CONTACT CARDS ═══ */}
-        <section className={`contact-section ${visibleSections.has('cards') ? 'visible' : ''}`} data-section="cards" ref={(el) => (sectionRefs.current.cards = el)}>
+        <section className={`contact-section ${visibleSections.has('cards') ? 'visible' : ''}`} data-section="cards" ref={(el) => { sectionRefs.current.cards = el; }}>
           <div className="quick-contact-grid">
             {/* WhatsApp Card */}
             <div className="contact-card whatsapp-card">
@@ -186,7 +186,7 @@ const ContactPage = () => {
                 ))}
               </div>
               <div className="whatsapp-input-section">
-                <textarea className="whatsapp-textarea" placeholder="Type your message here..." value={whatsappMessage} onChange={handleMessageChange} rows="3" />
+                <textarea className="whatsapp-textarea" placeholder="Type your message here..." value={whatsappMessage} onChange={handleMessageChange} rows={3} />
                 <div className="textarea-footer">
                   <span className={`char-counter ${charCount > 400 ? 'warn' : ''}`}>{charCount}/500</span>
                 </div>
@@ -235,7 +235,7 @@ const ContactPage = () => {
         </section>
 
         {/* ═══ SOCIALS ═══ */}
-        <section className={`contact-section ${visibleSections.has('social') ? 'visible' : ''}`} data-section="social" ref={(el) => (sectionRefs.current.social = el)}>
+        <section className={`contact-section ${visibleSections.has('social') ? 'visible' : ''}`} data-section="social" ref={(el) => { sectionRefs.current.social = el; }}>
           <div className="section-header">
             <div className="section-badge"><FiHeart /> Community</div>
             <h2 className="section-title">Follow Our <span className="text-gradient">Gaming Journey</span></h2>
@@ -260,7 +260,7 @@ const ContactPage = () => {
         </section>
 
         {/* ═══ LOCATION & MAP ═══ */}
-        <section className={`contact-section ${visibleSections.has('location') ? 'visible' : ''}`} data-section="location" ref={(el) => (sectionRefs.current.location = el)}>
+        <section className={`contact-section ${visibleSections.has('location') ? 'visible' : ''}`} data-section="location" ref={(el) => { sectionRefs.current.location = el; }}>
           <div className="section-header">
             <div className="section-badge"><FiMapPin /> Location</div>
             <h2 className="section-title">Visit <span className="text-gradient">GameSpot</span></h2>
@@ -271,7 +271,7 @@ const ContactPage = () => {
               <iframe
                 src={contactInfo.googleMapsEmbed}
                 width="100%" height="100%" style={{ border: 0 }}
-                allowFullScreen="" loading="lazy"
+                allowFullScreen loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 title="GameSpot Location — Kodungallur, Kerala"
               />
@@ -329,7 +329,7 @@ const ContactPage = () => {
         </section>
 
         {/* ═══ WHY VISIT ═══ */}
-        <section className={`contact-section ${visibleSections.has('features') ? 'visible' : ''}`} data-section="features" ref={(el) => (sectionRefs.current.features = el)}>
+        <section className={`contact-section ${visibleSections.has('features') ? 'visible' : ''}`} data-section="features" ref={(el) => { sectionRefs.current.features = el; }}>
           <div className="section-header">
             <div className="section-badge"><FiZap /> Experience</div>
             <h2 className="section-title">Why Visit <span className="text-gradient">GameSpot?</span></h2>
