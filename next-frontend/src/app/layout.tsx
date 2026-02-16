@@ -36,8 +36,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'GameSpot Kodungallur - Premium Gaming Lounge | PS5, Xbox, VR Gaming Near You',
-    template: '%s | GameSpot Kodungallur - Gaming Lounge',
+    default: 'GameSpot Kodungallur – Next-Gen Gaming Experience',
+    template: '%s | GameSpot Kodungallur',
   },
   description: 'GameSpot is the #1 premium gaming lounge in Kodungallur, Thrissur, Kerala. Book PS5, Xbox Series X, Meta Quest VR sessions. Best gaming cafe near Kodungallur, Irinjalakuda, Guruvayur, Chalakudy. Professional gaming setup & ultimate entertainment.',
   keywords: [
@@ -84,8 +84,13 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true, 'max-video-preview': -1, 'max-image-preview': 'large', 'max-snippet': -1 },
   },
   icons: {
-    icon: '/favicon.ico',
-    apple: '/assets/images/logo.png',
+    icon: [
+      { url: '/assets/images/GS-favicon.PNG', type: 'image/png' },
+      { url: '/assets/images/GS-favicon.PNG', sizes: '32x32', type: 'image/png' },
+      { url: '/assets/images/GS-favicon.PNG', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: '/assets/images/GS-favicon.PNG',
+    shortcut: '/assets/images/GS-favicon.PNG',
   },
   manifest: '/manifest.json',
   verification: {
