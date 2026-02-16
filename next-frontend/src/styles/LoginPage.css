@@ -193,6 +193,9 @@
   position: relative;
   display: flex;
   align-items: center;
+  background: none !important;
+  padding: 0px !important;
+
 }
 
 .login-page .input-icon {
