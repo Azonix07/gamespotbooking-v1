@@ -1,9 +1,9 @@
 'use client';
 // @ts-nocheck
 
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   FiUser,
   FiMail,
@@ -18,7 +18,11 @@ import {
   FiCheckCircle,
   FiStar,
   FiRefreshCw,
-  FiX
+  FiX,
+  FiFileText,
+  FiDownload,
+  FiChevronDown,
+  FiChevronUp
 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch, getAuthToken } from '@/services/apiClient';
@@ -45,7 +49,86 @@ const ProfilePage = () => {
   const [newGameChoice, setNewGameChoice] = useState('');
   const [gameChangeSubmitting, setGameChangeSubmitting] = useState(false);
 
+  // Purchase History state
+  const [expandedBooking, setExpandedBooking] = useState(null);
+
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+
+  // Safe date formatter — never throws
+  const formatDate = useCallback((dateStr, options = {}) => {
+    try {
+      if (!dateStr) return 'N/A';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return 'N/A';
+      return d.toLocaleDateString('en-IN', options);
+    } catch {
+      return 'N/A';
+    }
+  }, []);
+
+  // Generate printable bill for a booking
+  const generateBill = useCallback((booking) => {
+    const billWindow = window.open('', '_blank', 'width=420,height=700');
+    if (!billWindow) return;
+
+    const deviceLines = (booking.devices || []).map(d => {
+      const deviceName = d.type === 'ps5' ? `PS5 #${d.number}` : 'Driving Sim';
+      return `<tr><td style="padding:6px 0;border-bottom:1px dashed #eee">${deviceName}</td><td style="padding:6px 0;border-bottom:1px dashed #eee;text-align:right">${d.players} player${d.players > 1 ? 's' : ''}</td></tr>`;
+    }).join('');
+
+    const dateStr = formatDate(booking.date, { day: 'numeric', month: 'long', year: 'numeric' });
+    const bookingId = String(booking.id).padStart(5, '0');
+
+    billWindow.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>GameSpot Bill #${bookingId}</title>
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{font-family:'Segoe UI',system-ui,sans-serif;color:#1a1a1a;background:#fff;padding:24px;max-width:400px;margin:0 auto}
+      .bill-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #ff6b35}
+      .bill-logo{font-size:24px;font-weight:800;color:#ff6b35;margin-bottom:4px}
+      .bill-subtitle{font-size:11px;color:#888;letter-spacing:1px;text-transform:uppercase}
+      .bill-id{background:#f8f4f0;padding:8px 12px;border-radius:8px;font-size:12px;color:#666;margin:12px 0;text-align:center}
+      .bill-section{margin-bottom:16px}
+      .bill-section h4{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+      .bill-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
+      .bill-row.total{font-size:16px;font-weight:700;color:#ff6b35;padding:12px 0;border-top:2px solid #1a1a1a;margin-top:8px}
+      .bill-devices{width:100%;font-size:13px;border-collapse:collapse}
+      .bill-footer{text-align:center;margin-top:24px;padding-top:16px;border-top:1px dashed #ddd;font-size:11px;color:#999}
+      .bill-status{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;text-transform:uppercase}
+      .status-confirmed{background:#e8f5e9;color:#2e7d32}
+      .status-completed{background:#e3f2fd;color:#1565c0}
+      .status-cancelled{background:#fce4ec;color:#c62828}
+      .points-earned{background:#fff3e0;color:#e65100;padding:8px 12px;border-radius:8px;font-size:12px;text-align:center;margin-top:12px}
+      @media print{body{padding:12px}button{display:none!important}}
+      .print-btn{display:block;width:100%;padding:10px;margin-top:20px;background:#ff6b35;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+    </style></head><body>
+    <div class="bill-header">
+      <div class="bill-logo">🎮 GameSpot</div>
+      <div class="bill-subtitle">Gaming Lounge · Kodungallur</div>
+    </div>
+    <div class="bill-id">Invoice #GS-${bookingId} · <span class="bill-status status-${booking.status || 'confirmed'}">${booking.status || 'confirmed'}</span></div>
+    <div class="bill-section">
+      <h4>Booking Details</h4>
+      <div class="bill-row"><span>Date</span><span>${dateStr}</span></div>
+      <div class="bill-row"><span>Time</span><span>${booking.time || 'N/A'}</span></div>
+      <div class="bill-row"><span>Duration</span><span>${booking.duration || 0} minutes</span></div>
+      ${booking.booked_as ? `<div class="bill-row"><span>Customer</span><span>${booking.booked_as}</span></div>` : ''}
+    </div>
+    <div class="bill-section">
+      <h4>Devices</h4>
+      <table class="bill-devices">${deviceLines || '<tr><td>No device info</td></tr>'}</table>
+    </div>
+    <div class="bill-section">
+      <div class="bill-row total"><span>Total Amount</span><span>₹${(booking.price || 0).toFixed(2)}</span></div>
+    </div>
+    ${booking.points_earned > 0 ? `<div class="points-earned">⭐ ${booking.points_earned} SuperCoins earned from this booking</div>` : ''}
+    <div class="bill-footer">
+      <p>Thank you for gaming with us!</p>
+      <p style="margin-top:4px">gamespotkdlr.com · Kodungallur, Thrissur</p>
+    </div>
+    <button class="print-btn" onclick="window.print()">🖨️ Print Bill</button>
+    </body></html>`);
+    billWindow.document.close();
+  }, [formatDate]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -265,6 +348,20 @@ const ProfilePage = () => {
     );
   }
 
+  // Guard against null profileData (race condition between auth check and profile fetch)
+  if (!profileData) {
+    return (
+      <>
+<div className="profile-page-new">
+          <div className="profile-loading">
+            <div className="spinner"></div>
+            <p>Loading your profile...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
 <div className="profile-page-new">
@@ -321,7 +418,7 @@ const ProfilePage = () => {
                 <div className="profile-info-text">
                   <h2>{profileData?.name}</h2>
                   <p className="profile-member-since">
-                    Member since {new Date(profileData?.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
+                    Member since {formatDate(profileData?.created_at, { month: 'short', year: 'numeric' })}
                   </p>
                 </div>
               </div>
@@ -809,44 +906,67 @@ const ProfilePage = () => {
                   <div className="bookings-list">
                     {bookings.map((booking) => (
                       <div key={booking.id} className={`booking-item status-${booking.status || 'confirmed'}`}>
-                        <div className="booking-header-row">
+                        <div className="booking-header-row" onClick={() => setExpandedBooking(expandedBooking === booking.id ? null : booking.id)} style={{ cursor: 'pointer' }}>
                           <div className="booking-date-time">
                             <FiClock className="booking-icon" />
                             <div>
-                              <div className="booking-date">{new Date(booking.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                              <div className="booking-date">{formatDate(booking.date, { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                               <div className="booking-time">{booking.time} • {booking.duration} mins</div>
                             </div>
                           </div>
-                          <div className="booking-status-badge">
-                            {(booking.status || 'confirmed') === 'completed' && <FiCheckCircle />}
-                            {booking.status || 'confirmed'}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div className="booking-price">₹{(booking.price || 0).toFixed(2)}</div>
+                            <div className="booking-status-badge">
+                              {(booking.status || 'confirmed') === 'completed' && <FiCheckCircle />}
+                              {booking.status || 'confirmed'}
+                            </div>
+                            {expandedBooking === booking.id ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}
                           </div>
                         </div>
 
-                        {/* Show booked-as name if different from profile name */}
-                        {booking.booked_as && profileData?.name && booking.booked_as !== profileData.name && (
-                          <div className="booking-booked-as">
-                            <FiUser className="booked-as-icon" />
-                            <span>Booked as: <strong>{booking.booked_as}</strong></span>
+                        {expandedBooking === booking.id && (
+                          <div className="booking-expanded" style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                            {/* Show booked-as name if different from profile name */}
+                            {booking.booked_as && profileData?.name && booking.booked_as !== profileData.name && (
+                              <div className="booking-booked-as">
+                                <FiUser className="booked-as-icon" />
+                                <span>Booked as: <strong>{booking.booked_as}</strong></span>
+                              </div>
+                            )}
+                            
+                            <div className="booking-devices">
+                              {booking.devices && booking.devices.map((device, idx) => (
+                                <span key={idx} className="device-tag">
+                                  <FiMonitor /> {device.type === 'ps5' ? `PS5 #${device.number}` : 'Driving Sim'} ({device.players} {device.players > 1 ? 'players' : 'player'})
+                                </span>
+                              ))}
+                            </div>
+                            
+                            <div className="booking-footer-row">
+                              {booking.points_earned > 0 && (
+                                <div className="booking-points-earned">
+                                  <FiStar className="points-star-small" /> +{booking.points_earned} points earned
+                                </div>
+                              )}
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                              <button
+                                className="btn-bill"
+                                onClick={(e) => { e.stopPropagation(); generateBill(booking); }}
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: '6px',
+                                  padding: '8px 14px', background: 'rgba(255,107,53,0.15)',
+                                  color: '#ff6b35', border: '1px solid rgba(255,107,53,0.3)',
+                                  borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                                  cursor: 'pointer', transition: 'all 0.2s ease'
+                                }}
+                              >
+                                <FiFileText size={14} /> View Bill
+                              </button>
+                            </div>
                           </div>
                         )}
-                        
-                        <div className="booking-devices">
-                          {booking.devices && booking.devices.map((device, idx) => (
-                            <span key={idx} className="device-tag">
-                              <FiMonitor /> {device.type === 'ps5' ? `PS5 #${device.number}` : 'Driving Sim'} ({device.players} {device.players > 1 ? 'players' : 'player'})
-                            </span>
-                          ))}
-                        </div>
-                        
-                        <div className="booking-footer-row">
-                          <div className="booking-price">₹{(booking.price || 0).toFixed(2)}</div>
-                          {booking.points_earned > 0 && (
-                            <div className="booking-points-earned">
-                              <FiStar className="points-star-small" /> +{booking.points_earned} points earned
-                            </div>
-                          )}
-                        </div>
                       </div>
                     ))}
                   </div>

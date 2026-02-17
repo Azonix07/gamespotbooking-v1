@@ -409,7 +409,7 @@
 .badge-content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  /* gap: 2px; */
 }
 
 .badge-label {
@@ -1660,8 +1660,8 @@ span.device-unit {
 
 .device-card.driving-card {
   grid-column: 1 / -1; 
-  margin-top: 40px; /* Increased separation */
-  margin-bottom: 20px; /* Bottom spacing */
+  /* margin-top: 40px;  */
+  /* margin-bottom: 20px;  */
 }
 
 @media (max-width: 768px) {
@@ -1747,7 +1747,7 @@ span.device-unit {
 .profile-name {
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--booking-gray-900);
+  color: black;
 }
 
 .form-group-v2 {
@@ -1919,6 +1919,7 @@ span.device-unit {
   padding: 20px;
   border-radius: 16px;
   margin-top: 24px;
+  margin-bottom: 24px;
   border: 2px dashed rgba(255, 107, 53, 0.2);
 }
 
@@ -3727,7 +3728,7 @@ span.device-unit {
 .selection-mode-tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 24px;
+  /* margin-bottom: 24px; */
   padding: 6px;
   background: rgba(255, 255, 255, 0.7);
   border: 2px solid rgba(255, 107, 53, 0.12);
