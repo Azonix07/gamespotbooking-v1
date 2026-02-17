@@ -8,14 +8,28 @@ const ContactPageClient = dynamic(() => import('./ContactPageClient'), {
 });
 
 export const metadata: Metadata = {
-  title: 'Contact Us - Location & Hours | GameSpot Kodungallur',
-  description: 'Visit GameSpot Gaming Lounge in Kodungallur, Thrissur, Kerala. Get directions, opening hours, WhatsApp & phone contact. Near Kodungallur town, easy access from Irinjalakuda & Guruvayur.',
-  keywords: ['GameSpot location Kodungallur', 'gaming lounge address Kodungallur', 'gaming cafe contact Thrissur', 'gaming near Kodungallur directions'],
+  title: 'Contact Us - Location, Hours & Directions | GameSpot Kodungallur',
+  description: 'Visit GameSpot Gaming Lounge in Kodungallur, Thrissur, Kerala 680664. Get directions, opening hours (10AM-10PM daily), WhatsApp & phone contact. Easy access from Irinjalakuda, Guruvayur, Chalakudy & Angamaly.',
+  keywords: [
+    'GameSpot location Kodungallur', 'gaming lounge address Kodungallur',
+    'gaming cafe contact Thrissur', 'gaming near Kodungallur directions',
+    'GameSpot Kodungallur phone number', 'gaming lounge near me Kodungallur',
+    'GameSpot opening hours', 'gaming cafe location Thrissur district',
+    'how to reach GameSpot Kodungallur', 'gaming lounge map Kodungallur',
+  ],
   alternates: { canonical: 'https://gamespotkdlr.com/contact' },
   openGraph: {
     title: 'Contact & Location | GameSpot Kodungallur',
-    description: 'Find us in Kodungallur, Thrissur. Get directions, WhatsApp & phone contact for Kerala\'s best gaming lounge.',
+    description: 'Find GameSpot in Kodungallur, Thrissur. Open 10AM-10PM daily. Get directions, WhatsApp & phone contact.',
     url: 'https://gamespotkdlr.com/contact',
+    siteName: 'GameSpot Kodungallur',
+    type: 'website',
+    images: [{ url: '/assets/images/logo.png', width: 400, height: 75, alt: 'GameSpot Kodungallur Location' }],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Contact GameSpot Kodungallur',
+    description: 'Gaming lounge in Kodungallur, Thrissur. Open daily 10AM-10PM.',
   },
 };
 

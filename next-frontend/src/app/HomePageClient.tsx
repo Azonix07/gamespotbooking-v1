@@ -122,8 +122,14 @@ export default function HomePageClient() {
           fetchPriority="high"
         />
 
-        <p className="hero-subtitle">Experience Next-Generation Gaming</p>
-        <p className="hero-subtitle2">Premium Consoles • Professional Setup • Ultimate Entertainment</p>
+        <p className="hero-subtitle">
+          <span className="hero-subtitle-full">Experience Next-Generation Gaming</span>
+          <span className="hero-subtitle-mobile">Next-Gen Gaming Awaits</span>
+        </p>
+        <p className="hero-subtitle2">
+          <span className="hero-subtitle2-full">Premium Consoles • Professional Setup • Ultimate Entertainment</span>
+          <span className="hero-subtitle2-mobile">PS5 • Xbox • VR</span>
+        </p>
 
         <Link href="/booking" className="cta-book-now-button" prefetch>
           BOOK NOW

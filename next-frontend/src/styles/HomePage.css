@@ -788,6 +788,12 @@ body:has(.hero-container) {
   text-align: center;
 }
 
+/* Mobile/Desktop text switching */
+.hero-subtitle-mobile,
+.hero-subtitle2-mobile {
+  display: none;
+}
+
 .hero-subtitle2 {
   font-size: 18px;
   color: #ff5b3e;
@@ -1031,6 +1037,18 @@ body:has(.hero-container) {
   .hero-content {
     padding: var(--spacing-xl);
   }
+
+  .hero-subtitle {
+    font-size: 22px;
+    margin-top: 25px;
+    margin-bottom: 10px;
+  }
+
+  .hero-subtitle2 {
+    font-size: 14px;
+    margin-bottom: 30px;
+    letter-spacing: 1.5px;
+  }
   
   .hero-cta {
     flex-direction: column;
@@ -1084,6 +1102,52 @@ body:has(.hero-container) {
 }
 
 @media (max-width: 480px) {
+  /* Switch to shorter mobile text */
+  .hero-subtitle-full,
+  .hero-subtitle2-full {
+    display: none;
+  }
+
+  .hero-subtitle-mobile,
+  .hero-subtitle2-mobile {
+    display: inline;
+  }
+
+  .hero-subtitle {
+    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .hero-subtitle2 {
+    font-size: 12px;
+    margin-bottom: 25px;
+    letter-spacing: 2px;
+  }
+
+  .cta-book-now-button {
+    padding: 10px 35px;
+    font-size: 16px;
+  }
+
+  .console-icons-container {
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .console-icon {
+    height: 20px;
+  }
+
+  .meta-icon {
+    height: 70px;
+  }
+
+  .console-separator {
+    font-size: 20px;
+  }
+
   .btn-hero {
     font-size: 1.25rem !important;
     padding: 1rem 2.5rem !important;

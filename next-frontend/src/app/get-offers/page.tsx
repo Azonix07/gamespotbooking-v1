@@ -8,14 +8,23 @@ const GetOffersPageClient = dynamic(() => import('./GetOffersPageClient'), {
 });
 
 export const metadata: Metadata = {
-  title: 'Gaming Offers & Discount Codes | GameSpot Kodungallur',
-  description: 'Get exclusive gaming offers & discount codes at GameSpot Kodungallur. Follow us on Instagram, refer friends & claim discounts. Best gaming deals in Thrissur, Kerala.',
-  keywords: ['gaming offers Kodungallur', 'discount codes gaming lounge', 'GameSpot deals Kerala', 'gaming promotions Thrissur'],
+  title: 'Gaming Offers, Deals & Discount Codes | GameSpot Kodungallur',
+  description: 'Get exclusive gaming offers & promo codes at GameSpot Kodungallur. Follow on Instagram, refer friends & claim discounts on PS5, Xbox & VR sessions. Best gaming deals in Kodungallur, Thrissur, Kerala.',
+  keywords: [
+    'gaming offers Kodungallur', 'discount codes gaming lounge',
+    'GameSpot deals Kerala', 'gaming promotions Thrissur',
+    'PS5 gaming discount Kodungallur', 'gaming promo code Kerala',
+    'gaming lounge offers near me', 'cheap gaming Kodungallur',
+    'gaming deals Thrissur district',
+  ],
   alternates: { canonical: 'https://gamespotkdlr.com/get-offers' },
   openGraph: {
-    title: 'Offers & Discounts | GameSpot Kodungallur',
-    description: 'Exclusive gaming offers & discount codes. Follow, share & save at Kodungallur\'s best gaming lounge.',
+    title: 'Gaming Offers & Discounts | GameSpot Kodungallur',
+    description: 'Exclusive gaming offers, promo codes & referral discounts at Kodungallur\'s best gaming lounge.',
     url: 'https://gamespotkdlr.com/get-offers',
+    siteName: 'GameSpot Kodungallur',
+    type: 'website',
+    images: [{ url: '/assets/images/logo.png', width: 400, height: 75, alt: 'GameSpot Gaming Offers' }],
   },
 };
 

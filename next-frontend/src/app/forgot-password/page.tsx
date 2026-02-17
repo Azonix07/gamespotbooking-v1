@@ -4,8 +4,9 @@ import GameSpotLoader from '@/components/GameSpotLoader';
 import ForgotPasswordPageClient from './ForgotPasswordPageClient';
 
 export const metadata: Metadata = {
-  title: 'Forgot Password',
-  description: 'Reset your GameSpot account password. We\'ll send you an OTP to verify your identity.',
+  title: 'Reset Password | GameSpot Kodungallur',
+  description: 'Reset your GameSpot account password. We\'ll send you an OTP to verify your identity and restore access to your gaming account.',
+  robots: { index: false, follow: true },
 };
 
 export default function ForgotPasswordPage() {

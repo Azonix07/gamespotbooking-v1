@@ -8,14 +8,30 @@ const CollegeSetupPageClient = dynamic(() => import('./CollegeSetupPageClient'),
 });
 
 export const metadata: Metadata = {
-  title: 'College Event Gaming Setup - PS5, VR, Simulators | GameSpot Kerala',
-  description: 'Book professional gaming setups for college fests & events in Kerala. PS5, VR, driving simulators with full setup & support. Servicing Kodungallur, Thrissur, Ernakulam & all Kerala.',
-  keywords: ['college gaming event Kerala', 'gaming setup rental Thrissur', 'college fest gaming Kodungallur', 'esports event Kerala', 'gaming stall college fest'],
+  title: 'College Event & Fest Gaming Setup - PS5, VR, Simulators | GameSpot Kerala',
+  description: 'Book professional gaming setups for college fests, tech fests & events across Kerala. PS5, Xbox, VR, driving simulators with full setup, delivery & technical support. Servicing Kodungallur, Thrissur, Ernakulam, Kochi & all Kerala districts.',
+  keywords: [
+    'college gaming event Kerala', 'gaming setup rental Thrissur',
+    'college fest gaming Kodungallur', 'esports event Kerala',
+    'gaming stall college fest', 'PS5 rental college fest',
+    'tech fest gaming setup Kerala', 'VR experience college event',
+    'gaming event organiser Kerala', 'college gaming tournament setup',
+    'esports setup Thrissur', 'gaming booth college fest Ernakulam',
+    'driving simulator rental Kerala', 'corporate gaming event Kerala',
+  ],
   alternates: { canonical: 'https://gamespotkdlr.com/college-setup' },
   openGraph: {
     title: 'College Event Gaming Setup | GameSpot Kerala',
-    description: 'Professional gaming setups for college fests. PS5, VR, simulators with full support. Available across Kerala.',
+    description: 'Professional PS5, Xbox, VR & driving sim setups for college fests. Full setup & support across Kerala.',
     url: 'https://gamespotkdlr.com/college-setup',
+    siteName: 'GameSpot Kodungallur',
+    type: 'website',
+    images: [{ url: '/assets/images/logo.png', width: 400, height: 75, alt: 'GameSpot College Event Setup' }],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'College Fest Gaming Setup | GameSpot Kerala',
+    description: 'PS5, VR & simulators for college events. Professional setup across Kerala.',
   },
 };
 

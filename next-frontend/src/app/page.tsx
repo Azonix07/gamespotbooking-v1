@@ -5,21 +5,37 @@ import BreadcrumbSchema from '@/components/structured-data/BreadcrumbSchema';
 
 export const metadata: Metadata = {
   title: 'GameSpot Kodungallur - #1 Premium Gaming Lounge | PS5, Xbox, VR Gaming',
-  description: 'GameSpot is the best gaming lounge in Kodungallur, Thrissur, Kerala. Book PS5, Xbox Series X, Meta Quest VR sessions. Premium gaming cafe near Kodungallur, Irinjalakuda, Guruvayur & Chalakudy. Professional setup, 50+ games, competitive pricing.',
+  description: 'GameSpot is the best gaming lounge in Kodungallur, Thrissur, Kerala. Play GTA V, God of War, FIFA, Spider-Man, Call of Duty & 50+ games on PS5, Xbox Series X & Meta Quest VR. Book sessions online. Professional setup, competitive pricing. Near Irinjalakuda, Guruvayur & Chalakudy.',
   keywords: [
     'GameSpot Kodungallur', 'gaming lounge Kodungallur', 'PS5 gaming Kodungallur',
     'best gaming cafe Kodungallur', 'VR gaming near Kodungallur', 'gaming zone Thrissur',
     'Xbox gaming Kerala', 'gaming near me Kodungallur', 'PlayStation 5 Kodungallur',
     'gaming cafe near Irinjalakuda', 'gaming lounge near Guruvayur',
+    'GTA Kodungallur', 'GTA V gaming lounge Kodungallur', 'play GTA in Kodungallur',
+    'FIFA Kodungallur', 'God of War Kodungallur', 'Spider-Man PS5 Kodungallur',
+    'Call of Duty Kodungallur', 'gaming cafe Thrissur district',
+    'PS5 gaming near me', 'gaming zone near Chalakudy', 'gaming lounge near Angamaly',
+    'best gaming experience Kerala', 'premium gaming lounge Kerala',
+    'VR experience Kodungallur', 'driving simulator Kodungallur',
+    'esports Kodungallur', 'gaming center Thrissur', 'console gaming Kerala',
+    'Fortnite Kodungallur', 'WWE gaming Kodungallur', 'racing games Kodungallur',
   ],
   alternates: {
     canonical: 'https://gamespotkdlr.com',
   },
   openGraph: {
-    title: 'GameSpot Kodungallur - #1 Premium Gaming Lounge in Kerala',
-    description: 'Experience next-generation gaming at Kodungallur\'s best gaming lounge. PS5, Xbox Series X, Meta Quest VR. Book your session now!',
+    title: 'GameSpot Kodungallur - #1 Premium Gaming Lounge | PS5, Xbox, VR',
+    description: 'Play GTA, FIFA, God of War & 50+ games on PS5, Xbox & VR at Kodungallur\'s best gaming lounge. Book your session now!',
     url: 'https://gamespotkdlr.com',
-    images: [{ url: '/assets/images/logo.png', width: 400, height: 75, alt: 'GameSpot Kodungallur Gaming Lounge' }],
+    siteName: 'GameSpot Kodungallur',
+    locale: 'en_IN',
+    type: 'website',
+    images: [{ url: '/assets/images/logo.png', width: 400, height: 75, alt: 'GameSpot Kodungallur - Premium Gaming Lounge' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GameSpot Kodungallur - #1 Gaming Lounge in Kerala',
+    description: 'PS5, Xbox, VR gaming. GTA, FIFA, God of War & 50+ games. Book now!',
   },
 };
 

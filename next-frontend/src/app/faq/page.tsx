@@ -5,20 +5,27 @@ import Link from 'next/link';
 import './faq.css';
 
 export const metadata: Metadata = {
-  title: 'Frequently Asked Questions - GameSpot Kodungallur | Gaming Lounge FAQs',
-  description: 'Find answers to common questions about GameSpot gaming lounge in Kodungallur. Learn about PS5, Xbox, VR gaming sessions, pricing, location, booking, and more.',
+  title: 'FAQ - Gaming Lounge Questions Answered | GameSpot Kodungallur',
+  description: 'Find answers to common questions about GameSpot gaming lounge in Kodungallur. PS5, Xbox, VR gaming sessions pricing, timing, booking, location, available games like GTA, FIFA, God of War & more.',
   keywords: [
-    'GameSpot FAQ', 'gaming lounge questions', 'PS5 gaming cost Kodungallur',
-    'gaming cafe hours Kodungallur', 'how to book gaming session', 'gaming near me',
-    'Xbox gaming price', 'VR gaming experience', 'gaming lounge location Kodungallur',
+    'GameSpot FAQ', 'gaming lounge questions Kodungallur', 'PS5 gaming cost Kodungallur',
+    'gaming cafe hours Kodungallur', 'how to book gaming session Kodungallur',
+    'gaming near me Kodungallur', 'Xbox gaming price Kerala',
+    'VR gaming experience Kodungallur', 'gaming lounge location Kodungallur',
+    'GTA gaming price Kodungallur', 'PS5 hourly rate Thrissur',
+    'gaming lounge timing Kodungallur', 'what games available GameSpot',
+    'driving simulator price Kodungallur', 'party booking gaming Kodungallur',
   ],
   alternates: {
     canonical: 'https://gamespotkdlr.com/faq',
   },
   openGraph: {
     title: 'FAQ - GameSpot Kodungallur Gaming Lounge',
-    description: 'All your questions about gaming at GameSpot Kodungallur answered',
+    description: 'All your questions about gaming at GameSpot Kodungallur answered. Pricing, timing, games, booking & more.',
     url: 'https://gamespotkdlr.com/faq',
+    siteName: 'GameSpot Kodungallur',
+    type: 'website',
+    images: [{ url: '/assets/images/logo.png', width: 400, height: 75, alt: 'GameSpot FAQ' }],
   },
 };
 
