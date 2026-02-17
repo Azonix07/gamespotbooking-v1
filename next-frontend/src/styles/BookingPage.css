@@ -3728,7 +3728,7 @@ span.device-unit {
 .selection-mode-tabs {
   display: flex;
   gap: 8px;
-  /* margin-bottom: 24px; */
+  margin: 20px 0px;
   padding: 6px;
   background: rgba(255, 255, 255, 0.7);
   border: 2px solid rgba(255, 107, 53, 0.12);
@@ -5503,6 +5503,7 @@ span.device-unit {
 .booking-type-toggle {
   display: flex;
   gap: 0.875rem;
+  padding: 20px 0px;
   /* padding: 0 1.5rem; */
   /* margin-bottom: 1.25rem; */
 }
