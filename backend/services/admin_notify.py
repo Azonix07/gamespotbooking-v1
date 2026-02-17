@@ -3,11 +3,12 @@ Admin Notification Service for GameSpot
 Sends email/WhatsApp notifications to admin when new bookings or requests come in.
 
 Required Environment Variable:
-  ADMIN_NOTIFY_EMAIL  - Admin's email address to receive notifications
-                        (e.g. admin@gamespot.in or your personal Gmail)
+  ADMIN_NOTIFY_EMAIL  - Comma-separated admin email addresses
+                        (e.g. admin@gamespot.in,owner@gmail.com)
 
 Optional:
-  ADMIN_NOTIFY_PHONE  - Admin's phone number for WhatsApp alerts (e.g. +919645136006)
+  ADMIN_NOTIFY_PHONES - Comma-separated phone numbers for WhatsApp/SMS alerts
+                        (e.g. +919946925578,+918921763232,+917012125919)
 
 Uses the existing EmailService (Brevo/Resend/SMTP) and SMSService (Twilio/WhatsApp).
 """
@@ -18,12 +19,23 @@ import threading
 from datetime import datetime
 
 
-def _get_admin_email():
-    return os.getenv('ADMIN_NOTIFY_EMAIL', '')
+def _get_admin_emails():
+    """Return list of admin email addresses."""
+    raw = os.getenv('ADMIN_NOTIFY_EMAIL', '')
+    if not raw:
+        return []
+    return [e.strip() for e in raw.split(',') if e.strip()]
 
 
-def _get_admin_phone():
-    return os.getenv('ADMIN_NOTIFY_PHONE', '')
+def _get_admin_phones():
+    """Return list of admin phone numbers."""
+    raw = os.getenv('ADMIN_NOTIFY_PHONES', '')
+    # Also check legacy single-number env var
+    if not raw:
+        raw = os.getenv('ADMIN_NOTIFY_PHONE', '')
+    if not raw:
+        return []
+    return [p.strip() for p in raw.split(',') if p.strip()]
 
 
 def _send_in_background(fn, *args, **kwargs):
@@ -38,9 +50,9 @@ def _send_in_background(fn, *args, **kwargs):
 
 
 def _send_admin_email(subject, html_body, text_body=None):
-    """Send an email to admin using existing EmailService."""
-    admin_email = _get_admin_email()
-    if not admin_email:
+    """Send an email to all admin recipients using existing EmailService."""
+    admin_emails = _get_admin_emails()
+    if not admin_emails:
         sys.stderr.write("[AdminNotify] ⚠️ ADMIN_NOTIFY_EMAIL not set — skipping email notification\n")
         return
 
@@ -49,20 +61,24 @@ def _send_admin_email(subject, html_body, text_body=None):
         if not email_service.enabled:
             sys.stderr.write("[AdminNotify] ⚠️ Email service not configured — skipping notification\n")
             return
-        success, msg = email_service.send_email(admin_email, subject, html_body, text_body)
-        if success:
-            sys.stderr.write(f"[AdminNotify] ✅ Email sent to {admin_email}: {subject}\n")
-        else:
-            sys.stderr.write(f"[AdminNotify] ❌ Email failed: {msg}\n")
+        for email_addr in admin_emails:
+            try:
+                success, msg = email_service.send_email(email_addr, subject, html_body, text_body)
+                if success:
+                    sys.stderr.write(f"[AdminNotify] ✅ Email sent to {email_addr}: {subject}\n")
+                else:
+                    sys.stderr.write(f"[AdminNotify] ❌ Email to {email_addr} failed: {msg}\n")
+            except Exception as e:
+                sys.stderr.write(f"[AdminNotify] ❌ Email to {email_addr} error: {e}\n")
     except Exception as e:
         sys.stderr.write(f"[AdminNotify] ❌ Email error: {e}\n")
 
 
 def _send_admin_whatsapp(message):
-    """Send a WhatsApp message to admin using existing SMSService."""
-    admin_phone = _get_admin_phone()
-    if not admin_phone:
-        return  # WhatsApp is optional
+    """Send a WhatsApp/SMS message to all admin phone numbers."""
+    admin_phones = _get_admin_phones()
+    if not admin_phones:
+        return  # WhatsApp/SMS is optional
 
     try:
         from services.sms_service import sms_service
@@ -70,18 +86,27 @@ def _send_admin_whatsapp(message):
             return
 
         if sms_service.provider in ('twilio', 'whatsapp'):
-            from twilio.rest import Client
             client = sms_service.twilio_client
+            from_number = sms_service.twilio_whatsapp_number or sms_service.twilio_phone
 
-            if not admin_phone.startswith('+'):
-                admin_phone = f'+91{admin_phone}'
+            for phone in admin_phones:
+                try:
+                    if not phone.startswith('+'):
+                        phone = f'+91{phone}'
 
-            client.messages.create(
-                body=message,
-                from_=sms_service.twilio_whatsapp_number or sms_service.twilio_phone,
-                to=f'whatsapp:{admin_phone}' if sms_service.provider == 'whatsapp' else admin_phone
-            )
-            sys.stderr.write(f"[AdminNotify] ✅ WhatsApp/SMS sent to {admin_phone}\n")
+                    if sms_service.provider == 'whatsapp':
+                        to_number = f'whatsapp:{phone}'
+                    else:
+                        to_number = phone
+
+                    client.messages.create(
+                        body=message,
+                        from_=from_number,
+                        to=to_number
+                    )
+                    sys.stderr.write(f"[AdminNotify] ✅ WhatsApp/SMS sent to {phone}\n")
+                except Exception as e:
+                    sys.stderr.write(f"[AdminNotify] ⚠️ WhatsApp/SMS to {phone} failed: {e}\n")
     except Exception as e:
         sys.stderr.write(f"[AdminNotify] ⚠️ WhatsApp/SMS failed (non-critical): {e}\n")
 
