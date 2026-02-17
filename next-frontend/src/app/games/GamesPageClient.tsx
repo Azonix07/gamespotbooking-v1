@@ -438,8 +438,9 @@ const GamesPage = () => {
                             className="game-cover-img"
                             loading="lazy"
                             onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              (target.nextSibling as HTMLElement).style.display = 'flex';
                             }}
                           />
                         ) : null}
@@ -590,8 +591,9 @@ const GamesPage = () => {
                               className="game-cover-img"
                               loading="lazy"
                               onError={(e) => {
-                                e.target.style.display = 'none';
-                                e.target.nextSibling.style.display = 'flex';
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                (target.nextSibling as HTMLElement).style.display = 'flex';
                               }}
                             />
                           ) : null}
@@ -803,7 +805,7 @@ const GamesPage = () => {
                   placeholder="Tell us why you'd like this game..."
                   value={newGameDesc}
                   onChange={(e) => setNewGameDesc(e.target.value)}
-                  rows="4"
+                  rows={4}
                 />
               </div>
 

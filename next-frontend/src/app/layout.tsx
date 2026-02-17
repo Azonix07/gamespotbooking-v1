@@ -113,7 +113,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${rajdhani.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${spaceGrotesk.variable} ${rajdhani.variable}`}>
       <head>
         {/* Favicon - Larger sizes prioritized for better visibility (v3 cache bust) */}
         <link rel="icon" type="image/png" sizes="128x128" href="/assets/images/favicon-128.png?v=3" />
@@ -142,7 +142,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://gamespotbooking-v1-production.up.railway.app" />
         <link rel="dns-prefetch" href="https://gamespotbooking-v1-production.up.railway.app" />
       </head>
-      <body className={inter.className} style={{ background: '#0f172a', minHeight: '100vh' }}>
+      <body className={inter.className} suppressHydrationWarning style={{ background: '#0f172a', minHeight: '100vh' }}>
         <Providers>
           {children}
         </Providers>

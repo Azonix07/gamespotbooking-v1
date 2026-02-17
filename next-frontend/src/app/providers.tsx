@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { AuthProvider } from '@/context/AuthContext';
@@ -63,6 +63,11 @@ const DARK_NAVBAR_PAGES = new Set(['/']);
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   /* Memoize layout flags — avoids recalculating on every render */
   const layout = useMemo(() => {
@@ -81,12 +86,12 @@ function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="app-wrapper">
-      {layout.showNavbar && <Navbar variant={layout.navbarVariant} />}
-      <main className="main-content gs-page-enter" key={pathname}>
+    <div className="app-wrapper" suppressHydrationWarning>
+      {mounted && layout.showNavbar && <Navbar variant={layout.navbarVariant} />}
+      <main className="main-content gs-page-enter">
         {children}
       </main>
-      {layout.showFooter && <Footer />}
+      {mounted && layout.showFooter && <Footer />}
     </div>
   );
 }

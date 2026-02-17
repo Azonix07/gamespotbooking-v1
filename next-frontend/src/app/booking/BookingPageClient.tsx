@@ -1,7 +1,7 @@
 'use client';
 // @ts-nocheck
 
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo } from 'react-icons/fi';
@@ -892,7 +892,7 @@ const BookingPage = () => {
 
   return (
     <div className="booking-page">
-{/* Animated Background */}
+      {/* Animated Background */}
       <div className="booking-bg-effects">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
