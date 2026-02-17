@@ -84,8 +84,10 @@ const AdminDashboard = () => {
   const [bookingFilters, setBookingFilters] = useState({
     dateFrom: '',
     dateTo: '',
-    preset: 'all'
+    preset: 'all',
+    status: 'all'
   });
+  const [bookingSearch, setBookingSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [editingId, setEditingId] = useState(null);
@@ -151,7 +153,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     applyBookingFilters();
-  }, [bookings, bookingFilters]);
+  }, [bookings, bookingFilters, bookingSearch]);
 
   const loadAllData = async () => {
     setLoading(true);
@@ -346,6 +348,17 @@ const AdminDashboard = () => {
   const applyBookingFilters = () => {
     let filtered = [...bookings];
     
+    // Apply text search (name, phone, or booking ID)
+    if (bookingSearch.trim()) {
+      const search = bookingSearch.trim().toLowerCase();
+      filtered = filtered.filter(b => 
+        (b.customer_name && b.customer_name.toLowerCase().includes(search)) ||
+        (b.customer_phone && b.customer_phone.includes(search)) ||
+        (b.id && b.id.toString().includes(search)) ||
+        (b.status && b.status.toLowerCase().includes(search))
+      );
+    }
+    
     // Apply date filters
     if (bookingFilters.dateFrom) {
       filtered = filtered.filter(b => b.booking_date >= bookingFilters.dateFrom);
@@ -365,6 +378,11 @@ const AdminDashboard = () => {
       filtered = filtered.filter(b => b.booking_date >= weekAgo);
     } else if (bookingFilters.preset === 'month') {
       filtered = filtered.filter(b => b.booking_date >= monthAgo);
+    }
+    
+    // Apply status filter
+    if (bookingFilters.status && bookingFilters.status !== 'all') {
+      filtered = filtered.filter(b => b.status === bookingFilters.status);
     }
     
     setFilteredBookings(filtered);
@@ -604,6 +622,39 @@ const AdminDashboard = () => {
         </button>
       </div>
 
+      {/* Search & Status Filter */}
+      <div className="booking-search-container">
+        <div className="booking-search-box">
+          <FiTarget className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search by name, phone, or booking ID..."
+            value={bookingSearch}
+            onChange={(e) => setBookingSearch(e.target.value)}
+            className="booking-search-input"
+          />
+          {bookingSearch && (
+            <button className="search-clear-btn" onClick={() => setBookingSearch('')}>
+              <FiX />
+            </button>
+          )}
+        </div>
+        <div className="booking-status-filter">
+          <label>Status:</label>
+          <select
+            value={bookingFilters.status}
+            onChange={(e) => setBookingFilters({...bookingFilters, status: e.target.value})}
+            className="status-select"
+          >
+            <option value="all">All Status</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+      </div>
+
       {/* Filters */}
       <div className="filters-container">
         <div className="filter-group">
@@ -611,7 +662,7 @@ const AdminDashboard = () => {
           <div className="filter-buttons">
             <button 
               className={`filter-btn ${bookingFilters.preset === 'all' ? 'active' : ''}`}
-              onClick={() => setBookingFilters({...bookingFilters, preset: 'all', dateFrom: '', dateTo: ''})}
+              onClick={() => setBookingFilters({...bookingFilters, preset: 'all', dateFrom: '', dateTo: '', status: 'all'})}
             >
               All Time
             </button>
@@ -689,6 +740,9 @@ const AdminDashboard = () => {
               <div key={booking.id} className="booking-card">
                 <div className="booking-card-header">
                   <div className="booking-card-id">#{booking.id}</div>
+                  <span className={`booking-status-badge status-${(booking.status || 'confirmed').toLowerCase()}`}>
+                    {(booking.status || 'Confirmed').charAt(0).toUpperCase() + (booking.status || 'confirmed').slice(1)}
+                  </span>
                   <div className="booking-card-price">{formatPrice(booking.total_price)}</div>
                 </div>
                 <div className="booking-card-body">
@@ -768,6 +822,7 @@ const AdminDashboard = () => {
                       <th>ID</th>
                       <th>Date & Time</th>
                       <th>Customer</th>
+                      <th>Status</th>
                       <th>Duration</th>
                       <th>Devices</th>
                       <th>Price</th>
@@ -789,6 +844,11 @@ const AdminDashboard = () => {
                             <span className="customer-name">{booking.customer_name}</span>
                             <span className="customer-phone">{booking.customer_phone}</span>
                           </div>
+                        </td>
+                        <td data-label="STATUS">
+                          <span className={`booking-status-badge status-${(booking.status || 'confirmed').toLowerCase()}`}>
+                            {(booking.status || 'Confirmed').charAt(0).toUpperCase() + (booking.status || 'confirmed').slice(1)}
+                          </span>
                         </td>
                         <td data-label="DURATION">
                           {editingId === booking.id ? (

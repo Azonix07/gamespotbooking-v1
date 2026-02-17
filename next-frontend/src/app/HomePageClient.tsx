@@ -148,7 +148,10 @@ export default function HomePageClient() {
         </div>
       </div>
 
-      {/* AI Chat FAB */}
+    </div>
+
+    {/* AI Chat FAB — outside hero-container so overflow:hidden doesn't clip it */}
+    {splashDone && (
       <button
         className="fab-button fab-ai-chat"
         onClick={() => setShowAIChat(true)}
@@ -157,13 +160,13 @@ export default function HomePageClient() {
       >
         <FiCpu className="fab-icon" />
       </button>
+    )}
 
-      {showAIChat && (
-        <Suspense fallback={<div>Loading AI...</div>}>
-          <AIChat onClose={() => setShowAIChat(false)} />
-        </Suspense>
-      )}
-    </div>
+    {showAIChat && (
+      <Suspense fallback={<div>Loading AI...</div>}>
+        <AIChat onClose={() => setShowAIChat(false)} />
+      </Suspense>
+    )}
     </>
   );
 }
