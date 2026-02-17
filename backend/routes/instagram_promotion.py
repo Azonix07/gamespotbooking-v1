@@ -274,6 +274,21 @@ def claim_promotion():
         conn.commit()
         redemption_id = cursor.lastrowid
         
+        # Notify admin about the new claim
+        try:
+            from services.admin_notify import notify_new_offer_claim
+            cursor.execute("SELECT name, phone FROM users WHERE id = %s", (user_id,))
+            user_row = cursor.fetchone()
+            notify_new_offer_claim(
+                claim_id=redemption_id,
+                user_name=user_row['name'] if user_row else 'Unknown',
+                user_phone=user_row['phone'] if user_row else '',
+                offer_name=promotion.get('title', 'Instagram Promo')
+            )
+        except Exception as notify_err:
+            import sys
+            sys.stderr.write(f"[InstaPromo] Admin notification failed (non-critical): {notify_err}\n")
+        
         return jsonify({
             'success': True,
             'message': 'Your claim request has been submitted! The admin will review and approve it shortly.',

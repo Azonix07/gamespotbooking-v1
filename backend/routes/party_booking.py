@@ -268,6 +268,20 @@ def party_booking():
             
             sys.stderr.write(f"[Party] Created party booking #{booking_id} for {booking_date} at {start_time} ({hours}h)\n")
             
+            # Notify admin
+            try:
+                from services.admin_notify import notify_new_party_booking
+                notify_new_party_booking(
+                    party_id=booking_id,
+                    customer_name=customer_name,
+                    customer_phone=customer_phone,
+                    event_date=booking_date,
+                    event_type='Party Booking',
+                    guests=f'{hours} hour{"s" if hours > 1 else ""}'
+                )
+            except Exception as notify_err:
+                sys.stderr.write(f"[Party] Admin notification failed (non-critical): {notify_err}\n")
+            
             return jsonify({
                 'success': True,
                 'booking_id': booking_id,

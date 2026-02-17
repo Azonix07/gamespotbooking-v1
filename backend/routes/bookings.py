@@ -389,6 +389,28 @@ def handle_bookings():
             sys.stderr.write(f"[Booking] Created booking #{booking_id} with {devices_inserted} device(s)\n")
             sys.stderr.flush()
             
+            # ─── Notify admin about new booking ───
+            try:
+                from services.admin_notify import notify_new_booking
+                devices_text_parts = []
+                for ps5 in ps5_bookings:
+                    devices_text_parts.append(f"PS5-{ps5['device_number']} ({ps5['player_count']}p)")
+                if driving_sim:
+                    devices_text_parts.append("Driving Sim")
+                devices_text = ', '.join(devices_text_parts) or 'N/A'
+                notify_new_booking(
+                    booking_id=booking_id,
+                    customer_name=customer_name,
+                    customer_phone=customer_phone,
+                    booking_date=booking_date,
+                    start_time=start_time,
+                    duration_minutes=duration_minutes,
+                    total_price=total_price,
+                    devices_text=devices_text
+                )
+            except Exception as notify_err:
+                sys.stderr.write(f"[Booking] Admin notification failed (non-critical): {notify_err}\n")
+            
             # Mark promo code as used if applicable
             if promo_code_id:
                 try:

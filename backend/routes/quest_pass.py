@@ -218,10 +218,26 @@ def subscribe_quest_pass():
         """, (user_id, game_name, start_date, end_date, QUEST_PASS_PRICE, QUEST_PLAY_RATE))
         conn.commit()
 
+        quest_pass_id = cursor.lastrowid
+
+        # Notify admin
+        try:
+            from services.admin_notify import notify_new_quest_pass
+            cursor.execute("SELECT name, phone FROM users WHERE id = %s", (user_id,))
+            user_row = cursor.fetchone()
+            notify_new_quest_pass(
+                quest_id=quest_pass_id,
+                user_name=user_row['name'] if user_row else 'Unknown',
+                user_phone=user_row['phone'] if user_row else '',
+                game_title=game_name
+            )
+        except Exception as notify_err:
+            print(f"[QuestPass] Admin notification failed (non-critical): {notify_err}")
+
         return jsonify({
             'success': True,
             'message': f'Quest Pass request submitted for "{game_name}"! Visit the shop to pay ₹{QUEST_PASS_PRICE} and get approved.',
-            'quest_pass_id': cursor.lastrowid
+            'quest_pass_id': quest_pass_id
         }), 201
 
     except Exception as e:

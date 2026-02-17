@@ -260,6 +260,20 @@ def handle_rentals():
             
             rental_id = cursor.lastrowid
             
+            # Notify admin
+            try:
+                from services.admin_notify import notify_new_rental
+                notify_new_rental(
+                    rental_id=rental_id,
+                    user_name=data['customer_name'],
+                    user_phone=data['customer_phone'],
+                    game_title=item_name,
+                    duration_days=data['rental_days']
+                )
+            except Exception as notify_err:
+                import sys
+                sys.stderr.write(f"[Rental] Admin notification failed (non-critical): {notify_err}\n")
+            
             return jsonify({
                 'success': True,
                 'message': 'Rental booking created successfully',

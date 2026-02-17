@@ -300,6 +300,23 @@ def subscribe():
         membership_id = cursor.lastrowid
         nice_name = plan_type.replace('_', ' ').title()
 
+        # Notify admin
+        try:
+            from services.admin_notify import notify_new_membership_request
+            # Get user info
+            cursor.execute("SELECT name, phone FROM users WHERE id = %s", (user_id,))
+            user_row = cursor.fetchone()
+            notify_new_membership_request(
+                membership_id=membership_id,
+                user_name=user_row['name'] if user_row else 'Unknown',
+                user_phone=user_row['phone'] if user_row else '',
+                plan_type=nice_name,
+                amount=plan_info['price']
+            )
+        except Exception as notify_err:
+            import sys
+            sys.stderr.write(f"[Membership] Admin notification failed (non-critical): {notify_err}\n")
+
         return jsonify({
             'success': True,
             'message': f'{nice_name} pass request submitted! Please visit the shop to pay ₹{plan_info["price"]} and get it activated.',
