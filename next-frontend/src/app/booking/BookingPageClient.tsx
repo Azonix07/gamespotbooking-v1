@@ -98,6 +98,7 @@ const BookingPage = () => {
   const [discountInfo, setDiscountInfo] = useState(null); // { percentage, amount, membership }
   const [hoursWarning, setHoursWarning] = useState(null); // hours warning message from pricing API
   const [loading, setLoading] = useState(false);
+  const checkoutFormRef = useRef(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -2275,7 +2276,7 @@ const BookingPage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <form onSubmit={handleSubmit}>
+                  <form onSubmit={handleSubmit} ref={checkoutFormRef}>
                     {isLoggedIn && user ? (
                       <motion.div 
                         className="user-profile-card"
@@ -2522,9 +2523,14 @@ const BookingPage = () => {
                          className="submit-btn-v2" 
                          disabled={loading}
                          onClick={(e) => {
-                             // Find the form and submit it
-                             const form = document.querySelector('form');
-                             if(form) form.requestSubmit();
+                             // Submit the checkout form via ref to avoid selecting wrong form
+                             if (checkoutFormRef && checkoutFormRef.current) {
+                               // @ts-ignore
+                               checkoutFormRef.current.requestSubmit();
+                             } else {
+                               const form = document.querySelector('form');
+                               if (form) form.requestSubmit();
+                             }
                          }}
                     >
                           {loading ? 'Processing...' : 'Confirm Booking'}
