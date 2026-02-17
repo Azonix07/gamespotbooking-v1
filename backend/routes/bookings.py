@@ -50,6 +50,41 @@ def _get_current_user_id():
     
     return None
 
+@bookings_bp.route('/api/debug/booking/<int:booking_id>', methods=['GET'])
+def debug_booking(booking_id):
+    """Temporary debug endpoint — check if booking and booking_devices exist"""
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, customer_name, booking_date, start_time, duration_minutes, total_price FROM bookings WHERE id = %s", (booking_id,))
+        booking = cursor.fetchone()
+        if booking:
+            # Convert non-serializable types
+            for k, v in booking.items():
+                if hasattr(v, 'isoformat'):
+                    booking[k] = v.isoformat()
+                elif hasattr(v, 'total_seconds'):
+                    booking[k] = str(v)
+        cursor.execute("SELECT * FROM booking_devices WHERE booking_id = %s", (booking_id,))
+        devices = cursor.fetchall()
+        cursor.execute("SELECT COUNT(*) as total_bookings FROM bookings", ())
+        total = cursor.fetchone()
+        cursor.execute("SELECT COUNT(*) as total_devices FROM booking_devices", ())
+        total_dev = cursor.fetchone()
+        return jsonify({
+            'booking': booking,
+            'devices': devices,
+            'total_bookings_in_db': total['total_bookings'],
+            'total_devices_in_db': total_dev['total_devices']
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
 @bookings_bp.route('/api/bookings.php', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 def handle_bookings():
     """Handle all booking operations"""
