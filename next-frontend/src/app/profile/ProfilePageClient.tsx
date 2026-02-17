@@ -31,6 +31,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch, getAuthToken } from '@/services/apiClient';
 import { getQuestPassStatus, getGames, requestQuestPassGameChange, cancelUserBooking } from '@/services/api';
+import { formatTime12Hour } from '@/utils/helpers';
 import '@/styles/ProfilePage.css';
 
 const ProfilePage = () => {
@@ -174,7 +175,7 @@ const ProfilePage = () => {
     <div class="bill-section">
       <h4>Booking Details</h4>
       <div class="bill-row"><span>Date</span><span>${dateStr}</span></div>
-      <div class="bill-row"><span>Time</span><span>${booking.time || 'N/A'}</span></div>
+      <div class="bill-row"><span>Time</span><span>${formatTime12Hour(String(booking.time || '').substring(0, 5)) || 'N/A'}</span></div>
       <div class="bill-row"><span>Duration</span><span>${booking.duration || 0} minutes</span></div>
       ${booking.booked_as ? `<div class="bill-row"><span>Customer</span><span>${booking.booked_as}</span></div>` : ''}
     </div>
@@ -1037,7 +1038,7 @@ const ProfilePage = () => {
                                   </div>
                                   <div className="bh-info">
                                     <div className="bh-time-row">
-                                      <span className="bh-time">{booking.time}</span>
+                                      <span className="bh-time">{formatTime12Hour(String(booking.time).substring(0, 5))}</span>
                                       <span className="bh-dot">•</span>
                                       <span className="bh-duration">{booking.duration} mins</span>
                                     </div>

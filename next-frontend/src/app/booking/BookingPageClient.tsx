@@ -1259,7 +1259,7 @@ const BookingPage = () => {
                       </div>
                       <div className="legend-item">
                         <span className="status-dot status-partial"></span>
-                        <span className="status-label">Partial</span>
+                        <span className="status-label">Partly Booked</span>
                       </div>
                       <div className="legend-item">
                         <span className="status-dot status-full"></span>
@@ -1295,10 +1295,10 @@ const BookingPage = () => {
                             whileTap={slot.status !== 'full' ? { scale: 0.97 } : {}}
                           >
                             <span className="slot-time">{formatTime12Hour(slot.time)}</span>
-                            {slot.status === 'partial' && slot.total_ps5_players > 0 && (
+                            {slot.status === 'partial' && (
                               <span className="slot-capacity">
-                                <FiUsers className="capacity-icon" />
-                                {slot.total_ps5_players}/10
+                                <FiMonitor className="capacity-icon" />
+                                {slot.available_ps5} PS5 free
                               </span>
                             )}
                             {selectedTime === slot.time && (
