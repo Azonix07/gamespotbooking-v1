@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiCpu } from 'react-icons/fi';
@@ -11,24 +11,33 @@ const AIChat = lazy(() => import('@/components/AIChat'));
 
 export default function HomePageClient() {
   const [showAIChat, setShowAIChat] = useState(false);
-  const [videoReady, setVideoReady] = useState(false);
   const [splashDone, setSplashDone] = useState(false);
   const [splashExiting, setSplashExiting] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  /* Splash screen — show for 2s then reveal homepage */
-  useEffect(() => {
-    const exitTimer = setTimeout(() => setSplashExiting(true), 1800);
-    const doneTimer = setTimeout(() => setSplashDone(true), 2300);
-    return () => { clearTimeout(exitTimer); clearTimeout(doneTimer); };
-  }, []);
+  /* Dismiss splash: start exit animation, then remove from DOM */
+  const dismissSplash = useCallback(() => {
+    if (splashExiting) return; // prevent double-trigger
+    setSplashExiting(true);
+    setTimeout(() => setSplashDone(true), 500); // match exit animation duration
+  }, [splashExiting]);
 
-  /* Defer video load — wait for splash to finish before loading 13MB video */
+  /* Video loaded — dismiss splash */
+  const handleVideoReady = useCallback(() => {
+    setVideoLoaded(true);
+    dismissSplash();
+  }, [dismissSplash]);
+
+  /* Safety fallback: if video takes too long (>6s), dismiss splash anyway */
   useEffect(() => {
-    if (splashDone) {
-      const timer = setTimeout(() => setVideoReady(true), 200);
-      return () => clearTimeout(timer);
-    }
-  }, [splashDone]);
+    const fallback = setTimeout(() => {
+      if (!splashDone && !splashExiting) {
+        dismissSplash();
+      }
+    }, 6000);
+    return () => clearTimeout(fallback);
+  }, [splashDone, splashExiting, dismissSplash]);
 
   return (
     <>
@@ -39,7 +48,6 @@ export default function HomePageClient() {
         <div className="splash-bg-grid" />
         <div className="splash-glow splash-glow-1" />
         <div className="splash-glow splash-glow-2" />
-        <div className="splash-scanline" />
 
         {/* Content */}
         <div className="splash-content">
@@ -60,7 +68,7 @@ export default function HomePageClient() {
 
           {/* Progress Bar */}
           <div className="splash-progress-track">
-            <div className="splash-progress-fill" />
+            <div className={`splash-progress-fill ${videoLoaded ? 'splash-progress-complete' : ''}`} />
             <div className="splash-progress-glow" />
           </div>
 
@@ -83,20 +91,19 @@ export default function HomePageClient() {
 
     {/* MAIN HOMEPAGE */}
     <div className={`hero-container ${splashDone ? 'hero-revealed' : 'hero-hidden'}`}>
-      {/* Video Background — deferred 1.5s to not block LCP */}
-      {videoReady && (
-        <video
-          className="hero-background-video"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="none"
-          poster=""
-        >
-          <source src="/assets/videos/background.mp4" type="video/mp4" />
-        </video>
-      )}
+      {/* Video Background — starts loading immediately, splash waits for it */}
+      <video
+        ref={videoRef}
+        className="hero-background-video"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        onCanPlay={handleVideoReady}
+      >
+        <source src="/assets/videos/background.mp4" type="video/mp4" />
+      </video>
 
       {/* Dark Overlay */}
       <div className="hero-video-overlay"></div>
