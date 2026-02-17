@@ -312,7 +312,6 @@ class FastAIBooking:
                 'answer': '🎁 **Current GameSpot Offers:**\n\n'
                          '• 🏷️ **Membership Discounts** - Up to 20% off on all bookings\n'
                          '• 📸 **Instagram Promo** - Follow us for special promo codes\n'
-                         '• 🎮 **Discount Game** - Play our spin wheel to win discounts!\n'
                          '• 👥 **Invite Friends** - Earn rewards by inviting friends\n\n'
                          'Check the Offers page on our website for the latest deals!',
                 'keywords': ['offer', 'promo', 'promotion', 'coupon', 'code', 'instagram', 'invite', 'referral', 'discount code', 'spin wheel']

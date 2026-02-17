@@ -13,12 +13,14 @@ export default function HomePageClient() {
 
   /* Defer video load — let LCP paint first, then start the video */
   useEffect(() => {
-    const timer = requestIdleCallback
-      ? requestIdleCallback(() => setVideoReady(true))
+    const ric = typeof window !== 'undefined' ? window.requestIdleCallback : undefined;
+    const cic = typeof window !== 'undefined' ? window.cancelIdleCallback : undefined;
+    const timer = ric
+      ? ric(() => setVideoReady(true))
       : setTimeout(() => setVideoReady(true), 100);
     return () => {
       if (typeof timer === 'number') {
-        if (requestIdleCallback) cancelIdleCallback(timer);
+        if (ric && cic) cic(timer);
         else clearTimeout(timer);
       }
     };

@@ -19,9 +19,11 @@ const ThemeSelector = () => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const stored = localStorage.getItem('siteTheme');
-    if (stored) { setCurrentTheme(stored); document.body.className = stored; }
-    if (!stored) { setCurrentTheme('theme-black-orange'); document.body.className = 'theme-black-orange'; }
+    try {
+      const stored = localStorage.getItem('siteTheme');
+      if (stored) { setCurrentTheme(stored); document.body.className = stored; }
+      if (!stored) { setCurrentTheme('theme-black-orange'); document.body.className = 'theme-black-orange'; }
+    } catch {}
     loadCurrentTheme();
   }, []);
 

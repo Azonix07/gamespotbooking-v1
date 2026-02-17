@@ -148,11 +148,6 @@ export const getRentalStats = () => fetchWithCredentials(`${API_BASE_URL}/api/re
 export const getCollegeBookings = () => fetchWithCredentials(`${API_BASE_URL}/api/college-bookings`);
 export const getCollegeStats = () => fetchWithCredentials(`${API_BASE_URL}/api/college-bookings/stats`);
 
-// Game Leaderboard
-export const getGameLeaderboard = (period = 'all', limit = 100) =>
-  fetchWithCredentials(`${API_BASE_URL}/api/game/leaderboard?period=${period}&limit=${limit}`);
-export const getGameStats = () => fetchWithCredentials(`${API_BASE_URL}/api/game/stats`);
-
 // Profile & Rewards
 export const getUserProfile = () => fetchWithCredentials(`${API_BASE_URL}/api/user/profile`);
 export const googleLogin = (credential: string) =>

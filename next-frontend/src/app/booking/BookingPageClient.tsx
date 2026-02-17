@@ -202,7 +202,7 @@ const BookingPage = () => {
       setLoading(true);
       setError(null);
       const response = await getSlots(selectedDate);
-      setSlots(response.slots);
+      setSlots(response?.slots || []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -220,10 +220,10 @@ const BookingPage = () => {
         setUser(data.user);
         
         // Auto-fill form fields with user data
-        if (data.user.name) {
+        if (data?.user?.name) {
           setCustomerName(data.user.name);
         }
-        if (data.user.phone) {
+        if (data?.user?.phone) {
           setCustomerPhone(data.user.phone);
         }
         
@@ -413,14 +413,14 @@ const BookingPage = () => {
       console.log('🔄 Checking PS5 availability with duration:', maxPS5Duration);
       const ps5Response = await getSlotDetails(selectedDate, selectedTime, maxPS5Duration);
       console.log('🔍 PS5 Availability Response:', ps5Response);
-      console.log('📱 Available PS5 Units:', ps5Response.available_ps5_units);
+      console.log('📱 Available PS5 Units:', ps5Response?.available_ps5_units);
       
-      setAvailablePS5Units(ps5Response.available_ps5_units);
-      setTotalPlayers(ps5Response.total_ps5_players_booked);
+      setAvailablePS5Units(ps5Response?.available_ps5_units || []);
+      setTotalPlayers(ps5Response?.total_ps5_players_booked || 0);
       
       // Reset PS5 selections if not available — only update state if bookings actually changed
       const validPS5 = ps5Bookings.filter(b => 
-        ps5Response.available_ps5_units.includes(b.device_number)
+        (ps5Response?.available_ps5_units || []).includes(b.device_number)
       );
       // Compare by device numbers to avoid creating a new reference unnecessarily
       const currentDevices = ps5Bookings.map(b => b.device_number).sort().join(',');
@@ -442,21 +442,21 @@ const BookingPage = () => {
         
         console.log('🔄 Checking Driving Sim (AFTER PS5) at:', drivingCheckTime, 'duration:', drivingDuration);
         const drivingResponse = await getSlotDetails(selectedDate, drivingCheckTime, drivingDuration);
-        console.log('🏎️ Driving Sim Availability (adjusted time):', drivingResponse.available_driving);
+        console.log('🏎️ Driving Sim Availability (adjusted time):', drivingResponse?.available_driving);
         
-        setAvailableDriving(drivingResponse.available_driving);
+        setAvailableDriving(drivingResponse?.available_driving ?? true);
         
-        if (!drivingResponse.available_driving) {
+        if (!drivingResponse?.available_driving) {
           setDrivingSim(null);
           setError(`Driving Simulator is not available after your PS5 session (at ${drivingCheckTime})`);
         }
       } else {
         // "Play After PS5" is DISABLED or no PS5 selected - use availability at selected time
-        console.log('🏎️ Driving Sim Availability (selected time):', ps5Response.available_driving);
-        setAvailableDriving(ps5Response.available_driving);
+        console.log('🏎️ Driving Sim Availability (selected time):', ps5Response?.available_driving);
+        setAvailableDriving(ps5Response?.available_driving ?? true);
         
         // Only reset driving sim if it was selected but is not available at selected time
-        if (drivingSim && !ps5Response.available_driving) {
+        if (drivingSim && !ps5Response?.available_driving) {
           setDrivingSim(null);
           setError('Driving Simulator is not available at the selected time');
         }
@@ -488,20 +488,20 @@ const BookingPage = () => {
       // Check if this is still the latest update
       if (updateId !== priceUpdateIdRef.current) return;
       
-      setOriginalPrice(response.original_price || response.total_price);
-      setPrice(response.total_price);
+      setOriginalPrice(response?.original_price || response?.total_price || 0);
+      setPrice(response?.total_price || 0);
       
-      if (response.has_discount && response.membership) {
+      if (response?.has_discount && response?.membership) {
         setDiscountInfo({
-          percentage: response.discount_percentage,
-          membership: response.membership,
-          amount: response.discount_amount || (response.original_price - response.total_price)
+          percentage: response?.discount_percentage,
+          membership: response?.membership,
+          amount: response?.discount_amount || ((response?.original_price || 0) - (response?.total_price || 0))
         });
       } else {
         setDiscountInfo(null);
       }
       
-      setHoursWarning(response.hours_warning ? response.hours_warning_message : null);
+      setHoursWarning(response?.hours_warning ? response?.hours_warning_message : null);
     } catch (err) {
       if (updateId === priceUpdateIdRef.current) {
         console.error('Price calculation error:', err);
@@ -552,15 +552,15 @@ const BookingPage = () => {
         const response = await getSlotDetails(selectedDate, time, partyDuration);
         
         // Party booking needs ALL devices free
-        if (response.available_ps5_units.length < 3 || !response.available_driving) {
+        if ((response?.available_ps5_units?.length || 0) < 3 || !response?.available_driving) {
           setError('Not all devices are available for this time slot. Party booking requires the entire shop to be free.');
           setLoading(false);
           return;
         }
         
-        setAvailablePS5Units(response.available_ps5_units);
-        setAvailableDriving(response.available_driving);
-        setTotalPlayers(response.total_ps5_players_booked);
+        setAvailablePS5Units(response?.available_ps5_units || []);
+        setAvailableDriving(response?.available_driving ?? true);
+        setTotalPlayers(response?.total_ps5_players_booked || 0);
         setCurrentStep(2); // Go to party confirmation step
       } catch (err) {
         setError(err.message);
@@ -575,10 +575,10 @@ const BookingPage = () => {
       setLoading(true);
       const response = await getSlotDetails(selectedDate, time, 60);
       console.log('🔍 Slot Details Response:', response);
-      console.log('📱 Available PS5 Units:', response.available_ps5_units);
-      setAvailablePS5Units(response.available_ps5_units);
-      setAvailableDriving(response.available_driving);
-      setTotalPlayers(response.total_ps5_players_booked);
+      console.log('📱 Available PS5 Units:', response?.available_ps5_units);
+      setAvailablePS5Units(response?.available_ps5_units || []);
+      setAvailableDriving(response?.available_driving ?? true);
+      setTotalPlayers(response?.total_ps5_players_booked || 0);
       setCurrentStep(2); // Move to device selection step after data is loaded
     } catch (err) {
       setError(err.message);

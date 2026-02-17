@@ -43,7 +43,11 @@ function GetOffersPage() {
   const { isAuthenticated } = useAuth();
 
   // Restore saved progress (survives WhatsApp tab-switch / page reload)
-  const saved = loadSavedProgress();
+  // NOTE: must be lazy-initialized to avoid SSR crash (sessionStorage doesn't exist on server)
+  const [saved] = useState(() => {
+    if (typeof window === 'undefined') return null;
+    return loadSavedProgress();
+  });
 
   const [instaPromo, setInstaPromo] = useState(null);
   const [instaLoading, setInstaLoading] = useState(false);
@@ -55,6 +59,12 @@ function GetOffersPage() {
   const [claimLoading, setClaimLoading] = useState(false);
   const [copiedCode, setCopiedCode] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
+  const [supportsNativeShare, setSupportsNativeShare] = useState(false);
+
+  // Detect native share support on client only (avoids hydration mismatch)
+  useEffect(() => {
+    setSupportsNativeShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function');
+  }, []);
 
   // Persist progress whenever key fields change
   useEffect(() => {
@@ -151,10 +161,10 @@ function GetOffersPage() {
   };
 
   const copyToClipboard = (code) => {
-    navigator.clipboard.writeText(code).then(() => {
+    navigator.clipboard?.writeText(code).then(() => {
       setCopiedCode(code);
       setTimeout(() => setCopiedCode(''), 2000);
-    });
+    }).catch(() => {});
   };
 
   const instaHandle = instaPromo?.instagram_handle || 'gamespot_kdlr';
@@ -181,7 +191,7 @@ function GetOffersPage() {
   };
 
   const shareViaCopyLink = () => {
-    navigator.clipboard.writeText(shareText).then(() => {
+    navigator.clipboard?.writeText(shareText).then(() => {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2500);
       const newSharedVia = { ...hasSharedVia, copy: true };
@@ -413,7 +423,7 @@ function GetOffersPage() {
                     {hasSharedVia.copy && <FiCheckCircle className="offers-share-done" />}
                   </button>
 
-                  {typeof navigator.share === 'function' && (
+                  {supportsNativeShare && (
                     <button
                       className={`offers-share-btn native ${hasSharedVia.native ? 'shared' : ''}`}
                       onClick={shareViaNative}

@@ -62,22 +62,27 @@ const AIChat = ({ onClose }: { onClose: () => void }) => {
   }, [language]);
 
   const initializeVoice = () => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SR) {
-      setVoiceSupported(true);
-      recognitionRef.current = new SR();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = language === 'ml' ? 'ml-IN' : 'en-US';
-      recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        if (event.results[0].isFinal) handleVoiceInput(transcript);
-        else setInput(transcript);
-      };
-      recognitionRef.current.onerror = () => setListening(false);
-      recognitionRef.current.onend = () => setListening(false);
+    if (typeof window === 'undefined') return;
+    try {
+      const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SR) {
+        setVoiceSupported(true);
+        recognitionRef.current = new SR();
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = true;
+        recognitionRef.current.lang = language === 'ml' ? 'ml-IN' : 'en-US';
+        recognitionRef.current.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          if (event.results[0].isFinal) handleVoiceInput(transcript);
+          else setInput(transcript);
+        };
+        recognitionRef.current.onerror = () => setListening(false);
+        recognitionRef.current.onend = () => setListening(false);
+      }
+      synthesisRef.current = window.speechSynthesis || null;
+    } catch {
+      // Voice APIs not available
     }
-    synthesisRef.current = window.speechSynthesis;
   };
 
   const initializeChat = async () => {

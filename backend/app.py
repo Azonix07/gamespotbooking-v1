@@ -35,7 +35,6 @@ from routes.feedback import feedback_bp  # User feedback and suggestions
 from routes.updates import updates_bp  # Shop updates and announcements
 from routes.rentals import rentals_bp  # Rental bookings (VR & PS5)
 from routes.college import college_bp  # College event bookings
-from routes.game_leaderboard import game_leaderboard_bp  # Game leaderboard and winners
 from routes.instagram_promotion import instagram_promo_bp  # Instagram promotions
 from routes.setup_promo import setup_bp  # One-time setup for Instagram promotions
 from routes.promo_codes import promo_bp  # Promo codes system
@@ -176,7 +175,6 @@ app.register_blueprint(feedback_bp)  # User feedback and suggestions
 app.register_blueprint(updates_bp)  # Shop updates and announcements
 app.register_blueprint(rentals_bp)  # Rental bookings (VR & PS5)
 app.register_blueprint(college_bp)  # College event bookings
-app.register_blueprint(game_leaderboard_bp)  # Game leaderboard and winners
 app.register_blueprint(instagram_promo_bp)  # Instagram promotions
 app.register_blueprint(setup_bp)  # One-time setup for Instagram promotions
 app.register_blueprint(promo_bp)  # Promo codes system
@@ -282,7 +280,6 @@ def create_missing_tables():
         # These tables are empty so no data loss
         fix_tables = [
             "DROP TABLE IF EXISTS page_visits",
-            "DROP TABLE IF EXISTS game_leaderboard",
         ]
         for sql in fix_tables:
             try:
@@ -340,32 +337,7 @@ def create_missing_tables():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )""",
-            """CREATE TABLE IF NOT EXISTS game_leaderboard (
-                id INT PRIMARY KEY AUTO_INCREMENT,
-                player_name VARCHAR(100) NOT NULL,
-                score INT NOT NULL,
-                game_type VARCHAR(50) DEFAULT 'discount_game',
-                enemies_shot INT DEFAULT 0,
-                boss_enemies_shot INT DEFAULT 0,
-                accuracy_percentage DECIMAL(5,2) DEFAULT 0,
-                duration_seconds INT DEFAULT 60,
-                is_winner BOOLEAN DEFAULT FALSE,
-                is_verified BOOLEAN DEFAULT TRUE,
-                is_flagged BOOLEAN DEFAULT FALSE,
-                prize_claimed BOOLEAN DEFAULT FALSE,
-                played_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )""",
-            """CREATE TABLE IF NOT EXISTS game_winners (
-                id INT PRIMARY KEY AUTO_INCREMENT,
-                leaderboard_id INT NOT NULL,
-                player_name VARCHAR(100) NOT NULL,
-                score INT NOT NULL,
-                prize_type VARCHAR(50) DEFAULT 'free_gaming',
-                prize_value DECIMAL(10,2) DEFAULT 0,
-                claimed_at TIMESTAMP NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )""",
+
             """CREATE TABLE IF NOT EXISTS college_event_media (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 booking_id INT NOT NULL,

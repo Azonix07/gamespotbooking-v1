@@ -46,8 +46,6 @@ import {
   getRentalStats,
   getCollegeBookings,
   getCollegeStats,
-  getGameLeaderboard,
-  getGameStats,
   approveMembership,
   rejectMembership,
   approveGameRequest,
@@ -108,11 +106,6 @@ const AdminDashboard = () => {
   // College Events
   const [collegeBookings, setCollegeBookings] = useState([]);
   const [collegeStats, setCollegeStats] = useState(null);
-  
-  // Game Leaderboard
-  const [gameLeaderboard, setGameLeaderboard] = useState([]);
-  const [gameStats, setGameStats] = useState(null);
-  const [gamePeriod, setGamePeriod] = useState('all');
   
   // Party Bookings
   const [partyBookings, setPartyBookings] = useState([]);
@@ -184,7 +177,6 @@ const AdminDashboard = () => {
       // Load secondary data (each has its own error handling)
       await loadRentals();
       await loadCollegeBookings();
-      await loadGameLeaderboard();
       await loadPartyBookings();
       await loadQuestPasses();
       await loadOfferClaims();
@@ -221,18 +213,6 @@ const AdminDashboard = () => {
 };
 
   
-  const loadGameLeaderboard = async () => {
-  try {
-    const leaderboardData = await getGameLeaderboard(gamePeriod, 100);
-    setGameLeaderboard(leaderboardData.leaderboard || []);
-
-    const statsData = await getGameStats();
-    setGameStats(statsData.stats || null);
-  } catch (err) {
-    console.error("Error loading game leaderboard:", err);
-  }
-};
-
   const loadPartyBookings = async () => {
     try {
       const data = await getPartyBookings();
@@ -1553,118 +1533,6 @@ const AdminDashboard = () => {
     </div>
   );
 
-  // Render Game Leaderboard Section
-  const renderGameLeaderboard = () => (
-    <div className="game-section">
-      <div className="section-header">
-        <h2 className="section-title"><FiTarget /> Game Leaderboard</h2>
-        <div className="period-selector">
-          <button 
-            className={`btn ${gamePeriod === 'daily' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => { setGamePeriod('daily'); loadGameLeaderboard(); }}
-          >
-            Today
-          </button>
-          <button 
-            className={`btn ${gamePeriod === 'weekly' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => { setGamePeriod('weekly'); loadGameLeaderboard(); }}
-          >
-            This Week
-          </button>
-          <button 
-            className={`btn ${gamePeriod === 'monthly' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => { setGamePeriod('monthly'); loadGameLeaderboard(); }}
-          >
-            This Month
-          </button>
-          <button 
-            className={`btn ${gamePeriod === 'all' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => { setGamePeriod('all'); loadGameLeaderboard(); }}
-          >
-            All Time
-          </button>
-        </div>
-      </div>
-
-      {gameStats && (
-        <div className="stats-grid">
-          <div className="stat-card stat-primary">
-            <div className="stat-icon">🎮</div>
-            <div className="stat-content">
-              <div className="stat-value">{gameStats.total_games || 0}</div>
-              <div className="stat-label">Total Games Played</div>
-            </div>
-          </div>
-          <div className="stat-card stat-success">
-            <div className="stat-icon">👥</div>
-            <div className="stat-content">
-              <div className="stat-value">{gameStats.unique_players || 0}</div>
-              <div className="stat-label">Unique Players</div>
-            </div>
-          </div>
-          <div className="stat-card stat-info">
-            <div className="stat-icon">🏆</div>
-            <div className="stat-content">
-              <div className="stat-value">{gameStats.highest_score || 0}</div>
-              <div className="stat-label">Highest Score</div>
-            </div>
-          </div>
-          <div className="stat-card stat-warning">
-            <div className="stat-icon">🎯</div>
-            <div className="stat-content">
-              <div className="stat-value">{gameStats.avg_accuracy?.toFixed(1) || 0}%</div>
-              <div className="stat-label">Avg Accuracy</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {gameLeaderboard.length === 0 ? (
-        <div className="empty-state">
-          <p>🎯 No game scores yet</p>
-        </div>
-      ) : (
-        <div className="card">
-          <div className="table-container">
-            <table className="table leaderboard-table">
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Player</th>
-                  <th>Score</th>
-                  <th>Enemies</th>
-                  <th>Bosses</th>
-                  <th>Accuracy</th>
-                  <th>Games</th>
-                  <th>Last Played</th>
-                </tr>
-              </thead>
-              <tbody>
-                {gameLeaderboard.map((entry, index) => (
-                  <tr key={entry.player_name || index} className={index === 0 ? 'winner-row' : ''}>
-                    <td className="rank-cell">
-                      {index === 0 && <span className="trophy">🥇</span>}
-                      {index === 1 && <span className="trophy">🥈</span>}
-                      {index === 2 && <span className="trophy">🥉</span>}
-                      #{entry.rank || index + 1}
-                    </td>
-                    <td><strong>{entry.player_name}</strong></td>
-                    <td className="score-cell">{entry.score}</td>
-                    <td>{entry.total_enemies || 0}</td>
-                    <td>{entry.total_bosses || 0}</td>
-                    <td>{entry.best_accuracy?.toFixed(1) || 0}%</td>
-                    <td>{entry.games_played || 1}</td>
-                    <td>{entry.last_played ? new Date(entry.last_played).toLocaleDateString() : '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
   // Render Quest Pass Management
   const renderQuestPasses = () => (
     <div className="admin-section fade-in">
@@ -2043,7 +1911,6 @@ const AdminDashboard = () => {
       case 'memberships': return renderMemberships();
       case 'rentals': return renderRentals();
       case 'college': return renderCollegeEvents();
-      case 'leaderboard': return renderGameLeaderboard();
       case 'analytics': return renderAnalytics();
       case 'party': return renderPartyBookings();
       case 'questpass': return renderQuestPasses();
@@ -2110,10 +1977,6 @@ const AdminDashboard = () => {
               <FiAward className="nav-icon" />
               <span className="nav-label">College</span>
             </button>
-            <button className={`sidebar-nav-item ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>
-              <FiTarget className="nav-icon" />
-              <span className="nav-label">Scores</span>
-            </button>
           </div>
 
           <div className="nav-section">
@@ -2150,7 +2013,6 @@ const AdminDashboard = () => {
               {activeTab === 'questpass' && '🏆 Quest Pass Management'}
               {activeTab === 'rentals' && '📦 Rentals'}
               {activeTab === 'college' && '🎓 College Events'}
-              {activeTab === 'leaderboard' && '🎯 Game Leaderboard'}
               {activeTab === 'analytics' && '📈 Analytics'}
               {activeTab === 'settings' && '⚙️ Settings'}
             </h1>
@@ -2199,9 +2061,6 @@ const AdminDashboard = () => {
           </button>
           <button className={`mobile-nav-btn ${activeTab === 'college' ? 'active' : ''}`} onClick={() => setActiveTab('college')}>
             <FiAward /> <span>College</span>
-          </button>
-          <button className={`mobile-nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>
-            <FiTarget /> <span>Scores</span>
           </button>
           <button className={`mobile-nav-btn ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
             <FiTrendingUp /> <span>Analytics</span>
