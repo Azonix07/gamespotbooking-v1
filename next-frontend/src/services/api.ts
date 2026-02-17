@@ -150,6 +150,11 @@ export const getCollegeStats = () => fetchWithCredentials(`${API_BASE_URL}/api/c
 
 // Profile & Rewards
 export const getUserProfile = () => fetchWithCredentials(`${API_BASE_URL}/api/user/profile`);
+
+// User Booking Management
+export const cancelUserBooking = (bookingId: number) =>
+  fetchWithCredentials(`${API_BASE_URL}/api/user/bookings/${bookingId}/cancel`, { method: 'POST' });
+
 export const googleLogin = (credential: string) =>
   fetchWithCredentials(`${API_BASE_URL}/api/auth/google-login`, { method: 'POST', body: JSON.stringify({ credential }) });
 

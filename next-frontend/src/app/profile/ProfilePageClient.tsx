@@ -30,7 +30,7 @@ import {
 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch, getAuthToken } from '@/services/apiClient';
-import { getQuestPassStatus, getGames, requestQuestPassGameChange } from '@/services/api';
+import { getQuestPassStatus, getGames, requestQuestPassGameChange, cancelUserBooking } from '@/services/api';
 import '@/styles/ProfilePage.css';
 
 const ProfilePage = () => {
@@ -57,6 +57,8 @@ const ProfilePage = () => {
   const [expandedBooking, setExpandedBooking] = useState(null);
   const [bookingFilter, setBookingFilter] = useState('all');
   const [bookingPage, setBookingPage] = useState(1);
+  const [cancellingBookingId, setCancellingBookingId] = useState(null);
+  const [confirmCancelId, setConfirmCancelId] = useState(null);
   const BOOKINGS_PER_PAGE = 5;
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
@@ -72,6 +74,62 @@ const ProfilePage = () => {
       return 'N/A';
     }
   }, []);
+
+  // Check if a booking is cancellable (confirmed + more than 2 hours away)
+  const isBookingCancellable = useCallback((booking) => {
+    if ((booking.status || 'confirmed') !== 'confirmed') return false;
+    try {
+      const dateStr = booking.date;
+      const timeStr = String(booking.time).substring(0, 5);
+      const bookingDT = new Date(`${dateStr}T${timeStr}:00`);
+      const now = new Date();
+      const diffMs = bookingDT.getTime() - now.getTime();
+      return diffMs >= 2 * 60 * 60 * 1000; // at least 2 hours away
+    } catch {
+      return false;
+    }
+  }, []);
+
+  // Handle cancel booking
+  const handleCancelBooking = useCallback(async (bookingId) => {
+    setCancellingBookingId(bookingId);
+    setError(null);
+    try {
+      const result = await cancelUserBooking(bookingId);
+      if (result.success) {
+        setBookings(prev => prev.map(b => 
+          b.id === bookingId ? { ...b, status: 'cancelled' } : b
+        ));
+        setSuccess('Booking cancelled successfully');
+        setConfirmCancelId(null);
+        setExpandedBooking(null);
+        setTimeout(() => setSuccess(null), 3000);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to cancel booking');
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setCancellingBookingId(null);
+    }
+  }, []);
+
+  // Handle change booking — cancels old one, redirects to booking page
+  const handleChangeBooking = useCallback(async (booking) => {
+    setCancellingBookingId(booking.id);
+    setError(null);
+    try {
+      const result = await cancelUserBooking(booking.id);
+      if (result.success) {
+        // Redirect to booking page to make a new booking
+        router.push('/booking');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to cancel booking for rebooking');
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setCancellingBookingId(null);
+    }
+  }, [router]);
 
   // Generate printable bill for a booking
   const generateBill = useCallback((booking) => {
@@ -1055,12 +1113,53 @@ const ProfilePage = () => {
                                         </div>
                                       )}
                                     </div>
-                                    <button
-                                      className="bh-bill-btn"
-                                      onClick={(e) => { e.stopPropagation(); generateBill(booking); }}
-                                    >
-                                      <FiFileText size={14} /> View Bill
-                                    </button>
+                                    <div className="bh-footer-actions">
+                                      <button
+                                        className="bh-bill-btn"
+                                        onClick={(e) => { e.stopPropagation(); generateBill(booking); }}
+                                      >
+                                        <FiFileText size={14} /> View Bill
+                                      </button>
+                                      {isBookingCancellable(booking) && (
+                                        <>
+                                          {confirmCancelId === booking.id ? (
+                                            <div className="bh-cancel-confirm">
+                                              <span className="bh-cancel-text">Cancel this booking?</span>
+                                              <button
+                                                className="bh-cancel-yes"
+                                                disabled={cancellingBookingId === booking.id}
+                                                onClick={(e) => { e.stopPropagation(); handleCancelBooking(booking.id); }}
+                                              >
+                                                {cancellingBookingId === booking.id ? '...' : 'Yes'}
+                                              </button>
+                                              <button
+                                                className="bh-cancel-no"
+                                                onClick={(e) => { e.stopPropagation(); setConfirmCancelId(null); }}
+                                              >
+                                                No
+                                              </button>
+                                            </div>
+                                          ) : (
+                                            <>
+                                              <button
+                                                className="bh-change-btn"
+                                                onClick={(e) => { e.stopPropagation(); handleChangeBooking(booking); }}
+                                                disabled={cancellingBookingId === booking.id}
+                                              >
+                                                <FiRefreshCw size={14} /> Change
+                                              </button>
+                                              <button
+                                                className="bh-cancel-btn"
+                                                onClick={(e) => { e.stopPropagation(); setConfirmCancelId(booking.id); }}
+                                                disabled={cancellingBookingId === booking.id}
+                                              >
+                                                <FiX size={14} /> Cancel
+                                              </button>
+                                            </>
+                                          )}
+                                        </>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               )}

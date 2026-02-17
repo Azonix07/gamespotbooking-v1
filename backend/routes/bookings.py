@@ -193,6 +193,7 @@ def handle_bookings():
                             FROM bookings b
                             JOIN booking_devices bd ON b.id = bd.booking_id
                             WHERE b.booking_date = %s
+                            AND COALESCE(b.status, 'confirmed') != 'cancelled'
                             AND bd.device_type = 'ps5'
                             AND bd.device_number = %s
                             AND b.start_time <= %s
@@ -213,6 +214,7 @@ def handle_bookings():
                         FROM bookings b
                         JOIN booking_devices bd ON b.id = bd.booking_id
                         WHERE b.booking_date = %s
+                        AND COALESCE(b.status, 'confirmed') != 'cancelled'
                         AND bd.device_type = 'ps5'
                         AND b.start_time <= %s
                         AND ADDTIME(b.start_time, SEC_TO_TIME(b.duration_minutes * 60)) > %s
@@ -232,6 +234,7 @@ def handle_bookings():
                         FROM bookings b
                         JOIN booking_devices bd ON b.id = bd.booking_id
                         WHERE b.booking_date = %s
+                        AND COALESCE(b.status, 'confirmed') != 'cancelled'
                         AND bd.device_type = 'driving_sim'
                         AND b.start_time <= %s
                         AND ADDTIME(b.start_time, SEC_TO_TIME(b.duration_minutes * 60)) > %s

@@ -406,6 +406,111 @@ def redeem_reward(user):
         return jsonify({'success': False, 'error': 'An error occurred'}), 500
 
 
+@user_bp.route('/api/user/bookings/<int:booking_id>/cancel', methods=['POST', 'OPTIONS'])
+@require_auth
+def cancel_booking(user, booking_id):
+    """
+    Cancel a user's own booking.
+    Rules:
+      - Booking must belong to the user (by user_id or phone)
+      - Booking must be in 'confirmed' status
+      - Booking must be at least 2 hours in the future
+    """
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    conn = None
+    cursor = None
+    try:
+        user_id_val = user.get('id') or session.get('user_id')
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Get user phone for matching
+        cursor.execute("SELECT phone FROM users WHERE id = %s", (user_id_val,))
+        user_row = cursor.fetchone()
+        user_phone = user_row['phone'] if user_row else ''
+
+        # Fetch the booking
+        cursor.execute("""
+            SELECT id, booking_date, start_time, duration_minutes, total_price,
+                   customer_phone, user_id,
+                   COALESCE(status, 'confirmed') AS status
+            FROM bookings WHERE id = %s
+        """, (booking_id,))
+        booking = cursor.fetchone()
+
+        if not booking:
+            return jsonify({'success': False, 'error': 'Booking not found'}), 404
+
+        # Verify ownership
+        owns_booking = False
+        if booking.get('user_id') and int(booking['user_id']) == int(user_id_val):
+            owns_booking = True
+        elif booking.get('customer_phone') == user_phone:
+            owns_booking = True
+
+        if not owns_booking:
+            return jsonify({'success': False, 'error': 'You can only cancel your own bookings'}), 403
+
+        # Check status
+        if booking['status'] != 'confirmed':
+            return jsonify({'success': False, 'error': f'Cannot cancel a booking with status: {booking["status"]}'}), 400
+
+        # Check 2-hour cutoff
+        booking_date = booking['booking_date']
+        start_time = booking['start_time']
+        # start_time may be timedelta
+        if hasattr(start_time, 'total_seconds'):
+            total_secs = int(start_time.total_seconds())
+            hours_part = total_secs // 3600
+            mins_part = (total_secs % 3600) // 60
+        else:
+            parts = str(start_time).split(':')
+            hours_part = int(parts[0])
+            mins_part = int(parts[1])
+
+        booking_datetime = datetime.combine(
+            booking_date,
+            datetime.min.time().replace(hour=hours_part, minute=mins_part)
+        )
+        now = datetime.now()
+        time_until = (booking_datetime - now).total_seconds()
+
+        if time_until < 7200:  # 2 hours = 7200 seconds
+            return jsonify({
+                'success': False,
+                'error': 'Bookings can only be cancelled at least 2 hours before the scheduled time'
+            }), 400
+
+        # Cancel the booking
+        cursor.execute(
+            "UPDATE bookings SET status = 'cancelled' WHERE id = %s",
+            (booking_id,)
+        )
+        conn.commit()
+
+        import sys
+        sys.stderr.write(f"[Cancel] User {user_id_val} cancelled booking #{booking_id}\n")
+
+        return jsonify({
+            'success': True,
+            'message': 'Booking cancelled successfully'
+        })
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        import sys, traceback
+        sys.stderr.write(f"[Cancel Booking] Error: {e}\n{traceback.format_exc()}\n")
+        return jsonify({'success': False, 'error': 'An error occurred while cancelling'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
 # Function to award points after booking (called from booking routes)
 def award_booking_points(user_id, booking_amount):
     """Award points to user after successful booking (50% of amount)"""

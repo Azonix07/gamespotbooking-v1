@@ -324,8 +324,9 @@ html, body {
   }
   
   .meta-icon {
-    height: 30px !important; /* Reduced from 35px for better alignment */
+    height: 35px !important; /* Reduced from 35px for better alignment */
     vertical-align: middle; /* Better vertical alignment with other icons */
+
   }
   
   .console-separator {
@@ -380,8 +381,9 @@ html, body {
   }
   
   .meta-icon {
-    height: 24px !important; /* Reduced from 30px for better alignment */
+    height: 35px !important; /* Reduced from 30px for better alignment */
     vertical-align: middle;
+    margin-top: -2px !important;
   }
   
   .console-separator {
@@ -443,7 +445,7 @@ html, body {
   }
   
   .meta-icon {
-    height: 20px !important; /* Reduced from 25px for better alignment */
+    height: 30px !important; /* Reduced from 25px for better alignment */
     vertical-align: middle;
   }
   

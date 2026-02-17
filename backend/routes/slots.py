@@ -53,6 +53,7 @@ def get_slots():
                 FROM bookings b
                 JOIN booking_devices bd ON b.id = bd.booking_id
                 WHERE b.booking_date = %s
+                AND COALESCE(b.status, 'confirmed') != 'cancelled'
                 AND b.start_time < %s
                 AND ADDTIME(b.start_time, SEC_TO_TIME(b.duration_minutes * 60)) > %s
             """
@@ -98,6 +99,7 @@ def get_slots():
             FROM bookings b
             JOIN booking_devices bd ON b.id = bd.booking_id
             WHERE b.booking_date = %s
+            AND COALESCE(b.status, 'confirmed') != 'cancelled'
         """
         cursor.execute(query, (date,))
         all_bookings = cursor.fetchall()
