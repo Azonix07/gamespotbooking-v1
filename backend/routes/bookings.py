@@ -69,6 +69,78 @@ def debug_booking(booking_id):
                     booking[k] = str(v)
         cursor.execute("SELECT * FROM booking_devices WHERE booking_id = %s", (booking_id,))
         devices = cursor.fetchall()
+        
+        # Run the EXACT same query slots.py uses for detailed availability
+        if booking:
+            bdate = booking['booking_date']
+            btime = booking['start_time']
+            # Parse time string to get start and end 
+            from datetime import datetime as dt2, timedelta as td2
+            t_obj = dt2.strptime(str(btime).split('.')[0], '%H:%M:%S')
+            end_t = (t_obj + td2(minutes=int(booking['duration_minutes']))).strftime('%H:%M:%S')
+            start_t = t_obj.strftime('%H:%M:%S')
+            
+            # Exact query from slots.py (detailed)
+            slots_query = """
+                SELECT 
+                    bd.device_type,
+                    bd.device_number,
+                    bd.player_count,
+                    b.id as booking_id,
+                    b.start_time,
+                    b.duration_minutes,
+                    b.status
+                FROM bookings b
+                JOIN booking_devices bd ON b.id = bd.booking_id
+                WHERE b.booking_date = %s
+                AND COALESCE(b.status, 'confirmed') != 'cancelled'
+                AND b.start_time < %s
+                AND ADDTIME(b.start_time, SEC_TO_TIME(b.duration_minutes * 60)) > %s
+            """
+            cursor.execute(slots_query, (bdate, end_t, start_t))
+            slots_results_raw = cursor.fetchall()
+            # Serialize
+            slots_results = []
+            for r in slots_results_raw:
+                row = {}
+                for k, v in r.items():
+                    if hasattr(v, 'isoformat'):
+                        row[k] = v.isoformat()
+                    elif hasattr(v, 'total_seconds'):
+                        row[k] = str(v)
+                    elif isinstance(v, bytes):
+                        row[k] = v.decode()
+                    else:
+                        row[k] = v
+                slots_results.append(row)
+                
+            # Also try without the status filter
+            cursor.execute("""
+                SELECT b.id, b.start_time, b.duration_minutes, b.status,
+                       bd.device_type, bd.device_number, bd.player_count
+                FROM bookings b
+                JOIN booking_devices bd ON b.id = bd.booking_id
+                WHERE b.booking_date = %s
+            """, (bdate,))
+            all_for_date_raw = cursor.fetchall()
+            all_for_date = []
+            for r in all_for_date_raw:
+                row = {}
+                for k, v in r.items():
+                    if hasattr(v, 'isoformat'):
+                        row[k] = v.isoformat()
+                    elif hasattr(v, 'total_seconds'):
+                        row[k] = str(v)
+                    elif isinstance(v, bytes):
+                        row[k] = v.decode()
+                    else:
+                        row[k] = v
+                all_for_date.append(row)
+        else:
+            slots_results = []
+            all_for_date = []
+            start_t = end_t = bdate = None
+        
         cursor.execute("SELECT COUNT(*) as total_bookings FROM bookings", ())
         total = cursor.fetchone()
         cursor.execute("SELECT COUNT(*) as total_devices FROM booking_devices", ())
@@ -77,7 +149,10 @@ def debug_booking(booking_id):
             'booking': booking,
             'devices': devices,
             'total_bookings_in_db': total['total_bookings'],
-            'total_devices_in_db': total_dev['total_devices']
+            'total_devices_in_db': total_dev['total_devices'],
+            'slots_query_params': {'date': bdate, 'start_time': start_t, 'end_time': end_t},
+            'slots_query_results': slots_results,
+            'all_bookings_for_date': all_for_date
         })
     except Exception as e:
         return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
