@@ -746,157 +746,548 @@
 }
 
 /* ============================================================================
-   BOOKING HISTORY SECTION
+   BOOKING HISTORY — PREMIUM REDESIGN
    ============================================================================ */
 
+/* Header row */
+.booking-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.booking-count-badge {
+  background: rgba(40, 116, 240, 0.12);
+  color: #2874f0;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* ── Filter Bar ── */
+.booking-filter-bar {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: #f0f2f5;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.booking-filter-bar::-webkit-scrollbar { display: none; }
+
+.booking-filter-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.booking-filter-tab:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: #333;
+}
+
+.booking-filter-tab.active {
+  background: #fff;
+  color: #2874f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filter-count {
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.booking-filter-tab.active .filter-count {
+  background: rgba(40, 116, 240, 0.12);
+  color: #2874f0;
+}
+
+/* ── Empty State ── */
 .no-bookings {
   text-align: center;
-  padding: 40px 20px;
+  padding: 48px 20px;
   color: #878787;
+}
+
+.no-bookings-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
 }
 
 .no-bookings p {
-  margin-bottom: 20px;
-  font-size: 15px;
+  margin-bottom: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #555;
 }
 
+.no-bookings-sub {
+  display: block;
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 20px;
+}
+
+/* ── Booking Cards ── */
 .bookings-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.booking-item {
-  background: #f8f9fa;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.3s ease;
-}
-
-.booking-item:hover {
-  border-color: #2874f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.booking-item.status-completed {
-  border-left: 4px solid #4caf50;
-}
-
-.booking-item.status-confirmed {
-  border-left: 4px solid #2874f0;
-}
-
-.booking-item.status-cancelled {
-  border-left: 4px solid #f44336;
-  opacity: 0.7;
-}
-
-.booking-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.booking-date-time {
-  display: flex;
-  align-items: center;
   gap: 12px;
 }
 
-.booking-icon {
-  color: #2874f0;
-  font-size: 24px;
+.bh-card {
+  background: #fff;
+  border: 1.5px solid #eaedf0;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: bh-slide-in 0.35s ease both;
 }
 
-.booking-date {
-  font-size: 16px;
-  font-weight: 600;
-  color: #212121;
+@keyframes bh-slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.booking-time {
-  font-size: 13px;
-  color: #878787;
-  margin-top: 2px;
+.bh-card:hover {
+  border-color: #c8d1e0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
-.booking-status-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: capitalize;
+.bh-card.bh-expanded {
+  border-color: #2874f0;
+  box-shadow: 0 8px 32px rgba(40, 116, 240, 0.12);
 }
 
-.booking-item.status-completed .booking-status-badge {
-  background: #e8f5e9;
-  color: #4caf50;
-}
+/* Status left-accent */
+.bh-status-completed { border-left: 4px solid #4caf50; }
+.bh-status-confirmed { border-left: 4px solid #2874f0; }
+.bh-status-cancelled { border-left: 4px solid #ef5350; opacity: 0.75; }
 
-.booking-item.status-confirmed .booking-status-badge {
-  background: #e3f2fd;
-  color: #2874f0;
-}
-
-.booking-item.status-cancelled .booking-status-badge {
-  background: #ffebee;
-  color: #f44336;
-}
-
-.booking-devices {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.device-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 13px;
-  color: #212121;
-  font-weight: 500;
-}
-
-.booking-footer-row {
+/* ── Card Top Row (always visible) ── */
+.bh-card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 12px;
-  border-top: 1px solid #e0e0e0;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  gap: 12px;
 }
 
-.booking-price {
-  font-size: 20px;
-  font-weight: 700;
+.bh-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.bh-date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f0f4ff, #e8ecf8);
+  flex-shrink: 0;
+}
+
+.bh-status-completed .bh-date-badge { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); }
+.bh-status-cancelled .bh-date-badge { background: linear-gradient(135deg, #ffebee, #ffcdd2); }
+
+.bh-day {
+  font-size: 18px;
+  font-weight: 800;
   color: #212121;
+  line-height: 1;
 }
 
-.booking-points-earned {
+.bh-month {
+  font-size: 11px;
+  font-weight: 600;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bh-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bh-time-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #ffd700, #ff9800);
-  color: white;
-  border-radius: 20px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+  color: #333;
 }
 
-.points-star-small {
-  color: white;
+.bh-dot { color: #ccc; }
+
+.bh-duration {
+  font-weight: 500;
+  color: #888;
+}
+
+.bh-devices-mini {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.bh-device-chip {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  background: #f5f6f8;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* Right side */
+.bh-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.bh-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: #212121;
+}
+
+.bh-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.bh-pill-completed { background: #e8f5e9; color: #2e7d32; }
+.bh-pill-confirmed { background: #e3f2fd; color: #1565c0; }
+.bh-pill-cancelled { background: #ffebee; color: #c62828; }
+
+.bh-chevron {
+  color: #aaa;
+  display: flex;
+  transition: transform 0.25s ease;
+}
+
+.bh-expanded .bh-chevron { color: #2874f0; }
+
+/* ── Expanded Detail Panel ── */
+.bh-details {
+  padding: 0 20px 20px;
+  border-top: 1px solid #f0f0f0;
+  animation: bh-expand 0.3s ease;
+}
+
+@keyframes bh-expand {
+  from { opacity: 0; max-height: 0; }
+  to   { opacity: 1; max-height: 500px; }
+}
+
+.bh-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.bh-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bh-detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bh-detail-value {
   font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Devices */
+.bh-device-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.bh-device-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f7f8fa;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #444;
+}
+
+.bh-players-tag {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2874f0;
+  background: rgba(40, 116, 240, 0.08);
+  padding: 3px 10px;
+  border-radius: 8px;
+}
+
+/* Footer */
+.bh-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid #f0f0f0;
+  gap: 12px;
+}
+
+.bh-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bh-total {
+  display: flex;
+  flex-direction: column;
+}
+
+.bh-total-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+}
+
+.bh-total-amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #212121;
+}
+
+.bh-points-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  background: linear-gradient(135deg, #fff8e1, #ffecb3);
+  color: #e65100;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bh-bill-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #ff6b35, #ff8a50);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.bh-bill-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.35);
+}
+
+/* ── Pagination ── */
+.bh-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  flex-wrap: wrap;
+}
+
+.bh-page-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fff;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bh-page-btn:hover:not(:disabled) {
+  border-color: #2874f0;
+  color: #2874f0;
+  background: #f0f4ff;
+}
+
+.bh-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.bh-page-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.bh-page-num {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bh-page-num:hover {
+  background: #f0f2f5;
+}
+
+.bh-page-num.active {
+  background: #2874f0;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(40, 116, 240, 0.3);
+}
+
+.bh-page-info {
+  font-size: 12px;
+  color: #999;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+/* ── Mobile Responsive ── */
+@media (max-width: 768px) {
+  .booking-filter-bar {
+    gap: 4px;
+    padding: 4px;
+    border-radius: 12px;
+  }
+
+  .booking-filter-tab {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
+  .bh-card-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .bh-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .bh-detail-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .bh-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bh-bill-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bh-date-badge {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+  }
+
+  .bh-day { font-size: 16px; }
+  .bh-month { font-size: 10px; }
+  .bh-price { font-size: 16px; }
+}
+
+@media (max-width: 480px) {
+  .booking-filter-bar {
+    margin-left: -4px;
+    margin-right: -4px;
+  }
+
+  .bh-card-top {
+    padding: 12px 14px;
+  }
+
+  .bh-details {
+    padding: 0 14px 16px;
+  }
+
+  .bh-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
 }
 
 /* Booked-as name tag (shown when booking name differs from profile name) */
@@ -921,24 +1312,6 @@
   color: #2874f0;
   font-size: 14px;
   flex-shrink: 0;
-}
-
-@media (max-width: 768px) {
-  .booking-header-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .booking-footer-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .booking-status-badge {
-    align-self: flex-start;
-  }
 }
 
 /* ─── Quest Pass Game Change Modal ─── */

@@ -22,7 +22,11 @@ import {
   FiFileText,
   FiDownload,
   FiChevronDown,
-  FiChevronUp
+  FiChevronUp,
+  FiChevronLeft,
+  FiChevronRight,
+  FiFilter,
+  FiCalendar
 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch, getAuthToken } from '@/services/apiClient';
@@ -51,6 +55,9 @@ const ProfilePage = () => {
 
   // Purchase History state
   const [expandedBooking, setExpandedBooking] = useState(null);
+  const [bookingFilter, setBookingFilter] = useState('all');
+  const [bookingPage, setBookingPage] = useState(1);
+  const BOOKINGS_PER_PAGE = 5;
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
 
@@ -890,87 +897,214 @@ const ProfilePage = () => {
               </div>
 
               {/* Booking History */}
-              <div className="profile-card">
-                <h3 className="card-title">
-                  <FiClock /> My Booking History
-                </h3>
+              <div className="profile-card booking-history-card">
+                <div className="booking-history-header">
+                  <h3 className="card-title">
+                    <FiCalendar /> Booking History
+                  </h3>
+                  {bookings.length > 0 && (
+                    <span className="booking-count-badge">{bookings.length} total</span>
+                  )}
+                </div>
+
+                {/* Filter Tabs */}
+                {bookings.length > 0 && (
+                  <div className="booking-filter-bar">
+                    {[
+                      { key: 'all', label: 'All', icon: null },
+                      { key: 'completed', label: 'Completed', icon: <FiCheckCircle size={13} /> },
+                      { key: 'confirmed', label: 'Upcoming', icon: <FiClock size={13} /> },
+                      { key: 'cancelled', label: 'Cancelled', icon: <FiX size={13} /> },
+                    ].map((tab) => {
+                      const count = tab.key === 'all' ? bookings.length : bookings.filter(b => (b.status || 'confirmed') === tab.key).length;
+                      return (
+                        <button
+                          key={tab.key}
+                          className={`booking-filter-tab ${bookingFilter === tab.key ? 'active' : ''}`}
+                          onClick={() => { setBookingFilter(tab.key); setBookingPage(1); setExpandedBooking(null); }}
+                        >
+                          {tab.icon} {tab.label}
+                          <span className="filter-count">{count}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
                 
                 {bookings.length === 0 ? (
                   <div className="no-bookings">
-                    <p>No bookings yet. Start gaming to earn points!</p>
+                    <div className="no-bookings-icon">🎮</div>
+                    <p>No bookings yet</p>
+                    <span className="no-bookings-sub">Start gaming to earn SuperCoins!</span>
                     <button className="btn-primary" onClick={() => router.push('/booking')}>
                       Book Now
                     </button>
                   </div>
-                ) : (
-                  <div className="bookings-list">
-                    {bookings.map((booking) => (
-                      <div key={booking.id} className={`booking-item status-${booking.status || 'confirmed'}`}>
-                        <div className="booking-header-row" onClick={() => setExpandedBooking(expandedBooking === booking.id ? null : booking.id)} style={{ cursor: 'pointer' }}>
-                          <div className="booking-date-time">
-                            <FiClock className="booking-icon" />
-                            <div>
-                              <div className="booking-date">{formatDate(booking.date, { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                              <div className="booking-time">{booking.time} • {booking.duration} mins</div>
-                            </div>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div className="booking-price">₹{(booking.price || 0).toFixed(2)}</div>
-                            <div className="booking-status-badge">
-                              {(booking.status || 'confirmed') === 'completed' && <FiCheckCircle />}
-                              {booking.status || 'confirmed'}
-                            </div>
-                            {expandedBooking === booking.id ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}
-                          </div>
-                        </div>
+                ) : (() => {
+                  const filtered = bookingFilter === 'all'
+                    ? bookings
+                    : bookings.filter(b => (b.status || 'confirmed') === bookingFilter);
+                  const totalPages = Math.ceil(filtered.length / BOOKINGS_PER_PAGE);
+                  const paginated = filtered.slice((bookingPage - 1) * BOOKINGS_PER_PAGE, bookingPage * BOOKINGS_PER_PAGE);
 
-                        {expandedBooking === booking.id && (
-                          <div className="booking-expanded" style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                            {/* Show booked-as name if different from profile name */}
-                            {booking.booked_as && profileData?.name && booking.booked_as !== profileData.name && (
-                              <div className="booking-booked-as">
-                                <FiUser className="booked-as-icon" />
-                                <span>Booked as: <strong>{booking.booked_as}</strong></span>
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="no-bookings">
+                        <p>No {bookingFilter} bookings found</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      <div className="bookings-list">
+                        {paginated.map((booking, idx) => {
+                          const status = booking.status || 'confirmed';
+                          const isExpanded = expandedBooking === booking.id;
+                          const statusEmoji = status === 'completed' ? '✅' : status === 'confirmed' ? '🕐' : '❌';
+                          const totalPlayers = booking.devices?.reduce((sum, d) => sum + (d.players || 1), 0) || 0;
+
+                          return (
+                            <div
+                              key={booking.id}
+                              className={`bh-card bh-status-${status} ${isExpanded ? 'bh-expanded' : ''}`}
+                              style={{ animationDelay: `${idx * 0.05}s` }}
+                            >
+                              {/* Top row — always visible */}
+                              <div className="bh-card-top" onClick={() => setExpandedBooking(isExpanded ? null : booking.id)}>
+                                <div className="bh-left">
+                                  <div className="bh-date-badge">
+                                    <span className="bh-day">{formatDate(booking.date, { day: 'numeric' })}</span>
+                                    <span className="bh-month">{formatDate(booking.date, { month: 'short' })}</span>
+                                  </div>
+                                  <div className="bh-info">
+                                    <div className="bh-time-row">
+                                      <span className="bh-time">{booking.time}</span>
+                                      <span className="bh-dot">•</span>
+                                      <span className="bh-duration">{booking.duration} mins</span>
+                                    </div>
+                                    <div className="bh-devices-mini">
+                                      {booking.devices?.map((d, i) => (
+                                        <span key={i} className="bh-device-chip">
+                                          {d.type === 'ps5' ? `🎮 PS5 #${d.number}` : '🏎️ Sim'}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="bh-right">
+                                  <div className="bh-price">₹{(booking.price || 0).toFixed(0)}</div>
+                                  <div className={`bh-status-pill bh-pill-${status}`}>
+                                    {statusEmoji} {status}
+                                  </div>
+                                  <div className="bh-chevron">
+                                    {isExpanded ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}
+                                  </div>
+                                </div>
                               </div>
-                            )}
-                            
-                            <div className="booking-devices">
-                              {booking.devices && booking.devices.map((device, idx) => (
-                                <span key={idx} className="device-tag">
-                                  <FiMonitor /> {device.type === 'ps5' ? `PS5 #${device.number}` : 'Driving Sim'} ({device.players} {device.players > 1 ? 'players' : 'player'})
-                                </span>
-                              ))}
-                            </div>
-                            
-                            <div className="booking-footer-row">
-                              {booking.points_earned > 0 && (
-                                <div className="booking-points-earned">
-                                  <FiStar className="points-star-small" /> +{booking.points_earned} points earned
+
+                              {/* Expanded details */}
+                              {isExpanded && (
+                                <div className="bh-details">
+                                  <div className="bh-detail-grid">
+                                    <div className="bh-detail-item">
+                                      <span className="bh-detail-label">Booking ID</span>
+                                      <span className="bh-detail-value">#GS-{booking.id}</span>
+                                    </div>
+                                    <div className="bh-detail-item">
+                                      <span className="bh-detail-label">Date</span>
+                                      <span className="bh-detail-value">{formatDate(booking.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                    </div>
+                                    <div className="bh-detail-item">
+                                      <span className="bh-detail-label">Duration</span>
+                                      <span className="bh-detail-value">{booking.duration} minutes</span>
+                                    </div>
+                                    <div className="bh-detail-item">
+                                      <span className="bh-detail-label">Players</span>
+                                      <span className="bh-detail-value">{totalPlayers} {totalPlayers === 1 ? 'player' : 'players'}</span>
+                                    </div>
+                                    {booking.booked_as && profileData?.name && booking.booked_as !== profileData.name && (
+                                      <div className="bh-detail-item">
+                                        <span className="bh-detail-label">Booked As</span>
+                                        <span className="bh-detail-value">{booking.booked_as}</span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Devices */}
+                                  <div className="bh-device-list">
+                                    {booking.devices?.map((device, idx) => (
+                                      <div key={idx} className="bh-device-row">
+                                        <FiMonitor size={14} />
+                                        <span>{device.type === 'ps5' ? `PlayStation 5 #${device.number}` : 'Driving Simulator'}</span>
+                                        <span className="bh-players-tag">{device.players} {device.players > 1 ? 'players' : 'player'}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  {/* Footer — price + points + actions */}
+                                  <div className="bh-footer">
+                                    <div className="bh-footer-left">
+                                      <div className="bh-total">
+                                        <span className="bh-total-label">Total Paid</span>
+                                        <span className="bh-total-amount">₹{(booking.price || 0).toFixed(2)}</span>
+                                      </div>
+                                      {booking.points_earned > 0 && (
+                                        <div className="bh-points-badge">
+                                          <FiStar size={13} /> +{booking.points_earned} SuperCoins
+                                        </div>
+                                      )}
+                                    </div>
+                                    <button
+                                      className="bh-bill-btn"
+                                      onClick={(e) => { e.stopPropagation(); generateBill(booking); }}
+                                    >
+                                      <FiFileText size={14} /> View Bill
+                                    </button>
+                                  </div>
                                 </div>
                               )}
                             </div>
-
-                            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                              <button
-                                className="btn-bill"
-                                onClick={(e) => { e.stopPropagation(); generateBill(booking); }}
-                                style={{
-                                  display: 'flex', alignItems: 'center', gap: '6px',
-                                  padding: '8px 14px', background: 'rgba(255,107,53,0.15)',
-                                  color: '#ff6b35', border: '1px solid rgba(255,107,53,0.3)',
-                                  borderRadius: '8px', fontSize: '13px', fontWeight: 600,
-                                  cursor: 'pointer', transition: 'all 0.2s ease'
-                                }}
-                              >
-                                <FiFileText size={14} /> View Bill
-                              </button>
-                            </div>
-                          </div>
-                        )}
+                          );
+                        })}
                       </div>
-                    ))}
-                  </div>
-                )}
+
+                      {/* Pagination */}
+                      {totalPages > 1 && (
+                        <div className="bh-pagination">
+                          <button
+                            className="bh-page-btn"
+                            disabled={bookingPage <= 1}
+                            onClick={() => { setBookingPage(p => p - 1); setExpandedBooking(null); }}
+                          >
+                            <FiChevronLeft size={16} />
+                          </button>
+                          <div className="bh-page-numbers">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                              <button
+                                key={num}
+                                className={`bh-page-num ${bookingPage === num ? 'active' : ''}`}
+                                onClick={() => { setBookingPage(num); setExpandedBooking(null); }}
+                              >
+                                {num}
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            className="bh-page-btn"
+                            disabled={bookingPage >= totalPages}
+                            onClick={() => { setBookingPage(p => p + 1); setExpandedBooking(null); }}
+                          >
+                            <FiChevronRight size={16} />
+                          </button>
+                          <span className="bh-page-info">
+                            {(bookingPage - 1) * BOOKINGS_PER_PAGE + 1}–{Math.min(bookingPage * BOOKINGS_PER_PAGE, filtered.length)} of {filtered.length}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
 
             </div>
