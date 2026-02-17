@@ -75,40 +75,46 @@ def _send_admin_email(subject, html_body, text_body=None):
 
 
 def _send_admin_whatsapp(message):
-    """Send a WhatsApp/SMS message to all admin phone numbers."""
+    """Send WhatsApp message to all admin phone numbers using Twilio WhatsApp API.
+    
+    Always uses WhatsApp (not SMS) because:
+    - Twilio trial accounts can only SMS verified numbers
+    - WhatsApp sandbox works with any number that has joined the sandbox
+    - WhatsApp is free on Twilio sandbox
+    """
     admin_phones = _get_admin_phones()
     if not admin_phones:
-        return  # WhatsApp/SMS is optional
+        return  # WhatsApp is optional
+
+    # Get Twilio credentials directly from env (don't depend on sms_service.provider)
+    twilio_sid = os.getenv('TWILIO_ACCOUNT_SID', '')
+    twilio_token = os.getenv('TWILIO_AUTH_TOKEN', '')
+    # WhatsApp sender: use dedicated env var, or fallback to Twilio sandbox default
+    whatsapp_from = os.getenv('TWILIO_WHATSAPP_NUMBER', '')
+
+    if not twilio_sid or not twilio_token or not whatsapp_from:
+        sys.stderr.write("[AdminNotify] ⚠️ Twilio credentials or TWILIO_WHATSAPP_NUMBER not set — skipping WhatsApp\n")
+        return
 
     try:
-        from services.sms_service import sms_service
-        if not sms_service.enabled:
-            return
+        from twilio.rest import Client
+        client = Client(twilio_sid, twilio_token)
 
-        if sms_service.provider in ('twilio', 'whatsapp'):
-            client = sms_service.twilio_client
-            from_number = sms_service.twilio_whatsapp_number or sms_service.twilio_phone
+        for phone in admin_phones:
+            try:
+                if not phone.startswith('+'):
+                    phone = f'+91{phone}'
 
-            for phone in admin_phones:
-                try:
-                    if not phone.startswith('+'):
-                        phone = f'+91{phone}'
-
-                    if sms_service.provider == 'whatsapp':
-                        to_number = f'whatsapp:{phone}'
-                    else:
-                        to_number = phone
-
-                    client.messages.create(
-                        body=message,
-                        from_=from_number,
-                        to=to_number
-                    )
-                    sys.stderr.write(f"[AdminNotify] ✅ WhatsApp/SMS sent to {phone}\n")
-                except Exception as e:
-                    sys.stderr.write(f"[AdminNotify] ⚠️ WhatsApp/SMS to {phone} failed: {e}\n")
+                result = client.messages.create(
+                    body=message,
+                    from_=f'whatsapp:{whatsapp_from}',
+                    to=f'whatsapp:{phone}'
+                )
+                sys.stderr.write(f"[AdminNotify] ✅ WhatsApp sent to {phone}: {result.sid}\n")
+            except Exception as e:
+                sys.stderr.write(f"[AdminNotify] ⚠️ WhatsApp to {phone} failed: {e}\n")
     except Exception as e:
-        sys.stderr.write(f"[AdminNotify] ⚠️ WhatsApp/SMS failed (non-critical): {e}\n")
+        sys.stderr.write(f"[AdminNotify] ⚠️ WhatsApp init failed: {e}\n")
 
 
 # ═══════════════════════════════════════════
