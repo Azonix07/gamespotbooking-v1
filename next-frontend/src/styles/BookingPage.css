@@ -3903,13 +3903,15 @@ span.device-unit {
    ============================================ */
 .games-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, 120px);
   gap: 12px;
   margin-bottom: 16px;
+  justify-content: center;
 }
 
 .game-card {
   position: relative;
+  width: 120px;
   border-radius: 14px;
   overflow: hidden;
   background: #fff;
@@ -4877,8 +4879,12 @@ span.device-unit {
    ============================================ */
 @media (max-width: 1024px) {
   .games-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fill, 110px);
     gap: 10px;
+  }
+
+  .game-card {
+    width: 110px;
   }
 
   .recommended-units-grid {
@@ -4935,11 +4941,12 @@ span.device-unit {
   }
 
   .games-grid {
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    grid-template-columns: repeat(auto-fill, 100px);
     gap: 8px;
   }
 
   .game-card {
+    width: 100px;
     border-radius: 12px;
   }
 
@@ -5147,11 +5154,12 @@ span.device-unit {
   }
 
   .games-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fill, 90px);
     gap: 6px;
   }
 
   .game-card {
+    width: 90px;
     border-radius: 10px;
   }
 
@@ -5253,11 +5261,12 @@ span.device-unit {
 
 @media (max-width: 360px) {
   .games-grid {
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    grid-template-columns: repeat(auto-fill, 80px);
     gap: 5px;
   }
 
   .game-card {
+    width: 80px;
     border-radius: 8px;
     border-width: 1.5px;
   }
