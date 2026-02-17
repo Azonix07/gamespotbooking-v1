@@ -50,116 +50,6 @@ def _get_current_user_id():
     
     return None
 
-@bookings_bp.route('/api/debug/booking/<int:booking_id>', methods=['GET'])
-def debug_booking(booking_id):
-    """Temporary debug endpoint — check if booking and booking_devices exist"""
-    conn = None
-    cursor = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT id, customer_name, booking_date, start_time, duration_minutes, total_price FROM bookings WHERE id = %s", (booking_id,))
-        booking = cursor.fetchone()
-        if booking:
-            # Convert non-serializable types
-            for k, v in booking.items():
-                if hasattr(v, 'isoformat'):
-                    booking[k] = v.isoformat()
-                elif hasattr(v, 'total_seconds'):
-                    booking[k] = str(v)
-        cursor.execute("SELECT * FROM booking_devices WHERE booking_id = %s", (booking_id,))
-        devices = cursor.fetchall()
-        
-        # Run the EXACT same query slots.py uses for detailed availability
-        if booking:
-            bdate = booking['booking_date']
-            btime = booking['start_time']
-            # Parse time string to get start and end 
-            from datetime import datetime as dt2, timedelta as td2
-            t_obj = dt2.strptime(str(btime).split('.')[0], '%H:%M:%S')
-            end_t = (t_obj + td2(minutes=int(booking['duration_minutes']))).strftime('%H:%M:%S')
-            start_t = t_obj.strftime('%H:%M:%S')
-            
-            # Exact query from slots.py (detailed)
-            slots_query = """
-                SELECT 
-                    bd.device_type,
-                    bd.device_number,
-                    bd.player_count,
-                    b.id as booking_id,
-                    b.start_time,
-                    b.duration_minutes,
-                    b.status
-                FROM bookings b
-                JOIN booking_devices bd ON b.id = bd.booking_id
-                WHERE b.booking_date = %s
-                AND COALESCE(b.status, 'confirmed') != 'cancelled'
-                AND b.start_time < %s
-                AND ADDTIME(b.start_time, SEC_TO_TIME(b.duration_minutes * 60)) > %s
-            """
-            cursor.execute(slots_query, (bdate, end_t, start_t))
-            slots_results_raw = cursor.fetchall()
-            # Serialize
-            slots_results = []
-            for r in slots_results_raw:
-                row = {}
-                for k, v in r.items():
-                    if hasattr(v, 'isoformat'):
-                        row[k] = v.isoformat()
-                    elif hasattr(v, 'total_seconds'):
-                        row[k] = str(v)
-                    elif isinstance(v, bytes):
-                        row[k] = v.decode()
-                    else:
-                        row[k] = v
-                slots_results.append(row)
-                
-            # Also try without the status filter
-            cursor.execute("""
-                SELECT b.id, b.start_time, b.duration_minutes, b.status,
-                       bd.device_type, bd.device_number, bd.player_count
-                FROM bookings b
-                JOIN booking_devices bd ON b.id = bd.booking_id
-                WHERE b.booking_date = %s
-            """, (bdate,))
-            all_for_date_raw = cursor.fetchall()
-            all_for_date = []
-            for r in all_for_date_raw:
-                row = {}
-                for k, v in r.items():
-                    if hasattr(v, 'isoformat'):
-                        row[k] = v.isoformat()
-                    elif hasattr(v, 'total_seconds'):
-                        row[k] = str(v)
-                    elif isinstance(v, bytes):
-                        row[k] = v.decode()
-                    else:
-                        row[k] = v
-                all_for_date.append(row)
-        else:
-            slots_results = []
-            all_for_date = []
-            start_t = end_t = bdate = None
-        
-        cursor.execute("SELECT COUNT(*) as total_bookings FROM bookings", ())
-        total = cursor.fetchone()
-        cursor.execute("SELECT COUNT(*) as total_devices FROM booking_devices", ())
-        total_dev = cursor.fetchone()
-        return jsonify({
-            'booking': booking,
-            'devices': devices,
-            'total_bookings_in_db': total['total_bookings'],
-            'total_devices_in_db': total_dev['total_devices'],
-            'slots_query_params': {'date': bdate, 'start_time': start_t, 'end_time': end_t},
-            'slots_query_results': slots_results,
-            'all_bookings_for_date': all_for_date
-        })
-    except Exception as e:
-        return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
-    finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
-
 @bookings_bp.route('/api/bookings.php', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 def handle_bookings():
     """Handle all booking operations"""
@@ -283,8 +173,9 @@ def handle_bookings():
             except Exception:
                 has_promo_columns = False
             
-            # Note: autocommit=False in pool config means we're already in a transaction.
-            # conn.commit() / conn.rollback() handle the transaction boundaries.
+            # Start explicit transaction for the booking creation
+            # (availability check + insert must be atomic)
+            conn.autocommit = False
             
             # Check availability for all affected slots
             affected_slots = get_affected_slots(start_time, duration_minutes)
@@ -490,6 +381,9 @@ def handle_bookings():
                 devices_inserted += 1
             
             conn.commit()
+            # Restore autocommit for post-booking operations (promo, points, membership)
+            # These are non-critical and can each auto-commit independently
+            conn.autocommit = True
             sys.stderr.write(f"[Booking] Created booking #{booking_id} with {devices_inserted} device(s)\n")
             sys.stderr.flush()
             
@@ -501,7 +395,6 @@ def handle_bookings():
                         SET current_uses = current_uses + 1
                         WHERE id = %s
                     ''', (promo_code_id,))
-                    conn.commit()
                 except Exception as promo_err:
                     print(f'Warning: Failed to update promo code usage: {str(promo_err)}')
             
@@ -517,7 +410,6 @@ def handle_bookings():
                             "UPDATE bookings SET points_awarded = TRUE WHERE id = %s",
                             (booking_id,)
                         )
-                        conn.commit()
                     except Exception:
                         pass  # points_awarded column might not exist
                     
@@ -618,7 +510,6 @@ def handle_bookings():
                     except Exception:
                         pass  # membership columns might not exist yet
 
-                    conn.commit()
                 except Exception as mem_err:
                     sys.stderr.write(f"[Booking] Membership hours tracking failed (non-critical): {mem_err}\n")
 

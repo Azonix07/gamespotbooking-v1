@@ -53,7 +53,7 @@ def init_db_pool():
             "password": password,
             "database": database,
             "charset": "utf8mb4",
-            "autocommit": False,
+            "autocommit": True,
             "connect_timeout": 10,
             "connection_timeout": 10,
         }
@@ -61,7 +61,7 @@ def init_db_pool():
         connection_pool = pooling.MySQLConnectionPool(
             pool_name="gamespot_pool",
             pool_size=POOL_SIZE,
-            pool_reset_session=False,  # Saves a round-trip per connection checkout
+            pool_reset_session=True,  # Reset session state on pool checkout for clean transactions
             **db_config
         )
 
