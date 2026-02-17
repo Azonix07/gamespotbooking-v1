@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FiUser, FiMail, FiPhone, FiLock, FiUserPlus, FiAlertCircle, FiCheckCircle, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
+import '@/styles/LoginPage.css';
 
 export default function SignupPageClient() {
   const router = useRouter();

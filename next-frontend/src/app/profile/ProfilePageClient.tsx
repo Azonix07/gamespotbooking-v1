@@ -501,7 +501,7 @@ const ProfilePage = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#ccc', marginBottom: '6px' }}>
                       <span>Hours Used</span>
                       <span>
-                        {(membershipData.hours_used || 0).toFixed(1)} / {(membershipData.total_hours || 0).toFixed(0)}h
+                        {parseFloat(membershipData.hours_used || 0).toFixed(1)} / {parseFloat(membershipData.total_hours || 0).toFixed(0)}h
                       </span>
                     </div>
                     <div style={{
@@ -512,7 +512,7 @@ const ProfilePage = () => {
                       overflow: 'hidden'
                     }}>
                       <div style={{
-                        width: `${membershipData.total_hours > 0 ? Math.min(100, (membershipData.hours_used / membershipData.total_hours) * 100) : 0}%`,
+                        width: `${parseFloat(membershipData.total_hours || 0) > 0 ? Math.min(100, (parseFloat(membershipData.hours_used || 0) / parseFloat(membershipData.total_hours || 1)) * 100) : 0}%`,
                         height: '100%',
                         borderRadius: '4px',
                         background: 'linear-gradient(90deg, #ffa500, #ff6b35)',
@@ -520,7 +520,7 @@ const ProfilePage = () => {
                       }} />
                     </div>
                     <p style={{ fontSize: '0.75rem', color: '#aaa', marginTop: '4px' }}>
-                      {(membershipData.hours_remaining || 0).toFixed(1)}h remaining
+                      {parseFloat(membershipData.hours_remaining || 0).toFixed(1)}h remaining
                     </p>
                   </div>
 

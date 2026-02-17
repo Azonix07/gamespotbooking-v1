@@ -1052,8 +1052,8 @@ const AdminDashboard = () => {
                         </span>
                       </td>
                       <td data-label="HOURS">
-                        {membership.total_hours > 0 ? (
-                          <span>{membership.hours_used || 0}/{membership.total_hours} hrs</span>
+                        {parseFloat(membership.total_hours || 0) > 0 ? (
+                          <span>{parseFloat(membership.hours_used || 0).toFixed(1)}/{parseFloat(membership.total_hours || 0).toFixed(0)} hrs</span>
                         ) : '-'}
                       </td>
                       <td data-label="DEDICATED GAME">

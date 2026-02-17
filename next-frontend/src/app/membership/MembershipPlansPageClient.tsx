@@ -504,8 +504,8 @@ const MembershipPlansPage = () => {
             <div className="status-banner-details">
               <span>Plan: <strong>{currentMembership.plan_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</strong></span>
               <span>Expires: <strong>{new Date(currentMembership.end_date).toLocaleDateString()}</strong> ({currentMembership.days_remaining} days left)</span>
-              {currentMembership.total_hours > 0 && (
-                <span>Hours: <strong>{currentMembership.hours_remaining ?? (currentMembership.total_hours - (currentMembership.hours_used || 0))}/{currentMembership.total_hours} hrs remaining</strong></span>
+              {parseFloat(currentMembership.total_hours || 0) > 0 && (
+                <span>Hours: <strong>{currentMembership.hours_remaining != null ? parseFloat(currentMembership.hours_remaining).toFixed(1) : (parseFloat(currentMembership.total_hours || 0) - parseFloat(currentMembership.hours_used || 0)).toFixed(1)}/{parseFloat(currentMembership.total_hours || 0).toFixed(0)} hrs remaining</strong></span>
               )}
               {currentMembership.rate_per_hour > 0 && (
                 <span>Rate: <strong>₹{currentMembership.rate_per_hour}/hr</strong></span>

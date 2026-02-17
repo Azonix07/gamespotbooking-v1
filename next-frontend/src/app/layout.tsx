@@ -115,20 +115,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${spaceGrotesk.variable} ${rajdhani.variable}`}>
       <head>
-        {/* Favicon - Larger sizes prioritized for better visibility (v3 cache bust) */}
-        <link rel="icon" type="image/png" sizes="128x128" href="/assets/images/favicon-128.png?v=3" />
-        <link rel="icon" type="image/png" sizes="96x96" href="/assets/images/favicon-96.png?v=3" />
-        <link rel="icon" type="image/png" sizes="64x64" href="/assets/images/favicon-64.png?v=3" />
-        <link rel="icon" type="image/png" sizes="48x48" href="/assets/images/favicon-48.png?v=3" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png?v=3" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16.png?v=3" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/GS-favicon.PNG?v=3" />
-        <link rel="shortcut icon" href="/assets/images/favicon-96.png?v=3" />
-        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=3" />
-        
+        {/* Favicons are handled by metadata export — no manual <link> tags needed */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Russo One — load non-blocking (display font, not needed for LCP) */}
+        {/* Russo One — deferred load: preload as style, then apply after page paints */}
         <link
           rel="preload"
           href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap"
@@ -138,7 +128,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link
           href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap"
           rel="stylesheet"
+          media="print"
         />
+        <noscript>
+          {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+          <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet" />
+        </noscript>
+        {/* Switch deferred font from media=print to media=all after first paint */}
+        <script dangerouslySetInnerHTML={{ __html: `document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('link[media=print][href*=fonts]').forEach(function(l){l.media='all'})})` }} />
         <link rel="preconnect" href="https://gamespotbooking-v1-production.up.railway.app" />
         <link rel="dns-prefetch" href="https://gamespotbooking-v1-production.up.railway.app" />
       </head>

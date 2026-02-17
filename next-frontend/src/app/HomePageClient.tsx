@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiCpu } from 'react-icons/fi';
+import '@/styles/HomePage.css';
 
 const AIChat = lazy(() => import('@/components/AIChat'));
 
@@ -11,24 +12,15 @@ export default function HomePageClient() {
   const [showAIChat, setShowAIChat] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
 
-  /* Defer video load — let LCP paint first, then start the video */
+  /* Defer video load — wait for LCP paint + interaction idle before loading 13MB video */
   useEffect(() => {
-    const ric = typeof window !== 'undefined' ? window.requestIdleCallback : undefined;
-    const cic = typeof window !== 'undefined' ? window.cancelIdleCallback : undefined;
-    const timer = ric
-      ? ric(() => setVideoReady(true))
-      : setTimeout(() => setVideoReady(true), 100);
-    return () => {
-      if (typeof timer === 'number') {
-        if (ric && cic) cic(timer);
-        else clearTimeout(timer);
-      }
-    };
+    const timer = setTimeout(() => setVideoReady(true), 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
     <div className="hero-container">
-      {/* Video Background — deferred to not block LCP */}
+      {/* Video Background — deferred 1.5s to not block LCP */}
       {videoReady && (
         <video
           className="hero-background-video"
@@ -37,6 +29,7 @@ export default function HomePageClient() {
           muted
           playsInline
           preload="none"
+          poster=""
         >
           <source src="/assets/videos/background.mp4" type="video/mp4" />
         </video>
@@ -55,6 +48,8 @@ export default function HomePageClient() {
           height={75}
           priority
           quality={85}
+          sizes="(max-width: 480px) 280px, (max-width: 768px) 340px, 400px"
+          fetchPriority="high"
         />
 
         <p className="hero-subtitle">Experience Next-Generation Gaming</p>

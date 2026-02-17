@@ -175,12 +175,13 @@
 
 /* ===================================
    PAGE TRANSITION — quick fade
+   Uses transform only (no opacity) so LCP content is visible immediately.
    =================================== */
 .gs-page-enter {
   animation: gs-page-fade-in 0.25s ease-out;
 }
 
 @keyframes gs-page-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from { opacity: 0.85; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

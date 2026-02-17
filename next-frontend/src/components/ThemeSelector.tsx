@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getTheme, updateTheme } from '@/services/api';
+import '@/styles/ThemeSelector.css';
 
 const themes = [
   { id: 'theme-purple', name: 'Purple', icon: '💜', colors: ['#6366f1', '#a855f7', '#8b5cf6'] },

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import '@/styles/AIChat.css';
 import {
   FiX, FiSend, FiMic, FiVolume2, FiVolumeX,
   FiCalendar, FiClock, FiInfo,

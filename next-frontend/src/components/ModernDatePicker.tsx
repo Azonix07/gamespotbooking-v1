@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiCalendar, FiChevronDown, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import '@/styles/ModernDatePicker.css';
 import { formatDate } from '@/utils/helpers';
 
 interface ModernDatePickerProps {

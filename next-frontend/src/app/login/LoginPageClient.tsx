@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { FiMail, FiLock, FiLogIn, FiAlertCircle, FiCheckCircle, FiPhone } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/services/apiClient';
+import '@/styles/LoginPage.css';
 
 export default function LoginPageClient() {
   const router = useRouter();

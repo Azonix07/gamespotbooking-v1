@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiTrendingUp, FiZap, FiCalendar, FiTag, FiAlertCircle, FiBell, FiChevronRight } from 'react-icons/fi';
+import '@/styles/LatestUpdates.css';
 import { apiFetch } from '@/services/apiClient';
 
 interface Update {

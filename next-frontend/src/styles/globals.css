@@ -1,4 +1,4 @@
-/* Global CSS - imports all stylesheets in correct order */
+/* Global CSS - imports shared stylesheets only */
 @import './variables.css';
 @import './theme.css';
 @import './base.css';
@@ -10,29 +10,15 @@
 /* Loading animation */
 @import './loading.css';
 
-/* Component styles */
+/* Shared component styles (needed on most pages) */
 @import './Navbar.css';
 @import './Footer.css';
-@import './AIChat.css';
-@import './ModernDatePicker.css';
-@import './ThemeSelector.css';
-@import './LatestUpdates.css';
 
-/* Page styles */
-@import './HomePage.css';
-@import './LoginPage.css';
-@import './BookingPage.css';
-@import './GamesPage.css';
-@import './MembershipPlansPage.css';
-@import './ProfilePage.css';
-@import './ContactPage.css';
-@import './FeedbackPage.css';
-@import './UpdatesPage.css';
-@import './RentalPage.css';
-@import './CollegeSetupPage.css';
-@import './InvitePage.css';
-@import './GetOffersPage.css';
-@import './AdminDashboard.css';
+/*
+  Page-specific CSS is imported at the page level (not here).
+  This keeps the global CSS bundle small and improves LCP.
+  Each page imports its own CSS via its Client component file.
+*/
 
 /* App wrapper for layout */
 .app-wrapper {

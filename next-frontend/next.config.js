@@ -7,6 +7,8 @@ const nextConfig = {
   // ── Performance: enable gzip/brotli and optimize output ──
   compress: true,
   poweredByHeader: false,
+  // ── Reduce JS bundle size ──
+  reactStrictMode: false,
   // ── Image optimization ──
   images: {
     formats: ['image/avif', 'image/webp'],
