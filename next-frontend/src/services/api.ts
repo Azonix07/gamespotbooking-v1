@@ -14,7 +14,9 @@ const getAuthToken = (): string | null => {
   return null;
 };
 
-const fetchWithCredentials = async (url: string, options: RequestInit = {}): Promise<any> => {
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const fetchWithCredentials = async (url: string, options: RequestInit = {}, retries = 2): Promise<any> => {
   const token = getAuthToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -30,10 +32,24 @@ const fetchWithCredentials = async (url: string, options: RequestInit = {}): Pro
     response = await fetch(url, { ...options, credentials: 'include', headers, signal: controller.signal });
   } catch (err: any) {
     clearTimeout(timeoutId);
-    if (err.name === 'AbortError') throw new Error('Request timed out.');
+    if (err.name === 'AbortError') {
+      if (retries > 0) { await delay(1000); return fetchWithCredentials(url, options, retries - 1); }
+      throw new Error('Request timed out. Please try again.');
+    }
+    // Retry on network errors (DNS failures, connection resets, etc.)
+    if (retries > 0) {
+      await delay(1500);
+      return fetchWithCredentials(url, options, retries - 1);
+    }
     throw new Error('Network error. Please check your internet connection.');
   }
   clearTimeout(timeoutId);
+
+  // Retry on 502/503/504 (server temporarily down)
+  if ([502, 503, 504].includes(response.status) && retries > 0) {
+    await delay(2000);
+    return fetchWithCredentials(url, options, retries - 1);
+  }
 
   const contentType = response.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {

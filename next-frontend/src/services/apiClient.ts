@@ -72,7 +72,9 @@ const refreshAccessToken = async (): Promise<boolean> => {
   return _refreshPromise;
 };
 
-export const apiFetch = async (path: string, options: RequestInit = {}, _isRetry = false): Promise<any> => {
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+export const apiFetch = async (path: string, options: RequestInit = {}, _isRetry = false, _networkRetries = 2): Promise<any> => {
   const url = `${API_BASE_URL}${path}`;
   const token = getAuthToken();
 
@@ -102,11 +104,23 @@ export const apiFetch = async (path: string, options: RequestInit = {}, _isRetry
   } catch (err: any) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
+      if (_networkRetries > 0) { await delay(1000); return apiFetch(path, options, _isRetry, _networkRetries - 1); }
       throw new Error('Request timed out. Please check your internet connection and try again.');
+    }
+    // Retry on network errors (DNS failures, connection resets, etc.)
+    if (_networkRetries > 0) {
+      await delay(1500);
+      return apiFetch(path, options, _isRetry, _networkRetries - 1);
     }
     throw new Error('Network error. Please check your internet connection.');
   }
   clearTimeout(timeoutId);
+
+  // Retry on 502/503/504 (server temporarily down)
+  if ([502, 503, 504].includes(response.status) && _networkRetries > 0) {
+    await delay(2000);
+    return apiFetch(path, options, _isRetry, _networkRetries - 1);
+  }
 
   const data = await response.json().catch(() => ({}));
 
