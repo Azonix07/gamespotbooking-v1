@@ -350,8 +350,11 @@ def handle_bookings():
                 ))
             
             booking_id = cursor.lastrowid
+            sys.stderr.write(f"[Booking POST] Created booking #{booking_id}, ps5_bookings={ps5_bookings}, driving_sim={driving_sim}\n")
+            sys.stderr.flush()
             
             # Insert PS5 bookings
+            devices_inserted = 0
             if ps5_bookings:
                 query = """
                     INSERT INTO booking_devices (booking_id, device_type, device_number, player_count, price)
@@ -360,12 +363,15 @@ def handle_bookings():
                 
                 for ps5 in ps5_bookings:
                     price = calculate_ps5_price(ps5['player_count'], duration_minutes)
+                    sys.stderr.write(f"[Booking POST] Inserting PS5 device: booking_id={booking_id}, device_number={ps5['device_number']}, player_count={ps5['player_count']}, price={price}\n")
+                    sys.stderr.flush()
                     cursor.execute(query, (
                         booking_id,
                         ps5['device_number'],
                         ps5['player_count'],
                         price
                     ))
+                    devices_inserted += 1
             
             # Insert driving simulator booking
             if driving_sim:
@@ -375,8 +381,24 @@ def handle_bookings():
                     VALUES (%s, 'driving_sim', NULL, 1, %s)
                 """
                 cursor.execute(query, (booking_id, price))
+                devices_inserted += 1
+            
+            sys.stderr.write(f"[Booking POST] Total devices inserted: {devices_inserted} for booking #{booking_id}\n")
+            sys.stderr.flush()
             
             conn.commit()
+            sys.stderr.write(f"[Booking POST] Committed booking #{booking_id} with {devices_inserted} devices\n")
+            sys.stderr.flush()
+            
+            # Verify devices were actually saved
+            try:
+                cursor.execute("SELECT COUNT(*) as cnt FROM booking_devices WHERE booking_id = %s", (booking_id,))
+                verify_result = cursor.fetchone()
+                sys.stderr.write(f"[Booking POST] VERIFY: booking_devices count for #{booking_id} = {verify_result['cnt']}\n")
+                sys.stderr.flush()
+            except Exception as ve:
+                sys.stderr.write(f"[Booking POST] VERIFY failed: {ve}\n")
+                sys.stderr.flush()
             
             # Mark promo code as used if applicable
             if promo_code_id:
