@@ -8,6 +8,8 @@ from flask import Blueprint, request, jsonify
 from config.database import get_db_connection
 from utils.helpers import generate_time_slots
 from datetime import datetime, timedelta
+import sys
+import traceback
 
 slots_bp = Blueprint('slots', __name__)
 
@@ -65,8 +67,10 @@ def get_slots():
             
             for booking in overlapping_bookings:
                 if booking['device_type'] == 'ps5':
-                    booked_ps5_units.append(int(booking['device_number']))
-                    total_ps5_players += int(booking['player_count'])
+                    dev_num = booking['device_number']
+                    if dev_num is not None:
+                        booked_ps5_units.append(int(dev_num))
+                    total_ps5_players += int(booking['player_count'] or 0)
                 elif booking['device_type'] == 'driving_sim':
                     driving_booked = True
             
@@ -109,12 +113,14 @@ def get_slots():
                 parts = str(st).split(':')
                 start_min = int(parts[0]) * 60 + int(parts[1])
             end_min = start_min + int(b['duration_minutes'])
+            # device_number is NULL for driving_sim bookings — default to 0
+            dev_num = b['device_number']
             booking_ranges.append({
                 'start': start_min,
                 'end': end_min,
                 'device_type': b['device_type'],
-                'device_number': int(b['device_number']),
-                'player_count': int(b['player_count'])
+                'device_number': int(dev_num) if dev_num is not None else 0,
+                'player_count': int(b['player_count']) if b['player_count'] is not None else 1
             })
 
         # Generate all time slots and compute availability from cached data
@@ -167,6 +173,9 @@ def get_slots():
         })
         
     except Exception as e:
+        sys.stderr.write(f"❌ SLOTS ERROR: {str(e)}\n")
+        traceback.print_exc(file=sys.stderr)
+        sys.stderr.flush()
         return jsonify({'success': False, 'error': 'An error occurred'}), 500
     finally:
         if cursor:
