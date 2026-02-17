@@ -1838,7 +1838,7 @@ html, body {
     gap: 0.85rem;
   }
   
-  .game-card {
+  .games-page .game-card {
     border-radius: 14px;
   }
 }
@@ -1866,11 +1866,11 @@ html, body {
     gap: 0.65rem;
   }
   
-  .game-card {
+  .games-page .game-card {
     border-radius: 14px;
   }
   
-  .ps5-badge {
+  .games-page .ps5-badge {
     font-size: 0.55rem;
     padding: 0.18rem 0.45rem;
   }
