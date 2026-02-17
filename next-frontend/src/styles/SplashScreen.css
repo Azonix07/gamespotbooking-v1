@@ -1,0 +1,423 @@
+/* ===================================
+   GAMESPOT SPLASH / LOADING SCREEN
+   Premium gaming-themed intro animation
+   Duration: ~2 seconds
+   =================================== */
+
+/* ===================================
+   FULLSCREEN CONTAINER
+   =================================== */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #0a0e1a;
+  overflow: hidden;
+}
+
+/* ===================================
+   BACKGROUND EFFECTS
+   =================================== */
+
+/* Subtle grid lines — cyberpunk / gaming aesthetic */
+.splash-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(ellipse 70% 70% at center, black, transparent);
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at center, black, transparent);
+  animation: splash-grid-drift 4s linear infinite;
+}
+
+@keyframes splash-grid-drift {
+  from { transform: translateY(0); }
+  to   { transform: translateY(50px); }
+}
+
+/* Ambient glow orbs */
+.splash-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.splash-glow-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 71, 87, 0.15) 0%, transparent 70%);
+  top: -100px;
+  left: -100px;
+  animation: splash-glow-pulse 2s ease-in-out infinite;
+}
+
+.splash-glow-2 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+  bottom: -80px;
+  right: -80px;
+  animation: splash-glow-pulse 2s ease-in-out infinite 0.5s;
+}
+
+@keyframes splash-glow-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.15); }
+}
+
+/* Horizontal scanline sweep */
+.splash-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 71, 87, 0.4) 20%,
+    rgba(255, 71, 87, 0.8) 50%,
+    rgba(255, 71, 87, 0.4) 80%,
+    transparent 100%
+  );
+  animation: splash-scanline-move 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes splash-scanline-move {
+  0%   { top: -2px; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* ===================================
+   MAIN CONTENT
+   =================================== */
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  z-index: 2;
+  animation: splash-content-enter 0.6s ease-out both;
+}
+
+@keyframes splash-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ===================================
+   LOGO
+   =================================== */
+.splash-logo-wrap {
+  position: relative;
+  padding: 0.5rem;
+}
+
+.splash-logo {
+  width: auto;
+  height: auto;
+  max-width: 280px;
+  filter: drop-shadow(0 0 30px rgba(255, 71, 87, 0.25));
+  animation: splash-logo-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes splash-logo-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 20px rgba(255, 71, 87, 0.2))
+            drop-shadow(0 0 40px rgba(99, 102, 241, 0.1));
+  }
+  50% {
+    filter: drop-shadow(0 0 30px rgba(255, 71, 87, 0.35))
+            drop-shadow(0 0 60px rgba(99, 102, 241, 0.2));
+  }
+}
+
+/* ===================================
+   TAGLINE
+   =================================== */
+.splash-tagline {
+  font-family: var(--font-heading), 'Space Grotesk', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 5px;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  margin: 0;
+  animation: splash-tagline-in 0.8s ease-out 0.3s both;
+}
+
+@keyframes splash-tagline-in {
+  from { opacity: 0; letter-spacing: 12px; }
+  to   { opacity: 1; letter-spacing: 5px; }
+}
+
+/* ===================================
+   PROGRESS BAR
+   =================================== */
+.splash-progress-track {
+  width: 220px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  animation: splash-bar-in 0.5s ease-out 0.4s both;
+}
+
+@keyframes splash-bar-in {
+  from { opacity: 0; width: 0; }
+  to   { opacity: 1; width: 220px; }
+}
+
+.splash-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ff4757, #6366f1, #ff4757);
+  background-size: 200% 100%;
+  border-radius: 3px;
+  animation:
+    splash-fill 1.8s cubic-bezier(0.25, 0.8, 0.25, 1) 0.3s forwards,
+    splash-fill-shimmer 1s linear infinite;
+}
+
+@keyframes splash-fill {
+  0%   { width: 0%; }
+  20%  { width: 25%; }
+  50%  { width: 55%; }
+  70%  { width: 78%; }
+  90%  { width: 95%; }
+  100% { width: 100%; }
+}
+
+@keyframes splash-fill-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* Glow trail on progress bar */
+.splash-progress-glow {
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 30px;
+  height: 9px;
+  background: radial-gradient(ellipse, rgba(255, 71, 87, 0.6) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: splash-glow-trail 1.8s cubic-bezier(0.25, 0.8, 0.25, 1) 0.3s forwards;
+  pointer-events: none;
+}
+
+@keyframes splash-glow-trail {
+  0%   { left: -30px; opacity: 0; }
+  5%   { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { left: calc(100% - 15px); opacity: 0; }
+}
+
+/* ===================================
+   CONSOLE LABELS
+   =================================== */
+.splash-consoles {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  animation: splash-consoles-in 0.6s ease-out 0.6s both;
+}
+
+@keyframes splash-consoles-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.splash-console-label {
+  font-family: var(--font-display), 'Russo One', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.splash-console-sep {
+  color: rgba(255, 71, 87, 0.4);
+  font-size: 0.5rem;
+}
+
+.splash-console-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.4);
+  animation: splash-dot-blink 1s ease-in-out infinite;
+}
+
+@keyframes splash-dot-blink {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 1; }
+}
+
+/* ===================================
+   BOTTOM BRANDING
+   =================================== */
+.splash-brand {
+  position: absolute;
+  bottom: 2rem;
+  font-family: var(--font-heading), 'Space Grotesk', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: rgba(255, 255, 255, 0.12);
+  text-transform: uppercase;
+  margin: 0;
+  z-index: 2;
+  animation: splash-brand-in 0.8s ease-out 0.8s both;
+}
+
+@keyframes splash-brand-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ===================================
+   EXIT ANIMATION
+   =================================== */
+.splash-screen.splash-exit {
+  animation: splash-screen-exit 0.5s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes splash-screen-exit {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+    visibility: hidden;
+  }
+}
+
+/* Progress bar completes fully before exit */
+.splash-screen.splash-exit .splash-progress-fill {
+  width: 100% !important;
+  transition: width 0.2s ease-out;
+}
+
+/* ===================================
+   HOMEPAGE REVEAL (after splash)
+   =================================== */
+.hero-hidden {
+  opacity: 0;
+}
+
+.hero-revealed {
+  animation: hero-reveal 0.6s ease-out forwards;
+}
+
+@keyframes hero-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ===================================
+   RESPONSIVE
+   =================================== */
+@media (max-width: 480px) {
+  .splash-logo {
+    max-width: 200px;
+  }
+
+  .splash-tagline {
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+  }
+
+  .splash-progress-track {
+    width: 180px;
+  }
+
+  @keyframes splash-bar-in {
+    from { opacity: 0; width: 0; }
+    to   { opacity: 1; width: 180px; }
+  }
+
+  .splash-console-label {
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+  }
+
+  .splash-brand {
+    font-size: 0.5rem;
+    letter-spacing: 3px;
+  }
+
+  .splash-glow-1 {
+    width: 250px;
+    height: 250px;
+  }
+
+  .splash-glow-2 {
+    width: 200px;
+    height: 200px;
+  }
+}
+
+@media (max-width: 360px) {
+  .splash-logo {
+    max-width: 170px;
+  }
+
+  .splash-progress-track {
+    width: 150px;
+  }
+
+  @keyframes splash-bar-in {
+    from { opacity: 0; width: 0; }
+    to   { opacity: 1; width: 150px; }
+  }
+}
+
+/* ===================================
+   REDUCED MOTION — accessibility
+   =================================== */
+@media (prefers-reduced-motion: reduce) {
+  .splash-screen,
+  .splash-screen *,
+  .hero-revealed {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .splash-progress-fill {
+    width: 100% !important;
+    animation: none !important;
+  }
+}

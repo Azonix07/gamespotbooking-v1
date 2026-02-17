@@ -5,21 +5,84 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FiCpu } from 'react-icons/fi';
 import '@/styles/HomePage.css';
+import '@/styles/SplashScreen.css';
 
 const AIChat = lazy(() => import('@/components/AIChat'));
 
 export default function HomePageClient() {
   const [showAIChat, setShowAIChat] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+  const [splashDone, setSplashDone] = useState(false);
+  const [splashExiting, setSplashExiting] = useState(false);
 
-  /* Defer video load — wait for LCP paint + interaction idle before loading 13MB video */
+  /* Splash screen — show for 2s then reveal homepage */
   useEffect(() => {
-    const timer = setTimeout(() => setVideoReady(true), 1500);
-    return () => clearTimeout(timer);
+    const exitTimer = setTimeout(() => setSplashExiting(true), 1800);
+    const doneTimer = setTimeout(() => setSplashDone(true), 2300);
+    return () => { clearTimeout(exitTimer); clearTimeout(doneTimer); };
   }, []);
 
+  /* Defer video load — wait for splash to finish before loading 13MB video */
+  useEffect(() => {
+    if (splashDone) {
+      const timer = setTimeout(() => setVideoReady(true), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [splashDone]);
+
   return (
-    <div className="hero-container">
+    <>
+    {/* SPLASH SCREEN */}
+    {!splashDone && (
+      <div className={`splash-screen ${splashExiting ? 'splash-exit' : ''}`}>
+        {/* Background Effects */}
+        <div className="splash-bg-grid" />
+        <div className="splash-glow splash-glow-1" />
+        <div className="splash-glow splash-glow-2" />
+        <div className="splash-scanline" />
+
+        {/* Content */}
+        <div className="splash-content">
+          {/* Logo */}
+          <div className="splash-logo-wrap">
+            <Image
+              src="/assets/images/logo.png"
+              alt="GameSpot"
+              className="splash-logo"
+              width={320}
+              height={60}
+              priority
+            />
+          </div>
+
+          {/* Tagline */}
+          <p className="splash-tagline">LOADING EXPERIENCE</p>
+
+          {/* Progress Bar */}
+          <div className="splash-progress-track">
+            <div className="splash-progress-fill" />
+            <div className="splash-progress-glow" />
+          </div>
+
+          {/* Console Icons */}
+          <div className="splash-consoles">
+            <span className="splash-console-dot" />
+            <span className="splash-console-label">PS5</span>
+            <span className="splash-console-sep">•</span>
+            <span className="splash-console-label">XBOX</span>
+            <span className="splash-console-sep">•</span>
+            <span className="splash-console-label">VR</span>
+            <span className="splash-console-dot" />
+          </div>
+        </div>
+
+        {/* Bottom Branding */}
+        <p className="splash-brand">GAMESPOT KODUNGALLUR</p>
+      </div>
+    )}
+
+    {/* MAIN HOMEPAGE */}
+    <div className={`hero-container ${splashDone ? 'hero-revealed' : 'hero-hidden'}`}>
       {/* Video Background — deferred 1.5s to not block LCP */}
       {videoReady && (
         <video
@@ -88,5 +151,6 @@ export default function HomePageClient() {
         </Suspense>
       )}
     </div>
+    </>
   );
 }
