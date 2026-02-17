@@ -4,6 +4,13 @@
 
 /* Gaming Font - Russo One — loaded via index.html <link> for performance */
 
+/* Prevent body scroll on homepage */
+body:has(.hero-container) {
+  overflow: hidden;
+  height: 100vh;
+  height: 100dvh;
+}
+
 /* ===================================
    HOMEPAGE HEADER WITH HAMBURGER MENU
    =================================== */
@@ -468,14 +475,15 @@
 }
 
 .home-page {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background: var(--dark);
 }
 
 .hero-container {
-  height: calc(100vh - 80px); /* Account for navbar height */
-  height: calc(100dvh - 80px); /* Dynamic viewport height — accounts for mobile address bar and navbar */
-  /* margin-top: 80px; Push down below navbar */
+  height: 100vh; /* Full viewport height */
+  height: 100dvh; /* Dynamic viewport height — works better on mobile */
   display: flex;
   flex-direction: column;
   position: relative;
