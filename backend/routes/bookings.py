@@ -101,8 +101,10 @@ def handle_bookings():
                         'start_time': str(row['start_time'])[:5],
                         'duration_minutes': int(row['duration_minutes']),
                         'total_price': float(row['total_price']),
+                        'status': row.get('status') or 'confirmed',
                         'driving_after_ps5': bool(row['driving_after_ps5']),
                         'created_at': str(row['created_at']),
+                        'user_id': row.get('user_id'),
                         'devices': []
                     }
                 

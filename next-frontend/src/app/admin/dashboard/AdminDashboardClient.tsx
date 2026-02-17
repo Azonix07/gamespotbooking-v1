@@ -1519,8 +1519,8 @@ const AdminDashboard = () => {
                     <td data-label="Participants">{booking.participant_count}</td>
                     <td data-label="Total Price" className="price">{formatPrice(booking.total_price)}</td>
                     <td data-label="Status">
-                      <span className={`status-badge ${booking.status.toLowerCase()}`}>
-                        {booking.status}
+                      <span className={`status-badge ${(booking.status || 'confirmed').toLowerCase()}`}>
+                        {booking.status || 'Confirmed'}
                       </span>
                     </td>
                   </tr>

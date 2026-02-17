@@ -86,7 +86,6 @@ def register_user(name: str, email: str, phone: str, password: str) -> Dict[str,
         try:
             _link_guest_bookings_to_user(cursor, conn, user_id, phone)
         except Exception as link_err:
-            import sys
             sys.stderr.write(f"[Signup] Non-critical: failed to link guest bookings: {link_err}\n")
         
         # Send verification email (best-effort)
