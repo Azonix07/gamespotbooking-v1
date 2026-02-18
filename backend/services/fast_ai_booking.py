@@ -282,13 +282,15 @@ class FastAIBooking:
                 'question': 'Do you provide gaming setup for college events?',
                 'answer': '🎓 **College Event Gaming Setup:**\n\n'
                          'We bring the gaming experience to your college!\n\n'
-                         '**Equipment Available:**\n'
-                         '• PS5 Gaming Station: ₹400/day (max 4 units)\n'
-                         '• VR Headset Zone: ₹800/day (max 2 units)\n'
-                         '• Driving Simulator: ₹1,500/day (1 unit)\n\n'
+                         '**Equipment & Pricing (per day):**\n'
+                         '• Driving Simulator: ₹2,000/day\n'
+                         '• VR PlayStation: ₹1,500/day\n'
+                         '• VR Meta Quest: ₹1,500/day\n'
+                         '• PS5 Station (with 2 controllers): ₹800/day\n'
+                         '• Staff & Maintenance: ₹500/day\n\n'
                          '**What\'s Included:**\n'
                          '• Full setup and teardown\n'
-                         '• Technical support throughout the event\n'
+                         '• Professional staff & technical support\n'
                          '• Transport (₹15/km from Kodungallur)\n\n'
                          'Book through our College Setup page on the website!',
                 'keywords': ['college', 'university', 'campus', 'fest', 'college event', 'setup', 'college setup', 'techfest', 'cultural fest']

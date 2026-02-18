@@ -166,9 +166,11 @@ const completedColleges = [
 
 // Equipment pricing
 const equipmentPricing = {
-  ps5: { name: 'PS5 Gaming Station', pricePerDay: 400, max: 4, icon: 'ps5', description: 'Premium gaming with latest titles' },
-  vr: { name: 'VR Headset Zone', pricePerDay: 800, max: 2, icon: 'vr', description: 'Immersive virtual reality experience' },
-  drivingSim: { name: 'Driving Simulator', pricePerDay: 1500, max: 1, icon: 'car', description: 'Realistic racing setup with wheel & pedals' }
+  ps5: { name: 'PS5 Gaming Station', pricePerDay: 800, max: 4, icon: 'ps5', description: 'Premium gaming with 2 controllers' },
+  vrPlaystation: { name: 'VR PlayStation', pricePerDay: 1500, max: 1, icon: 'vr', description: 'PlayStation VR immersive experience' },
+  vrMeta: { name: 'VR Meta Quest', pricePerDay: 1500, max: 1, icon: 'vr', description: 'Meta Quest standalone VR experience' },
+  drivingSim: { name: 'Driving Simulator', pricePerDay: 2000, max: 1, icon: 'car', description: 'Realistic racing setup with wheel & pedals' },
+  staffMaintenance: { name: 'Staff & Maintenance', pricePerDay: 500, fixed: true, description: 'Professional staff & on-site support' }
 };
 
 // Statistics
@@ -224,7 +226,8 @@ const CollegeSetupPage = () => {
   
   // State - Equipment Selection
   const [ps5Count, setPs5Count] = useState(4);
-  const [vrCount, setVrCount] = useState(2);
+  const [includeVrPlaystation, setIncludeVrPlaystation] = useState(true);
+  const [includeVrMeta, setIncludeVrMeta] = useState(true);
   const [includeDrivingSim, setIncludeDrivingSim] = useState(true);
   
   // State - Review Form
@@ -244,12 +247,14 @@ const CollegeSetupPage = () => {
     const days = numberOfDays || 1;
     const equipmentCost = 
       (ps5Count * equipmentPricing.ps5.pricePerDay * days) +
-      (vrCount * equipmentPricing.vr.pricePerDay * days) +
+      (includeVrPlaystation ? equipmentPricing.vrPlaystation.pricePerDay * days : 0) +
+      (includeVrMeta ? equipmentPricing.vrMeta.pricePerDay * days : 0) +
       (includeDrivingSim ? equipmentPricing.drivingSim.pricePerDay * days : 0);
+    const staffCost = equipmentPricing.staffMaintenance.pricePerDay * days;
     const transportCost = Math.round(distance * 15 * 2);
-    const totalCost = equipmentCost + transportCost;
+    const totalCost = equipmentCost + staffCost + transportCost;
     
-    return { equipmentCost, transportCost, totalCost, days };
+    return { equipmentCost, staffCost, transportCost, totalCost, days };
   };
   
   // Calculate days when dates change
@@ -358,7 +363,7 @@ const CollegeSetupPage = () => {
     setLoading(true);
     
     try {
-      const { equipmentCost, transportCost, totalCost, days } = calculatePricing();
+      const { equipmentCost, staffCost, transportCost, totalCost, days } = calculatePricing();
 
       const bookingData = {
         contact_name: contactPerson,
@@ -376,10 +381,13 @@ const CollegeSetupPage = () => {
         expected_students: 500,
         setup_type: 'premium',
         ps5_stations: ps5Count,
-        vr_zones: vrCount,
+        vr_playstation: includeVrPlaystation,
+        vr_meta: includeVrMeta,
         driving_simulator: includeDrivingSim,
+        staff_maintenance: true,
         additional_requirements: additionalNotes,
         base_price: equipmentCost,
+        staff_cost: staffCost,
         transport_cost: transportCost,
         total_estimated_cost: totalCost,
         final_price: totalCost,
@@ -1078,8 +1086,8 @@ const CollegeSetupPage = () => {
                     <div className="equipment-card">
                       <div className="equipment-icon"><IoGameController /></div>
                       <div className="equipment-info">
-                        <h4>PS5 Gaming Stations</h4>
-                        <p>₹{equipmentPricing.ps5.pricePerDay}/day each</p>
+                        <h4>PS5 Gaming Station</h4>
+                        <p>₹{equipmentPricing.ps5.pricePerDay}/day each (with 2 controllers)</p>
                       </div>
                       <div className="equipment-controls">
                         <button type="button" onClick={() => setPs5Count(Math.max(0, ps5Count - 1))}>-</button>
@@ -1088,18 +1096,38 @@ const CollegeSetupPage = () => {
                       </div>
                     </div>
                     
-                    {/* VR Zones */}
-                    <div className="equipment-card">
+                    {/* VR PlayStation */}
+                    <div className={`equipment-card toggle-card ${includeVrPlaystation ? 'active' : ''}`}>
                       <div className="equipment-icon"><TbDeviceVisionPro /></div>
                       <div className="equipment-info">
-                        <h4>VR Headset Zones</h4>
-                        <p>₹{equipmentPricing.vr.pricePerDay}/day each</p>
+                        <h4>VR PlayStation</h4>
+                        <p>₹{equipmentPricing.vrPlaystation.pricePerDay}/day</p>
                       </div>
-                      <div className="equipment-controls">
-                        <button type="button" onClick={() => setVrCount(Math.max(0, vrCount - 1))}>-</button>
-                        <span>{vrCount}</span>
-                        <button type="button" onClick={() => setVrCount(Math.min(2, vrCount + 1))}>+</button>
+                      <label className="toggle-switch">
+                        <input
+                          type="checkbox"
+                          checked={includeVrPlaystation}
+                          onChange={(e) => setIncludeVrPlaystation(e.target.checked)}
+                        />
+                        <span className="toggle-slider"></span>
+                      </label>
+                    </div>
+                    
+                    {/* VR Meta Quest */}
+                    <div className={`equipment-card toggle-card ${includeVrMeta ? 'active' : ''}`}>
+                      <div className="equipment-icon"><TbDeviceVisionPro /></div>
+                      <div className="equipment-info">
+                        <h4>VR Meta Quest</h4>
+                        <p>₹{equipmentPricing.vrMeta.pricePerDay}/day</p>
                       </div>
+                      <label className="toggle-switch">
+                        <input
+                          type="checkbox"
+                          checked={includeVrMeta}
+                          onChange={(e) => setIncludeVrMeta(e.target.checked)}
+                        />
+                        <span className="toggle-slider"></span>
+                      </label>
                     </div>
                     
                     {/* Driving Simulator */}
@@ -1117,6 +1145,16 @@ const CollegeSetupPage = () => {
                         />
                         <span className="toggle-slider"></span>
                       </label>
+                    </div>
+                    
+                    {/* Staff & Maintenance (always included) */}
+                    <div className="equipment-card toggle-card active staff-card">
+                      <div className="equipment-icon">👨‍🔧</div>
+                      <div className="equipment-info">
+                        <h4>Staff & Maintenance</h4>
+                        <p>₹{equipmentPricing.staffMaintenance.pricePerDay}/day (included)</p>
+                      </div>
+                      <div className="equipment-badge">Included</div>
                     </div>
                   </div>
                 </div>
@@ -1156,16 +1194,28 @@ const CollegeSetupPage = () => {
                     <span>PS5 Stations ({ps5Count} × ₹{equipmentPricing.ps5.pricePerDay} × {pricing.days} days)</span>
                     <span>₹{ps5Count * equipmentPricing.ps5.pricePerDay * pricing.days}</span>
                   </div>
-                  <div className="pricing-row">
-                    <span>VR Zones ({vrCount} × ₹{equipmentPricing.vr.pricePerDay} × {pricing.days} days)</span>
-                    <span>₹{vrCount * equipmentPricing.vr.pricePerDay * pricing.days}</span>
-                  </div>
+                  {includeVrPlaystation && (
+                    <div className="pricing-row">
+                      <span>VR PlayStation (₹{equipmentPricing.vrPlaystation.pricePerDay} × {pricing.days} days)</span>
+                      <span>₹{equipmentPricing.vrPlaystation.pricePerDay * pricing.days}</span>
+                    </div>
+                  )}
+                  {includeVrMeta && (
+                    <div className="pricing-row">
+                      <span>VR Meta Quest (₹{equipmentPricing.vrMeta.pricePerDay} × {pricing.days} days)</span>
+                      <span>₹{equipmentPricing.vrMeta.pricePerDay * pricing.days}</span>
+                    </div>
+                  )}
                   {includeDrivingSim && (
                     <div className="pricing-row">
                       <span>Driving Simulator (₹{equipmentPricing.drivingSim.pricePerDay} × {pricing.days} days)</span>
                       <span>₹{equipmentPricing.drivingSim.pricePerDay * pricing.days}</span>
                     </div>
                   )}
+                  <div className="pricing-row">
+                    <span>Staff & Maintenance (₹{equipmentPricing.staffMaintenance.pricePerDay} × {pricing.days} days)</span>
+                    <span>₹{pricing.staffCost}</span>
+                  </div>
                   <div className="pricing-row">
                     <span>Transport ({distance} km × ₹15 × 2)</span>
                     <span>₹{pricing.transportCost}</span>
