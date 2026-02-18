@@ -71,7 +71,11 @@ import {
   getMonthlyFinancialSummary,
   getClosures,
   addClosure,
-  deleteClosure
+  deleteClosure,
+  getAdminFeedback,
+  updateFeedbackStatus,
+  deleteFeedback,
+  getFeedbackStats
 } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 
@@ -130,6 +134,12 @@ const AdminDashboard = () => {
   // Offer Claims (Instagram Promo)
   const [offerClaims, setOfferClaims] = useState([]);
   const [offerClaimStats, setOfferClaimStats] = useState({ total: 0, pending: 0, verified: 0, rejected: 0 });
+  
+  // Feedback
+  const [feedbackList, setFeedbackList] = useState([]);
+  const [feedbackStats, setFeedbackStats] = useState({ total: 0, pending: 0, reviewed: 0, resolved: 0, recent_week: 0 });
+  const [feedbackFilter, setFeedbackFilter] = useState('all');
+  const [feedbackTypeFilter, setFeedbackTypeFilter] = useState('all');
   
   // Financial Management
   const [financialSummary, setFinancialSummary] = useState(null);
@@ -225,6 +235,7 @@ const AdminDashboard = () => {
       await loadPartyBookings();
       await loadQuestPasses();
       await loadOfferClaims();
+      await loadFeedback();
       await loadFinancialData();
     } catch (err) {
       setError(err.message);
@@ -363,6 +374,42 @@ const AdminDashboard = () => {
       setOfferClaimStats(data.statistics || { total: 0, pending: 0, verified: 0, rejected: 0 });
     } catch (err) {
       console.error("Error loading offer claims:", err);
+    }
+  };
+
+  // ─── Feedback Management ───
+  const loadFeedback = async () => {
+    try {
+      const [feedbackData, statsData] = await Promise.allSettled([
+        getAdminFeedback(feedbackFilter, feedbackTypeFilter),
+        getFeedbackStats()
+      ]);
+      if (feedbackData.status === 'fulfilled') setFeedbackList(feedbackData.value.feedback || []);
+      if (statsData.status === 'fulfilled') setFeedbackStats(statsData.value.stats || { total: 0, pending: 0, reviewed: 0, resolved: 0, recent_week: 0 });
+    } catch (err) {
+      console.error("Error loading feedback:", err);
+    }
+  };
+
+  const handleUpdateFeedbackStatus = async (feedbackId, newStatus) => {
+    const notes = prompt('Admin notes (optional):') || '';
+    try {
+      setError(null);
+      await updateFeedbackStatus(feedbackId, newStatus, notes);
+      loadFeedback();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteFeedback = async (feedbackId) => {
+    if (!window.confirm('Are you sure you want to delete this feedback?')) return;
+    try {
+      setError(null);
+      await deleteFeedback(feedbackId);
+      loadFeedback();
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -2967,6 +3014,148 @@ const AdminDashboard = () => {
     );
   };
 
+  // ─── Feedback Tab ───
+  const renderFeedback = () => {
+    const typeEmojis: Record<string, string> = { bug: '🐛', suggestion: '💡', feature: '🚀', query: '❓', other: '💬' };
+    const priorityColors: Record<string, string> = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' };
+    const statusColors: Record<string, string> = { pending: '#f59e0b', reviewed: '#3b82f6', resolved: '#22c55e' };
+
+    return (
+      <div className="tab-section">
+        {/* Stats Cards */}
+        <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+          <div className="stat-card" style={{ textAlign: 'center', padding: '16px' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{feedbackStats.total}</div>
+            <div style={{ fontSize: '12px', color: '#888' }}>Total</div>
+          </div>
+          <div className="stat-card" style={{ textAlign: 'center', padding: '16px', borderLeft: '3px solid #f59e0b' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#f59e0b' }}>{feedbackStats.pending}</div>
+            <div style={{ fontSize: '12px', color: '#888' }}>Pending</div>
+          </div>
+          <div className="stat-card" style={{ textAlign: 'center', padding: '16px', borderLeft: '3px solid #3b82f6' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#3b82f6' }}>{feedbackStats.reviewed}</div>
+            <div style={{ fontSize: '12px', color: '#888' }}>Reviewed</div>
+          </div>
+          <div className="stat-card" style={{ textAlign: 'center', padding: '16px', borderLeft: '3px solid #22c55e' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#22c55e' }}>{feedbackStats.resolved}</div>
+            <div style={{ fontSize: '12px', color: '#888' }}>Resolved</div>
+          </div>
+          <div className="stat-card" style={{ textAlign: 'center', padding: '16px', borderLeft: '3px solid #8b5cf6' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#8b5cf6' }}>{feedbackStats.recent_week}</div>
+            <div style={{ fontSize: '12px', color: '#888' }}>This Week</div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <select
+            value={feedbackFilter}
+            onChange={(e) => { setFeedbackFilter(e.target.value); }}
+            className="form-select"
+            style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color, #333)', background: 'var(--card-bg, #1a1a2e)', color: 'var(--text-primary, #fff)' }}
+          >
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="reviewed">Reviewed</option>
+            <option value="resolved">Resolved</option>
+          </select>
+          <select
+            value={feedbackTypeFilter}
+            onChange={(e) => { setFeedbackTypeFilter(e.target.value); }}
+            className="form-select"
+            style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color, #333)', background: 'var(--card-bg, #1a1a2e)', color: 'var(--text-primary, #fff)' }}
+          >
+            <option value="all">All Types</option>
+            <option value="bug">🐛 Bug</option>
+            <option value="suggestion">💡 Suggestion</option>
+            <option value="feature">🚀 Feature</option>
+            <option value="query">❓ Query</option>
+            <option value="other">💬 Other</option>
+          </select>
+          <button className="btn btn-primary" onClick={loadFeedback} style={{ padding: '8px 16px' }}>
+            <FiRefreshCw /> Apply
+          </button>
+        </div>
+
+        {/* Feedback List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {feedbackList.length === 0 ? (
+            <div className="empty-state" style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+              <FiMessageSquare style={{ fontSize: '40px', marginBottom: '12px' }} />
+              <p>No feedback found</p>
+            </div>
+          ) : (
+            feedbackList.map((fb: any) => (
+              <div key={fb.id} className="stat-card" style={{ padding: '16px', borderLeft: `3px solid ${statusColors[fb.status] || '#888'}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '18px' }}>{typeEmojis[fb.type] || '💬'}</span>
+                    <strong style={{ fontSize: '14px' }}>#{fb.id}</strong>
+                    <span style={{
+                      padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600',
+                      background: `${statusColors[fb.status] || '#888'}22`,
+                      color: statusColors[fb.status] || '#888'
+                    }}>
+                      {(fb.status || 'pending').toUpperCase()}
+                    </span>
+                    <span style={{
+                      padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600',
+                      background: `${priorityColors[fb.priority] || '#888'}22`,
+                      color: priorityColors[fb.priority] || '#888'
+                    }}>
+                      {(fb.priority || 'medium').toUpperCase()}
+                    </span>
+                    <span style={{ fontSize: '12px', color: '#888', textTransform: 'capitalize' }}>{fb.type}</span>
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#888' }}>{fb.created_at}</span>
+                </div>
+
+                <div style={{ marginBottom: '8px' }}>
+                  <div style={{ fontSize: '13px', color: '#aaa', marginBottom: '4px' }}>
+                    👤 {fb.name || 'Anonymous'} {fb.email ? `• 📧 ${fb.email}` : ''}
+                  </div>
+                  <div style={{ fontSize: '14px', lineHeight: '1.5', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    {fb.message}
+                  </div>
+                  {fb.admin_notes && (
+                    <div style={{ marginTop: '8px', padding: '8px 12px', background: 'var(--bg-color, #0f0f23)', borderRadius: '6px', fontSize: '13px', color: '#aaa' }}>
+                      <strong>Admin Notes:</strong> {fb.admin_notes}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {fb.status !== 'reviewed' && (
+                    <button
+                      onClick={() => handleUpdateFeedbackStatus(fb.id, 'reviewed')}
+                      style={{ padding: '4px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: 'none', cursor: 'pointer', background: '#3b82f622', color: '#3b82f6' }}
+                    >
+                      <FiEye style={{ marginRight: '4px' }} /> Mark Reviewed
+                    </button>
+                  )}
+                  {fb.status !== 'resolved' && (
+                    <button
+                      onClick={() => handleUpdateFeedbackStatus(fb.id, 'resolved')}
+                      style={{ padding: '4px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: 'none', cursor: 'pointer', background: '#22c55e22', color: '#22c55e' }}
+                    >
+                      <FiCheckCircle style={{ marginRight: '4px' }} /> Resolve
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDeleteFeedback(fb.id)}
+                    style={{ padding: '4px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: 'none', cursor: 'pointer', background: '#ef444422', color: '#ef4444' }}
+                  >
+                    <FiTrash2 style={{ marginRight: '4px' }} /> Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return renderDashboard();
@@ -2980,6 +3169,7 @@ const AdminDashboard = () => {
       case 'party': return renderPartyBookings();
       case 'questpass': return renderQuestPasses();
       case 'offers': return renderOfferClaims();
+      case 'feedback': return renderFeedback();
       default: return renderDashboard();
     }
   };
@@ -3042,6 +3232,11 @@ const AdminDashboard = () => {
               <FiAward className="nav-icon" />
               <span className="nav-label">College</span>
             </button>
+            <button className={`sidebar-nav-item ${activeTab === 'feedback' ? 'active' : ''}`} onClick={() => setActiveTab('feedback')}>
+              <FiMessageSquare className="nav-icon" />
+              <span className="nav-label">Feedback</span>
+              {feedbackStats.pending > 0 && <span className="nav-badge">{feedbackStats.pending}</span>}
+            </button>
           </div>
 
           <div className="nav-section">
@@ -3084,6 +3279,7 @@ const AdminDashboard = () => {
               {activeTab === 'college' && '🎓 College Events'}
               {activeTab === 'analytics' && '📈 Analytics'}
               {activeTab === 'finance' && '💰 Finance & Expenses'}
+              {activeTab === 'feedback' && '💬 Feedback Management'}
               {activeTab === 'settings' && '⚙️ Settings'}
             </h1>
           </div>
@@ -3131,6 +3327,10 @@ const AdminDashboard = () => {
           </button>
           <button className={`mobile-nav-btn ${activeTab === 'college' ? 'active' : ''}`} onClick={() => setActiveTab('college')}>
             <FiAward /> <span>College</span>
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'feedback' ? 'active' : ''}`} onClick={() => setActiveTab('feedback')}>
+            <FiMessageSquare /> <span>Feedback</span>
+            {feedbackStats.pending > 0 && <span className="mobile-nav-badge">{feedbackStats.pending}</span>}
           </button>
           <button className={`mobile-nav-btn ${activeTab === 'finance' ? 'active' : ''}`} onClick={() => setActiveTab('finance')}>
             <FiDollarSign /> <span>Finance</span>

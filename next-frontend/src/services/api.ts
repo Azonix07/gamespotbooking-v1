@@ -181,6 +181,19 @@ export const getAnalytics = () => fetchWithCredentials(`${API_BASE_URL}/api/anal
 // Feedback
 export const submitFeedback = (data: any) =>
   fetchWithCredentials(`${API_BASE_URL}/api/feedback/submit`, { method: 'POST', body: JSON.stringify(data) });
+export const getAdminFeedback = (status?: string, type?: string) => {
+  const params = new URLSearchParams();
+  if (status && status !== 'all') params.append('status', status);
+  if (type && type !== 'all') params.append('type', type);
+  const qs = params.toString();
+  return fetchWithCredentials(`${API_BASE_URL}/api/feedback/all${qs ? '?' + qs : ''}`);
+};
+export const updateFeedbackStatus = (id: number, status: string, adminNotes = '') =>
+  fetchWithCredentials(`${API_BASE_URL}/api/feedback/${id}/status`, { method: 'PUT', body: JSON.stringify({ status, admin_notes: adminNotes }) });
+export const deleteFeedback = (id: number) =>
+  fetchWithCredentials(`${API_BASE_URL}/api/feedback/${id}`, { method: 'DELETE' });
+export const getFeedbackStats = () =>
+  fetchWithCredentials(`${API_BASE_URL}/api/feedback/stats`);
 
 // Rentals
 export const getRentals = () => fetchWithCredentials(`${API_BASE_URL}/api/rentals`);

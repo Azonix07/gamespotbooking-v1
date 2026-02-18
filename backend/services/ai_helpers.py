@@ -179,6 +179,25 @@ def create_booking_internal(booking_data):
         conn.commit()
         print(f"✅ Transaction committed successfully!")
         
+        # Send admin email notification
+        try:
+            from services.admin_notify import notify_new_booking
+            devices_parts = []
+            if ps5_bookings:
+                for ps5 in ps5_bookings:
+                    devices_parts.append(f"PS5-{ps5.get('device_number', '?')} ({ps5.get('player_count', 1)}p)")
+            if driving_sim:
+                devices_parts.append("Driving Simulator")
+            devices_text = ', '.join(devices_parts) if devices_parts else 'N/A'
+            notify_new_booking(
+                booking_id, customer_name, customer_phone,
+                booking_date, start_time, duration_minutes,
+                total_price, f"[AI Booking] {devices_text}"
+            )
+            print(f"📧 Admin notification sent for AI booking #{booking_id}")
+        except Exception as notify_err:
+            print(f"⚠️ Admin notification failed (non-critical): {notify_err}")
+        
         return {
             'success': True,
             'booking_id': booking_id,

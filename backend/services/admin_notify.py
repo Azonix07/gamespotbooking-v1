@@ -271,3 +271,42 @@ def notify_generic(title, details_dict):
     subject = f"📢 {title}"
     html = _build_html_email(title, "📢", fields)
     _send_in_background(_send_gmail, subject, html)
+
+
+def notify_new_feedback(feedback_id, name, email, feedback_type, priority, message):
+    """Notify admin about new user feedback."""
+    priority_emoji = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(priority, "⚪")
+    type_emoji = {"bug": "🐛", "suggestion": "💡", "feature": "🚀", "query": "❓"}.get(feedback_type, "💬")
+    subject = f"{type_emoji} New Feedback #{feedback_id} — {name} ({feedback_type})"
+    # Truncate message for email preview
+    preview = message[:200] + '...' if len(message) > 200 else message
+    html = _build_html_email(
+        f"New Feedback #{feedback_id}", type_emoji,
+        [
+            ("👤 Name", name),
+            ("📧 Email", email or 'Not provided'),
+            ("📋 Type", str(feedback_type).capitalize()),
+            (f"{priority_emoji} Priority", str(priority).capitalize()),
+            ("💬 Message", preview),
+        ],
+        action_text="Review this feedback in the Admin Dashboard"
+    )
+    _send_in_background(_send_gmail, subject, html)
+
+
+def notify_new_college_booking(booking_id, contact_name, contact_phone, college_name, event_date, estimated_cost, booking_ref):
+    """Notify admin about a new college event booking inquiry."""
+    subject = f"🎓 New College Event #{booking_id} — {college_name}"
+    html = _build_html_email(
+        f"New College Event #{booking_id}", "🎓",
+        [
+            ("👤 Contact", contact_name),
+            ("📞 Phone", contact_phone),
+            ("🏫 College", college_name),
+            ("📅 Event Date", str(event_date)),
+            ("💰 Est. Cost", f"₹{estimated_cost}"),
+            ("🔖 Reference", booking_ref),
+        ],
+        action_text="Review & Respond to Inquiry"
+    )
+    _send_in_background(_send_gmail, subject, html)

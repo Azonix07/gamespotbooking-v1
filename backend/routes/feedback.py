@@ -46,6 +46,13 @@ def submit_feedback():
         cursor.close()
         conn.close()
         
+        # Send admin email notification
+        try:
+            from services.admin_notify import notify_new_feedback
+            notify_new_feedback(feedback_id, name, email, feedback_type, priority, message)
+        except Exception as notify_err:
+            sys.stderr.write(f"[Feedback] Admin notification failed (non-critical): {notify_err}\n")
+        
         return jsonify({
             'success': True,
             'message': 'Thank you for your feedback! We will review it shortly.',

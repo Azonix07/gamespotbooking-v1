@@ -336,6 +336,30 @@ def handle_college_bookings():
             
             booking_id = cursor.lastrowid
             
+            # Send admin email notification for college booking
+            try:
+                from services.admin_notify import notify_generic
+                notify_generic(
+                    f"🎓 New College Event Inquiry #{booking_id}",
+                    {
+                        "👤 Contact": data['contact_name'],
+                        "📞 Phone": data['contact_phone'],
+                        "📧 Email": data.get('contact_email', 'N/A'),
+                        "🏫 College": data['college_name'],
+                        "📍 City": data.get('college_city', 'N/A'),
+                        "🎪 Event": data.get('event_name', 'N/A'),
+                        "📅 Dates": f"{data['event_start_date']} to {data['event_end_date']}",
+                        "📏 Duration": f"{data['event_duration_days']} day(s)",
+                        "👥 Students": str(data.get('expected_students', 'N/A')),
+                        "💰 Est. Cost": f"₹{data.get('total_estimated_cost', 0)}",
+                        "📐 Distance": f"{estimated_distance} km",
+                        "🔖 Reference": booking_ref
+                    }
+                )
+            except Exception as notify_err:
+                import sys
+                sys.stderr.write(f"[College] Admin notification failed (non-critical): {notify_err}\n")
+            
             return jsonify({
                 'success': True,
                 'message': 'College booking inquiry submitted successfully',
