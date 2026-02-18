@@ -1550,7 +1550,7 @@ const BookingPage = () => {
                             value={customerPhone}
                             onChange={(e) => setCustomerPhone(e.target.value)}
                             required
-                            placeholder="Number"
+                            placeholder="Phone Number"
                           />
                         </div>
                       </div>
@@ -2432,7 +2432,7 @@ const BookingPage = () => {
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
                             required
-                            placeholder="e.g., John Doe"
+                            placeholder="Name"
                           />
                         </div>
                       </div>
@@ -2448,7 +2448,7 @@ const BookingPage = () => {
                             value={customerPhone}
                             onChange={(e) => setCustomerPhone(e.target.value)}
                             required
-                            placeholder="e.g., 9876543210"
+                            placeholder="Phone Number"
                           />
                         </div>
                       </div>

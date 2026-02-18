@@ -24,33 +24,36 @@ const ContactPage = () => {
 
   const contactInfo = {
     phone: '+91 70121 25919',
-    email: 'contact@gamespot.com',
+    email: 'gamespotkdlr@gmail.com',
     address: 'GameSpot Gaming Lounge',
-    addressLine2: 'Near KSRTC Bus Stand',
+    addressLine2: 'Shipu Complex, Near JJ Castle',
+    addressLine3: 'Polakulath Bar Road, Star Nagar',
     city: 'Kodungallur',
     district: 'Thrissur',
     state: 'Kerala',
     pincode: '680664',
-    fullAddress: 'GameSpot Gaming Lounge, Near KSRTC Bus Stand, Kodungallur, Thrissur, Kerala 680664',
+    fullAddress: 'GameSpot Gaming Lounge, Shipu Complex, Near JJ Castle, Polakulath Bar Road, Star Nagar, Kodungallur, Thrissur, Kerala 680664',
     instagram: '@gamespot_kdlr',
-    facebook: 'GameSpotOfficial',
+    instagramUrl: 'https://instagram.com/gamespot_kdlr',
+    facebook: 'Gamespot Kodungallur',
+    facebookUrl: 'https://www.facebook.com/share/1FqNshdT8B/?mibextid=wwXIfr',
     twitter: '@GameSpotIndia',
     whatsappNumber: '917012125919',
     googleMapsLink: 'https://maps.app.goo.gl/SZR9uXT92GYof6LRA',
     googleMapsEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4019.3577938775693!2d76.19629983498955!3d10.225511276423111!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b081beb62009d5d%3A0x30e7c01503a70001!2sGameSpot!5e0!3m2!1sen!2sin!4v1770449440208!5m2!1sen!2sin',
     rating: 4.8,
-    totalReviews: 326,
+    totalReviews: 29,
     workingHours: {
-      weekdays: '10:00 AM – 11:00 PM',
+      weekdays: '9:00 AM – 12:00 AM',
       weekends: '9:00 AM – 12:00 AM',
       special: '9:00 AM – 1:00 AM'
     },
-    landmark: 'Near KSRTC Bus Stand, Kodungallur'
+    landmark: 'Near JJ Castle, Polakulath Bar Road, Star Nagar'
   };
 
   const stats = [
     { value: '4.8★', label: 'Google Rating' },
-    { value: '326+', label: 'Happy Reviews' },
+    { value: '29+', label: 'Happy Reviews' },
     { value: '5000+', label: 'Gamers Served' },
     { value: '24/7', label: 'WhatsApp Support' },
   ];
@@ -244,7 +247,7 @@ const ContactPage = () => {
           <div className="social-cards-grid">
             {[
               { href: `https://instagram.com/${contactInfo.instagram.replace('@', '')}`, cls: 'instagram-card', Icon: FiInstagram, name: 'Instagram', handle: contactInfo.instagram, action: 'Follow' },
-              { href: `https://facebook.com/${contactInfo.facebook}`, cls: 'facebook-card', Icon: FiFacebook, name: 'Facebook', handle: contactInfo.facebook, action: 'Like' },
+              { href: contactInfo.facebookUrl, cls: 'facebook-card', Icon: FiFacebook, name: 'Facebook', handle: contactInfo.facebook, action: 'Like' },
               { href: `https://twitter.com/${contactInfo.twitter.replace('@', '')}`, cls: 'twitter-card', Icon: FiTwitter, name: 'Twitter / X', handle: contactInfo.twitter, action: 'Follow' },
               { href: `https://wa.me/${contactInfo.whatsappNumber}`, cls: 'whatsapp-social-card', Icon: FaWhatsapp, name: 'WhatsApp', handle: 'Chat Now', action: 'Open' },
             ].map(({ href, cls, Icon, name, handle, action }) => (
@@ -264,7 +267,7 @@ const ContactPage = () => {
           <div className="section-header">
             <div className="section-badge"><FiMapPin /> Location</div>
             <h2 className="section-title">Visit <span className="text-gradient">GameSpot</span></h2>
-            <p className="section-subtitle">Find us easily — we're right near KSRTC Bus Stand, Kodungallur</p>
+            <p className="section-subtitle">Find us easily — Shipu Complex, Near JJ Castle, Star Nagar, Kodungallur</p>
           </div>
           <div className="location-layout">
             <div className="map-container">
@@ -284,6 +287,7 @@ const ContactPage = () => {
                   <h4>Our Address</h4>
                   <p className="location-card-main">{contactInfo.address}</p>
                   <p className="location-card-sub">{contactInfo.addressLine2}</p>
+                  <p className="location-card-sub">{contactInfo.addressLine3}</p>
                   <p className="location-card-sub">{contactInfo.city}, {contactInfo.district}, {contactInfo.state} - {contactInfo.pincode}</p>
                 </div>
                 <button className={`location-card-action ${copied === 'address' ? 'copied' : ''}`} onClick={() => handleCopy(contactInfo.fullAddress, 'address')}>
@@ -305,7 +309,7 @@ const ContactPage = () => {
                 <div className="location-card-content">
                   <h4>Landmark</h4>
                   <p className="location-card-main">{contactInfo.landmark}</p>
-                  <p className="location-card-sub">Easy to find — 2 min from the bus stand</p>
+                  <p className="location-card-sub">Easy to find — Shipu Complex, Star Nagar area</p>
                 </div>
               </div>
               <div className="location-card hours-loc-card">

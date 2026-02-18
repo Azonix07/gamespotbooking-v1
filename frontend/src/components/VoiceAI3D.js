@@ -83,21 +83,21 @@ const VoiceAI3D = ({ isOpen, onClose }) => {
       ]
     },
     location: {
-      keywords: ['location', 'address', 'where', 'place', 'direction', 'directions', 'how to reach', 'find', 'located', 'area', 'perumbavoor', 'map'],
+      keywords: ['location', 'address', 'where', 'place', 'direction', 'directions', 'how to reach', 'find', 'located', 'area', 'kodungallur', 'map'],
       responses: [
-        'We\'re located in Perumbavoor, Ernakulam district. Just 5 minutes from the town center!',
-        'Find us at GameSpot Gaming Center, Main Road, Perumbavoor, Kerala. Near the KSRTC bus stand!',
-        'Our address is GameSpot, Main Road, Perumbavoor, Ernakulam, Kerala 683542. Easy to find!',
-        'Located in the heart of Perumbavoor! 5-minute walk from KSRTC bus stand. Google Maps has our exact location.'
+        'We\'re located in Kodungallur, Thrissur district. Shipu Complex, Near JJ Castle, Star Nagar!',
+        'Find us at GameSpot Gaming Lounge, Shipu Complex, Polakulath Bar Road, Star Nagar, Kodungallur, Kerala 680664!',
+        'Our address is GameSpot, Shipu Complex, Near JJ Castle, Star Nagar, Kodungallur, Thrissur, Kerala 680664. Easy to find!',
+        'Located in Star Nagar, Kodungallur! Near JJ Castle on Polakulath Bar Road. Google Maps has our exact location.'
       ]
     },
     contact: {
       keywords: ['contact', 'phone', 'call', 'number', 'mobile', 'whatsapp', 'reach', 'talk', 'speak'],
       responses: [
-        'Call us at 8075557375! We\'re also available on WhatsApp at the same number.',
-        'Reach us at 8075557375. You can call or WhatsApp for quick bookings and queries!',
-        'Contact number: 8075557375. Feel free to call for reservations or any questions!',
-        'Phone: 8075557375. WhatsApp available too! We respond quickly to all messages.'
+        'Call us at 7012125919! We\'re also available on WhatsApp at the same number.',
+        'Reach us at 7012125919. You can call or WhatsApp for quick bookings and queries!',
+        'Contact number: 7012125919. Feel free to call for reservations or any questions!',
+        'Phone: 7012125919. WhatsApp available too! We respond quickly to all messages.'
       ]
     },
     ps5: {

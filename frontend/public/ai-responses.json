@@ -64,12 +64,12 @@
     
     "location": {
       "keywords": ["where", "location", "address", "directions", "find you", "situated", "place"],
-      "response": "We're located at MG Road, Cyber City, Kochi, Kerala 682001. Easy to find - we're right next to Lulu Mall, opposite the Metro Station. Very accessible by public transport or personal vehicle.  Come visit us!"
+      "response": "We're located at Shipu Complex, Near JJ Castle, Polakulath Bar Road, Star Nagar, Kodungallur, Thrissur, Kerala 680664. Easy to find — we're in the Star Nagar area near JJ Castle. Very accessible by road. Free parking available. 📍 Come visit us!"
     },
     
     "directions": {
       "keywords": ["how to reach", "directions", "navigate", "route", "way to reach"],
-      "response": "Getting to GameSpot is easy! We're on MG Road in Cyber City, Kochi.  If you're coming by metro, get off at the nearest station and we're right opposite.  By car, look for Lulu Mall - we're next door. Free parking available!"
+      "response": "Getting to GameSpot is easy! We're at Shipu Complex, Star Nagar, Kodungallur, Thrissur. 📍 Look for JJ Castle on Polakulath Bar Road — we're right nearby. Free parking available! Search 'GameSpot Kodungallur' on Google Maps for exact directions."
     },
     
     "amenities": {
@@ -119,7 +119,7 @@
     
     "group": {
       "keywords": ["group", "party", "birthday", "corporate", "event", "many people", "large group"],
-      "response": "We love hosting groups! For groups of 6 or more people, birthday parties, or corporate events, we offer special packages with custom pricing and exclusive arrangements. You can even book multiple PS5 stations simultaneously.  Please call us at +91-9876543210 to discuss your requirements and get a customized quote!"
+      "response": "We love hosting groups! For groups of 6 or more people, birthday parties, or corporate events, we offer special packages with custom pricing and exclusive arrangements. You can even book multiple PS5 stations simultaneously.  Please call us at +91 7012125919 to discuss your requirements and get a customized quote!"
     },
     
     "birthday_party": {
@@ -134,7 +134,7 @@
     
     "cancellation": {
       "keywords": ["cancel", "cancellation", "refund", "reschedule", "change booking", "cancel policy"],
-      "response": "Our cancellation policy is fair and flexible! You can cancel or reschedule your booking up to 2 hours before your slot time by calling us at +91-9876543210. For prepaid bookings, refund details are available in-store. No-shows without prior cancellation will not be refunded.  We understand plans change!"
+      "response": "Our cancellation policy is fair and flexible! You can cancel or reschedule your booking up to 2 hours before your slot time by calling us at +91 7012125919. For prepaid bookings, refund details are available in-store. No-shows without prior cancellation will not be refunded.  We understand plans change!"
     },
     
     "reschedule": {
@@ -159,7 +159,7 @@
     
     "membership": {
       "keywords": ["membership", "member", "discount", "offer", "deal", "package", "subscription"],
-      "response": "We have awesome membership plans! Monthly and annual memberships are available with up to 20% discount on all bookings. Perfect for regular gamers who want maximum value. Contact us at +91-9876543210 for detailed membership pricing, benefits, and exclusive perks!"
+      "response": "We have awesome membership plans! Monthly and annual memberships are available with up to 20% discount on all bookings. Perfect for regular gamers who want maximum value. Contact us at +91 7012125919 for detailed membership pricing, benefits, and exclusive perks!"
     },
     
     "discount": {
@@ -169,7 +169,7 @@
     
     "contact": {
       "keywords": ["contact", "phone", "call", "number", "reach you", "email", "get in touch"],
-      "response": "We're always here to help! Call us at +91-9876543210 for bookings, inquiries, or assistance. Email us at bookings@gamespot.in for detailed questions. Visit us at MG Road, Cyber City, Kochi.  We respond quickly to all queries!"
+      "response": "We're always here to help! 📞 Call us at +91 7012125919 for bookings, inquiries, or assistance. Email us at gamespotkdlr@gmail.com for detailed questions. Visit us at Shipu Complex, Star Nagar, Kodungallur. We respond quickly to all queries!"
     },
     
     "wifi": {
@@ -254,7 +254,7 @@
     
     "late_arrival": {
       "keywords": ["late", "delay", "running late", "will be late", "delayed"],
-      "response": "We have a 15-minute grace period for late arrivals.  If you're running late, please call us at +91-9876543210 to inform us. We'll try our best to accommodate you, but your session will still end at the originally scheduled time to respect other bookings."
+      "response": "We have a 15-minute grace period for late arrivals.  If you're running late, please call us at +91 7012125919 to inform us. We'll try our best to accommodate you, but your session will still end at the originally scheduled time to respect other bookings."
     },
     
     "extension": {

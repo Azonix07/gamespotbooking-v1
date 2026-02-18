@@ -98,11 +98,11 @@ const VoiceAIMalayalam = ({ isOpen, onClose }) => {
 
     // Location
     location: {
-      keywords: ['സ്ഥലം', 'location', 'address', 'where', 'എവിടെ', 'വിലാസം', 'place', 'reach', 'direction', 'map', 'perumbavoor', 'പെരുമ്പാവൂർ'],
+      keywords: ['സ്ഥലം', 'location', 'address', 'where', 'എവിടെ', 'വിലാസം', 'place', 'reach', 'direction', 'map', 'kodungallur', 'കൊടുങ്ങല്ലൂർ'],
       responses: [
-        'ഗെയിംസ്പോട്ട് പെരുമ്പാവൂരിൽ സ്ഥിതി ചെയ്യുന്നു. പെരുമ്പാവൂർ ടൗൺ സെന്ററിൽ നിന്ന് അഞ്ച് മിനിറ്റ് ദൂരം. Google Maps-ൽ GameSpot Perumbavoor എന്ന് സെർച്ച് ചെയ്യൂ.',
-        'വിലാസം: ഗെയിംസ്പോട്ട് ഗെയിമിംഗ് സെന്റർ, മെയിൻ റോഡ്, പെരുമ്പാവൂർ, എറണാകുളം ജില്ല, കേരളം. ബസ് സ്റ്റാൻഡിന് അടുത്താണ്.',
-        'എളുപ്പത്തിൽ കണ്ടെത്താം! പെരുമ്പാവൂർ KSRTC ബസ് സ്റ്റാൻഡിൽ നിന്ന് നടന്ന് അഞ്ച് മിനിറ്റ്. പാർക്കിംഗ് സൗകര്യവും ഉണ്ട്.'
+        'ഗെയിംസ്പോട്ട് കൊടുങ്ങല്ലൂരിൽ സ്ഥിതി ചെയ്യുന്നു. ഷിപ്പു കോംപ്ലക്സ്, JJ Castle-ന് അടുത്ത്, സ്റ്റാർ നഗർ. Google Maps-ൽ GameSpot Kodungallur എന്ന് സെർച്ച് ചെയ്യൂ.',
+        'വിലാസം: ഗെയിംസ്പോട്ട് ഗെയിമിംഗ് ലൗഞ്ച്, ഷിപ്പു കോംപ്ലക്സ്, പോലാക്കുളത്ത് ബാർ റോഡ്, സ്റ്റാർ നഗർ, കൊടുങ്ങല്ലൂർ, തൃശ്ശൂർ ജില്ല, കേരളം 680664.',
+        'എളുപ്പത്തിൽ കണ്ടെത്താം! കൊടുങ്ങല്ലൂർ സ്റ്റാർ നഗറിൽ, JJ Castle-ന് അടുത്ത്. പാർക്കിംഗ് സൗകര്യവും ഉണ്ട്.'
       ]
     },
 
@@ -182,7 +182,7 @@ const VoiceAIMalayalam = ({ isOpen, onClose }) => {
       responses: [
         'ബുക്കിംഗ് 24 മണിക്കൂർ മുമ്പ് Cancel ചെയ്താൽ Full Refund ലഭിക്കും. 12 മണിക്കൂർ മുമ്പാണെങ്കിൽ 50% Refund.',
         'Reschedule എപ്പോൾ വേണമെങ്കിലും ചെയ്യാം, Free of cost! വെബ്സൈറ്റിൽ My Bookings-ൽ പോയി Change Date ക്ലിക്ക് ചെയ്യുക.',
-        'Emergency Cancel-ന് 8075557375-ൽ call ചെയ്യുക. ഞങ്ങൾ help ചെയ്യാം!'
+        'Emergency Cancel-ന് 7012125919-ൽ call ചെയ്യുക. ഞങ്ങൾ help ചെയ്യാം!'
       ]
     },
 
@@ -190,9 +190,9 @@ const VoiceAIMalayalam = ({ isOpen, onClose }) => {
     contact: {
       keywords: ['contact', 'phone', 'call', 'number', 'ഫോൺ', 'നമ്പർ', 'വിളിക്കുക', 'കോൺടാക്ട്', 'reach', 'enquiry'],
       responses: [
-        'ഞങ്ങളെ വിളിക്കൂ: 8075557375. WhatsApp-ഉം ഇതേ നമ്പറിൽ Available. Email: info@gamespot.com',
-        'Contact: Phone - 8075557375, WhatsApp - 8075557375, Instagram - @gamespot_perumbavoor',
-        'ഏത് സഹായത്തിനും 8075557375-ൽ വിളിക്കുക. രാവിലെ 10 മുതൽ രാത്രി 10 വരെ Available.'
+        'ഞങ്ങളെ വിളിക്കൂ: 7012125919. WhatsApp-ഉം ഇതേ നമ്പറിൽ Available. Email: gamespotkdlr@gmail.com',
+        'Contact: Phone - 7012125919, WhatsApp - 7012125919, Instagram - @gamespot_kdlr',
+        'ഏത് സഹായത്തിനും 7012125919-ൽ വിളിക്കുക. രാവിലെ 9 മുതൽ രാത്രി 12 വരെ Available.'
       ]
     },
 
