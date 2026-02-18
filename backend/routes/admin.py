@@ -1377,3 +1377,339 @@ def get_financial_summary():
             cursor.close()
         if conn:
             conn.close()
+
+
+# ═══════════════════════════════════════════════════════════════
+# Monthly Financial Summary (fetch any month's data)
+# ═══════════════════════════════════════════════════════════════
+
+@admin_bp.route('/api/admin/financial-summary/monthly', methods=['GET', 'OPTIONS'])
+def get_monthly_financial_summary():
+    """Get financial summary for a specific month/year"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        month = request.args.get('month', type=int)
+        year = request.args.get('year', type=int)
+        
+        if not month or not year:
+            return jsonify({'success': False, 'error': 'month and year required'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        ensure_expenses_table(cursor)
+        
+        from datetime import datetime, timedelta
+        import calendar
+        
+        days_in_month = calendar.monthrange(year, month)[1]
+        
+        # Monthly revenue
+        cursor.execute('''
+            SELECT COALESCE(SUM(total_price), 0) as revenue, COUNT(*) as bookings
+            FROM bookings WHERE MONTH(booking_date) = %s AND YEAR(booking_date) = %s
+        ''', (month, year))
+        rev = cursor.fetchone()
+        total_revenue = float(rev['revenue'])
+        total_bookings = rev['bookings']
+        
+        # Monthly expenses
+        cursor.execute('''
+            SELECT COALESCE(SUM(amount), 0) as total FROM expenses
+            WHERE MONTH(expense_date) = %s AND YEAR(expense_date) = %s
+        ''', (month, year))
+        total_expenses = float(cursor.fetchone()['total'])
+        
+        # Daily chart data for the month
+        cursor.execute('''
+            SELECT booking_date as date, COALESCE(SUM(total_price), 0) as revenue, COUNT(*) as bookings
+            FROM bookings 
+            WHERE MONTH(booking_date) = %s AND YEAR(booking_date) = %s
+            GROUP BY booking_date ORDER BY booking_date
+        ''', (month, year))
+        daily_rev = cursor.fetchall()
+        
+        cursor.execute('''
+            SELECT expense_date as date, COALESCE(SUM(amount), 0) as total
+            FROM expenses
+            WHERE MONTH(expense_date) = %s AND YEAR(expense_date) = %s
+            GROUP BY expense_date ORDER BY expense_date
+        ''', (month, year))
+        daily_exp = cursor.fetchall()
+        
+        rev_map = {str(r['date']): float(r['revenue']) for r in daily_rev}
+        bk_map = {str(r['date']): r['bookings'] for r in daily_rev}
+        exp_map = {str(e['date']): float(e['total']) for e in daily_exp}
+        
+        chart_data = []
+        for day in range(1, days_in_month + 1):
+            d = f"{year}-{month:02d}-{day:02d}"
+            r = rev_map.get(d, 0)
+            e = exp_map.get(d, 0)
+            chart_data.append({
+                'date': d,
+                'revenue': r,
+                'expenses': e,
+                'profit': r - e,
+                'bookings': bk_map.get(d, 0)
+            })
+        
+        # Category breakdown for the month
+        cursor.execute('''
+            SELECT category, COALESCE(SUM(amount), 0) as total, COUNT(*) as count
+            FROM expenses 
+            WHERE MONTH(expense_date) = %s AND YEAR(expense_date) = %s
+            GROUP BY category ORDER BY total DESC
+        ''', (month, year))
+        cats = cursor.fetchall()
+        for c in cats:
+            c['total'] = float(c['total'])
+        
+        # Week-wise breakdown
+        weeks = []
+        for w in range(0, days_in_month, 7):
+            start_day = w + 1
+            end_day = min(w + 7, days_in_month)
+            week_rev = sum(chart_data[i]['revenue'] for i in range(w, end_day))
+            week_exp = sum(chart_data[i]['expenses'] for i in range(w, end_day))
+            week_bk = sum(chart_data[i]['bookings'] for i in range(w, end_day))
+            weeks.append({
+                'label': f"Day {start_day}-{end_day}",
+                'revenue': week_rev,
+                'expenses': week_exp,
+                'profit': week_rev - week_exp,
+                'bookings': week_bk
+            })
+        
+        return jsonify({
+            'success': True,
+            'summary': {
+                'month': month,
+                'year': year,
+                'month_name': calendar.month_name[month],
+                'total_revenue': total_revenue,
+                'total_expenses': total_expenses,
+                'total_profit': total_revenue - total_expenses,
+                'total_bookings': total_bookings,
+                'chart_data': chart_data,
+                'category_breakdown': cats,
+                'weeks': weeks
+            }
+        })
+    
+    except Exception as e:
+        print(f"Error in monthly_financial_summary: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+# ═══════════════════════════════════════════════════════════════
+# Shop Closures Management
+# ═══════════════════════════════════════════════════════════════
+
+def ensure_closures_table(cursor):
+    """Create shop_closures table if it doesn't exist"""
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS shop_closures (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            closure_date DATE NOT NULL,
+            closure_type ENUM('full_day', 'time_range') NOT NULL DEFAULT 'full_day',
+            start_time TIME DEFAULT NULL,
+            end_time TIME DEFAULT NULL,
+            reason VARCHAR(255) DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+
+@admin_bp.route('/api/admin/closures', methods=['GET', 'POST', 'OPTIONS'])
+def handle_closures():
+    """CRUD for shop closures"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        ensure_closures_table(cursor)
+        
+        if request.method == 'GET':
+            # Get upcoming + recent closures
+            cursor.execute('''
+                SELECT * FROM shop_closures
+                WHERE closure_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                ORDER BY closure_date ASC, start_time ASC
+            ''')
+            closures = cursor.fetchall()
+            for c in closures:
+                c['closure_date'] = str(c['closure_date'])
+                c['start_time'] = str(c['start_time']) if c['start_time'] else None
+                c['end_time'] = str(c['end_time']) if c['end_time'] else None
+                c['created_at'] = str(c['created_at'])
+            
+            return jsonify({'success': True, 'closures': closures})
+        
+        elif request.method == 'POST':
+            data = request.get_json()
+            if not data:
+                return jsonify({'success': False, 'error': 'No data provided'}), 400
+            
+            closure_date = data.get('closure_date')
+            closure_type = data.get('closure_type', 'full_day')
+            start_time = data.get('start_time')
+            end_time = data.get('end_time')
+            reason = data.get('reason', '')
+            
+            if not closure_date:
+                return jsonify({'success': False, 'error': 'closure_date is required'}), 400
+            
+            if closure_type == 'time_range':
+                if not start_time or not end_time:
+                    return jsonify({'success': False, 'error': 'start_time and end_time required for time_range'}), 400
+            
+            cursor.execute('''
+                INSERT INTO shop_closures (closure_date, closure_type, start_time, end_time, reason)
+                VALUES (%s, %s, %s, %s, %s)
+            ''', (closure_date, closure_type, start_time if closure_type == 'time_range' else None, 
+                  end_time if closure_type == 'time_range' else None, reason))
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Closure added successfully',
+                'closure_id': cursor.lastrowid
+            })
+    
+    except Exception as e:
+        print(f"Error in handle_closures: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/closures/<int:closure_id>', methods=['DELETE', 'OPTIONS'])
+def delete_closure(closure_id):
+    """Delete a shop closure"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute('DELETE FROM shop_closures WHERE id = %s', (closure_id,))
+        conn.commit()
+        
+        if cursor.rowcount == 0:
+            return jsonify({'success': False, 'error': 'Closure not found'}), 404
+        
+        return jsonify({'success': True, 'message': 'Closure deleted'})
+    
+    except Exception as e:
+        print(f"Error deleting closure: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/closures/check', methods=['GET', 'OPTIONS'])
+def check_closures():
+    """Public endpoint: Check if a date has any closures (used by booking page)"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    date = request.args.get('date')
+    if not date:
+        return jsonify({'success': False, 'error': 'date required'}), 400
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        ensure_closures_table(cursor)
+        
+        cursor.execute('''
+            SELECT * FROM shop_closures WHERE closure_date = %s
+        ''', (date,))
+        closures = cursor.fetchall()
+        
+        is_full_day_closed = any(c['closure_type'] == 'full_day' for c in closures)
+        
+        blocked_times = []
+        for c in closures:
+            if c['closure_type'] == 'time_range' and c['start_time'] and c['end_time']:
+                st = c['start_time']
+                et = c['end_time']
+                # Convert timedelta to HH:MM string
+                if hasattr(st, 'total_seconds'):
+                    sh = int(st.total_seconds()) // 3600
+                    sm = (int(st.total_seconds()) % 3600) // 60
+                    st = f"{sh:02d}:{sm:02d}"
+                else:
+                    st = str(st)[:5]
+                if hasattr(et, 'total_seconds'):
+                    eh = int(et.total_seconds()) // 3600
+                    em = (int(et.total_seconds()) % 3600) // 60
+                    et = f"{eh:02d}:{em:02d}"
+                else:
+                    et = str(et)[:5]
+                blocked_times.append({
+                    'start': st,
+                    'end': et,
+                    'reason': c['reason'] or 'Shop closed'
+                })
+        
+        return jsonify({
+            'success': True,
+            'date': date,
+            'is_closed': is_full_day_closed,
+            'blocked_times': blocked_times,
+            'reason': next((c['reason'] for c in closures if c['closure_type'] == 'full_day'), '') if is_full_day_closed else ''
+        })
+    
+    except Exception as e:
+        print(f"Error checking closures: {e}")
+        return jsonify({'success': True, 'is_closed': False, 'blocked_times': []})
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

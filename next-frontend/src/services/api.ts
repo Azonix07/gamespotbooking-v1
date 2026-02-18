@@ -142,6 +142,17 @@ export const addExpense = (data: { expense_date: string; category: string; descr
   fetchWithCredentials(`${API_BASE_URL}/api/admin/expenses`, { method: 'POST', body: JSON.stringify(data) });
 export const deleteExpense = (id: number) =>
   fetchWithCredentials(`${API_BASE_URL}/api/admin/expenses/${id}`, { method: 'DELETE' });
+export const getMonthlyFinancialSummary = (month: number, year: number) =>
+  fetchWithCredentials(`${API_BASE_URL}/api/admin/financial-summary/monthly?month=${month}&year=${year}`);
+
+// Shop Closures
+export const getClosures = () => fetchWithCredentials(`${API_BASE_URL}/api/admin/closures`);
+export const addClosure = (data: { closure_date: string; closure_type: string; start_time?: string; end_time?: string; reason: string }) =>
+  fetchWithCredentials(`${API_BASE_URL}/api/admin/closures`, { method: 'POST', body: JSON.stringify(data) });
+export const deleteClosure = (id: number) =>
+  fetchWithCredentials(`${API_BASE_URL}/api/admin/closures/${id}`, { method: 'DELETE' });
+export const checkClosures = (date: string) =>
+  fetchWithCredentials(`${API_BASE_URL}/api/closures/check?date=${date}`);
 
 // Games
 export const getGames = (ps5Filter: string | null = null) => {

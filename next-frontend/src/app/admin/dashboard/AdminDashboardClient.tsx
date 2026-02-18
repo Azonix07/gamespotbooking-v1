@@ -67,7 +67,11 @@ import {
   getFinancialSummary,
   getExpenses,
   addExpense,
-  deleteExpense
+  deleteExpense,
+  getMonthlyFinancialSummary,
+  getClosures,
+  addClosure,
+  deleteClosure
 } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 
@@ -138,6 +142,26 @@ const AdminDashboard = () => {
     amount: ''
   });
   const [expenseFilter, setExpenseFilter] = useState('all');
+  
+  // Monthly Finance History
+  const [monthlyData, setMonthlyData] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [loadingMonthly, setLoadingMonthly] = useState(false);
+  
+  // Shop Closures
+  const [closures, setClosures] = useState([]);
+  const [showClosureForm, setShowClosureForm] = useState(false);
+  const [closureForm, setClosureForm] = useState({
+    closure_date: new Date().toISOString().split('T')[0],
+    closure_type: 'full_day',
+    start_time: '10:00',
+    end_time: '18:00',
+    reason: ''
+  });
+  
+  // Chart hover
+  const [hoveredDay, setHoveredDay] = useState(null);
   
   // Loading & Error
   const [loading, setLoading] = useState(true);
@@ -345,14 +369,28 @@ const AdminDashboard = () => {
   // ─── Financial Management ───
   const loadFinancialData = async () => {
     try {
-      const [summaryData, expensesData] = await Promise.allSettled([
+      const [summaryData, expensesData, closuresData] = await Promise.allSettled([
         getFinancialSummary(),
-        getExpenses()
+        getExpenses(),
+        getClosures()
       ]);
       if (summaryData.status === 'fulfilled') setFinancialSummary(summaryData.value.summary || null);
       if (expensesData.status === 'fulfilled') setExpenses(expensesData.value.expenses || []);
+      if (closuresData.status === 'fulfilled') setClosures(closuresData.value.closures || []);
     } catch (err) {
       console.error("Error loading financial data:", err);
+    }
+  };
+
+  const loadMonthlyData = async (m, y) => {
+    setLoadingMonthly(true);
+    try {
+      const data = await getMonthlyFinancialSummary(m, y);
+      setMonthlyData(data.summary || null);
+    } catch (err) {
+      console.error("Error loading monthly data:", err);
+    } finally {
+      setLoadingMonthly(false);
     }
   };
 
@@ -385,6 +423,44 @@ const AdminDashboard = () => {
     try {
       setError(null);
       await deleteExpense(id);
+      await loadFinancialData();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // ─── Shop Closures ───
+  const handleAddClosure = async (e) => {
+    e.preventDefault();
+    if (!closureForm.closure_date) return;
+    try {
+      setError(null);
+      await addClosure({
+        closure_date: closureForm.closure_date,
+        closure_type: closureForm.closure_type,
+        start_time: closureForm.closure_type === 'time_range' ? closureForm.start_time : undefined,
+        end_time: closureForm.closure_type === 'time_range' ? closureForm.end_time : undefined,
+        reason: closureForm.reason
+      });
+      setClosureForm({
+        closure_date: new Date().toISOString().split('T')[0],
+        closure_type: 'full_day',
+        start_time: '10:00',
+        end_time: '18:00',
+        reason: ''
+      });
+      setShowClosureForm(false);
+      await loadFinancialData();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteClosure = async (id) => {
+    if (!window.confirm('Remove this closure? Slots will become available again.')) return;
+    try {
+      setError(null);
+      await deleteClosure(id);
       await loadFinancialData();
     } catch (err) {
       setError(err.message);
@@ -783,27 +859,80 @@ const AdminDashboard = () => {
                 <div className="chart-legend">
                   <span className="legend-item"><span className="legend-dot revenue-dot"></span> Revenue</span>
                   <span className="legend-item"><span className="legend-dot expense-dot"></span> Expenses</span>
+                  <span className="legend-item"><span className="legend-dot profit-dot"></span> Profit</span>
                 </div>
               </div>
-              <div className="finance-chart">
-                <div className="chart-bars-wrapper">
-                  {chartData.map((day, idx) => (
-                    <div className="chart-day" key={idx} title={`${day.date}\nRevenue: ₹${day.revenue}\nExpenses: ₹${day.expenses}\nProfit: ₹${day.profit}`}>
-                      <div className="chart-bars">
+              
+              {/* Y-axis labels + bars */}
+              <div className="better-chart">
+                <div className="chart-y-axis">
+                  <span className="y-label">₹{maxChartValue >= 1000 ? `${(maxChartValue / 1000).toFixed(0)}k` : maxChartValue}</span>
+                  <span className="y-label">₹{maxChartValue >= 1000 ? `${(maxChartValue / 2000).toFixed(0)}k` : Math.round(maxChartValue / 2)}</span>
+                  <span className="y-label">₹0</span>
+                </div>
+                <div className="chart-area">
+                  <div className="chart-grid-lines">
+                    <div className="grid-line"></div>
+                    <div className="grid-line"></div>
+                    <div className="grid-line"></div>
+                  </div>
+                  <div className="chart-bars-row">
+                    {chartData.map((day, idx) => {
+                      const revH = Math.max((day.revenue / maxChartValue) * 100, 1);
+                      const expH = Math.max((day.expenses / maxChartValue) * 100, 1);
+                      const isHovered = hoveredDay === idx;
+                      const dateObj = new Date(day.date);
+                      const dayNum = dateObj.getDate();
+                      const showLabel = idx % 4 === 0 || idx === chartData.length - 1;
+                      return (
                         <div 
-                          className="chart-bar revenue-bar" 
-                          style={{ height: `${Math.max((day.revenue / maxChartValue) * 100, 2)}%` }}
-                        ></div>
-                        <div 
-                          className="chart-bar expense-bar" 
-                          style={{ height: `${Math.max((day.expenses / maxChartValue) * 100, 2)}%` }}
-                        ></div>
-                      </div>
-                      <span className="chart-date-label">
-                        {idx % 3 === 0 ? new Date(day.date).getDate() : ''}
-                      </span>
-                    </div>
-                  ))}
+                          className={`chart-col ${isHovered ? 'hovered' : ''}`} 
+                          key={idx}
+                          onMouseEnter={() => setHoveredDay(idx)}
+                          onMouseLeave={() => setHoveredDay(null)}
+                        >
+                          {isHovered && (
+                            <div className="chart-tooltip">
+                              <div className="tooltip-date">{dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', weekday: 'short' })}</div>
+                              <div className="tooltip-row"><span className="t-dot revenue-dot"></span> ₹{day.revenue.toLocaleString()}</div>
+                              <div className="tooltip-row"><span className="t-dot expense-dot"></span> ₹{day.expenses.toLocaleString()}</div>
+                              <div className={`tooltip-row tooltip-profit ${day.profit >= 0 ? 'positive' : 'negative'}`}>
+                                {day.profit >= 0 ? '↑' : '↓'} ₹{Math.abs(day.profit).toLocaleString()}
+                              </div>
+                              <div className="tooltip-bookings">{day.bookings} bookings</div>
+                            </div>
+                          )}
+                          <div className="bar-group">
+                            <div className="bar revenue-bar" style={{ height: `${revH}%` }}></div>
+                            <div className="bar expense-bar" style={{ height: `${expH}%` }}></div>
+                          </div>
+                          <span className="x-label">{showLabel ? dayNum : ''}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Quick summary under chart */}
+              <div className="chart-summary-row">
+                <div className="chart-summary-item">
+                  <span className="cs-label">Total Revenue</span>
+                  <span className="cs-value cs-revenue">₹{chartData.reduce((s, d) => s + d.revenue, 0).toLocaleString()}</span>
+                </div>
+                <div className="chart-summary-item">
+                  <span className="cs-label">Total Expenses</span>
+                  <span className="cs-value cs-expense">₹{chartData.reduce((s, d) => s + d.expenses, 0).toLocaleString()}</span>
+                </div>
+                <div className="chart-summary-item">
+                  <span className="cs-label">Net Profit</span>
+                  <span className={`cs-value ${chartData.reduce((s, d) => s + d.profit, 0) >= 0 ? 'cs-profit-pos' : 'cs-profit-neg'}`}>
+                    ₹{chartData.reduce((s, d) => s + d.profit, 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="chart-summary-item">
+                  <span className="cs-label">Avg Daily</span>
+                  <span className="cs-value">₹{Math.round(chartData.reduce((s, d) => s + d.revenue, 0) / chartData.length).toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -2426,27 +2555,78 @@ const AdminDashboard = () => {
                   <div className="chart-legend">
                     <span className="legend-item"><span className="legend-dot revenue-dot"></span> Revenue</span>
                     <span className="legend-item"><span className="legend-dot expense-dot"></span> Expenses</span>
+                    <span className="legend-item"><span className="legend-dot profit-dot"></span> Profit</span>
                   </div>
                 </div>
-                <div className="finance-chart">
-                  <div className="chart-bars-wrapper">
-                    {chartData.map((day, idx) => (
-                      <div className="chart-day" key={idx} title={`${day.date}\nRevenue: ₹${day.revenue}\nExpenses: ₹${day.expenses}\nProfit: ₹${day.profit}`}>
-                        <div className="chart-bars">
+                
+                <div className="better-chart">
+                  <div className="chart-y-axis">
+                    <span className="y-label">₹{maxChartValue >= 1000 ? `${(maxChartValue / 1000).toFixed(0)}k` : maxChartValue}</span>
+                    <span className="y-label">₹{maxChartValue >= 1000 ? `${(maxChartValue / 2000).toFixed(0)}k` : Math.round(maxChartValue / 2)}</span>
+                    <span className="y-label">₹0</span>
+                  </div>
+                  <div className="chart-area">
+                    <div className="chart-grid-lines">
+                      <div className="grid-line"></div>
+                      <div className="grid-line"></div>
+                      <div className="grid-line"></div>
+                    </div>
+                    <div className="chart-bars-row">
+                      {chartData.map((day, idx) => {
+                        const revH = Math.max((day.revenue / maxChartValue) * 100, 1);
+                        const expH = Math.max((day.expenses / maxChartValue) * 100, 1);
+                        const isHovered = hoveredDay === idx;
+                        const dateObj = new Date(day.date);
+                        const dayNum = dateObj.getDate();
+                        const showLabel = idx % 4 === 0 || idx === chartData.length - 1;
+                        return (
                           <div 
-                            className="chart-bar revenue-bar" 
-                            style={{ height: `${Math.max((day.revenue / maxChartValue) * 100, 2)}%` }}
-                          ></div>
-                          <div 
-                            className="chart-bar expense-bar" 
-                            style={{ height: `${Math.max((day.expenses / maxChartValue) * 100, 2)}%` }}
-                          ></div>
-                        </div>
-                        <span className="chart-date-label">
-                          {idx % 3 === 0 ? new Date(day.date).getDate() : ''}
-                        </span>
-                      </div>
-                    ))}
+                            className={`chart-col ${isHovered ? 'hovered' : ''}`} 
+                            key={idx}
+                            onMouseEnter={() => setHoveredDay(idx)}
+                            onMouseLeave={() => setHoveredDay(null)}
+                          >
+                            {isHovered && (
+                              <div className="chart-tooltip">
+                                <div className="tooltip-date">{dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', weekday: 'short' })}</div>
+                                <div className="tooltip-row"><span className="t-dot revenue-dot"></span> ₹{day.revenue.toLocaleString()}</div>
+                                <div className="tooltip-row"><span className="t-dot expense-dot"></span> ₹{day.expenses.toLocaleString()}</div>
+                                <div className={`tooltip-row tooltip-profit ${day.profit >= 0 ? 'positive' : 'negative'}`}>
+                                  {day.profit >= 0 ? '↑' : '↓'} ₹{Math.abs(day.profit).toLocaleString()}
+                                </div>
+                                <div className="tooltip-bookings">{day.bookings} bookings</div>
+                              </div>
+                            )}
+                            <div className="bar-group">
+                              <div className="bar revenue-bar" style={{ height: `${revH}%` }}></div>
+                              <div className="bar expense-bar" style={{ height: `${expH}%` }}></div>
+                            </div>
+                            <span className="x-label">{showLabel ? dayNum : ''}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="chart-summary-row">
+                  <div className="chart-summary-item">
+                    <span className="cs-label">Total Revenue</span>
+                    <span className="cs-value cs-revenue">₹{chartData.reduce((s, d) => s + d.revenue, 0).toLocaleString()}</span>
+                  </div>
+                  <div className="chart-summary-item">
+                    <span className="cs-label">Total Expenses</span>
+                    <span className="cs-value cs-expense">₹{chartData.reduce((s, d) => s + d.expenses, 0).toLocaleString()}</span>
+                  </div>
+                  <div className="chart-summary-item">
+                    <span className="cs-label">Net Profit</span>
+                    <span className={`cs-value ${chartData.reduce((s, d) => s + d.profit, 0) >= 0 ? 'cs-profit-pos' : 'cs-profit-neg'}`}>
+                      ₹{chartData.reduce((s, d) => s + d.profit, 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="chart-summary-item">
+                    <span className="cs-label">Avg Daily</span>
+                    <span className="cs-value">₹{Math.round(chartData.reduce((s, d) => s + d.revenue, 0) / chartData.length).toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -2594,6 +2774,192 @@ const AdminDashboard = () => {
                   </button>
                 </div>
               ))
+            )}
+          </div>
+        </div>
+
+        {/* ─── Monthly Finance History ─── */}
+        <div className="monthly-finance-section">
+          <div className="expense-management-header">
+            <h3 className="finance-section-title">📅 Monthly Finance History</h3>
+            <div className="month-picker">
+              <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))}>
+                {['January','February','March','April','May','June','July','August','September','October','November','December'].map((m, i) => (
+                  <option key={i} value={i + 1}>{m}</option>
+                ))}
+              </select>
+              <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))}>
+                {[2024, 2025, 2026, 2027].map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+              <button className="btn btn-add-expense" onClick={() => loadMonthlyData(selectedMonth, selectedYear)} disabled={loadingMonthly}>
+                {loadingMonthly ? '⏳ Loading...' : '🔍 Fetch'}
+              </button>
+            </div>
+          </div>
+
+          {monthlyData && (
+            <div className="monthly-result">
+              <h4 className="monthly-title">{monthlyData.month_name} {monthlyData.year}</h4>
+              <div className="finance-cards-grid">
+                <div className="finance-card finance-card-today">
+                  <div className="finance-card-header">
+                    <span className="finance-card-label">Revenue</span>
+                  </div>
+                  <div className="finance-card-body">
+                    <div className="monthly-big-number revenue-color">₹{(monthlyData.total_revenue || 0).toLocaleString()}</div>
+                    <div className="finance-card-footer"><span>{monthlyData.total_bookings} bookings</span></div>
+                  </div>
+                </div>
+                <div className="finance-card finance-card-week">
+                  <div className="finance-card-header">
+                    <span className="finance-card-label">Expenses</span>
+                  </div>
+                  <div className="finance-card-body">
+                    <div className="monthly-big-number expense-color">₹{(monthlyData.total_expenses || 0).toLocaleString()}</div>
+                  </div>
+                </div>
+                <div className="finance-card finance-card-month">
+                  <div className="finance-card-header">
+                    <span className="finance-card-label">Profit</span>
+                  </div>
+                  <div className="finance-card-body">
+                    <div className={`monthly-big-number ${(monthlyData.total_profit || 0) >= 0 ? 'profit-pos-color' : 'profit-neg-color'}`}>
+                      {(monthlyData.total_profit || 0) >= 0 ? '📈' : '📉'} ₹{(monthlyData.total_profit || 0).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Weekly breakdown */}
+              {monthlyData.weeks && monthlyData.weeks.length > 0 && (
+                <div className="weekly-breakdown">
+                  <h5>📊 Week-by-Week</h5>
+                  <div className="weekly-grid">
+                    {monthlyData.weeks.map((w, i) => (
+                      <div className="weekly-card" key={i}>
+                        <div className="weekly-label">{w.label}</div>
+                        <div className="weekly-row"><span>Revenue</span><span className="revenue-color">₹{w.revenue.toLocaleString()}</span></div>
+                        <div className="weekly-row"><span>Expenses</span><span className="expense-color">₹{w.expenses.toLocaleString()}</span></div>
+                        <div className="weekly-row weekly-profit"><span>Profit</span><span className={w.profit >= 0 ? 'profit-pos-color' : 'profit-neg-color'}>₹{w.profit.toLocaleString()}</span></div>
+                        <div className="weekly-bookings">{w.bookings} bookings</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Monthly category breakdown */}
+              {monthlyData.category_breakdown && monthlyData.category_breakdown.length > 0 && (
+                <div className="finance-categories" style={{ marginTop: '1rem' }}>
+                  <h5 className="finance-categories-title">📂 {monthlyData.month_name} Expense Categories</h5>
+                  <div className="category-breakdown-grid">
+                    {monthlyData.category_breakdown.map((cat, idx) => {
+                      const maxTotal = Math.max(...monthlyData.category_breakdown.map(c => c.total), 1);
+                      return (
+                        <div className="category-breakdown-item" key={idx}>
+                          <div className="category-breakdown-header">
+                            <span className="category-icon">{CATEGORY_ICONS[cat.category] || '📎'}</span>
+                            <span className="category-name">{cat.category}</span>
+                            <span className="category-total">₹{cat.total.toLocaleString()}</span>
+                          </div>
+                          <div className="category-bar-track">
+                            <div className="category-bar-fill" style={{ width: `${(cat.total / maxTotal) * 100}%`, backgroundColor: CATEGORY_COLORS[cat.category] || '#6b7280' }}></div>
+                          </div>
+                          <span className="category-count">{cat.count} entries</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ─── Shop Closures Management ─── */}
+        <div className="closures-section">
+          <div className="expense-management-header">
+            <h3 className="finance-section-title">🚫 Shop Closures</h3>
+            <button className="btn btn-add-expense" onClick={() => setShowClosureForm(!showClosureForm)}>
+              {showClosureForm ? <><FiX /> Cancel</> : <><FiPlusCircle /> Add Closure</>}
+            </button>
+          </div>
+          <p className="closure-hint">Manage shop closures. Full-day closures disable all booking slots. Time-range closures disable specific hours only.</p>
+
+          {showClosureForm && (
+            <form className="expense-form" onSubmit={handleAddClosure}>
+              <div className="expense-form-grid">
+                <div className="expense-form-group">
+                  <label>Date</label>
+                  <input type="date" value={closureForm.closure_date} onChange={(e) => setClosureForm({...closureForm, closure_date: e.target.value})} required />
+                </div>
+                <div className="expense-form-group">
+                  <label>Closure Type</label>
+                  <select value={closureForm.closure_type} onChange={(e) => setClosureForm({...closureForm, closure_type: e.target.value})}>
+                    <option value="full_day">🔴 Full Day Closed</option>
+                    <option value="time_range">⏰ Specific Hours</option>
+                  </select>
+                </div>
+                {closureForm.closure_type === 'time_range' && (
+                  <>
+                    <div className="expense-form-group">
+                      <label>From</label>
+                      <input type="time" value={closureForm.start_time} onChange={(e) => setClosureForm({...closureForm, start_time: e.target.value})} required />
+                    </div>
+                    <div className="expense-form-group">
+                      <label>To</label>
+                      <input type="time" value={closureForm.end_time} onChange={(e) => setClosureForm({...closureForm, end_time: e.target.value})} required />
+                    </div>
+                  </>
+                )}
+                <div className="expense-form-group">
+                  <label>Reason</label>
+                  <input type="text" placeholder="e.g., Power outage, Holiday, Maintenance..." value={closureForm.reason} onChange={(e) => setClosureForm({...closureForm, reason: e.target.value})} />
+                </div>
+              </div>
+              <button type="submit" className="btn btn-save-expense" style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}>
+                <FiSave /> Save Closure
+              </button>
+            </form>
+          )}
+
+          {/* Closures list */}
+          <div className="closure-list">
+            {closures.length === 0 ? (
+              <div className="expense-empty">
+                <span className="expense-empty-icon">✅</span>
+                <p>No upcoming closures. All days are open for bookings!</p>
+              </div>
+            ) : (
+              closures.map(cl => {
+                const dateObj = new Date(cl.closure_date);
+                const isPast = dateObj < new Date(new Date().toDateString());
+                const isToday = cl.closure_date === new Date().toISOString().split('T')[0];
+                return (
+                  <div className={`closure-item ${isPast ? 'closure-past' : ''} ${isToday ? 'closure-today' : ''}`} key={cl.id}>
+                    <div className="closure-item-icon">
+                      {cl.closure_type === 'full_day' ? '🔴' : '⏰'}
+                    </div>
+                    <div className="closure-item-details">
+                      <span className="closure-item-date">
+                        {dateObj.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                        {isToday && <span className="closure-today-badge">TODAY</span>}
+                      </span>
+                      <span className="closure-item-meta">
+                        <span className={`closure-type-pill ${cl.closure_type}`}>
+                          {cl.closure_type === 'full_day' ? 'Full Day' : `${cl.start_time?.slice(0, 5)} — ${cl.end_time?.slice(0, 5)}`}
+                        </span>
+                        {cl.reason && <span className="closure-reason">{cl.reason}</span>}
+                      </span>
+                    </div>
+                    <button className="expense-delete-btn" onClick={() => handleDeleteClosure(cl.id)} title="Remove closure">
+                      <FiTrash2 />
+                    </button>
+                  </div>
+                );
+              })
             )}
           </div>
         </div>

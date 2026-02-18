@@ -87,6 +87,7 @@ const BookingPage = () => {
   // State
   const [selectedDate, setSelectedDate] = useState(getToday());
   const [slots, setSlots] = useState([]);
+  const [dayClosedInfo, setDayClosedInfo] = useState(null); // { is_closed, reason }
   const [selectedTime, setSelectedTime] = useState(null);
   const [ps5Bookings, setPs5Bookings] = useState([]);
   const [drivingSim, setDrivingSim] = useState(null); // Changed to store { duration, afterPS5 }
@@ -202,8 +203,12 @@ const BookingPage = () => {
     try {
       setLoading(true);
       setError(null);
+      setDayClosedInfo(null);
       const response = await getSlots(selectedDate);
       setSlots(response?.slots || []);
+      if (response?.is_closed) {
+        setDayClosedInfo({ is_closed: true, reason: response.closure_reason || 'Shop closed for the day' });
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -952,9 +957,10 @@ const BookingPage = () => {
     return timeToMinutes(time) <= nowMinutes;
   };
 
-  /** Can't book this slot — either past, or less than 30 min until midnight */
+  /** Can't book this slot — either past, closed, or less than 30 min until midnight */
   const isSlotDisabled = (slot) => {
     if (slot.status === 'full') return true;
+    if (slot.status === 'closed') return true;
     if (isSlotPast(slot.time)) return true;
     if (getMaxDuration(slot.time) < MIN_BOOKING_DURATION) return true;
     return false;
@@ -1356,8 +1362,25 @@ const BookingPage = () => {
                         <span className="status-dot status-full"></span>
                         <span className="status-label">Full</span>
                       </div>
+                      <div className="legend-item">
+                        <span className="status-dot status-closed"></span>
+                        <span className="status-label">Closed</span>
+                      </div>
                     </div>
                   </div>
+                  
+                  {/* Full Day Closure Banner */}
+                  {dayClosedInfo?.is_closed && (
+                    <div className="closure-banner">
+                      <span className="closure-banner-icon">🚫</span>
+                      <div className="closure-banner-text">
+                        <strong>Shop Closed on This Date</strong>
+                        <p>{dayClosedInfo.reason}</p>
+                        <p>Please select a different date to book.</p>
+                      </div>
+                    </div>
+                  )}
+                  
                   {loading ? (
                     <div className="loading-container">
                       <div className="loader">
@@ -1384,23 +1407,26 @@ const BookingPage = () => {
                           <motion.button
                             key={slot.time}
                             variants={fadeInUp}
-                            className={`time-slot ${slot.status} ${selectedTime === slot.time ? 'selected' : ''} ${past ? 'past' : ''} ${disabled && !past ? 'closing-soon' : ''}`}
+                            className={`time-slot ${slot.status} ${selectedTime === slot.time ? 'selected' : ''} ${past ? 'past' : ''} ${disabled && !past && slot.status !== 'closed' ? 'closing-soon' : ''}`}
                             onClick={() => !disabled && handleTimeSelect(slot.time, slot.status)}
                             disabled={disabled}
                             whileHover={!disabled ? { scale: 1.04 } : {}}
                             whileTap={!disabled ? { scale: 0.97 } : {}}
-                            title={past ? 'This slot has passed' : maxDur < MIN_BOOKING_DURATION ? 'Too close to closing time (12 AM)' : isLateSlot ? `Max ${maxDur} min — closes at 12 AM` : ''}
+                            title={slot.status === 'closed' ? (slot.closure_reason || 'Shop closed') : past ? 'This slot has passed' : maxDur < MIN_BOOKING_DURATION ? 'Too close to closing time (12 AM)' : isLateSlot ? `Max ${maxDur} min — closes at 12 AM` : ''}
                           >
                             <span className="slot-time">{formatTime12Hour(slot.time)}</span>
-                            {past && (
+                            {slot.status === 'closed' && (
+                              <span className="slot-capacity slot-closed-label">🚫 Closed</span>
+                            )}
+                            {slot.status !== 'closed' && past && (
                               <span className="slot-capacity slot-past-label">Past</span>
                             )}
-                            {!past && isLateSlot && (
+                            {slot.status !== 'closed' && !past && isLateSlot && (
                               <span className="slot-capacity slot-closing-label">
                                 Max {maxDur}min
                               </span>
                             )}
-                            {!past && !isLateSlot && slot.status === 'partial' && (
+                            {slot.status !== 'closed' && !past && !isLateSlot && slot.status === 'partial' && (
                               <span className="slot-capacity">
                                 <FiMonitor className="capacity-icon" />
                                 {slot.available_ps5} PS5 free

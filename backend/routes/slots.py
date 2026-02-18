@@ -13,6 +13,46 @@ import traceback
 
 slots_bp = Blueprint('slots', __name__)
 
+def get_closures_for_date(cursor, date):
+    """Get closures for a given date, returns (is_full_day_closed, blocked_ranges)"""
+    try:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS shop_closures (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                closure_date DATE NOT NULL,
+                closure_type ENUM('full_day', 'time_range') NOT NULL DEFAULT 'full_day',
+                start_time TIME DEFAULT NULL,
+                end_time TIME DEFAULT NULL,
+                reason VARCHAR(255) DEFAULT '',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        cursor.execute('SELECT * FROM shop_closures WHERE closure_date = %s', (date,))
+        closures = cursor.fetchall()
+        
+        is_full_day = any(c['closure_type'] == 'full_day' for c in closures)
+        
+        blocked_ranges = []
+        for c in closures:
+            if c['closure_type'] == 'time_range' and c['start_time'] and c['end_time']:
+                st = c['start_time']
+                et = c['end_time']
+                if hasattr(st, 'total_seconds'):
+                    start_min = int(st.total_seconds()) // 60
+                else:
+                    parts = str(st).split(':')
+                    start_min = int(parts[0]) * 60 + int(parts[1])
+                if hasattr(et, 'total_seconds'):
+                    end_min = int(et.total_seconds()) // 60
+                else:
+                    parts = str(et).split(':')
+                    end_min = int(parts[0]) * 60 + int(parts[1])
+                blocked_ranges.append((start_min, end_min, c.get('reason', 'Closed')))
+        
+        return is_full_day, blocked_ranges
+    except Exception:
+        return False, []
+
 @slots_bp.route('/api/slots.php', methods=['GET', 'OPTIONS'])
 def get_slots():
     """Get available slots for a date"""
@@ -86,6 +126,31 @@ def get_slots():
                 'total_ps5_players_booked': total_ps5_players
             })
         
+        # ─── Check shop closures for this date ───
+        is_full_day_closed, blocked_ranges = get_closures_for_date(cursor, date)
+        
+        if is_full_day_closed:
+            # Return all slots as closed
+            time_slots = generate_time_slots()
+            slots_data = []
+            for slot in time_slots:
+                slots_data.append({
+                    'time': slot,
+                    'status': 'closed',
+                    'available_ps5': 0,
+                    'available_driving': False,
+                    'total_ps5_players': 0,
+                    'booked_ps5_units': [],
+                    'closure_reason': 'Shop closed for the day'
+                })
+            return jsonify({
+                'success': True,
+                'date': date,
+                'slots': slots_data,
+                'is_closed': True,
+                'closure_reason': 'Shop closed for the day'
+            })
+        
         # ─── OPTIMIZED: Single query for ALL bookings on this date ───
         # Instead of querying N times (once per slot), fetch everything once
         # and compute availability in Python.
@@ -151,22 +216,37 @@ def get_slots():
 
             available_ps5 = 3 - len(booked_ps5_units)
             
+            # Check if this slot falls within a time-range closure
+            slot_closed = False
+            closure_reason = ''
+            for (bl_start, bl_end, bl_reason) in blocked_ranges:
+                if bl_start <= slot_min < bl_end:
+                    slot_closed = True
+                    closure_reason = bl_reason
+                    break
+            
             # Determine status
-            if len(booked_ps5_units) == 3 and driving_booked:
+            if slot_closed:
+                status = 'closed'
+            elif len(booked_ps5_units) == 3 and driving_booked:
                 status = 'full'
             elif booked_ps5_units or driving_booked:
                 status = 'partial'
             else:
                 status = 'available'
             
-            slots_data.append({
+            slot_entry = {
                 'time': slot,
                 'status': status,
-                'available_ps5': available_ps5,
-                'available_driving': not driving_booked,
+                'available_ps5': 0 if slot_closed else available_ps5,
+                'available_driving': False if slot_closed else (not driving_booked),
                 'total_ps5_players': total_ps5_players,
                 'booked_ps5_units': sorted(booked_ps5_units)
-            })
+            }
+            if slot_closed:
+                slot_entry['closure_reason'] = closure_reason or 'Shop closed'
+            
+            slots_data.append(slot_entry)
         
         return jsonify({
             'success': True,
