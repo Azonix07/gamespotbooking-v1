@@ -10,6 +10,60 @@ import { apiFetch } from "@/services/apiClient";
 import { useAuth } from "@/context/AuthContext";
 import { getGames, requestDedicatedGame } from "@/services/api";
 
+/* ─── SVG Vector Icons for Membership Cards ─── */
+const CardIcon = ({ name, color = 'currentColor', size = 56 }: { name: string; color?: string; size?: number }) => {
+  const icons: Record<string, React.ReactNode> = {
+    sword: (
+      <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M44 8L20 32L14 26L8 32L16 40L12 44L16 48L20 44L28 52L34 46L28 40L52 16L56 8L44 8Z" stroke={color} strokeWidth="2.5" fill={`${color}15`} strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M36 20L44 28" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+        <circle cx="48" cy="12" r="3" fill={color} opacity="0.4"/>
+      </svg>
+    ),
+    shield: (
+      <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 6L8 16V30C8 44.36 18.28 57.44 32 60C45.72 57.44 56 44.36 56 30V16L32 6Z" stroke={color} strokeWidth="2.5" fill={`${color}12`} strokeLinejoin="round"/>
+        <path d="M24 32L30 38L42 26" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    crown: (
+      <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 44L14 20L26 32L32 14L38 32L50 20L56 44H8Z" stroke={color} strokeWidth="2.5" fill={`${color}15`} strokeLinejoin="round"/>
+        <rect x="8" y="44" width="48" height="8" rx="2" stroke={color} strokeWidth="2.5" fill={`${color}20`}/>
+        <circle cx="32" cy="28" r="3" fill={color} opacity="0.5"/>
+        <circle cx="20" cy="36" r="2" fill={color} opacity="0.3"/>
+        <circle cx="44" cy="36" r="2" fill={color} opacity="0.3"/>
+      </svg>
+    ),
+    key: (
+      <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="22" cy="24" r="12" stroke={color} strokeWidth="2.5" fill={`${color}10`}/>
+        <circle cx="22" cy="24" r="5" stroke={color} strokeWidth="2" fill="none"/>
+        <path d="M32 30L52 50" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+        <path d="M44 42L50 42" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+        <path d="M48 46L54 46" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+      </svg>
+    ),
+    bolt: (
+      <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M36 6L12 36H30L26 58L52 26H34L36 6Z" stroke={color} strokeWidth="2.5" fill={`${color}15`} strokeLinejoin="round"/>
+      </svg>
+    ),
+    trophy: (
+      <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 10H46V26C46 34.84 39.84 42 32 42C24.16 42 18 34.84 18 26V10Z" stroke={color} strokeWidth="2.5" fill={`${color}12`}/>
+        <path d="M18 16H10C10 24 14 28 18 28" stroke={color} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <path d="M46 16H54C54 24 50 28 46 28" stroke={color} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <path d="M32 42V48" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+        <rect x="22" y="48" width="20" height="4" rx="2" stroke={color} strokeWidth="2" fill={`${color}20`}/>
+        <path d="M20 52H44" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+        <circle cx="32" cy="24" r="4" fill={color} opacity="0.3"/>
+      </svg>
+    ),
+  };
+  return <div className="card-vector-icon">{icons[name] || <span style={{ fontSize: size * 0.6 }}>{name}</span>}</div>;
+};
+
 
 const MembershipPlansPage = () => {
   const router = useRouter();
@@ -290,7 +344,7 @@ const MembershipPlansPage = () => {
           {category.plans.map((plan, index) => {
             const isFlipped = flippedCards[plan.type] || false;
             const btnState = getButtonState(plan, categoryKey);
-            const tierLabel = plan.tier === 'basic' ? 'BASIC' : plan.tier === 'standard' ? 'STANDARD' : 'PREMIUM';
+            const tierLabel = plan.tier_label || (plan.tier === 'basic' ? 'SILVER' : plan.tier === 'standard' ? 'GOLD' : 'PLATINUM');
 
             return (
               <div className="pass-card-wrapper" key={plan.type}>
@@ -308,10 +362,18 @@ const MembershipPlansPage = () => {
                     style={{ background: plan.gradient, color: plan.font_color || '#ffffff' }}
                     onClick={() => toggleFlip(plan.type)}
                   >
+                    {/* Large Vector Icon Background */}
+                    <div className="card-icon-bg">
+                      <CardIcon name={plan.chip_icon} color={plan.font_color || '#ffffff'} size={100} />
+                    </div>
+
                     {/* Card Content */}
                     <div className="card-front-content">
-                      <div className="card-tier-badge" style={plan.tier === 'premium' ? { color: '#d4a017', background: 'rgba(212, 160, 23, 0.15)', border: '1px solid rgba(212, 160, 23, 0.3)' } : plan.tier === 'standard' ? { color: '#1a1a2e', background: 'rgba(0,0,0,0.12)' } : {}}>{tierLabel}</div>
-                      <div className="card-plan-icon">{plan.chip_icon}</div>
+                      <div className="card-tier-badge" style={
+                        plan.tier === 'premium' ? { color: '#d4a017', background: 'rgba(212, 160, 23, 0.2)', border: '1px solid rgba(212, 160, 23, 0.4)' } :
+                        plan.tier === 'standard' ? { color: '#1a1a2e', background: 'rgba(184, 134, 11, 0.15)', border: '1px solid rgba(184, 134, 11, 0.3)' } :
+                        { color: '#ffffff', background: 'rgba(255, 255, 255, 0.2)', border: '1px solid rgba(255, 255, 255, 0.3)' }
+                      }>{tierLabel}</div>
                       <h3 className="card-plan-name" style={{ color: plan.font_color || '#ffffff' }}>{plan.name}</h3>
                       <p className="card-plan-tagline" style={{ color: plan.font_color ? `${plan.font_color}aa` : 'rgba(255,255,255,0.75)' }}>{plan.tagline}</p>
                     </div>

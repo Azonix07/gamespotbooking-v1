@@ -61,6 +61,7 @@ def get_plans():
                     'type': 'solo_quest',
                     'name': 'Solo Quest',
                     'tier': 'basic',
+                    'tier_label': 'SILVER',
                     'price': 500,
                     'duration_days': 30,
                     'hours': 10,
@@ -74,15 +75,16 @@ def get_plans():
                         'Single Player Only',
                         '₹50/hour effective rate'
                     ],
-                    'accent': '#3b82f6',
-                    'gradient': 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                    'chip_icon': '⚔️',
+                    'accent': '#8e9aaf',
+                    'gradient': 'linear-gradient(135deg, #c0c0c0, #8e9aaf, #6b7b8d)',
+                    'chip_icon': 'sword',
                     'font_color': '#ffffff'
                 },
                 {
                     'type': 'legend_mode',
                     'name': 'Legend Mode',
                     'tier': 'standard',
+                    'tier_label': 'GOLD',
                     'price': 800,
                     'duration_days': 30,
                     'hours': 20,
@@ -100,13 +102,14 @@ def get_plans():
                     'popular': True,
                     'accent': '#b8860b',
                     'gradient': 'linear-gradient(135deg, #f0c85a, #b8860b)',
-                    'chip_icon': '🛡️',
+                    'chip_icon': 'shield',
                     'font_color': '#1a1a2e'
                 },
                 {
                     'type': 'god_mode',
                     'name': 'God Mode',
                     'tier': 'premium',
+                    'tier_label': 'PLATINUM',
                     'price': 1400,
                     'duration_days': 30,
                     'hours': 40,
@@ -123,7 +126,7 @@ def get_plans():
                     ],
                     'accent': '#d4a017',
                     'gradient': 'linear-gradient(135deg, #1a1a2e, #0a0a14)',
-                    'chip_icon': '👑',
+                    'chip_icon': 'crown',
                     'font_color': '#d4a017'
                 }
             ]
@@ -137,6 +140,7 @@ def get_plans():
                     'type': 'ignition',
                     'name': 'Ignition',
                     'tier': 'basic',
+                    'tier_label': 'SILVER',
                     'price': 600,
                     'duration_days': 30,
                     'hours': 10,
@@ -149,15 +153,16 @@ def get_plans():
                         '₹60/hour effective rate',
                         'Full Racing Sim Access'
                     ],
-                    'accent': '#3b82f6',
-                    'gradient': 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                    'chip_icon': '🔑',
+                    'accent': '#8e9aaf',
+                    'gradient': 'linear-gradient(135deg, #c0c0c0, #8e9aaf, #6b7b8d)',
+                    'chip_icon': 'key',
                     'font_color': '#ffffff'
                 },
                 {
                     'type': 'turbo',
                     'name': 'Turbo',
                     'tier': 'standard',
+                    'tier_label': 'GOLD',
                     'price': 1000,
                     'duration_days': 30,
                     'hours': 20,
@@ -174,13 +179,14 @@ def get_plans():
                     'popular': True,
                     'accent': '#b8860b',
                     'gradient': 'linear-gradient(135deg, #f0c85a, #b8860b)',
-                    'chip_icon': '⚡',
+                    'chip_icon': 'bolt',
                     'font_color': '#1a1a2e'
                 },
                 {
                     'type': 'apex',
                     'name': 'Apex',
                     'tier': 'premium',
+                    'tier_label': 'PLATINUM',
                     'price': 1600,
                     'duration_days': 30,
                     'hours': 40,
@@ -196,7 +202,7 @@ def get_plans():
                     ],
                     'accent': '#d4a017',
                     'gradient': 'linear-gradient(135deg, #1a1a2e, #0a0a14)',
-                    'chip_icon': '🏆',
+                    'chip_icon': 'trophy',
                     'font_color': '#d4a017'
                 }
             ]

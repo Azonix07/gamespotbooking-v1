@@ -390,6 +390,31 @@
 
 /* Card Chip — removed */
 
+/* Large Vector Icon Background */
+.card-icon-bg {
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.12;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.4s ease;
+}
+
+.pass-card:hover .card-icon-bg {
+  opacity: 0.2;
+  transform: translateY(-50%) scale(1.08);
+}
+
+/* Card Vector Icon inline */
+.card-vector-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
 /* Card Front Content */
 .card-front-content {
   position: relative;
@@ -399,30 +424,26 @@
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  gap: 0.1rem;
+  gap: 0.15rem;
 }
 
 .card-tier-badge {
   font-family: var(--font-heading);
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.15);
-  padding: 0.2rem 0.65rem;
-  border-radius: 4px;
-  margin-bottom: 0.2rem;
-}
-
-.card-plan-icon {
-  font-size: 1.6rem;
-  margin-bottom: 0.1rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.18);
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.35rem;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .card-plan-name {
   font-family: var(--font-heading);
-  font-size: 1.5rem;
+  font-size: 1.55rem;
   font-weight: 700;
   margin: 0;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -663,22 +684,39 @@
 }
 
 /* ============================================
-   PREMIUM CARD GLOW
+   PREMIUM / PLATINUM CARD GLOW
    ============================================ */
 .tier-premium .pass-card-front {
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2), 0 0 30px rgba(212, 160, 23, 0.12);
   border: 1px solid rgba(212, 160, 23, 0.3);
 }
 
-/* Standard (gold) card border */
+/* Standard / GOLD card border */
 .tier-standard .pass-card-front {
   border: 1px solid rgba(184, 134, 11, 0.3);
   box-shadow: 0 8px 32px rgba(184, 134, 11, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Basic (blue) card border */
+/* Basic / SILVER card border + shimmer */
 .tier-basic .pass-card-front {
-  border: 1px solid rgba(59, 130, 246, 0.25);
+  border: 1px solid rgba(192, 192, 192, 0.4);
+  box-shadow: 0 8px 32px rgba(142, 154, 175, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.tier-basic .pass-card-front::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 75%,
+    transparent 100%
+  );
+  pointer-events: none;
+  border-radius: inherit;
 }
 
 /* ============================================
@@ -695,6 +733,14 @@
 
 .tier-premium:not(.flipped):hover .pass-card-front {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), 0 0 40px rgba(212, 160, 23, 0.18);
+}
+
+.tier-standard:not(.flipped):hover .pass-card-front {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), 0 0 30px rgba(184, 134, 11, 0.15);
+}
+
+.tier-basic:not(.flipped):hover .pass-card-front {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12), 0 0 30px rgba(192, 192, 192, 0.2);
 }
 
 /* ============================================
