@@ -1074,3 +1074,306 @@ def unblock_user():
             cursor.close()
         if conn:
             conn.close()
+
+
+# ════════════════════════════════════════════════════════
+# EXPENSES & FINANCIAL MANAGEMENT
+# ════════════════════════════════════════════════════════
+
+def ensure_expenses_table(cursor):
+    """Create expenses table if it doesn't exist"""
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS expenses (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            expense_date DATE NOT NULL,
+            category VARCHAR(50) NOT NULL,
+            description VARCHAR(255) NOT NULL,
+            amount DECIMAL(10, 2) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    ''')
+
+
+@admin_bp.route('/api/admin/expenses', methods=['GET', 'POST', 'OPTIONS'])
+def handle_expenses():
+    """Get or create expenses"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        ensure_expenses_table(cursor)
+        
+        if request.method == 'GET':
+            # Get expenses with optional date filter
+            date_from = request.args.get('date_from', '')
+            date_to = request.args.get('date_to', '')
+            category = request.args.get('category', '')
+            
+            query = 'SELECT * FROM expenses WHERE 1=1'
+            params = []
+            
+            if date_from:
+                query += ' AND expense_date >= %s'
+                params.append(date_from)
+            if date_to:
+                query += ' AND expense_date <= %s'
+                params.append(date_to)
+            if category:
+                query += ' AND category = %s'
+                params.append(category)
+            
+            query += ' ORDER BY expense_date DESC, created_at DESC'
+            
+            cursor.execute(query, params)
+            expenses = cursor.fetchall()
+            
+            # Convert Decimal and date types for JSON
+            for exp in expenses:
+                exp['amount'] = float(exp['amount'])
+                if exp.get('expense_date'):
+                    exp['expense_date'] = str(exp['expense_date'])
+                if exp.get('created_at'):
+                    exp['created_at'] = str(exp['created_at'])
+                if exp.get('updated_at'):
+                    exp['updated_at'] = str(exp['updated_at'])
+            
+            return jsonify({'success': True, 'expenses': expenses})
+        
+        elif request.method == 'POST':
+            data = request.get_json()
+            if not data:
+                return jsonify({'success': False, 'error': 'No data provided'}), 400
+            
+            expense_date = data.get('expense_date')
+            category = data.get('category', '')
+            description = data.get('description', '')
+            amount = data.get('amount', 0)
+            
+            if not expense_date or not category or not description or not amount:
+                return jsonify({'success': False, 'error': 'All fields are required'}), 400
+            
+            cursor.execute('''
+                INSERT INTO expenses (expense_date, category, description, amount)
+                VALUES (%s, %s, %s, %s)
+            ''', (expense_date, category, description, float(amount)))
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Expense added successfully',
+                'expense_id': cursor.lastrowid
+            })
+    
+    except Exception as e:
+        print(f"Error in handle_expenses: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/expenses/<int:expense_id>', methods=['DELETE', 'OPTIONS'])
+def delete_expense(expense_id):
+    """Delete an expense"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute('DELETE FROM expenses WHERE id = %s', (expense_id,))
+        conn.commit()
+        
+        if cursor.rowcount == 0:
+            return jsonify({'success': False, 'error': 'Expense not found'}), 404
+        
+        return jsonify({'success': True, 'message': 'Expense deleted'})
+    
+    except Exception as e:
+        print(f"Error deleting expense: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/financial-summary', methods=['GET', 'OPTIONS'])
+def get_financial_summary():
+    """Get daily/weekly/monthly financial summary with revenue, expenses, and profit"""
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+    
+    conn = None
+    cursor = None
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        ensure_expenses_table(cursor)
+        
+        # Today's revenue
+        cursor.execute('''
+            SELECT COALESCE(SUM(total_price), 0) as revenue, COUNT(*) as bookings
+            FROM bookings WHERE booking_date = CURDATE()
+        ''')
+        today = cursor.fetchone()
+        today_revenue = float(today['revenue'])
+        today_bookings = today['bookings']
+        
+        # Today's expenses
+        cursor.execute('''
+            SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date = CURDATE()
+        ''')
+        today_expenses = float(cursor.fetchone()['total'])
+        
+        # This week revenue & expenses
+        cursor.execute('''
+            SELECT COALESCE(SUM(total_price), 0) as revenue, COUNT(*) as bookings
+            FROM bookings WHERE booking_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        ''')
+        week = cursor.fetchone()
+        week_revenue = float(week['revenue'])
+        week_bookings = week['bookings']
+        
+        cursor.execute('''
+            SELECT COALESCE(SUM(amount), 0) as total FROM expenses 
+            WHERE expense_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        ''')
+        week_expenses = float(cursor.fetchone()['total'])
+        
+        # This month revenue & expenses
+        cursor.execute('''
+            SELECT COALESCE(SUM(total_price), 0) as revenue, COUNT(*) as bookings
+            FROM bookings WHERE MONTH(booking_date) = MONTH(CURDATE()) 
+            AND YEAR(booking_date) = YEAR(CURDATE())
+        ''')
+        month = cursor.fetchone()
+        month_revenue = float(month['revenue'])
+        month_bookings = month['bookings']
+        
+        cursor.execute('''
+            SELECT COALESCE(SUM(amount), 0) as total FROM expenses 
+            WHERE MONTH(expense_date) = MONTH(CURDATE()) 
+            AND YEAR(expense_date) = YEAR(CURDATE())
+        ''')
+        month_expenses = float(cursor.fetchone()['total'])
+        
+        # Last 30 days daily revenue (for chart)
+        cursor.execute('''
+            SELECT booking_date as date, COALESCE(SUM(total_price), 0) as revenue, COUNT(*) as bookings
+            FROM bookings 
+            WHERE booking_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            GROUP BY booking_date ORDER BY booking_date
+        ''')
+        daily_revenue_raw = cursor.fetchall()
+        
+        # Last 30 days daily expenses (for chart)
+        cursor.execute('''
+            SELECT expense_date as date, COALESCE(SUM(amount), 0) as total
+            FROM expenses 
+            WHERE expense_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            GROUP BY expense_date ORDER BY expense_date
+        ''')
+        daily_expenses_raw = cursor.fetchall()
+        
+        # Build the 30-day chart data
+        from datetime import datetime, timedelta
+        chart_data = []
+        expenses_map = {str(e['date']): float(e['total']) for e in daily_expenses_raw}
+        revenue_map = {}
+        bookings_map = {}
+        for r in daily_revenue_raw:
+            revenue_map[str(r['date'])] = float(r['revenue'])
+            bookings_map[str(r['date'])] = r['bookings']
+        
+        for i in range(30, -1, -1):
+            d = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+            rev = revenue_map.get(d, 0)
+            exp = expenses_map.get(d, 0)
+            chart_data.append({
+                'date': d,
+                'revenue': rev,
+                'expenses': exp,
+                'profit': rev - exp,
+                'bookings': bookings_map.get(d, 0)
+            })
+        
+        # Expense breakdown by category (this month)
+        cursor.execute('''
+            SELECT category, COALESCE(SUM(amount), 0) as total, COUNT(*) as count
+            FROM expenses 
+            WHERE MONTH(expense_date) = MONTH(CURDATE()) 
+            AND YEAR(expense_date) = YEAR(CURDATE())
+            GROUP BY category ORDER BY total DESC
+        ''')
+        category_breakdown = cursor.fetchall()
+        for cat in category_breakdown:
+            cat['total'] = float(cat['total'])
+        
+        return jsonify({
+            'success': True,
+            'summary': {
+                'today': {
+                    'revenue': today_revenue,
+                    'expenses': today_expenses,
+                    'profit': today_revenue - today_expenses,
+                    'bookings': today_bookings
+                },
+                'week': {
+                    'revenue': week_revenue,
+                    'expenses': week_expenses,
+                    'profit': week_revenue - week_expenses,
+                    'bookings': week_bookings
+                },
+                'month': {
+                    'revenue': month_revenue,
+                    'expenses': month_expenses,
+                    'profit': month_revenue - month_expenses,
+                    'bookings': month_bookings
+                },
+                'chart_data': chart_data,
+                'category_breakdown': category_breakdown
+            }
+        })
+    
+    except Exception as e:
+        print(f"Error in financial_summary: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

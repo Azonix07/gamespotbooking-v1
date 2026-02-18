@@ -128,6 +128,21 @@ export const rejectGameRequest = (id: number) =>
   fetchWithCredentials(`${API_BASE_URL}/api/admin/membership/reject-game/${id}`, { method: 'POST' });
 export const getAdminStats = () => fetchWithCredentials(`${API_BASE_URL}/api/admin/stats`);
 
+// Financial Management
+export const getFinancialSummary = () => fetchWithCredentials(`${API_BASE_URL}/api/admin/financial-summary`);
+export const getExpenses = (dateFrom?: string, dateTo?: string, category?: string) => {
+  const params = new URLSearchParams();
+  if (dateFrom) params.append('date_from', dateFrom);
+  if (dateTo) params.append('date_to', dateTo);
+  if (category) params.append('category', category);
+  const qs = params.toString();
+  return fetchWithCredentials(`${API_BASE_URL}/api/admin/expenses${qs ? '?' + qs : ''}`);
+};
+export const addExpense = (data: { expense_date: string; category: string; description: string; amount: number }) =>
+  fetchWithCredentials(`${API_BASE_URL}/api/admin/expenses`, { method: 'POST', body: JSON.stringify(data) });
+export const deleteExpense = (id: number) =>
+  fetchWithCredentials(`${API_BASE_URL}/api/admin/expenses/${id}`, { method: 'DELETE' });
+
 // Games
 export const getGames = (ps5Filter: string | null = null) => {
   const url = ps5Filter ? `${API_BASE_URL}/api/games?ps5=${ps5Filter}` : `${API_BASE_URL}/api/games`;

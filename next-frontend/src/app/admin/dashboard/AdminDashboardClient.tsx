@@ -31,7 +31,10 @@ import {
   FiZap,
   FiCheckCircle,
   FiMenu,
-  FiGift
+  FiGift,
+  FiDollarSign,
+  FiPlusCircle,
+  FiMinusCircle
 } from 'react-icons/fi';
 import { 
   getAllBookings, 
@@ -60,7 +63,11 @@ import {
   rejectQuestPassGameChange,
   getOfferClaims,
   approveOfferClaim,
-  rejectOfferClaim
+  rejectOfferClaim,
+  getFinancialSummary,
+  getExpenses,
+  addExpense,
+  deleteExpense
 } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 
@@ -119,6 +126,18 @@ const AdminDashboard = () => {
   // Offer Claims (Instagram Promo)
   const [offerClaims, setOfferClaims] = useState([]);
   const [offerClaimStats, setOfferClaimStats] = useState({ total: 0, pending: 0, verified: 0, rejected: 0 });
+  
+  // Financial Management
+  const [financialSummary, setFinancialSummary] = useState(null);
+  const [expenses, setExpenses] = useState([]);
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [expenseForm, setExpenseForm] = useState({
+    expense_date: new Date().toISOString().split('T')[0],
+    category: 'Miscellaneous',
+    description: '',
+    amount: ''
+  });
+  const [expenseFilter, setExpenseFilter] = useState('all');
   
   // Loading & Error
   const [loading, setLoading] = useState(true);
@@ -182,6 +201,7 @@ const AdminDashboard = () => {
       await loadPartyBookings();
       await loadQuestPasses();
       await loadOfferClaims();
+      await loadFinancialData();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -319,6 +339,55 @@ const AdminDashboard = () => {
       setOfferClaimStats(data.statistics || { total: 0, pending: 0, verified: 0, rejected: 0 });
     } catch (err) {
       console.error("Error loading offer claims:", err);
+    }
+  };
+
+  // ─── Financial Management ───
+  const loadFinancialData = async () => {
+    try {
+      const [summaryData, expensesData] = await Promise.allSettled([
+        getFinancialSummary(),
+        getExpenses()
+      ]);
+      if (summaryData.status === 'fulfilled') setFinancialSummary(summaryData.value.summary || null);
+      if (expensesData.status === 'fulfilled') setExpenses(expensesData.value.expenses || []);
+    } catch (err) {
+      console.error("Error loading financial data:", err);
+    }
+  };
+
+  const handleAddExpense = async (e) => {
+    e.preventDefault();
+    if (!expenseForm.description || !expenseForm.amount) return;
+    try {
+      setError(null);
+      await addExpense({
+        expense_date: expenseForm.expense_date,
+        category: expenseForm.category,
+        description: expenseForm.description,
+        amount: parseFloat(expenseForm.amount)
+      });
+      setExpenseForm({
+        expense_date: new Date().toISOString().split('T')[0],
+        category: 'Miscellaneous',
+        description: '',
+        amount: ''
+      });
+      setShowExpenseForm(false);
+      await loadFinancialData();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteExpense = async (id) => {
+    if (!window.confirm('Delete this expense entry?')) return;
+    try {
+      setError(null);
+      await deleteExpense(id);
+      await loadFinancialData();
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -543,13 +612,40 @@ const AdminDashboard = () => {
   };
 
   // Render Dashboard Stats
-  const renderDashboard = () => (
+  const EXPENSE_CATEGORIES = [
+    'Game Purchase', 'Staff Tea/Food', 'Maintenance', 'Electricity', 
+    'Internet', 'Rent', 'Equipment', 'Transport', 'Miscellaneous'
+  ];
+
+  const CATEGORY_ICONS = {
+    'Game Purchase': '🎮', 'Staff Tea/Food': '☕', 'Maintenance': '🔧',
+    'Electricity': '⚡', 'Internet': '🌐', 'Rent': '🏠',
+    'Equipment': '🖥️', 'Transport': '🚗', 'Miscellaneous': '📎'
+  };
+
+  const CATEGORY_COLORS = {
+    'Game Purchase': '#ff6b35', 'Staff Tea/Food': '#10b981', 'Maintenance': '#f59e0b',
+    'Electricity': '#3b82f6', 'Internet': '#8b5cf6', 'Rent': '#ef4444',
+    'Equipment': '#06b6d4', 'Transport': '#f97316', 'Miscellaneous': '#6b7280'
+  };
+
+  const renderDashboard = () => {
+    const summary = financialSummary;
+    const chartData = summary?.chart_data || [];
+    const maxChartValue = Math.max(...chartData.map(d => Math.max(d.revenue || 0, d.expenses || 0)), 1);
+
+    const filteredExpenses = expenseFilter === 'all' 
+      ? expenses 
+      : expenses.filter(e => e.category === expenseFilter);
+
+    return (
     <div className="dashboard-stats fade-in">
       <div className="section-header-mobile">
         <h2 className="section-title">📊 Overview</h2>
         <span className="current-date">{new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
       </div>
       
+      {/* Quick Stats Row */}
       {stats && (
         <div className="stats-grid">
           <div className="stat-card stat-primary">
@@ -577,30 +673,6 @@ const AdminDashboard = () => {
           </div>
           
           <div className="stat-card stat-warning">
-            <div className="stat-icon">💰</div>
-            <div className="stat-content">
-              <div className="stat-value">₹{stats.total_revenue.toLocaleString()}</div>
-              <div className="stat-label">Total Revenue</div>
-            </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-icon">📈</div>
-            <div className="stat-content">
-              <div className="stat-value">{stats.month_bookings}</div>
-              <div className="stat-label">This Month's Bookings</div>
-            </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-icon">💵</div>
-            <div className="stat-content">
-              <div className="stat-value">₹{stats.month_revenue.toLocaleString()}</div>
-              <div className="stat-label">This Month's Revenue</div>
-            </div>
-          </div>
-          
-          <div className="stat-card">
             <div className="stat-icon">🎯</div>
             <div className="stat-content">
               <div className="stat-value">{stats.today_bookings}</div>
@@ -609,8 +681,285 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* ─── Financial Summary Cards ─── */}
+      {summary && (
+        <div className="finance-section">
+          <h3 className="finance-section-title">💰 Financial Summary</h3>
+          <div className="finance-cards-grid">
+            {/* Today */}
+            <div className="finance-card finance-card-today">
+              <div className="finance-card-header">
+                <span className="finance-card-label">Today</span>
+                <span className="finance-card-date">{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+              </div>
+              <div className="finance-card-body">
+                <div className="finance-row revenue">
+                  <span className="finance-dot revenue-dot"></span>
+                  <span>Revenue</span>
+                  <span className="finance-amount">₹{(summary.today?.revenue || 0).toLocaleString()}</span>
+                </div>
+                <div className="finance-row expense">
+                  <span className="finance-dot expense-dot"></span>
+                  <span>Expenses</span>
+                  <span className="finance-amount">₹{(summary.today?.expenses || 0).toLocaleString()}</span>
+                </div>
+                <div className="finance-divider"></div>
+                <div className={`finance-row profit ${(summary.today?.profit || 0) >= 0 ? 'positive' : 'negative'}`}>
+                  <span className="finance-profit-icon">{(summary.today?.profit || 0) >= 0 ? '📈' : '📉'}</span>
+                  <span>Profit</span>
+                  <span className="finance-amount finance-profit">₹{(summary.today?.profit || 0).toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="finance-card-footer">
+                <span>{summary.today?.bookings || 0} bookings</span>
+              </div>
+            </div>
+
+            {/* This Week */}
+            <div className="finance-card finance-card-week">
+              <div className="finance-card-header">
+                <span className="finance-card-label">This Week</span>
+                <span className="finance-card-date">7 days</span>
+              </div>
+              <div className="finance-card-body">
+                <div className="finance-row revenue">
+                  <span className="finance-dot revenue-dot"></span>
+                  <span>Revenue</span>
+                  <span className="finance-amount">₹{(summary.week?.revenue || 0).toLocaleString()}</span>
+                </div>
+                <div className="finance-row expense">
+                  <span className="finance-dot expense-dot"></span>
+                  <span>Expenses</span>
+                  <span className="finance-amount">₹{(summary.week?.expenses || 0).toLocaleString()}</span>
+                </div>
+                <div className="finance-divider"></div>
+                <div className={`finance-row profit ${(summary.week?.profit || 0) >= 0 ? 'positive' : 'negative'}`}>
+                  <span className="finance-profit-icon">{(summary.week?.profit || 0) >= 0 ? '📈' : '📉'}</span>
+                  <span>Profit</span>
+                  <span className="finance-amount finance-profit">₹{(summary.week?.profit || 0).toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="finance-card-footer">
+                <span>{summary.week?.bookings || 0} bookings</span>
+              </div>
+            </div>
+
+            {/* This Month */}
+            <div className="finance-card finance-card-month">
+              <div className="finance-card-header">
+                <span className="finance-card-label">This Month</span>
+                <span className="finance-card-date">{new Date().toLocaleDateString('en-IN', { month: 'long' })}</span>
+              </div>
+              <div className="finance-card-body">
+                <div className="finance-row revenue">
+                  <span className="finance-dot revenue-dot"></span>
+                  <span>Revenue</span>
+                  <span className="finance-amount">₹{(summary.month?.revenue || 0).toLocaleString()}</span>
+                </div>
+                <div className="finance-row expense">
+                  <span className="finance-dot expense-dot"></span>
+                  <span>Expenses</span>
+                  <span className="finance-amount">₹{(summary.month?.expenses || 0).toLocaleString()}</span>
+                </div>
+                <div className="finance-divider"></div>
+                <div className={`finance-row profit ${(summary.month?.profit || 0) >= 0 ? 'positive' : 'negative'}`}>
+                  <span className="finance-profit-icon">{(summary.month?.profit || 0) >= 0 ? '📈' : '📉'}</span>
+                  <span>Profit</span>
+                  <span className="finance-amount finance-profit">₹{(summary.month?.profit || 0).toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="finance-card-footer">
+                <span>{summary.month?.bookings || 0} bookings</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ─── 30-Day Revenue vs Expenses Chart ─── */}
+          {chartData.length > 0 && (
+            <div className="finance-chart-container">
+              <div className="finance-chart-header">
+                <h4>📊 30-Day Revenue vs Expenses</h4>
+                <div className="chart-legend">
+                  <span className="legend-item"><span className="legend-dot revenue-dot"></span> Revenue</span>
+                  <span className="legend-item"><span className="legend-dot expense-dot"></span> Expenses</span>
+                </div>
+              </div>
+              <div className="finance-chart">
+                <div className="chart-bars-wrapper">
+                  {chartData.map((day, idx) => (
+                    <div className="chart-day" key={idx} title={`${day.date}\nRevenue: ₹${day.revenue}\nExpenses: ₹${day.expenses}\nProfit: ₹${day.profit}`}>
+                      <div className="chart-bars">
+                        <div 
+                          className="chart-bar revenue-bar" 
+                          style={{ height: `${Math.max((day.revenue / maxChartValue) * 100, 2)}%` }}
+                        ></div>
+                        <div 
+                          className="chart-bar expense-bar" 
+                          style={{ height: `${Math.max((day.expenses / maxChartValue) * 100, 2)}%` }}
+                        ></div>
+                      </div>
+                      <span className="chart-date-label">
+                        {idx % 3 === 0 ? new Date(day.date).getDate() : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ─── Category Breakdown ─── */}
+          {summary.category_breakdown && summary.category_breakdown.length > 0 && (
+            <div className="finance-categories">
+              <h4 className="finance-categories-title">📂 Monthly Expense Breakdown</h4>
+              <div className="category-breakdown-grid">
+                {summary.category_breakdown.map((cat, idx) => {
+                  const maxTotal = Math.max(...summary.category_breakdown.map(c => c.total), 1);
+                  return (
+                    <div className="category-breakdown-item" key={idx}>
+                      <div className="category-breakdown-header">
+                        <span className="category-icon">{CATEGORY_ICONS[cat.category] || '📎'}</span>
+                        <span className="category-name">{cat.category}</span>
+                        <span className="category-total">₹{cat.total.toLocaleString()}</span>
+                      </div>
+                      <div className="category-bar-track">
+                        <div 
+                          className="category-bar-fill" 
+                          style={{ 
+                            width: `${(cat.total / maxTotal) * 100}%`,
+                            backgroundColor: CATEGORY_COLORS[cat.category] || '#6b7280'
+                          }}
+                        ></div>
+                      </div>
+                      <span className="category-count">{cat.count} entries</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── Expense Management ─── */}
+      <div className="finance-section">
+        <div className="expense-management-header">
+          <h3 className="finance-section-title">📝 Expense Management</h3>
+          <button 
+            className="btn btn-add-expense" 
+            onClick={() => setShowExpenseForm(!showExpenseForm)}
+          >
+            {showExpenseForm ? <><FiX /> Cancel</> : <><FiPlusCircle /> Add Expense</>}
+          </button>
+        </div>
+
+        {/* Add Expense Form */}
+        {showExpenseForm && (
+          <form className="expense-form" onSubmit={handleAddExpense}>
+            <div className="expense-form-grid">
+              <div className="expense-form-group">
+                <label>Date</label>
+                <input
+                  type="date"
+                  value={expenseForm.expense_date}
+                  onChange={(e) => setExpenseForm({...expenseForm, expense_date: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="expense-form-group">
+                <label>Category</label>
+                <select
+                  value={expenseForm.category}
+                  onChange={(e) => setExpenseForm({...expenseForm, category: e.target.value})}
+                >
+                  {EXPENSE_CATEGORIES.map(cat => (
+                    <option key={cat} value={cat}>{CATEGORY_ICONS[cat]} {cat}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="expense-form-group">
+                <label>Description</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Purchased FIFA 25, Staff lunch..."
+                  value={expenseForm.description}
+                  onChange={(e) => setExpenseForm({...expenseForm, description: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="expense-form-group">
+                <label>Amount (₹)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="500"
+                  value={expenseForm.amount}
+                  onChange={(e) => setExpenseForm({...expenseForm, amount: e.target.value})}
+                  required
+                />
+              </div>
+            </div>
+            <button type="submit" className="btn btn-save-expense">
+              <FiSave /> Save Expense
+            </button>
+          </form>
+        )}
+
+        {/* Expense Filter */}
+        <div className="expense-filter-bar">
+          <button 
+            className={`expense-filter-btn ${expenseFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setExpenseFilter('all')}
+          >
+            All
+          </button>
+          {EXPENSE_CATEGORIES.map(cat => (
+            <button 
+              key={cat}
+              className={`expense-filter-btn ${expenseFilter === cat ? 'active' : ''}`}
+              onClick={() => setExpenseFilter(cat)}
+            >
+              {CATEGORY_ICONS[cat]} {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Expense List */}
+        <div className="expense-list">
+          {filteredExpenses.length === 0 ? (
+            <div className="expense-empty">
+              <span className="expense-empty-icon">📭</span>
+              <p>No expenses recorded{expenseFilter !== 'all' ? ` for "${expenseFilter}"` : ''}. Click "Add Expense" to start tracking.</p>
+            </div>
+          ) : (
+            filteredExpenses.map(exp => (
+              <div className="expense-item" key={exp.id}>
+                <div className="expense-item-icon" style={{ backgroundColor: (CATEGORY_COLORS[exp.category] || '#6b7280') + '20', color: CATEGORY_COLORS[exp.category] || '#6b7280' }}>
+                  {CATEGORY_ICONS[exp.category] || '📎'}
+                </div>
+                <div className="expense-item-details">
+                  <span className="expense-item-desc">{exp.description}</span>
+                  <span className="expense-item-meta">
+                    <span className="expense-category-pill" style={{ backgroundColor: (CATEGORY_COLORS[exp.category] || '#6b7280') + '15', color: CATEGORY_COLORS[exp.category] || '#6b7280' }}>
+                      {exp.category}
+                    </span>
+                    <span className="expense-item-date">{new Date(exp.expense_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  </span>
+                </div>
+                <div className="expense-item-amount">₹{exp.amount.toLocaleString()}</div>
+                <button className="expense-delete-btn" onClick={() => handleDeleteExpense(exp.id)} title="Delete">
+                  <FiTrash2 />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
-  );
+    );
+  };
 
   // Render Bookings
   const renderBookings = () => (
@@ -1963,6 +2312,295 @@ const AdminDashboard = () => {
     </div>
   );
 
+  // ─── Dedicated Finance Tab ───
+  const renderFinance = () => {
+    const summary = financialSummary;
+    const chartData = summary?.chart_data || [];
+    const maxChartValue = Math.max(...chartData.map(d => Math.max(d.revenue || 0, d.expenses || 0)), 1);
+
+    const filteredExpensesList = expenseFilter === 'all' 
+      ? expenses 
+      : expenses.filter(e => e.category === expenseFilter);
+
+    return (
+      <div className="finance-page fade-in">
+        <div className="section-header-mobile">
+          <h2 className="section-title">💰 Finance & Expenses</h2>
+          <span className="current-date">{new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+        </div>
+
+        {/* Summary Cards */}
+        {summary && (
+          <>
+            <div className="finance-cards-grid">
+              <div className="finance-card finance-card-today">
+                <div className="finance-card-header">
+                  <span className="finance-card-label">Today</span>
+                  <span className="finance-card-date">{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                </div>
+                <div className="finance-card-body">
+                  <div className="finance-row revenue">
+                    <span className="finance-dot revenue-dot"></span>
+                    <span>Revenue</span>
+                    <span className="finance-amount">₹{(summary.today?.revenue || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="finance-row expense">
+                    <span className="finance-dot expense-dot"></span>
+                    <span>Expenses</span>
+                    <span className="finance-amount">₹{(summary.today?.expenses || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="finance-divider"></div>
+                  <div className={`finance-row profit ${(summary.today?.profit || 0) >= 0 ? 'positive' : 'negative'}`}>
+                    <span className="finance-profit-icon">{(summary.today?.profit || 0) >= 0 ? '📈' : '📉'}</span>
+                    <span>Profit</span>
+                    <span className="finance-amount finance-profit">₹{(summary.today?.profit || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="finance-card-footer">
+                  <span>{summary.today?.bookings || 0} bookings</span>
+                </div>
+              </div>
+
+              <div className="finance-card finance-card-week">
+                <div className="finance-card-header">
+                  <span className="finance-card-label">This Week</span>
+                  <span className="finance-card-date">7 days</span>
+                </div>
+                <div className="finance-card-body">
+                  <div className="finance-row revenue">
+                    <span className="finance-dot revenue-dot"></span>
+                    <span>Revenue</span>
+                    <span className="finance-amount">₹{(summary.week?.revenue || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="finance-row expense">
+                    <span className="finance-dot expense-dot"></span>
+                    <span>Expenses</span>
+                    <span className="finance-amount">₹{(summary.week?.expenses || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="finance-divider"></div>
+                  <div className={`finance-row profit ${(summary.week?.profit || 0) >= 0 ? 'positive' : 'negative'}`}>
+                    <span className="finance-profit-icon">{(summary.week?.profit || 0) >= 0 ? '📈' : '📉'}</span>
+                    <span>Profit</span>
+                    <span className="finance-amount finance-profit">₹{(summary.week?.profit || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="finance-card-footer">
+                  <span>{summary.week?.bookings || 0} bookings</span>
+                </div>
+              </div>
+
+              <div className="finance-card finance-card-month">
+                <div className="finance-card-header">
+                  <span className="finance-card-label">This Month</span>
+                  <span className="finance-card-date">{new Date().toLocaleDateString('en-IN', { month: 'long' })}</span>
+                </div>
+                <div className="finance-card-body">
+                  <div className="finance-row revenue">
+                    <span className="finance-dot revenue-dot"></span>
+                    <span>Revenue</span>
+                    <span className="finance-amount">₹{(summary.month?.revenue || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="finance-row expense">
+                    <span className="finance-dot expense-dot"></span>
+                    <span>Expenses</span>
+                    <span className="finance-amount">₹{(summary.month?.expenses || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="finance-divider"></div>
+                  <div className={`finance-row profit ${(summary.month?.profit || 0) >= 0 ? 'positive' : 'negative'}`}>
+                    <span className="finance-profit-icon">{(summary.month?.profit || 0) >= 0 ? '📈' : '📉'}</span>
+                    <span>Profit</span>
+                    <span className="finance-amount finance-profit">₹{(summary.month?.profit || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="finance-card-footer">
+                  <span>{summary.month?.bookings || 0} bookings</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Chart */}
+            {chartData.length > 0 && (
+              <div className="finance-chart-container">
+                <div className="finance-chart-header">
+                  <h4>📊 30-Day Revenue vs Expenses</h4>
+                  <div className="chart-legend">
+                    <span className="legend-item"><span className="legend-dot revenue-dot"></span> Revenue</span>
+                    <span className="legend-item"><span className="legend-dot expense-dot"></span> Expenses</span>
+                  </div>
+                </div>
+                <div className="finance-chart">
+                  <div className="chart-bars-wrapper">
+                    {chartData.map((day, idx) => (
+                      <div className="chart-day" key={idx} title={`${day.date}\nRevenue: ₹${day.revenue}\nExpenses: ₹${day.expenses}\nProfit: ₹${day.profit}`}>
+                        <div className="chart-bars">
+                          <div 
+                            className="chart-bar revenue-bar" 
+                            style={{ height: `${Math.max((day.revenue / maxChartValue) * 100, 2)}%` }}
+                          ></div>
+                          <div 
+                            className="chart-bar expense-bar" 
+                            style={{ height: `${Math.max((day.expenses / maxChartValue) * 100, 2)}%` }}
+                          ></div>
+                        </div>
+                        <span className="chart-date-label">
+                          {idx % 3 === 0 ? new Date(day.date).getDate() : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Category Breakdown */}
+            {summary.category_breakdown && summary.category_breakdown.length > 0 && (
+              <div className="finance-categories">
+                <h4 className="finance-categories-title">📂 Monthly Expense Breakdown</h4>
+                <div className="category-breakdown-grid">
+                  {summary.category_breakdown.map((cat, idx) => {
+                    const maxTotal = Math.max(...summary.category_breakdown.map(c => c.total), 1);
+                    return (
+                      <div className="category-breakdown-item" key={idx}>
+                        <div className="category-breakdown-header">
+                          <span className="category-icon">{CATEGORY_ICONS[cat.category] || '📎'}</span>
+                          <span className="category-name">{cat.category}</span>
+                          <span className="category-total">₹{cat.total.toLocaleString()}</span>
+                        </div>
+                        <div className="category-bar-track">
+                          <div 
+                            className="category-bar-fill" 
+                            style={{ 
+                              width: `${(cat.total / maxTotal) * 100}%`,
+                              backgroundColor: CATEGORY_COLORS[cat.category] || '#6b7280'
+                            }}
+                          ></div>
+                        </div>
+                        <span className="category-count">{cat.count} entries</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Expense Management */}
+        <div className="expense-management-section">
+          <div className="expense-management-header">
+            <h3 className="finance-section-title">📝 Manage Expenses</h3>
+            <button 
+              className="btn btn-add-expense" 
+              onClick={() => setShowExpenseForm(!showExpenseForm)}
+            >
+              {showExpenseForm ? <><FiX /> Cancel</> : <><FiPlusCircle /> Add Expense</>}
+            </button>
+          </div>
+
+          {showExpenseForm && (
+            <form className="expense-form" onSubmit={handleAddExpense}>
+              <div className="expense-form-grid">
+                <div className="expense-form-group">
+                  <label>Date</label>
+                  <input
+                    type="date"
+                    value={expenseForm.expense_date}
+                    onChange={(e) => setExpenseForm({...expenseForm, expense_date: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="expense-form-group">
+                  <label>Category</label>
+                  <select
+                    value={expenseForm.category}
+                    onChange={(e) => setExpenseForm({...expenseForm, category: e.target.value})}
+                  >
+                    {EXPENSE_CATEGORIES.map(cat => (
+                      <option key={cat} value={cat}>{CATEGORY_ICONS[cat]} {cat}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="expense-form-group">
+                  <label>Description</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Purchased FIFA 25, Staff lunch..."
+                    value={expenseForm.description}
+                    onChange={(e) => setExpenseForm({...expenseForm, description: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="expense-form-group">
+                  <label>Amount (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="500"
+                    value={expenseForm.amount}
+                    onChange={(e) => setExpenseForm({...expenseForm, amount: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+              <button type="submit" className="btn btn-save-expense">
+                <FiSave /> Save Expense
+              </button>
+            </form>
+          )}
+
+          <div className="expense-filter-bar">
+            <button 
+              className={`expense-filter-btn ${expenseFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setExpenseFilter('all')}
+            >
+              All
+            </button>
+            {EXPENSE_CATEGORIES.map(cat => (
+              <button 
+                key={cat}
+                className={`expense-filter-btn ${expenseFilter === cat ? 'active' : ''}`}
+                onClick={() => setExpenseFilter(cat)}
+              >
+                {CATEGORY_ICONS[cat]} {cat}
+              </button>
+            ))}
+          </div>
+
+          <div className="expense-list">
+            {filteredExpensesList.length === 0 ? (
+              <div className="expense-empty">
+                <span className="expense-empty-icon">📭</span>
+                <p>No expenses recorded{expenseFilter !== 'all' ? ` for "${expenseFilter}"` : ''}. Click "Add Expense" to start tracking.</p>
+              </div>
+            ) : (
+              filteredExpensesList.map(exp => (
+                <div className="expense-item" key={exp.id}>
+                  <div className="expense-item-icon" style={{ backgroundColor: (CATEGORY_COLORS[exp.category] || '#6b7280') + '20', color: CATEGORY_COLORS[exp.category] || '#6b7280' }}>
+                    {CATEGORY_ICONS[exp.category] || '📎'}
+                  </div>
+                  <div className="expense-item-details">
+                    <span className="expense-item-desc">{exp.description}</span>
+                    <span className="expense-item-meta">
+                      <span className="expense-category-pill" style={{ backgroundColor: (CATEGORY_COLORS[exp.category] || '#6b7280') + '15', color: CATEGORY_COLORS[exp.category] || '#6b7280' }}>
+                        {exp.category}
+                      </span>
+                      <span className="expense-item-date">{new Date(exp.expense_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    </span>
+                  </div>
+                  <div className="expense-item-amount">₹{exp.amount.toLocaleString()}</div>
+                  <button className="expense-delete-btn" onClick={() => handleDeleteExpense(exp.id)} title="Delete">
+                    <FiTrash2 />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return renderDashboard();
@@ -1972,6 +2610,7 @@ const AdminDashboard = () => {
       case 'rentals': return renderRentals();
       case 'college': return renderCollegeEvents();
       case 'analytics': return renderAnalytics();
+      case 'finance': return renderFinance();
       case 'party': return renderPartyBookings();
       case 'questpass': return renderQuestPasses();
       case 'offers': return renderOfferClaims();
@@ -2041,6 +2680,10 @@ const AdminDashboard = () => {
 
           <div className="nav-section">
             <span className="nav-section-title">Analysis</span>
+            <button className={`sidebar-nav-item ${activeTab === 'finance' ? 'active' : ''}`} onClick={() => setActiveTab('finance')}>
+              <FiDollarSign className="nav-icon" />
+              <span className="nav-label">Finance</span>
+            </button>
             <button className={`sidebar-nav-item ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
               <FiTrendingUp className="nav-icon" />
               <span className="nav-label">Analytics</span>
@@ -2074,6 +2717,7 @@ const AdminDashboard = () => {
               {activeTab === 'rentals' && '📦 Rentals'}
               {activeTab === 'college' && '🎓 College Events'}
               {activeTab === 'analytics' && '📈 Analytics'}
+              {activeTab === 'finance' && '💰 Finance & Expenses'}
               {activeTab === 'settings' && '⚙️ Settings'}
             </h1>
           </div>
@@ -2121,6 +2765,9 @@ const AdminDashboard = () => {
           </button>
           <button className={`mobile-nav-btn ${activeTab === 'college' ? 'active' : ''}`} onClick={() => setActiveTab('college')}>
             <FiAward /> <span>College</span>
+          </button>
+          <button className={`mobile-nav-btn ${activeTab === 'finance' ? 'active' : ''}`} onClick={() => setActiveTab('finance')}>
+            <FiDollarSign /> <span>Finance</span>
           </button>
           <button className={`mobile-nav-btn ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
             <FiTrendingUp /> <span>Analytics</span>
