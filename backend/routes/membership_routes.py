@@ -77,7 +77,7 @@ def get_plans():
                     ],
                     'accent': '#8e9aaf',
                     'gradient': 'linear-gradient(135deg, #c0c0c0, #8e9aaf, #6b7b8d)',
-                    'chip_icon': 'sword',
+                    'chip_icon': 'gamepad',
                     'font_color': '#ffffff'
                 },
                 {
@@ -155,7 +155,7 @@ def get_plans():
                     ],
                     'accent': '#8e9aaf',
                     'gradient': 'linear-gradient(135deg, #c0c0c0, #8e9aaf, #6b7b8d)',
-                    'chip_icon': 'key',
+                    'chip_icon': 'wheel',
                     'font_color': '#ffffff'
                 },
                 {

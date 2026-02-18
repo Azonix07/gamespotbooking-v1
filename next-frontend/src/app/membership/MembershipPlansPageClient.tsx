@@ -13,11 +13,18 @@ import { getGames, requestDedicatedGame } from "@/services/api";
 /* ─── SVG Vector Icons for Membership Cards ─── */
 const CardIcon = ({ name, color = 'currentColor', size = 56 }: { name: string; color?: string; size?: number }) => {
   const icons: Record<string, React.ReactNode> = {
-    sword: (
+    gamepad: (
       <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M44 8L20 32L14 26L8 32L16 40L12 44L16 48L20 44L28 52L34 46L28 40L52 16L56 8L44 8Z" stroke={color} strokeWidth="2.5" fill={`${color}15`} strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M36 20L44 28" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
-        <circle cx="48" cy="12" r="3" fill={color} opacity="0.4"/>
+        <path d="M8 28C8 22 12 18 18 18H46C52 18 56 22 56 28V36C56 42 52 46 46 46H18C12 46 8 42 8 36V28Z" stroke={color} strokeWidth="2.5" fill={`${color}10`} strokeLinejoin="round"/>
+        <circle cx="22" cy="32" r="6" stroke={color} strokeWidth="2" fill={`${color}08`}/>
+        <path d="M19 32H25" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M22 29V35" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <circle cx="40" cy="28" r="2.5" fill={color} opacity="0.6"/>
+        <circle cx="46" cy="32" r="2.5" fill={color} opacity="0.6"/>
+        <circle cx="40" cy="36" r="2.5" fill={color} opacity="0.4"/>
+        <circle cx="34" cy="32" r="2.5" fill={color} opacity="0.4"/>
+        <path d="M14 46L10 54" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+        <path d="M50 46L54 54" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
       </svg>
     ),
     shield: (
@@ -35,13 +42,19 @@ const CardIcon = ({ name, color = 'currentColor', size = 56 }: { name: string; c
         <circle cx="44" cy="36" r="2" fill={color} opacity="0.3"/>
       </svg>
     ),
-    key: (
+    wheel: (
       <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="22" cy="24" r="12" stroke={color} strokeWidth="2.5" fill={`${color}10`}/>
-        <circle cx="22" cy="24" r="5" stroke={color} strokeWidth="2" fill="none"/>
-        <path d="M32 30L52 50" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
-        <path d="M44 42L50 42" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
-        <path d="M48 46L54 46" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+        <circle cx="32" cy="32" r="24" stroke={color} strokeWidth="2.5" fill={`${color}08`}/>
+        <circle cx="32" cy="32" r="16" stroke={color} strokeWidth="2" fill={`${color}06`}/>
+        <circle cx="32" cy="32" r="5" stroke={color} strokeWidth="2.5" fill={`${color}15`}/>
+        <path d="M32 8V16" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M32 48V56" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M8 32H16" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M48 32H56" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M14 14L20 20" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M44 44L50 50" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M50 14L44 20" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M20 44L14 50" stroke={color} strokeWidth="2" strokeLinecap="round"/>
       </svg>
     ),
     bolt: (

@@ -11,11 +11,18 @@ import { getGames, requestDedicatedGame } from "../services/api";
 /* ─── SVG Vector Icons for Membership Cards ─── */
 const CardIcon = ({ name, color = 'currentColor', size = 56 }) => {
   const icons = {
-    sword: (
+    gamepad: (
       <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M44 8L20 32L14 26L8 32L16 40L12 44L16 48L20 44L28 52L34 46L28 40L52 16L56 8L44 8Z" stroke={color} strokeWidth="2.5" fill={`${color}15`} strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M36 20L44 28" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
-        <circle cx="48" cy="12" r="3" fill={color} opacity="0.4"/>
+        <path d="M8 28C8 22 12 18 18 18H46C52 18 56 22 56 28V36C56 42 52 46 46 46H18C12 46 8 42 8 36V28Z" stroke={color} strokeWidth="2.5" fill={`${color}10`} strokeLinejoin="round"/>
+        <circle cx="22" cy="32" r="6" stroke={color} strokeWidth="2" fill={`${color}08`}/>
+        <path d="M19 32H25" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M22 29V35" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <circle cx="40" cy="28" r="2.5" fill={color} opacity="0.6"/>
+        <circle cx="46" cy="32" r="2.5" fill={color} opacity="0.6"/>
+        <circle cx="40" cy="36" r="2.5" fill={color} opacity="0.4"/>
+        <circle cx="34" cy="32" r="2.5" fill={color} opacity="0.4"/>
+        <path d="M14 46L10 54" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+        <path d="M50 46L54 54" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
       </svg>
     ),
     shield: (
@@ -33,13 +40,19 @@ const CardIcon = ({ name, color = 'currentColor', size = 56 }) => {
         <circle cx="44" cy="36" r="2" fill={color} opacity="0.3"/>
       </svg>
     ),
-    key: (
+    wheel: (
       <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="22" cy="24" r="12" stroke={color} strokeWidth="2.5" fill={`${color}10`}/>
-        <circle cx="22" cy="24" r="5" stroke={color} strokeWidth="2" fill="none"/>
-        <path d="M32 30L52 50" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
-        <path d="M44 42L50 42" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
-        <path d="M48 46L54 46" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+        <circle cx="32" cy="32" r="26" stroke={color} strokeWidth="2.5" fill={`${color}08`}/>
+        <circle cx="32" cy="32" r="16" stroke={color} strokeWidth="2" fill={`${color}05`}/>
+        <circle cx="32" cy="32" r="5" stroke={color} strokeWidth="2.5" fill={`${color}15`}/>
+        <path d="M32 6V16" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M32 48V58" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M6 32H16" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M48 32H58" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M13.6 13.6L20.7 20.7" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M43.3 43.3L50.4 50.4" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M13.6 50.4L20.7 43.3" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+        <path d="M43.3 20.7L50.4 13.6" stroke={color} strokeWidth="2" strokeLinecap="round"/>
       </svg>
     ),
     bolt: (
