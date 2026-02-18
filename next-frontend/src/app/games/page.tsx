@@ -1,11 +1,7 @@
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+import GamesPageClient from './GamesPageClient';
 import GameSpotLoader from '@/components/GameSpotLoader';
-
-const GamesPageClient = dynamic(() => import('./GamesPageClient'), {
-  loading: () => <GameSpotLoader />,
-  ssr: false,
-});
 
 export const metadata: Metadata = {
   title: 'PS5 & Xbox Games Library - GTA, FIFA, God of War & 50+ Games | GameSpot Kodungallur',
@@ -37,5 +33,9 @@ export const metadata: Metadata = {
 };
 
 export default function GamesPage() {
-  return <GamesPageClient />;
+  return (
+    <Suspense fallback={<GameSpotLoader />}>
+      <GamesPageClient />
+    </Suspense>
+  );
 }
