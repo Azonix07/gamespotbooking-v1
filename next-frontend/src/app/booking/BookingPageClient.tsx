@@ -2637,6 +2637,14 @@ const BookingPage = () => {
                         </div>
                       )}
                       <p className="payment-note-v2"><FiCheckCircle style={{verticalAlign: 'middle', marginRight: 6}} /> No payment required now</p>
+                      
+                      <div className="punctuality-warning">
+                        <div className="punctuality-warning-icon">⏰</div>
+                        <div className="punctuality-warning-content">
+                          <strong>Please arrive on time!</strong>
+                          <p>If you do not arrive within 15 minutes of your booked slot and another customer is waiting for that time, priority will be given to the on-time customer. Late arrivals may result in a shortened session or reassignment of your slot.</p>
+                        </div>
+                      </div>
                     </div>
                     
                     <button 
