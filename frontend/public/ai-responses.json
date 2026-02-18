@@ -59,7 +59,7 @@
     
     "hours": {
       "keywords": ["open", "hours", "timing", "close", "schedule", "when open", "time", "operating hours"],
-      "response": "We're open from 10 AM to 10 PM, 7 days a week! That's 12 hours of non-stop gaming every day. You can book hourly slots starting from 10 AM. Our last slot starts at 9 PM.  We're always ready for gamers!"
+      "response": "We're open from 9 AM to 12 AM (Midnight), 7 days a week! That's 15 hours of non-stop gaming every day. You can book hourly slots starting from 9 AM. Our last booking slot is 11:30 PM. All bookings must end by midnight. 🎮 We're always ready for gamers!"
     },
     
     "location": {
@@ -204,12 +204,12 @@
     
     "weekend":  {
       "keywords": ["weekend", "saturday", "sunday", "weekends", "sat sun"],
-      "response": "Weekends are our busiest time! We're open from 10 AM to 10 PM on both Saturdays and Sundays.  We strongly recommend booking in advance for weekends as slots fill up quickly.  Weekends are perfect for long gaming sessions with friends!"
+      "response": "Weekends are our busiest time! We're open from 9 AM to 12 AM (Midnight) on both Saturdays and Sundays. 🎮 We strongly recommend booking in advance for weekends as slots fill up quickly. Weekends are perfect for long gaming sessions with friends!"
     },
     
     "weekday": {
       "keywords":  ["weekday", "monday", "tuesday", "wednesday", "thursday", "friday"],
-      "response":  "Weekdays are great for gaming! We're open from 10 AM to 10 PM Monday through Friday. Weekdays often have better availability and are perfect if you prefer a quieter gaming environment. Same pricing, less crowd!"
+      "response":  "Weekdays are great for gaming! We're open from 9 AM to 12 AM (Midnight) Monday through Friday. Weekdays often have better availability and are perfect if you prefer a quieter gaming environment. Same pricing, less crowd!"
     },
     
     "vr": {

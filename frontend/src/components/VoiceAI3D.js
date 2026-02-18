@@ -76,10 +76,10 @@ const VoiceAI3D = ({ isOpen, onClose }) => {
     timing: {
       keywords: ['time', 'timing', 'hours', 'open', 'close', 'when', 'schedule', 'working hours', 'operational', 'timings'],
       responses: [
-        'We\'re open Monday to Friday from 2 PM to 10 PM, and Saturday-Sunday from 10 AM to 10 PM!',
-        'Weekday hours: 2 PM to 10 PM. Weekend hours: 10 AM to 10 PM. We\'re open all 7 days!',
-        'Gaming hours are 2 PM to 10 PM on weekdays, and 10 AM to 10 PM on weekends. Come anytime!',
-        'Open daily! Weekdays 2 PM to 10 PM, Weekends 10 AM to 10 PM. Extended hours on holidays!'
+        'We\'re open daily from 9 AM to 12 AM (Midnight)! That\'s 15 hours of non-stop gaming every day!',
+        'Our hours: 9 AM to 12 AM Midnight, all 7 days a week! Come anytime!',
+        'Gaming hours are 9 AM to 12 AM (Midnight), every day including weekends. Come anytime!',
+        'Open daily from 9 AM to Midnight! Last booking must end by 12 AM.'
       ]
     },
     location: {

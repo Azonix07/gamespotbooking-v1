@@ -116,11 +116,12 @@ class FastAIBooking:
         # ====================
         self.business_hours = {
             'open': '09:00',
-            'close': '22:00',
+            'close': '00:00',
             'slots': ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
                       '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
                       '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
-                      '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30']
+                      '18:00', '18:30', '19:00', '19:30', '20:00', '20:30',
+                      '21:00', '21:30', '22:00', '22:30', '23:00', '23:30']
         }
         
         # ====================
@@ -322,7 +323,7 @@ class FastAIBooking:
                          '• 📱 Phone: +91-9645136006\n'
                          '• 📧 Email: admin@gamespot.in\n'
                          '• 📍 Location: Kodungallur, Thrissur, Kerala\n'
-                         '• 🕒 Hours: 9:00 AM - 10:00 PM (7 days a week)\n\n'
+                         '• 🕒 Hours: 9:00 AM - 12:00 AM Midnight (7 days a week)\n\n'
                          'You can also use the Contact page on our website or chat with me here!',
                 'keywords': ['contact', 'phone', 'call', 'email', 'reach', 'number', 'whatsapp']
             },
@@ -591,13 +592,15 @@ class FastAIBooking:
         # Timing inquiry
         if any(word in msg_lower for word in ['timing', 'hours', 'open', 'close', 'schedule']):
             reply = "🕒 **Business Hours:**\n\n"
-            reply += "Open: 9:00 AM - 10:00 PM\n"
+            reply += "Open: 9:00 AM - 12:00 AM (Midnight)\n"
             reply += "Open 7 days a week!\n\n"
             reply += "Time slots available every 30 minutes:\n"
             reply += "9 AM, 9:30 AM, 10 AM, 10:30 AM, 11 AM, 11:30 AM,\n"
             reply += "12 PM, 12:30 PM, 1 PM, 1:30 PM, 2 PM, 2:30 PM,\n"
             reply += "3 PM, 3:30 PM, 4 PM, 4:30 PM, 5 PM, 5:30 PM,\n"
-            reply += "6 PM, 6:30 PM, 7 PM, 7:30 PM, 8 PM, 8:30 PM, 9 PM, 9:30 PM\n\n"
+            reply += "6 PM, 6:30 PM, 7 PM, 7:30 PM, 8 PM, 8:30 PM,\n"
+            reply += "9 PM, 9:30 PM, 10 PM, 10:30 PM, 11 PM, 11:30 PM\n\n"
+            reply += "⚠️ Last booking must end by 12:00 AM.\n"
             reply += "Would you like to book a slot?"
             
             return {
@@ -658,7 +661,7 @@ class FastAIBooking:
             reply += "**Amenities:**\n"
             for feature in self.location['features'][:4]:
                 reply += f"• {feature}\n"
-            reply += "\n🕒 Open 9:00 AM - 10:00 PM, 7 days a week\n\nReady to book your session?"
+            reply += "\n🕒 Open 9:00 AM - 12:00 AM (Midnight), 7 days a week\n\nReady to book your session?"
             
             return {
                 'reply': reply,
@@ -725,25 +728,29 @@ class FastAIBooking:
             try:
                 time_obj = datetime.strptime(state['time'], '%H:%M').time()
                 open_time = datetime.strptime(self.business_hours['open'], '%H:%M').time()
-                close_time = datetime.strptime(self.business_hours['close'], '%H:%M').time()
+                # Closing at midnight — use minute-based math instead of time comparison
+                start_minutes = time_obj.hour * 60 + time_obj.minute
+                closing_minutes = 24 * 60  # midnight = 1440
+                open_minutes = 9 * 60      # 9 AM = 540
                 
-                if time_obj < open_time or time_obj >= close_time:
-                    return f"⚠️ Please select a time between 9 AM and 10 PM."
+                if start_minutes < open_minutes or start_minutes >= closing_minutes:
+                    return f"⚠️ Please select a time between 9:00 AM and 11:30 PM. We close at 12:00 AM (midnight)."
                 
-                # Check if booking will finish before closing time
+                # Check if booking will finish before closing time (midnight)
                 if state.get('duration'):
-                    booking_end = (datetime.combine(datetime.today(), time_obj) + timedelta(minutes=state['duration'])).time()
-                    if booking_end > close_time:
+                    end_minutes = start_minutes + state['duration']
+                    if end_minutes > closing_minutes:
                         # Calculate latest start time and format in 12-hour
-                        latest_start = (datetime.combine(datetime.today(), close_time) - timedelta(minutes=state['duration'])).time()
-                        hour = latest_start.hour
-                        if hour < 12:
-                            time_str = f"{hour}:{latest_start.strftime('%M')} AM"
-                        elif hour == 12:
-                            time_str = f"12:{latest_start.strftime('%M')} PM"
+                        latest_start_min = closing_minutes - state['duration']
+                        ls_hour = latest_start_min // 60
+                        ls_min = latest_start_min % 60
+                        if ls_hour < 12:
+                            time_str = f"{ls_hour}:{ls_min:02d} AM"
+                        elif ls_hour == 12:
+                            time_str = f"12:{ls_min:02d} PM"
                         else:
-                            time_str = f"{hour - 12}:{latest_start.strftime('%M')} PM"
-                        return f"⚠️ That slot would end after closing time. For {state['duration']} minutes, latest start time is {time_str}."
+                            time_str = f"{ls_hour - 12}:{ls_min:02d} PM"
+                        return f"⚠️ That slot would end after midnight. We close at 12:00 AM. For {state['duration']} minutes, the latest start time is {time_str}."
             except:
                 pass
         
@@ -1146,10 +1153,10 @@ class FastAIBooking:
                         date_text = "tomorrow"
                     else:
                         date_text = date_obj.strftime('%B %d')
-                    return f"Perfect! 🕒 What time works for you {date_text}?\n\n(We're open 9 AM - 10 PM)"
+                    return f"Perfect! 🕒 What time works for you {date_text}?\n\n(We're open 9 AM - 12 AM Midnight)"
                 except: 
                     pass
-            return f"Got it! What time works best for you?\n\n(Open 9 AM - 10 PM)"
+            return f"Got it! What time works best for you?\n\n(Open 9 AM - 12 AM Midnight)"
         
         # After time check - availability confirmed - THIS WAS THE BUG!
         if step == 'check_availability':

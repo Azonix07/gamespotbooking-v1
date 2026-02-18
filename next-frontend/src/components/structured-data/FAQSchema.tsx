@@ -37,7 +37,7 @@ export default function FAQSchema() {
         "name": "What are GameSpot Kodungallur's operating hours?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "GameSpot is open daily from 10:00 AM to 10:00 PM, Monday through Sunday. We recommend booking online at gamespotkdlr.com to ensure availability during peak hours."
+          "text": "GameSpot is open daily from 9:00 AM to 12:00 AM (Midnight), Monday through Sunday. Last booking must end by midnight. We recommend booking online at gamespotkdlr.com to ensure availability during peak hours."
         }
       },
       {

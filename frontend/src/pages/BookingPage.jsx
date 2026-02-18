@@ -872,6 +872,35 @@ const BookingPage = () => {
     navigate('/');
   };
 
+  // ── Closing-time helpers ──
+  const CLOSING_MINUTES = 24 * 60; // midnight = 1440
+  const MIN_BOOKING_DURATION = 30;
+
+  const timeToMin = (time) => {
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + m;
+  };
+
+  const getMaxDuration = (time) => CLOSING_MINUTES - timeToMin(time);
+
+  const isSlotPast = (time) => {
+    if (selectedDate !== getToday()) return false;
+    const now = new Date();
+    return timeToMin(time) <= now.getHours() * 60 + now.getMinutes();
+  };
+
+  const isSlotDisabled = (slot) => {
+    if (slot.status === 'full') return true;
+    if (isSlotPast(slot.time)) return true;
+    if (getMaxDuration(slot.time) < MIN_BOOKING_DURATION) return true;
+    return false;
+  };
+
+  const getAllowedDurations = (time) => {
+    const maxDur = getMaxDuration(time);
+    return [30, 60, 90, 120].filter(d => d <= maxDur);
+  };
+
   // Animation Variants
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -1283,17 +1312,25 @@ const BookingPage = () => {
                         initial="initial"
                         animate="animate"
                       >
-                        {slots.map((slot, index) => (
+                        {slots.map((slot, index) => {
+                          const disabled = isSlotDisabled(slot.time, slot.status);
+                          const past = isSlotPast(slot.time);
+                          const maxDur = getMaxDuration(slot.time);
+                          const closingSoon = !past && maxDur < 120;
+                          return (
                           <motion.button
                             key={slot.time}
                             variants={fadeInUp}
-                            className={`time-slot ${slot.status} ${selectedTime === slot.time ? 'selected' : ''}`}
+                            className={`time-slot ${slot.status} ${selectedTime === slot.time ? 'selected' : ''} ${past ? 'past' : ''} ${closingSoon ? 'closing-soon' : ''}`}
                             onClick={() => handleTimeSelect(slot.time, slot.status)}
-                            disabled={slot.status === 'full'}
-                            whileHover={slot.status !== 'full' ? { scale: 1.04 } : {}}
-                            whileTap={slot.status !== 'full' ? { scale: 0.97 } : {}}
+                            disabled={disabled}
+                            whileHover={!disabled ? { scale: 1.04 } : {}}
+                            whileTap={!disabled ? { scale: 0.97 } : {}}
+                            title={past ? 'This time has passed' : closingSoon ? `Max ${maxDur} min before midnight` : ''}
                           >
                             <span className="slot-time">{formatTime12Hour(slot.time)}</span>
+                            {past && <span className="slot-past-label">Past</span>}
+                            {closingSoon && !past && <span className="slot-closing-label">Max {maxDur}min</span>}
                             {slot.status === 'partial' && slot.total_ps5_players > 0 && (
                               <span className="slot-capacity">
                                 <FiUsers className="capacity-icon" />
@@ -1308,8 +1345,13 @@ const BookingPage = () => {
                               />
                             )}
                           </motion.button>
-                        ))}
+                          );
+                        })}
                       </motion.div>
+                      <div className="closing-time-notice">
+                        <span className="closing-notice-icon">⏰</span>
+                        We close at 12:00 AM (Midnight). Last booking must end by midnight.
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1900,7 +1942,7 @@ const BookingPage = () => {
                                                 Session Duration
                                               </label>
                                               <div className="duration-buttons">
-                                                {[30, 60, 90, 120].map(dur => (
+                                                {getAllowedDurations(selectedTime).map(dur => (
                                                   <button
                                                     key={dur}
                                                     className={`duration-btn ${booking.duration === dur || (!booking.duration && dur === 60) ? 'active' : ''}`}
@@ -2071,7 +2113,7 @@ const BookingPage = () => {
                                             Session Duration
                                           </label>
                                           <div className="duration-buttons">
-                                            {[30, 60, 90, 120].map(dur => (
+                                            {getAllowedDurations(selectedTime).map(dur => (
                                               <button
                                                 key={dur}
                                                 className={`duration-btn ${booking.duration === dur || (!booking.duration && dur === 60) ? 'active' : ''}`}
@@ -2160,16 +2202,25 @@ const BookingPage = () => {
                                 Session Duration
                               </label>
                               <div className="duration-buttons">
-                                {[30, 60, 90, 120].map(dur => (
-                                  <button
-                                    key={dur}
-                                    className={`duration-btn ${drivingSim.duration === dur ? 'active' : ''}`}
-                                    onClick={() => handleDrivingDurationChange(dur)}
-                                  >
-                                    <span className="dur-value">{dur < 60 ? dur : dur / 60}</span>
-                                    <span className="dur-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
-                                  </button>
-                                ))}
+                                {(() => {
+                                  let effectiveStart = selectedTime;
+                                  if (drivingSim.afterPS5 && ps5Bookings.length > 0) {
+                                    const maxPS5 = Math.max(...ps5Bookings.map(b => b.duration || 60));
+                                    const [h, m] = selectedTime.split(':').map(Number);
+                                    const total = h * 60 + m + maxPS5;
+                                    effectiveStart = `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+                                  }
+                                  return getAllowedDurations(effectiveStart).map(dur => (
+                                    <button
+                                      key={dur}
+                                      className={`duration-btn ${drivingSim.duration === dur ? 'active' : ''}`}
+                                      onClick={() => handleDrivingDurationChange(dur)}
+                                    >
+                                      <span className="dur-value">{dur < 60 ? dur : dur / 60}</span>
+                                      <span className="dur-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
+                                    </button>
+                                  ));
+                                })()}
                               </div>
                             </div>
 

@@ -39,7 +39,7 @@ const faqs = [
       },
       {
         q: 'What are GameSpot\'s operating hours?',
-        a: 'We are open daily from 10:00 AM to 10:00 PM, Monday through Sunday. We recommend booking online to ensure availability during peak hours (evenings and weekends).'
+        a: 'We are open daily from 9:00 AM to 12:00 AM (Midnight), Monday through Sunday. Last booking must end by midnight. We recommend booking online to ensure availability during peak hours (evenings and weekends).'
       },
       {
         q: 'Is parking available at GameSpot?',

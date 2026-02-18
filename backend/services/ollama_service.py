@@ -551,9 +551,9 @@ Think of yourself as a helpful friend who works at GameSpot, not as an AI chatbo
                 ]
             else:  # Evening
                 suggestions = [
-                    "8 PM",
                     "9 PM",
                     "10 PM",
+                    "11 PM",
                     "Tomorrow"
                 ]
         

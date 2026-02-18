@@ -53,7 +53,7 @@ class AIBookingAssistant:
             'max_total_players': 10,
             'driving_sim_count': 1,
             'slot_durations': [30, 60, 90, 120],  # minutes
-            'operating_hours': {'start': '09:00', 'end': '22:00'}
+            'operating_hours': {'start': '09:00', 'end': '00:00'}
         }
         
         self.pricing_rules = {
@@ -599,11 +599,11 @@ class AIBookingAssistant:
             
             return {
                 'reply': f"⏰ What time works best for you?\n\n"
-                        "**Our Hours:** 9 AM - 10 PM\n\n"
+                        "**Our Hours:** 9 AM - 12 AM (Midnight)\n\n"
                         "**Popular Times:**\n"
                         "• 🌅 **Morning** (9 AM - 12 PM) - Usually quiet\n"
                         "• 🌞 **Afternoon** (1 PM - 5 PM) - Best availability\n"
-                        "• 🌆 **Evening** (6 PM - 10 PM) - Most popular" + time_suggestion,
+                        "• 🌆 **Evening** (6 PM - 12 AM) - Most popular" + time_suggestion,
                 'action': 'ask_time',
                 'context': context,
                 'next_step': 'awaiting_time',
@@ -911,7 +911,7 @@ class AIBookingAssistant:
                     "   • ✅ Great availability\n"
                     "   • ⚠️ Moderate crowd\n"
                     "   • ✅ Good balance\n\n"
-                    "🌆 **Evening (6 PM - 10 PM)**\n"
+                    "🌆 **Evening (6 PM - 12 AM)**\n"
                     "   • ⚠️ Most popular (books fast!)\n"
                     "   • ⚠️ Can be crowded\n"
                     "   • ✅ Great social atmosphere\n\n"

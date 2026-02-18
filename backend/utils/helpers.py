@@ -7,14 +7,17 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any
 
 def generate_time_slots() -> List[str]:
-    """Generate time slots for a day (9:00 AM to 10:00 PM, 30-min intervals)"""
+    """Generate time slots for a day (9:00 AM to 12:00 AM midnight, 30-min intervals).
+    Last selectable slot is 23:30.  Closing time is 00:00 (midnight).
+    """
     slots = []
-    start = 9 * 60  # 9:00 AM in minutes
-    end = 22 * 60   # 10:00 PM in minutes
+    start = 9 * 60    # 9:00 AM in minutes
+    end = 24 * 60     # 12:00 AM midnight in minutes (= 1440)
     
     for time_minutes in range(start, end, 30):
         hours = time_minutes // 60
         minutes = time_minutes % 60
+        # 24:00 is represented as 00:00 but we stop before it (last slot = 23:30)
         slots.append(f"{hours:02d}:{minutes:02d}")
     
     return slots
@@ -97,6 +100,26 @@ def validate_booking_data(data: Dict[str, Any]) -> List[str]:
         duration_val = 0
     if duration_val not in [30, 60, 90, 120]:
         errors.append('Invalid duration. Must be 30, 60, 90, or 120 minutes')
+    
+    # ── Validate that booking ends by midnight (00:00) ──
+    if data.get('start_time') and duration_val > 0:
+        try:
+            st = data['start_time']
+            if len(st) == 5:
+                st = st + ':00'
+            start_obj = datetime.strptime(st, '%H:%M:%S')
+            start_minutes = start_obj.hour * 60 + start_obj.minute
+            end_minutes = start_minutes + duration_val
+            closing_minutes = 24 * 60  # midnight = 1440
+            if end_minutes > closing_minutes:
+                errors.append('Booking must end by 12:00 AM (midnight). Please choose an earlier time or shorter duration.')
+            # Ensure start time is within business hours (9:00 AM – 11:30 PM)
+            if start_minutes < 9 * 60:
+                errors.append('Bookings start from 9:00 AM.')
+            if start_minutes >= closing_minutes:
+                errors.append('Cannot start a booking at midnight. We close at 12:00 AM.')
+        except Exception:
+            pass
     
     # At least one device must be booked
     has_ps5 = data.get('ps5_bookings') and isinstance(data.get('ps5_bookings'), list) and len(data.get('ps5_bookings', [])) > 0

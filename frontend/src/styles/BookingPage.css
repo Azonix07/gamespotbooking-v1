@@ -1105,6 +1105,56 @@
   pointer-events: none;
 }
 
+/* Past time slots (today only) */
+.time-slot.past {
+  opacity: 0.35;
+  pointer-events: none;
+  background: var(--booking-gray-200) !important;
+  border-color: var(--booking-gray-300) !important;
+}
+.time-slot.past .slot-time {
+  text-decoration: line-through;
+  color: var(--booking-gray-500);
+}
+.slot-past-label {
+  color: var(--booking-gray-500) !important;
+  font-size: 0.65rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Closing-soon slots (late night, limited duration) */
+.time-slot.closing-soon:not(.past) {
+  opacity: 0.5;
+  pointer-events: none;
+  border-color: var(--booking-gray-400) !important;
+}
+.slot-closing-label {
+  color: var(--booking-warning) !important;
+  font-size: 0.65rem !important;
+  font-weight: 600;
+}
+
+/* Closing time notice bar */
+.closing-time-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-top: 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: var(--booking-gray-700);
+  line-height: 1.4;
+}
+.closing-notice-icon {
+  flex-shrink: 0;
+  color: var(--booking-warning);
+  font-size: 1rem;
+}
+
 /* ============================================
    STEP 2: DEVICE SELECTION
    ============================================ */

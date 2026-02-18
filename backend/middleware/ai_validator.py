@@ -21,7 +21,7 @@ class AIValidator:
     """
     
     # Business rules
-    OPERATING_HOURS = {'start': 9, 'end': 22}  # 9 AM to 10 PM
+    OPERATING_HOURS = {'start': 9, 'end': 24}  # 9 AM to 12 AM (Midnight)
     ALLOWED_DURATIONS = [30, 60, 90, 120]  # minutes
     VALID_DEVICES = ['ps5', 'driving_sim']
     MAX_BOOKING_DAYS_AHEAD = 30
@@ -129,10 +129,15 @@ class AIValidator:
             
             # Check operating hours
             if hour < AIValidator.OPERATING_HOURS['start']:
-                return False, f"⏰ We open at {AIValidator.OPERATING_HOURS['start']}:00 AM. Please choose a time between 9 AM and 10 PM"
+                return False, f"⏰ We open at {AIValidator.OPERATING_HOURS['start']}:00 AM. Please choose a time between 9 AM and 12 AM (Midnight)"
             
-            if hour >= AIValidator.OPERATING_HOURS['end']:
-                return False, f"⏰ Last booking slot is before {AIValidator.OPERATING_HOURS['end']}:00 (10 PM). Please choose an earlier time"
+            # Midnight (00:00) or later is not a valid start time
+            time_in_minutes = hour * 60 + minute
+            if time_in_minutes >= 24 * 60 or (hour == 0 and minute == 0):
+                return False, "⏰ We close at 12:00 AM (Midnight). Last booking slot is 11:30 PM. Please choose an earlier time"
+            
+            if hour >= 23 and minute > 30:
+                return False, "⏰ Last booking slot is 11:30 PM. Bookings must be at least 30 minutes before midnight"
             
             # If date is today, check if time has passed
             if date_str:
