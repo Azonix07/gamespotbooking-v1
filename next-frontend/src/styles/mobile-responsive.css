@@ -657,7 +657,7 @@ html, body {
   /* FIX: Navbar clearance and price footer clearance */
   .booking-page .booking-container,
   .booking-container {
-    padding: 110px 16px 200px !important; /* Top: navbar clearance, Bottom: price-footer clearance */
+    padding: 20px 16px 200px !important; /* Top: navbar clearance, Bottom: price-footer clearance */
   }
   
   .booking-hero {
@@ -1547,7 +1547,7 @@ html, body {
   /* FIX: Navbar clearance and price footer clearance for small mobile */
   .booking-page .booking-container,
   .booking-container {
-    padding: 105px 12px 210px !important; /* Top: navbar clearance, Bottom: fixed price-footer clearance */
+    padding: 20px 12px 210px !important; /* Top: navbar clearance, Bottom: fixed price-footer clearance */
   }
   
   .booking-hero {
@@ -3205,3 +3205,72 @@ html, body {
     display: none !important;
 }
 
+/* =========================================================
+   BOOKING TYPE TOGGLE - Hide Icons on Mobile
+   ========================================================= */
+@media (max-width: 767px) {
+  .booking-type-btn .type-btn-icon {
+    display: none !important;
+  }
+
+  .booking-type-btn {
+    gap: 0 !important;
+    padding: 0.75rem 0.875rem !important;
+  }
+
+  .type-btn-title {
+    font-size: 0.82rem !important;
+  }
+
+  .type-btn-desc {
+    font-size: 0.68rem !important;
+  }
+}
+
+@media (max-width: 479px) {
+  .booking-type-btn {
+    padding: 0.65rem 0.75rem !important;
+  }
+
+  .type-btn-title {
+    font-size: 0.78rem !important;
+  }
+
+  .type-btn-desc {
+    font-size: 0.65rem !important;
+  }
+}
+
+/* =========================================================
+   GAME INFO BUTTON - Fix Oversized on Mobile
+   ========================================================= */
+@media (max-width: 767px) {
+  .game-info-btn {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 0.55rem !important;
+    top: 4px !important;
+    right: 4px !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12) !important;
+  }
+}
+
+@media (max-width: 479px) {
+  .game-info-btn {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 0.5rem !important;
+    top: 3px !important;
+    right: 3px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .game-info-btn {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 0.45rem !important;
+    top: 3px !important;
+    right: 3px !important;
+  }
+}
