@@ -133,7 +133,7 @@ const BookingPage = () => {
   const [selectedGames, setSelectedGames] = useState([]); // Games user wants to play (multiple selection)
   const [gameSearchQuery, setGameSearchQuery] = useState('');
   const [activeGenreFilter, setActiveGenreFilter] = useState('All');
-  const [selectionMode, setSelectionMode] = useState('game'); // 'game' or 'device' - start with game-first flow
+  const [selectionMode, setSelectionMode] = useState('device'); // 'game' or 'device' - start with console-first flow
   const [showGamePicker, setShowGamePicker] = useState(false); // For mobile game picker modal
   const [gameInfoModal, setGameInfoModal] = useState(null); // Game detail modal
   const [consoleConflictWarning, setConsoleConflictWarning] = useState(null); // Warning when games can't share a console
@@ -1675,18 +1675,18 @@ const BookingPage = () => {
                   {/* Mode Toggle Tabs */}
                   <div className="selection-mode-tabs">
                     <button 
-                      className={`mode-tab ${selectionMode === 'game' ? 'active' : ''}`}
-                      onClick={() => setSelectionMode('game')}
-                    >
-                      <FiGrid className="mode-tab-icon" />
-                      <span>Browse by Game</span>
-                    </button>
-                    <button 
                       className={`mode-tab ${selectionMode === 'device' ? 'active' : ''}`}
                       onClick={() => setSelectionMode('device')}
                     >
                       <FiMonitor className="mode-tab-icon" />
-                      <span>Choose by Console</span>
+                      <span>Book by Console</span>
+                    </button>
+                    <button 
+                      className={`mode-tab ${selectionMode === 'game' ? 'active' : ''}`}
+                      onClick={() => setSelectionMode('game')}
+                    >
+                      <FiGrid className="mode-tab-icon" />
+                      <span>Book by Game</span>
                     </button>
                   </div>
 
