@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import '../styles/MembershipPlansPage.css';
-import { apiFetch } from "../services/apiClient";
-import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../services/apiClient";            const tierLabel = plan.tier === 'basic' ? 'BASIC' : plan.tier === 'standard' ? 'STANDARD' : 'PREMIUM';
+            const tierName = plan.tier === 'basic' ? 'Silver' : plan.tier === 'standard' ? 'Gold' : 'Platinum';import { useAuth } from "../context/AuthContext";
 import { getGames, requestDedicatedGame } from "../services/api";
 
 /* ─── SVG Vector Icons for Membership Cards ─── */
@@ -372,8 +372,8 @@ const MembershipPlansPage = () => {
                         plan.tier === 'standard' ? { color: '#1a1a2e', background: 'rgba(184, 134, 11, 0.15)', border: '1px solid rgba(184, 134, 11, 0.3)' } :
                         { color: '#ffffff', background: 'rgba(255, 255, 255, 0.2)', border: '1px solid rgba(255, 255, 255, 0.3)' }
                       }>{tierLabel}</div>
-                      <h3 className="card-plan-name" style={{ color: plan.font_color || '#ffffff' }}>{plan.name}</h3>
-                      <p className="card-plan-tagline" style={{ color: plan.font_color ? `${plan.font_color}aa` : 'rgba(255,255,255,0.75)' }}>{plan.tagline}</p>
+                      <h3 className="card-plan-name" style={{ color: plan.font_color || '#ffffff' }}>{tierName}</h3>
+                      <p className="card-plan-tagline" style={{ color: plan.font_color ? `${plan.font_color}aa` : 'rgba(255,255,255,0.75)' }}>{plan.name}</p>
                     </div>
 
                     {/* Card Price */}
