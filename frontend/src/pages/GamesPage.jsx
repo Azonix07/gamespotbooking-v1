@@ -351,6 +351,35 @@ const GamesPage = () => {
           <>
             {/* Search & Filter Bar */}
             <div className="toolbar">
+              <div className="console-filter-section">
+                <span className="console-filter-label">🎮 Choose by Console</span>
+                <div className="filter-chips">
+                  <button 
+                    className={`filter-chip ${activeFilter === 'all' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter('all')}
+                  >
+                    All Consoles
+                  </button>
+                  <button 
+                    className={`filter-chip ${activeFilter === '1' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter('1')}
+                  >
+                    🕹️ PS5-1
+                  </button>
+                  <button 
+                    className={`filter-chip ${activeFilter === '2' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter('2')}
+                  >
+                    🕹️ PS5-2
+                  </button>
+                  <button 
+                    className={`filter-chip ${activeFilter === '3' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter('3')}
+                  >
+                    🕹️ PS5-3
+                  </button>
+                </div>
+              </div>
               <div className="search-bar">
                 <FiSearch className="search-bar-icon" />
                 <input
@@ -365,32 +394,6 @@ const GamesPage = () => {
                     <FiX />
                   </button>
                 )}
-              </div>
-              <div className="filter-chips">
-                <button 
-                  className={`filter-chip ${activeFilter === 'all' ? 'active' : ''}`}
-                  onClick={() => setActiveFilter('all')}
-                >
-                  All
-                </button>
-                <button 
-                  className={`filter-chip ${activeFilter === '1' ? 'active' : ''}`}
-                  onClick={() => setActiveFilter('1')}
-                >
-                  PS5-1
-                </button>
-                <button 
-                  className={`filter-chip ${activeFilter === '2' ? 'active' : ''}`}
-                  onClick={() => setActiveFilter('2')}
-                >
-                  PS5-2
-                </button>
-                <button 
-                  className={`filter-chip ${activeFilter === '3' ? 'active' : ''}`}
-                  onClick={() => setActiveFilter('3')}
-                >
-                  PS5-3
-                </button>
               </div>
             </div>
 
