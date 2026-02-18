@@ -60,6 +60,7 @@ def get_plans():
                 {
                     'type': 'solo_quest',
                     'name': 'Solo Quest',
+                    'card_name': 'Essential',
                     'tier': 'basic',
                     'price': 500,
                     'duration_days': 30,
@@ -82,6 +83,7 @@ def get_plans():
                 {
                     'type': 'legend_mode',
                     'name': 'Legend Mode',
+                    'card_name': 'Extra',
                     'tier': 'standard',
                     'price': 800,
                     'duration_days': 30,
@@ -106,6 +108,7 @@ def get_plans():
                 {
                     'type': 'god_mode',
                     'name': 'God Mode',
+                    'card_name': 'Deluxe',
                     'tier': 'premium',
                     'price': 1400,
                     'duration_days': 30,
@@ -136,6 +139,7 @@ def get_plans():
                 {
                     'type': 'ignition',
                     'name': 'Ignition',
+                    'card_name': 'Silver',
                     'tier': 'basic',
                     'price': 600,
                     'duration_days': 30,
@@ -157,6 +161,7 @@ def get_plans():
                 {
                     'type': 'turbo',
                     'name': 'Turbo',
+                    'card_name': 'Gold',
                     'tier': 'standard',
                     'price': 1000,
                     'duration_days': 30,
@@ -180,6 +185,7 @@ def get_plans():
                 {
                     'type': 'apex',
                     'name': 'Apex',
+                    'card_name': 'Platinum',
                     'tier': 'premium',
                     'price': 1600,
                     'duration_days': 30,
