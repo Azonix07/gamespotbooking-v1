@@ -172,10 +172,22 @@ const GamesPage = () => {
       'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
       'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
       'linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)',
+      'linear-gradient(135deg, #ff6b35 0%, #ff9966 100%)',
+      'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
     ];
-    const index = gameName.charCodeAt(0) % colors.length;
+    const index = (gameName?.charCodeAt(0) || 0) % colors.length;
     return colors[index];
   };
+
+  const getGameInitial = (gameName) => {
+    if (!gameName) return '?';
+    // Get first letter of first meaningful word
+    const words = gameName.trim().split(/\s+/);
+    return words[0]?.charAt(0)?.toUpperCase() || '?';
+  };
+
+  // Track failed image URLs
+  const [failedImages, setFailedImages] = useState(new Set());
 
   // Filter games by search query
   const filteredGames = games.filter(game => {
@@ -423,6 +435,7 @@ const GamesPage = () => {
               <div className="games-grid">
                 {filteredGames.map((game, index) => {
                   const coverUrl = getGameCover(game);
+                  const hasValidCover = coverUrl && !failedImages.has(coverUrl);
                   return (
                     <div 
                       key={game.id} 
@@ -431,28 +444,27 @@ const GamesPage = () => {
                       onClick={() => setSelectedGame(selectedGame?.id === game.id ? null : game)}
                     >
                       <div className="game-card-image">
-                        {coverUrl ? (
+                        {hasValidCover && (
                           <img 
                             src={coverUrl} 
                             alt={game.name}
                             className="game-cover-img"
                             loading="lazy"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              (target.nextSibling as HTMLElement).style.display = 'flex';
+                            onError={() => {
+                              setFailedImages(prev => new Set([...prev, coverUrl]));
                             }}
                           />
-                        ) : null}
-                        <div 
-                          className="game-cover-fallback"
-                          style={{ 
-                            background: getPlaceholderImage(game.name),
-                            display: coverUrl ? 'none' : 'flex'
-                          }}
-                        >
-                          <span className="fallback-emoji">🎮</span>
-                        </div>
+                        )}
+                        {!hasValidCover && (
+                          <div 
+                            className="game-cover-fallback"
+                            style={{ background: getPlaceholderImage(game.name) }}
+                          >
+                            <div className="fallback-initial">{getGameInitial(game.name)}</div>
+                            <span className="fallback-name">{game.name}</span>
+                            <span className="fallback-emoji">🎮</span>
+                          </div>
+                        )}
                         
                         {/* Gradient overlay - always visible for text readability */}
                         <div className="game-card-gradient"></div>
@@ -462,25 +474,29 @@ const GamesPage = () => {
                           <div className="game-badges-row">
                             {getPS5Badge(game.ps5_numbers)}
                           </div>
-                          <div className="game-rating-badge">
-                            <FiStar className="rating-star" />
-                            <span>{game.rating}</span>
-                          </div>
+                          {game.rating && (
+                            <div className="game-rating-badge">
+                              <FiStar className="rating-star" />
+                              <span>{game.rating}</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Bottom info - always visible */}
                         <div className="game-card-info">
                           <h3 className="game-card-title">{game.name}</h3>
                           <div className="game-card-meta">
-                            <span className="game-genre-tag">{game.genre}</span>
-                            <span className="game-year-tag">{game.release_year}</span>
+                            {game.genre && <span className="game-genre-tag">{game.genre}</span>}
+                            {game.release_year && <span className="game-year-tag">{game.release_year}</span>}
                           </div>
-                          <div className="game-card-details">
-                            <div className="game-players-info">
-                              <FiUsers />
-                              <span>{game.max_players} {game.max_players === 1 ? 'Player' : 'Players'}</span>
+                          {game.max_players && (
+                            <div className="game-card-details">
+                              <div className="game-players-info">
+                                <FiUsers />
+                                <span>{game.max_players} {game.max_players === 1 ? 'Player' : 'Players'}</span>
+                              </div>
                             </div>
-                          </div>
+                          )}
                           {game.description && (
                             <p className="game-card-desc">{game.description}</p>
                           )}
