@@ -74,8 +74,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
-  padding: 20px;
+  z-index: 10000;
+  padding: 24px;
 }
 
 /* ============================================
@@ -85,8 +85,8 @@
   position: relative;
   width: 100%;
   max-width: 480px;
-  height: 85vh;
-  max-height: 750px;
+  height: min(85vh, 750px);
+  max-height: calc(100vh - 48px);
   background: var(--ai-glass);
   border-radius: var(--ai-radius-xl);
   border: 1px solid var(--ai-border-light);
@@ -831,55 +831,96 @@
 @media (max-width: 640px) {
   .ai-chat-overlay {
     padding: 0;
+    align-items: stretch;
   }
   
   .ai-chat-container {
     max-width: 100%;
-    height: 100vh;
-    max-height: 100vh;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    max-height: 100%;
+    max-height: 100dvh;
     border-radius: 0;
+    border: none;
   }
   
   .ai-chat-header {
-    padding: 14px 16px;
+    padding: 12px 16px;
+    padding-top: max(12px, env(safe-area-inset-top));
   }
   
   .ai-avatar {
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .avatar-icon {
+    font-size: 18px;
   }
   
   .header-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .header-status {
+    font-size: 0.72rem;
   }
   
   .header-btn {
     padding: 6px 10px;
+    font-size: 0.8rem;
   }
   
   .language-btn .btn-label {
     display: none;
   }
+
+  .close-btn {
+    padding: 8px;
+  }
   
   .ai-chat-messages {
-    padding: 16px;
+    padding: 14px;
+    gap: 12px;
   }
   
   .message-bubble {
-    max-width: 85%;
-    padding: 12px 14px;
+    max-width: 88%;
+    padding: 10px 13px;
+  }
+
+  .message-content {
+    font-size: 0.92rem;
   }
   
   .welcome-card {
-    padding: 16px;
+    padding: 14px;
+  }
+
+  .welcome-emoji {
+    font-size: 28px;
+  }
+
+  .welcome-header h4 {
+    font-size: 0.95rem;
+  }
+
+  .welcome-header p {
+    font-size: 0.8rem;
   }
   
   .welcome-features {
     flex-direction: column;
+    gap: 8px;
+  }
+
+  .feature-item {
+    font-size: 0.82rem;
   }
   
   .smart-suggestions {
-    padding: 12px 16px;
+    padding: 10px 14px;
   }
   
   .suggestions-scroll {
@@ -892,33 +933,117 @@
   .suggestions-scroll::-webkit-scrollbar {
     display: none;
   }
+
+  .suggestion-pill {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .quick-action-btn {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+  }
   
   .ai-chat-input-area {
-    padding: 12px 16px;
+    padding: 10px 14px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
   }
   
   .input-action-btn {
     width: 40px;
     height: 40px;
+    font-size: 16px;
+  }
+
+  .chat-input-field {
+    font-size: 16px;
+  }
+
+  .input-footer-hint {
+    padding-top: 6px;
+  }
+
+  .hint-text {
+    font-size: 0.68rem;
   }
 }
 
 @media (max-width: 380px) {
+  .ai-chat-header {
+    padding: 10px 12px;
+    padding-top: max(10px, env(safe-area-inset-top));
+    gap: 8px;
+  }
+
+  .header-left {
+    gap: 10px;
+  }
+
+  .ai-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .avatar-icon {
+    font-size: 16px;
+  }
+
+  .header-title {
+    font-size: 0.88rem;
+  }
+
+  .ai-badge {
+    padding: 2px 6px;
+    font-size: 0.58rem;
+  }
+
+  .header-btn {
+    padding: 5px 8px;
+  }
+
+  .close-btn svg {
+    font-size: 14px;
+  }
+  
+  .ai-chat-messages {
+    padding: 10px;
+  }
+
   .welcome-emoji {
-    font-size: 28px;
+    font-size: 24px;
   }
   
   .welcome-header h4 {
-    font-size: 1rem;
-  }
-  
-  .message-content {
     font-size: 0.9rem;
   }
   
+  .message-content {
+    font-size: 0.88rem;
+  }
+  
   .suggestion-pill {
-    padding: 8px 12px;
-    font-size: 0.8rem;
+    padding: 7px 11px;
+    font-size: 0.78rem;
+  }
+
+  .quick-action-btn {
+    padding: 7px 10px;
+    font-size: 0.78rem;
+  }
+
+  .ai-chat-input-area {
+    padding: 8px 10px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .input-wrapper {
+    padding: 4px;
+  }
+
+  .input-action-btn {
+    width: 36px;
+    height: 36px;
   }
 }
 
