@@ -176,12 +176,22 @@ class FastAIBooking:
         # LOCATION & CONTACT
         # ====================
         self.location = {
-            'name': 'GameSpot Gaming Arena',
-            'address': 'Kodungallur, Thrissur, Kerala',
-            'phone': '+91-9645136006',
-            'email': 'admin@gamespot.in',
-            'landmark': 'Kodungallur, Thrissur District',
-            'coordinates': {'lat': 10.2167, 'lng': 76.2000},
+            'name': 'GameSpot Gaming Lounge',
+            'address': 'Shipu Complex, Near JJ Castle, Polakulath Bar Road, Star Nagar',
+            'city': 'Kodungallur',
+            'district': 'Thrissur',
+            'state': 'Kerala',
+            'pincode': '680664',
+            'phone': '+91 70121 25919',
+            'email': 'gamespotkdlr@gmail.com',
+            'landmark': 'Near JJ Castle, Polakulath Bar Road, Star Nagar, Kodungallur',
+            'whatsapp': '917012125919',
+            'instagram': '@gamespot_kdlr',
+            'instagram_url': 'https://instagram.com/gamespot_kdlr',
+            'facebook': 'Gamespot Kodungallur',
+            'facebook_url': 'https://www.facebook.com/share/1FqNshdT8B/',
+            'google_maps': 'https://maps.app.goo.gl/SZR9uXT92GYof6LRA',
+            'coordinates': {'lat': 10.2255, 'lng': 76.1963},
             'features': [
                 'Fully Air Conditioned gaming zones',
                 'Premium ergonomic gaming chairs',
@@ -192,6 +202,25 @@ class FastAIBooking:
                 'Secure parking (2-wheeler & 4-wheeler)',
                 'CCTV security'
             ]
+        }
+        
+        # ====================
+        # WEBSITE PAGES - For navigation/links
+        # ====================
+        self.website_pages = {
+            'booking': {'path': '/booking', 'label': '🎮 Book a Session', 'description': 'Book PS5 or Driving Simulator gaming sessions'},
+            'games': {'path': '/games', 'label': '🎲 Games Library', 'description': 'Browse all available PS5 games, recommend new games'},
+            'membership': {'path': '/membership', 'label': '⭐ Membership Plans', 'description': 'Join membership for 10-20% discounts on bookings'},
+            'rental': {'path': '/rental', 'label': '📦 Rental Service', 'description': 'Rent PS5 or VR headset for home use'},
+            'college-setup': {'path': '/college-setup', 'label': '🎓 College Setup', 'description': 'Book gaming setup for college fests and events'},
+            'contact': {'path': '/contact', 'label': '📞 Contact Us', 'description': 'Phone, email, WhatsApp, location and directions'},
+            'feedback': {'path': '/feedback', 'label': '💬 Feedback', 'description': 'Share your gaming experience and suggestions'},
+            'get-offers': {'path': '/get-offers', 'label': '🎁 Offers & Deals', 'description': 'Current promotions, spin wheel, promo codes'},
+            'invite': {'path': '/invite', 'label': '👥 Invite Friends', 'description': 'Invite friends and earn rewards'},
+            'profile': {'path': '/profile', 'label': '👤 My Profile', 'description': 'View your bookings, membership, and account details'},
+            'updates': {'path': '/updates', 'label': '📰 Updates', 'description': 'Latest news and announcements from GameSpot'},
+            'faq': {'path': '/faq', 'label': '❓ FAQ', 'description': 'Frequently asked questions'},
+            'win-free-game': {'path': '/win-free-game', 'label': '🎰 Win Free Game', 'description': 'Spin the wheel for a chance to win free gaming sessions'},
         }
         
         # ====================
@@ -231,7 +260,7 @@ class FastAIBooking:
             },
             'cancellation': {
                 'question': 'What is your cancellation policy?',
-                'answer': '🔄 You can cancel or reschedule your booking up to 2 hours before your slot. Call us at +91-9645136006 for cancellations. No-shows will not be refunded.',
+                'answer': '🔄 You can cancel or reschedule your booking up to 2 hours before your slot. Call us at +91 70121 25919 or WhatsApp us for cancellations. No-shows will not be refunded.\n\n📞 Visit our Contact page for more ways to reach us.',
                 'keywords': ['cancel', 'reschedule', 'refund', 'change booking']
             },
             'age': {
@@ -241,7 +270,7 @@ class FastAIBooking:
             },
             'group': {
                 'question': 'Do you offer group packages?',
-                'answer': '🎉 Yes! For groups of 6+ people, birthday parties, or corporate events, we offer special packages. Call us at +91-9645136006 for custom pricing!',
+                'answer': '🎉 Yes! For groups of 6+ people, birthday parties, or corporate events, we offer special packages. Call us at +91 70121 25919 or WhatsApp us for custom pricing!\n\n📞 Visit our Contact page for more details.',
                 'keywords': ['group', 'party', 'birthday', 'corporate', 'event', 'bulk', 'team']
             },
             'outside_food': {
@@ -261,7 +290,7 @@ class FastAIBooking:
                          '🥇 **Annual Plan** - ₹2,499/year\n'
                          '   • 365 days validity\n'
                          '   • **20% discount** on all bookings\n\n'
-                         'Sign up on our website at the Membership page! Discounts apply automatically to all your bookings.',
+                         '⭐ Visit our **Membership page** to sign up! Discounts apply automatically to all your bookings.',
                 'keywords': ['membership', 'member', 'discount', 'offer', 'deal', 'plan', 'subscribe', 'subscription', 'annual', 'monthly', 'quarterly']
             },
             'rental': {
@@ -275,7 +304,7 @@ class FastAIBooking:
                          '• Weekly: ₹2,100/week (₹300/day)\n'
                          '• Monthly: ₹7,500/month (₹250/day)\n\n'
                          '**Extra Controllers:** ₹50/day each\n\n'
-                         '📦 Home delivery available! Visit our Rental page on the website to book.',
+                         '📦 Home delivery available! Visit our **Rental page** on the website to book.',
                 'keywords': ['rental', 'rent', 'borrow', 'take home', 'home delivery', 'deliver', 'vr rent', 'ps5 rent', 'quest', 'meta quest']
             },
             'college': {
@@ -292,42 +321,48 @@ class FastAIBooking:
                          '• Full setup and teardown\n'
                          '• Professional staff & technical support\n'
                          '• Transport (₹15/km from Kodungallur)\n\n'
-                         'Book through our College Setup page on the website!',
+                         '🎓 Visit our **College Setup page** to request a quote!',
                 'keywords': ['college', 'university', 'campus', 'fest', 'college event', 'setup', 'college setup', 'techfest', 'cultural fest']
             },
             'website': {
                 'question': 'What can I do on the website?',
-                'answer': '🌐 **GameSpot Website Features:**\n\n'
-                         '• 🎮 **Book Sessions** - Reserve PS5 or Driving Simulator slots\n'
-                         '• 📦 **Rent Equipment** - Rent PS5 or VR headset for home\n'
-                         '• 🎓 **College Setup** - Book gaming setup for college events\n'
-                         '• ⭐ **Membership** - Join for discounts up to 20%\n'
-                         '• 🎲 **Games Catalog** - Browse all available games\n'
-                         '• 📰 **Updates** - Latest news and announcements\n'
-                         '• 📞 **Contact Us** - Get in touch with us\n'
-                         '• 💬 **Feedback** - Share your experience\n'
-                         '• 👤 **Profile** - Manage your account and bookings\n'
-                         '• 🎁 **Offers** - Check out ongoing promotions',
-                'keywords': ['website', 'features', 'what can', 'pages', 'navigate', 'sections', 'options']
+                'answer': '🌐 **GameSpot Website Pages:**\n\n'
+                         '• 🎮 **Book Sessions** (/booking) - Reserve PS5 or Driving Simulator slots\n'
+                         '• 🎲 **Games Library** (/games) - Browse all available PS5 games\n'
+                         '• 📦 **Rent Equipment** (/rental) - Rent PS5 or VR headset for home\n'
+                         '• 🎓 **College Setup** (/college-setup) - Book gaming setup for college events\n'
+                         '• ⭐ **Membership** (/membership) - Join for discounts up to 20%\n'
+                         '• � **Offers & Deals** (/get-offers) - Promo codes, spin wheel\n'
+                         '• 👥 **Invite Friends** (/invite) - Earn rewards by inviting friends\n'
+                         '• 📰 **Updates** (/updates) - Latest news and announcements\n'
+                         '• 📞 **Contact Us** (/contact) - Phone, email, WhatsApp, directions\n'
+                         '• 💬 **Feedback** (/feedback) - Share your experience\n'
+                         '• 👤 **Profile** (/profile) - Your account and booking history\n'
+                         '• ❓ **FAQ** (/faq) - Common questions answered\n\n'
+                         'What would you like to explore?',
+                'keywords': ['website', 'features', 'what can', 'pages', 'navigate', 'sections', 'options', 'explore', 'site']
             },
             'offers': {
                 'question': 'Are there any current offers?',
                 'answer': '🎁 **Current GameSpot Offers:**\n\n'
                          '• 🏷️ **Membership Discounts** - Up to 20% off on all bookings\n'
-                         '• 📸 **Instagram Promo** - Follow us for special promo codes\n'
-                         '• 👥 **Invite Friends** - Earn rewards by inviting friends\n\n'
-                         'Check the Offers page on our website for the latest deals!',
+                         '• 📸 **Instagram Promo** - Follow @gamespot_kdlr for special promo codes\n'
+                         '• 👥 **Invite Friends** - Earn rewards by inviting friends\n'
+                         '• 🎰 **Spin the Wheel** - Win free gaming sessions!\n\n'
+                         '🎁 Visit our **Offers page** for the latest deals and promo codes!',
                 'keywords': ['offer', 'promo', 'promotion', 'coupon', 'code', 'instagram', 'invite', 'referral', 'discount code', 'spin wheel']
             },
             'contact': {
                 'question': 'How can I contact GameSpot?',
                 'answer': '📞 **Contact GameSpot:**\n\n'
-                         '• 📱 Phone: +91-9645136006\n'
-                         '• 📧 Email: admin@gamespot.in\n'
-                         '• 📍 Location: Kodungallur, Thrissur, Kerala\n'
+                         '• 📱 Phone: +91 70121 25919\n'
+                         '• 📧 Email: gamespotkdlr@gmail.com\n'
+                         '• 💬 WhatsApp: +91 70121 25919\n'
+                         '• 📸 Instagram: @gamespot_kdlr\n'
+                         '• 📍 Location: Shipu Complex, Near JJ Castle, Kodungallur, Thrissur, Kerala 680664\n'
                          '• 🕒 Hours: 9:00 AM - 12:00 AM Midnight (7 days a week)\n\n'
-                         'You can also use the Contact page on our website or chat with me here!',
-                'keywords': ['contact', 'phone', 'call', 'email', 'reach', 'number', 'whatsapp']
+                         '📍 Visit our **Contact page** on the website for directions and WhatsApp chat!',
+                'keywords': ['contact', 'phone', 'call', 'email', 'reach', 'number', 'whatsapp', 'owner']
             },
             'devices': {
                 'question': 'What gaming equipment do you have?',
@@ -352,8 +387,9 @@ class FastAIBooking:
                 'question': 'How can I give feedback?',
                 'answer': '💬 We love hearing from our customers! You can share your feedback through:\n\n'
                          '• Our **Feedback page** on the website\n'
-                         '• Call us at +91-9645136006\n'
-                         '• Email us at admin@gamespot.in\n\n'
+                         '• Call us at +91 70121 25919\n'
+                         '• Email us at gamespotkdlr@gmail.com\n'
+                         '• WhatsApp us at +91 70121 25919\n\n'
                          'Your feedback helps us improve! ⭐',
                 'keywords': ['feedback', 'review', 'complaint', 'suggest', 'suggestion', 'improve', 'experience', 'rate', 'rating']
             }
@@ -539,8 +575,8 @@ class FastAIBooking:
         info_keywords = [
             'price', 'cost', 'how much', 'rate', 'charge', 'fee',
             'timing', 'hours', 'open', 'close', 'schedule',
-            'location', 'address', 'where',
-            'games', 'what games', 'available',
+            'location', 'address', 'where', 'map', 'direction',
+            'games', 'what games', 'available', 'game list', 'which games',
             'help', 'info', 'information',
             'faq', 'question', 'snacks', 'menu',
             'parking', 'payment', 'cancel policy',
@@ -548,23 +584,117 @@ class FastAIBooking:
             'rental', 'rent', 'borrow', 'take home', 'deliver',
             'college', 'campus', 'fest', 'college event', 'college setup',
             'offer', 'promo', 'promotion', 'coupon', 'discount code',
-            'contact', 'phone', 'call', 'email', 'number',
+            'contact', 'phone', 'call', 'email', 'number', 'owner',
             'device', 'equipment', 'station', 'console', 'vr', 'headset', 'meta quest',
             'feedback', 'review', 'complaint', 'suggest',
-            'website', 'features', 'pages', 'navigate'
+            'website', 'features', 'pages', 'navigate', 'site', 'explore',
+            'invite', 'referral', 'friend',
+            'profile', 'my booking', 'my account',
+            'update', 'news', 'announcement',
         ]
+        
+        # Also check for specific game name queries
+        game_names = [g['name'].lower() for g in self.devices['ps5']['games']]
+        if any(name in msg_lower for name in game_names):
+            return True
+        
+        # Check for page navigation button clicks
+        page_keywords = ['contact page', 'games page', 'membership page', 'rental page',
+                        'college setup page', 'offers page', 'feedback page', 'invite page',
+                        'profile page', 'updates page', 'faq page', 'booking page']
+        if any(keyword in msg_lower for keyword in page_keywords):
+            return True
+        
         return any(keyword in msg_lower for keyword in info_keywords)
     
     def _handle_info_request(self, message: str, state:  Dict) -> Dict:
-        """Handle information/help requests"""
+        """Handle information/help requests - acts like a GameSpot staff member"""
         msg_lower = message.lower()
+        
+        # ==========================================
+        # PAGE NAVIGATION BUTTON CLICKS
+        # ==========================================
+        page_nav = {
+            'contact page': ('/contact', '📞 Taking you to our Contact page where you can find our phone number, WhatsApp, email, location with Google Maps directions, and more!'),
+            'games page': ('/games', '🎲 Taking you to our Games Library where you can browse all available PS5 games, see covers, and recommend new games!'),
+            'membership page': ('/membership', '⭐ Taking you to our Membership page where you can sign up for discounts up to 20% on all bookings!'),
+            'rental page': ('/rental', '📦 Taking you to our Rental page where you can rent PS5 or VR headset for home use!'),
+            'college setup page': ('/college-setup', '🎓 Taking you to our College Setup page where you can request gaming setup for your college event!'),
+            'offers page': ('/get-offers', '🎁 Taking you to our Offers page for promo codes, spin wheel, and exclusive deals!'),
+            'feedback page': ('/feedback', '💬 Taking you to our Feedback page where you can share your gaming experience!'),
+            'invite page': ('/invite', '👥 Taking you to our Invite page where you can earn rewards by inviting friends!'),
+            'profile page': ('/profile', '👤 Taking you to your Profile page to view your bookings and account details!'),
+            'updates page': ('/updates', '📰 Taking you to our Updates page for the latest news and announcements!'),
+            'faq page': ('/faq', '❓ Taking you to our FAQ page for commonly asked questions!'),
+            'booking page': ('/booking', '🎮 Taking you to our Booking page to reserve your gaming session!'),
+            'full game list': ('/games', '🎲 Taking you to browse our full game library!'),
+        }
+        
+        for nav_key, (nav_path, nav_msg) in page_nav.items():
+            if nav_key in msg_lower:
+                return {
+                    'reply': nav_msg,
+                    'buttons': ['🎮 Book Now', '💰 Check Pricing', '❓ More FAQs'],
+                    'next_step': 'game',
+                    'booking_state': state,
+                    'action': 'navigate',
+                    'navigate': nav_path
+                }
+        
+        # ==========================================
+        # SPECIFIC GAME QUERIES
+        # ==========================================
+        for game in self.devices['ps5']['games']:
+            game_name_lower = game['name'].lower()
+            # Check if user is asking about a specific game
+            if game_name_lower in msg_lower or any(word in msg_lower for word in game_name_lower.split() if len(word) > 3):
+                reply = f"🎮 **{game['name']}**\n\n"
+                reply += f"• **Genre:** {game['genre']}\n"
+                reply += f"• **Players:** {game['players']}\n"
+                reply += f"• **Platform:** PS5\n"
+                reply += f"• **Available:** ✅ Yes, at GameSpot!\n\n"
+                reply += "💰 **Pricing to play:**\n"
+                players = 1
+                pricing = self.pricing['ps5'][players]
+                reply += f"• 30 min: ₹{pricing['30min']} | 1 hour: ₹{pricing['1hour']} | 1.5 hour: ₹{pricing['1.5hour']} | 2 hours: ₹{pricing['2hour']}\n"
+                reply += "(Price shown for 1 player. Multiplayer rates vary.)\n\n"
+                reply += f"Want to book a session to play **{game['name']}**? 🎮"
+                
+                return {
+                    'reply': reply,
+                    'buttons': ['🎮 Book PS5', '🎲 Games Page', '💰 Full Pricing', '❓ More Games'],
+                    'next_step': 'game',
+                    'booking_state': state,
+                    'action': 'game_info_provided'
+                }
         
         # Check FAQs first
         for faq_key, faq_data in self.faqs.items():
             if any(keyword in msg_lower for keyword in faq_data['keywords']):
+                # Smart navigation buttons based on FAQ topic
+                nav_buttons = ['🎮 Book Now']
+                if faq_key == 'contact':
+                    nav_buttons = ['📞 Contact Page', '🎮 Book Now', '💰 Check Pricing']
+                elif faq_key == 'membership':
+                    nav_buttons = ['⭐ Membership Page', '🎮 Book Now', '💰 Check Pricing']
+                elif faq_key == 'rental':
+                    nav_buttons = ['📦 Rental Page', '🎮 Book Now', '💰 Check Pricing']
+                elif faq_key == 'college':
+                    nav_buttons = ['🎓 College Setup Page', '📞 Contact Page', '🎮 Book Now']
+                elif faq_key == 'offers':
+                    nav_buttons = ['🎁 Offers Page', '⭐ Membership Page', '🎮 Book Now']
+                elif faq_key == 'feedback':
+                    nav_buttons = ['💬 Feedback Page', '📞 Contact Page', '🎮 Book Now']
+                elif faq_key == 'devices':
+                    nav_buttons = ['🎲 Games Page', '🎮 Book Now', '💰 Check Pricing']
+                elif faq_key == 'website':
+                    nav_buttons = ['🎮 Book Now', '🎲 Games Page', '⭐ Membership Page', '📞 Contact Page']
+                else:
+                    nav_buttons = ['🎮 Book Now', '❓ More FAQs', '💰 Check Pricing']
+                
                 return {
                     'reply': faq_data['answer'],
-                    'buttons': ['🎮 Book Now', '❓ More FAQs', '💰 Check Pricing'],
+                    'buttons': nav_buttons,
                     'next_step': 'game',
                     'booking_state': state,
                     'action': 'faq_answered'
@@ -614,23 +744,23 @@ class FastAIBooking:
             }
         
         # Games inquiry
-        if any(word in msg_lower for word in ['games', 'what games', 'play', 'available games']):
+        if any(word in msg_lower for word in ['games', 'what games', 'play', 'available games', 'game list', 'which games']):
             reply = "🎮 **Available Games & Activities:**\n\n"
             reply += "**PS5 Gaming** (Up to 4 players):\n"
-            for game in self.devices['ps5']['games'][:5]:  # Show first 5
-                reply += f"• {game['name']} ({game['genre']})\n"
-            reply += f"...  and {len(self.devices['ps5']['games']) - 5} more titles!\n\n"
-            reply += "**Driving Simulator** (Solo):\n"
-            for feature in self.devices['driving']['features'][:3]:  # Show first 3
+            for game in self.devices['ps5']['games']:
+                reply += f"• {game['name']} ({game['genre']}, {game['players']} players)\n"
+            reply += "\n**Driving Simulator** (Solo):\n"
+            for feature in self.devices['driving']['features'][:3]:
                 reply += f"• {feature}\n"
-            reply += "\nWhich would you like to try?"
+            reply += "\n🎲 Visit our **Games page** to browse the full library, see game covers, and recommend new games!\n\nWhich would you like to try?"
             
             return {
                 'reply': reply,
-                'buttons': ['🎮 PS5', '🏎️ Driving Simulator', '📋 Full Game List'],
+                'buttons': ['🎮 PS5', '🏎️ Driving Simulator', '🎲 Games Page', '💰 Check Pricing'],
                 'next_step': 'game',
                 'booking_state': state,
-                'action': 'info_provided'
+                'action': 'info_provided',
+                'navigate': '/games'
             }
         
         # Snacks/Menu inquiry
@@ -653,43 +783,47 @@ class FastAIBooking:
             }
         
         # Location inquiry
-        if any(word in msg_lower for word in ['location', 'address', 'where', 'directions']):
+        if any(word in msg_lower for word in ['location', 'address', 'where', 'directions', 'map']):
             reply = "📍 **Location:**\n\n"
             reply += f"**{self.location['name']}**\n"
             reply += f"{self.location['address']}\n"
+            reply += f"{self.location['city']}, {self.location['district']}, {self.location['state']} {self.location['pincode']}\n"
             reply += f"Landmark: {self.location['landmark']}\n\n"
             reply += f"📞 Phone: {self.location['phone']}\n"
-            reply += f"📧 Email: {self.location['email']}\n\n"
+            reply += f"📧 Email: {self.location['email']}\n"
+            reply += f"📸 Instagram: {self.location['instagram']}\n\n"
             reply += "**Amenities:**\n"
             for feature in self.location['features'][:4]:
                 reply += f"• {feature}\n"
-            reply += "\n🕒 Open 9:00 AM - 12:00 AM (Midnight), 7 days a week\n\nReady to book your session?"
+            reply += "\n🕒 Open 9:00 AM - 12:00 AM (Midnight), 7 days a week\n\n"
+            reply += "📍 Visit our **Contact page** for Google Maps directions!"
             
             return {
                 'reply': reply,
-                'buttons': ['🎮 Book Now', '💰 Check Pricing', '🅿️ View Parking'],
-                'next_step':  'game',
+                'buttons': ['🎮 Book Now', '�� Contact Page', '💰 Check Pricing'],
+                'next_step': 'game',
                 'booking_state': state,
-                'action': 'info_provided'
+                'action': 'info_provided',
+                'navigate': '/contact'
             }
         
         # General help
-        reply = "👋 **Welcome to GameSpot!**\n\n"
-        reply += "I can help you with:\n"
-        reply += "• 🎮 Book PS5 gaming sessions (1-4 players)\n"
-        reply += "• 🏎️ Book Driving Simulator (solo)\n"
-        reply += "• 💰 Check pricing and availability\n"
-        reply += "• 📦 Learn about rental services (PS5/VR for home)\n"
-        reply += "• 🎓 College event gaming setup info\n"
-        reply += "• ⭐ Membership plans and discounts\n"
-        reply += "• 🎁 Current offers and promotions\n"
-        reply += "• 📍 Location, hours, and contact info\n"
-        reply += "• ❓ Answer any other questions\n\n"
-        reply += "What would you like to know?"
+        reply = "👋 **Hey there! I'm your GameSpot assistant!**\n\n"
+        reply += "I know everything about GameSpot — think of me as a virtual staff member! 😊 Here's what I can help with:\n\n"
+        reply += "• 🎮 **Book a Session** — PS5 (1-4 players) or Driving Simulator\n"
+        reply += "• � **Games Info** — Ask about any specific game we have\n"
+        reply += "• 💰 **Pricing** — Detailed pricing for all sessions\n"
+        reply += "• 📦 **Rentals** — PS5 & VR headset for home use\n"
+        reply += "• 🎓 **College Events** — Gaming setup for campus fests\n"
+        reply += "• ⭐ **Membership** — Save 10-20% on every booking\n"
+        reply += "• 🎁 **Offers & Deals** — Promo codes, spin wheel rewards\n"
+        reply += "• � **Contact & Location** — Phone, WhatsApp, directions\n"
+        reply += "• 💬 **Feedback** — Share your experience\n\n"
+        reply += "Just ask me anything — I can also take you directly to any page on our website! 🚀"
         
         return {
             'reply': reply,
-            'buttons': ['🎮 Book PS5', '🏎️ Book Driving', '💰 Pricing', '📦 Rentals', '⭐ Membership', '❓ FAQs'],
+            'buttons': ['🎮 Book Now', '� Games Page', '💰 Pricing', '⭐ Membership Page', '📞 Contact Page', '🎁 Offers Page'],
             'next_step': 'game',
             'booking_state': state,
             'action': 'help_provided'

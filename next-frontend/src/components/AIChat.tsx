@@ -3,16 +3,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import '@/styles/AIChat.css';
-import {
-  FiX, FiSend, FiMic, FiVolume2, FiVolumeX,
+import { FiX, FiSend, FiMic, FiVolume2, FiVolumeX,
   FiCalendar, FiClock, FiInfo,
   FiGlobe, FiCpu, FiActivity,
-  FiChevronRight, FiStar, FiUsers
+  FiChevronRight, FiStar, FiUsers, FiExternalLink
 } from 'react-icons/fi';
 import { sendAIMessage, clearAISession } from '@/services/ai-api';
 import { malayalamUI, englishUI } from '@/translations/malayalam';
+import { useRouter } from 'next/navigation';
 
 const AI_CONFIG = { name: "GameBot", avatar: "🤖", capabilities: ["booking", "availability", "pricing", "recommendations"] };
+
+// Map button labels to page paths for navigation
+const PAGE_NAV_MAP: Record<string, string> = {
+  'contact page': '/contact',
+  'games page': '/games',
+  'membership page': '/membership',
+  'rental page': '/rental',
+  'college setup page': '/college-setup',
+  'offers page': '/get-offers',
+  'feedback page': '/feedback',
+  'invite page': '/invite',
+  'profile page': '/profile',
+  'updates page': '/updates',
+  'faq page': '/faq',
+  'booking page': '/booking',
+  'book now': '/booking',
+  'full game list': '/games',
+};
 
 interface ChatMessage {
   type: 'user' | 'ai' | 'error';
@@ -24,6 +42,7 @@ interface ChatMessage {
 }
 
 const AIChat = ({ onClose }: { onClose: () => void }) => {
+  const router = useRouter();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -139,6 +158,25 @@ const AIChat = ({ onClose }: { onClose: () => void }) => {
 
   const handleKeyPress = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } };
 
+  // Check if a button label maps to a page navigation
+  const getNavPath = (buttonLabel: string): string | null => {
+    const cleaned = buttonLabel.replace(/[🎮🏎️💰📅❓⏱️📞📦🎓⭐🎁💬👥👤📰📋🎲🎰🅿️]/g, '').trim().toLowerCase();
+    for (const [key, path] of Object.entries(PAGE_NAV_MAP)) {
+      if (cleaned.includes(key) || cleaned === key) return path;
+    }
+    return null;
+  };
+
+  const handleButtonClick = (buttonLabel: string) => {
+    const navPath = getNavPath(buttonLabel);
+    if (navPath) {
+      onClose();
+      router.push(navPath);
+    } else {
+      handleSendMessage(buttonLabel, true);
+    }
+  };
+
   const handleClose = async () => {
     if (sessionId) { try { await clearAISession(sessionId); } catch {} }
     onClose();
@@ -210,11 +248,14 @@ const AIChat = ({ onClose }: { onClose: () => void }) => {
                     <div className="message-content">{renderMessageContent(msg.text)}</div>
                     {msg.type === 'ai' && msg.buttons && msg.buttons.length > 0 && idx === messages.length - 1 && (
                       <motion.div className="message-quick-actions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                        {msg.buttons.slice(0, 4).map((button, btnIdx) => (
-                          <button key={btnIdx} className="quick-action-btn" onClick={() => handleSendMessage(button, true)} disabled={loading}>
-                            <FiChevronRight className="btn-arrow" />{button}
-                          </button>
-                        ))}
+                        {msg.buttons.slice(0, 6).map((button, btnIdx) => {
+                          const isNavBtn = !!getNavPath(button);
+                          return (
+                            <button key={btnIdx} className={`quick-action-btn${isNavBtn ? ' nav-btn' : ''}`} onClick={() => handleButtonClick(button)} disabled={loading}>
+                              {isNavBtn ? <FiExternalLink className="btn-arrow" /> : <FiChevronRight className="btn-arrow" />}{button}
+                            </button>
+                          );
+                        })}
                       </motion.div>
                     )}
                     <span className="message-timestamp">{formatTime(msg.timestamp)}</span>

@@ -586,6 +586,24 @@
   color: var(--ai-primary-light);
 }
 
+/* Navigation buttons - link to website pages */
+.quick-action-btn.nav-btn {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: var(--ai-text-primary);
+}
+
+.quick-action-btn.nav-btn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: var(--ai-primary);
+  color: white;
+}
+
+.quick-action-btn.nav-btn .btn-arrow {
+  color: var(--ai-primary);
+  font-size: 11px;
+}
+
 /* Typing Indicator */
 .typing-indicator {
   display: flex;
