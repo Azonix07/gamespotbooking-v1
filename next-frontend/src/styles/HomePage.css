@@ -11,6 +11,23 @@ body:has(.hero-container) {
   height: 100dvh;
 }
 
+/* Lock entire layout chain so hero fills remaining space after navbar */
+body:has(.hero-container) .app-wrapper {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+body:has(.hero-container) .main-content {
+  flex: 1 1 0%;
+  min-height: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 /* ===================================
    HOMEPAGE HEADER WITH HAMBURGER MENU
    =================================== */
@@ -482,8 +499,7 @@ body:has(.hero-container) {
 }
 
 .hero-container {
-  height: 100vh; /* Full viewport height */
-  height: 100dvh; /* Dynamic viewport height — works better on mobile */
+  height: 100%; /* Fill remaining space after navbar */
   display: flex;
   flex-direction: column;
   position: relative;
