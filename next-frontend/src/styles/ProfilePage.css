@@ -1,14 +1,25 @@
 /* Professional Flipkart-Style Profile Page */
 
+.profile-page-new *,
+.profile-page-new *::before,
+.profile-page-new *::after {
+  box-sizing: border-box;
+}
+
 .profile-page-new {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 80px 20px 40px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .profile-container-new {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .profile-grid {
@@ -16,6 +27,8 @@
   grid-template-columns: 320px 1fr;
   gap: 24px;
   margin-top: 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Alert Messages */
@@ -61,6 +74,8 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   padding: 24px;
   margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Profile Picture Card */
@@ -1041,16 +1056,21 @@
 /* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
   .profile-page-new {
-    padding: 70px 10px 30px;
+    padding: 70px 16px 30px;
+    width: 100%;
   }
 
   .profile-container-new {
+    width: 100%;
     max-width: 100%;
+    padding: 0;
   }
 
   .profile-grid {
+    grid-template-columns: 1fr;
     gap: 12px;
     margin-top: 16px;
+    width: 100%;
   }
 
   .profile-card {
@@ -1429,12 +1449,21 @@
 /* ── Small Mobile (≤480px) ── */
 @media (max-width: 480px) {
   .profile-page-new {
-    padding: 62px 6px 16px;
+    padding: 64px 16px 20px;
+    width: 100%;
+  }
+
+  .profile-container-new {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
   }
 
   .profile-grid {
-    gap: 8px;
+    grid-template-columns: 1fr;
+    gap: 10px;
     margin-top: 12px;
+    width: 100%;
   }
 
   .profile-card {
@@ -1442,6 +1471,7 @@
     margin-bottom: 8px;
     border-radius: 10px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    width: 100%;
   }
 
   /* Avatar */
@@ -1783,12 +1813,25 @@
 /* ── Extra Small (≤360px) — very small phones ── */
 @media (max-width: 360px) {
   .profile-page-new {
-    padding: 60px 4px 12px;
+    padding: 60px 10px 16px;
+    width: 100%;
+  }
+
+  .profile-container-new {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    width: 100%;
   }
 
   .profile-card {
     padding: 14px 12px;
     border-radius: 8px;
+    width: 100%;
   }
 
   .profile-picture-large {
