@@ -76,6 +76,7 @@
   justify-content: center;
   z-index: 10000;
   padding: 24px;
+  padding-top: 80px; /* Clear navbar */
 }
 
 /* ============================================
@@ -85,8 +86,8 @@
   position: relative;
   width: 100%;
   max-width: 480px;
-  height: min(85vh, 750px);
-  max-height: calc(100vh - 48px);
+  height: min(80vh, 700px);
+  max-height: calc(100vh - 104px);
   background: var(--ai-glass);
   border-radius: var(--ai-radius-xl);
   border: 1px solid var(--ai-border-light);
@@ -861,16 +862,17 @@
 @media (max-width: 640px) {
   .ai-chat-overlay {
     padding: 0;
+    padding-top: 64px; /* Clear navbar on mobile */
     align-items: flex-end;
   }
   
   .ai-chat-container {
     max-width: 100%;
     width: 100%;
-    height: 92vh;
-    height: 92dvh;
-    max-height: 92vh;
-    max-height: 92dvh;
+    height: calc(100vh - 64px);
+    height: calc(100dvh - 64px);
+    max-height: calc(100vh - 64px);
+    max-height: calc(100dvh - 64px);
     border-radius: 20px 20px 0 0;
     border: none;
     border-top: 1px solid var(--ai-border-light);
