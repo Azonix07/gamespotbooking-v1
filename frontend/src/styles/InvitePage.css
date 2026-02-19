@@ -215,6 +215,135 @@
   letter-spacing: 0.5px;
 }
 
+/* ===== College Events Section ===== */
+.invite-college-section {
+  margin-bottom: 36px;
+  text-align: center;
+}
+
+.invite-college-header {
+  margin-bottom: 20px;
+}
+
+.invite-college-header-icon {
+  font-size: 1.8rem;
+  color: #ff6b35;
+  margin-bottom: 8px;
+}
+
+.invite-college-title {
+  font-family: var(--font-heading, 'Inter', sans-serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 6px;
+}
+
+.invite-college-subtitle {
+  font-size: 0.85rem;
+  color: #999;
+  line-height: 1.4;
+}
+
+.invite-college-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.invite-college-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(225, 48, 108, 0.1);
+  border-radius: 16px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  text-align: left;
+  box-shadow: 0 2px 12px rgba(225, 48, 108, 0.04);
+}
+
+.invite-college-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(225, 48, 108, 0.12);
+  border-color: #E1306C;
+}
+
+.invite-college-card:active {
+  transform: translateY(0);
+}
+
+.invite-college-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #E1306C, #C13584, #833AB4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.3rem;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(225, 48, 108, 0.25);
+  transition: transform 0.3s ease;
+}
+
+.invite-college-card:hover .invite-college-icon-wrap {
+  transform: scale(1.08);
+}
+
+.invite-college-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.invite-college-name {
+  font-family: var(--font-heading, 'Inter', sans-serif);
+  font-size: 0.92rem;
+  font-weight: 650;
+  color: #1a1a2e;
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+
+.invite-college-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #999;
+  font-weight: 500;
+}
+
+.invite-college-location svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.invite-college-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: rgba(225, 48, 108, 0.06);
+  color: #E1306C;
+  font-size: 1rem;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.invite-college-card:hover .invite-college-action {
+  background: #E1306C;
+  color: #fff;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 560px) {
   .invite-page {
@@ -268,6 +397,38 @@
     height: 30px;
     border-radius: 8px;
   }
+
+  .invite-college-card {
+    padding: 14px 16px;
+    gap: 12px;
+    border-radius: 14px;
+  }
+
+  .invite-college-icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 1.15rem;
+  }
+
+  .invite-college-name {
+    font-size: 0.85rem;
+  }
+
+  .invite-college-action {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+
+  .invite-college-title {
+    font-size: 1.25rem;
+  }
+
+  .invite-college-subtitle {
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 380px) {
@@ -281,5 +442,30 @@
 
   .invite-card {
     padding: 14px 16px;
+  }
+
+  .invite-college-card {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .invite-college-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    font-size: 1.05rem;
+  }
+
+  .invite-college-name {
+    font-size: 0.8rem;
+  }
+
+  .invite-college-location {
+    font-size: 0.7rem;
+  }
+
+  .invite-college-action {
+    width: 28px;
+    height: 28px;
   }
 }
