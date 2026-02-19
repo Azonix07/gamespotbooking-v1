@@ -2018,16 +2018,26 @@ const BookingPage = () => {
                                               <FiUsers className="option-icon" />
                                               Number of Players
                                             </label>
-                                            <div className="player-buttons">
-                                              {[0, 1, 2, 3].map((idx) => (
-                                                <button
-                                                  key={idx}
-                                                  className={`player-btn ${booking && booking.player_count >= idx + 1 ? 'active' : ''}`}
-                                                  onClick={() => handlePlayerSelect(unitNumber, idx)}
-                                                >
-                                                  {idx + 1}
-                                                </button>
-                                              ))}
+                                            <div className="player-buttons-v2">
+                                              {[0, 1, 2, 3].map((idx) => {
+                                                const count = idx + 1;
+                                                const isActive = booking && booking.player_count >= count;
+                                                return (
+                                                  <button
+                                                    key={idx}
+                                                    className={`player-btn-v2 ${isActive ? 'active' : ''}`}
+                                                    onClick={() => handlePlayerSelect(unitNumber, idx)}
+                                                  >
+                                                    <span className="player-btn-v2-icon">
+                                                      {Array.from({ length: count }).map((_, i) => (
+                                                        <FiUsers key={i} className="player-mini-icon" />
+                                                      ))}
+                                                    </span>
+                                                    <span className="player-btn-v2-number">{count}</span>
+                                                    <span className="player-btn-v2-label">{count === 1 ? 'Solo' : count === 2 ? 'Duo' : count === 3 ? 'Trio' : 'Squad'}</span>
+                                                  </button>
+                                                );
+                                              })}
                                             </div>
                                           </div>
                                           
@@ -2037,17 +2047,33 @@ const BookingPage = () => {
                                                 <FiClock className="option-icon" />
                                                 Session Duration
                                               </label>
-                                              <div className="duration-buttons">
-                                                {getAllowedDurations(selectedTime).map(dur => (
-                                                  <button
-                                                    key={dur}
-                                                    className={`duration-btn ${booking.duration === dur || (!booking.duration && dur === 60) ? 'active' : ''}`}
-                                                    onClick={() => handlePS5DurationChange(unitNumber, dur)}
-                                                  >
-                                                    <span className="dur-value">{dur < 60 ? dur : dur / 60}</span>
-                                                    <span className="dur-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
-                                                  </button>
-                                                ))}
+                                              <div className="duration-buttons-v2">
+                                                {getAllowedDurations(selectedTime).map(dur => {
+                                                  const isActive = booking.duration === dur || (!booking.duration && dur === 60);
+                                                  return (
+                                                    <button
+                                                      key={dur}
+                                                      className={`duration-btn-v2 ${isActive ? 'active' : ''}`}
+                                                      onClick={() => handlePS5DurationChange(unitNumber, dur)}
+                                                    >
+                                                      <div className="dur-v2-ring">
+                                                        <svg viewBox="0 0 36 36" className="dur-v2-circle">
+                                                          <path
+                                                            className="dur-v2-bg"
+                                                            d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                          />
+                                                          <path
+                                                            className="dur-v2-fill"
+                                                            strokeDasharray={`${(dur / 240) * 100}, 100`}
+                                                            d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                          />
+                                                        </svg>
+                                                        <span className="dur-v2-value">{dur < 60 ? dur : dur / 60}</span>
+                                                      </div>
+                                                      <span className="dur-v2-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
+                                                    </button>
+                                                  );
+                                                })}
                                               </div>
                                             </div>
                                           )}
@@ -2189,16 +2215,26 @@ const BookingPage = () => {
                                           <FiUsers className="option-icon" />
                                           Number of Players
                                         </label>
-                                        <div className="player-buttons">
-                                          {[0, 1, 2, 3].map((idx) => (
-                                            <button
-                                              key={idx}
-                                              className={`player-btn ${booking && booking.player_count >= idx + 1 ? 'active' : ''}`}
-                                              onClick={() => handlePlayerSelect(unitNumber, idx)}
-                                            >
-                                              {idx + 1}
-                                            </button>
-                                          ))}
+                                        <div className="player-buttons-v2">
+                                          {[0, 1, 2, 3].map((idx) => {
+                                            const count = idx + 1;
+                                            const isActive = booking && booking.player_count >= count;
+                                            return (
+                                              <button
+                                                key={idx}
+                                                className={`player-btn-v2 ${isActive ? 'active' : ''}`}
+                                                onClick={() => handlePlayerSelect(unitNumber, idx)}
+                                              >
+                                                <span className="player-btn-v2-icon">
+                                                  {Array.from({ length: count }).map((_, i) => (
+                                                    <FiUsers key={i} className="player-mini-icon" />
+                                                  ))}
+                                                </span>
+                                                <span className="player-btn-v2-number">{count}</span>
+                                                <span className="player-btn-v2-label">{count === 1 ? 'Solo' : count === 2 ? 'Duo' : count === 3 ? 'Trio' : 'Squad'}</span>
+                                              </button>
+                                            );
+                                          })}
                                         </div>
                                       </div>
                                       
@@ -2208,17 +2244,33 @@ const BookingPage = () => {
                                             <FiClock className="option-icon" />
                                             Session Duration
                                           </label>
-                                          <div className="duration-buttons">
-                                            {getAllowedDurations(selectedTime).map(dur => (
-                                              <button
-                                                key={dur}
-                                                className={`duration-btn ${booking.duration === dur || (!booking.duration && dur === 60) ? 'active' : ''}`}
-                                                onClick={() => handlePS5DurationChange(unitNumber, dur)}
-                                              >
-                                                <span className="dur-value">{dur < 60 ? dur : dur / 60}</span>
-                                                <span className="dur-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
-                                              </button>
-                                            ))}
+                                          <div className="duration-buttons-v2">
+                                            {getAllowedDurations(selectedTime).map(dur => {
+                                              const isActive = booking.duration === dur || (!booking.duration && dur === 60);
+                                              return (
+                                                <button
+                                                  key={dur}
+                                                  className={`duration-btn-v2 ${isActive ? 'active' : ''}`}
+                                                  onClick={() => handlePS5DurationChange(unitNumber, dur)}
+                                                >
+                                                  <div className="dur-v2-ring">
+                                                    <svg viewBox="0 0 36 36" className="dur-v2-circle">
+                                                      <path
+                                                        className="dur-v2-bg"
+                                                        d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                      />
+                                                      <path
+                                                        className="dur-v2-fill"
+                                                        strokeDasharray={`${(dur / 240) * 100}, 100`}
+                                                        d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                      />
+                                                    </svg>
+                                                    <span className="dur-v2-value">{dur < 60 ? dur : dur / 60}</span>
+                                                  </div>
+                                                  <span className="dur-v2-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
+                                                </button>
+                                              );
+                                            })}
                                           </div>
                                         </div>
                                       )}

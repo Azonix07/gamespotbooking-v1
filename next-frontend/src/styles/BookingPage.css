@@ -1530,6 +1530,217 @@ span.device-unit {
   background: rgba(255, 107, 53, 0.15); /* Divider line */
 }
 
+/* ============================================
+   PLAYER SELECTION V2 - Card-Style Buttons
+   ============================================ */
+.player-buttons-v2 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.player-btn-v2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.player-btn-v2::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(255, 107, 53, 0.02));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.player-btn-v2:hover {
+  border-color: rgba(255, 107, 53, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.12);
+}
+
+.player-btn-v2:hover::before {
+  opacity: 1;
+}
+
+.player-btn-v2-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 20px;
+  color: var(--booking-gray-400);
+  transition: color 0.25s ease;
+}
+
+.player-mini-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.player-btn-v2-number {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--booking-gray-800);
+  transition: all 0.25s ease;
+}
+
+.player-btn-v2-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--booking-gray-500);
+  transition: color 0.25s ease;
+}
+
+/* Active State */
+.player-btn-v2.active {
+  background: linear-gradient(135deg, var(--booking-primary), var(--booking-secondary, #ff8a50));
+  border-color: transparent;
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.35);
+}
+
+.player-btn-v2.active::before {
+  opacity: 0;
+}
+
+.player-btn-v2.active .player-btn-v2-icon {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.player-btn-v2.active .player-btn-v2-number {
+  color: white;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.player-btn-v2.active .player-btn-v2-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ============================================
+   DURATION SELECTION V2 - Circular Progress Style
+   ============================================ */
+.duration-buttons-v2 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.duration-btn-v2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 6px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.duration-btn-v2:hover {
+  border-color: rgba(255, 107, 53, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.12);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.dur-v2-ring {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dur-v2-circle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.dur-v2-bg {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.06);
+  stroke-width: 2.5;
+}
+
+.dur-v2-fill {
+  fill: none;
+  stroke: var(--booking-primary);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  opacity: 0.4;
+  transition: all 0.35s ease;
+}
+
+.dur-v2-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--booking-gray-800);
+  position: relative;
+  z-index: 1;
+  transition: color 0.25s ease;
+}
+
+.dur-v2-unit {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--booking-gray-500);
+  transition: color 0.25s ease;
+}
+
+/* Active Duration */
+.duration-btn-v2.active {
+  background: linear-gradient(135deg, var(--booking-primary), var(--booking-secondary, #ff8a50));
+  border-color: transparent;
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.35);
+}
+
+.duration-btn-v2.active .dur-v2-bg {
+  stroke: rgba(255, 255, 255, 0.2);
+}
+
+.duration-btn-v2.active .dur-v2-fill {
+  stroke: white;
+  opacity: 0.9;
+}
+
+.duration-btn-v2.active .dur-v2-value {
+  color: white;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.duration-btn-v2.active .dur-v2-unit {
+  color: rgba(255, 255, 255, 0.9);
+}
+
 /* Unavailable Visuals - Enhanced */
 .device-card.unavailable {
   opacity: 0.5;
@@ -2638,6 +2849,62 @@ span.device-unit {
     margin-bottom: 6px;
   }
 
+  /* Player Buttons V2 - Mobile */
+  .player-buttons-v2 {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .player-btn-v2 {
+    padding: 10px 4px 8px;
+    border-radius: 12px;
+    gap: 4px;
+  }
+
+  .player-mini-icon {
+    width: 11px;
+    height: 11px;
+  }
+
+  .player-btn-v2-number {
+    font-size: 1.1rem;
+  }
+
+  .player-btn-v2-label {
+    font-size: 0.55rem;
+  }
+
+  .player-btn-v2-icon {
+    height: 16px;
+  }
+
+  /* Duration Buttons V2 - Mobile */
+  .duration-buttons-v2 {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .duration-btn-v2 {
+    padding: 10px 4px 8px;
+    border-radius: 12px;
+    gap: 4px;
+  }
+
+  .dur-v2-ring {
+    width: 36px;
+    height: 36px;
+  }
+
+  .dur-v2-value {
+    font-size: 0.95rem;
+  }
+
+  .dur-v2-unit {
+    font-size: 0.5rem;
+  }
+
   /* Checkout Layout V2 - Mobile Stack */
   .checkout-layout-v2 {
     grid-template-columns: 1fr;
@@ -3108,6 +3375,59 @@ span.device-unit {
 
   .duration-btn .dur-unit {
     font-size: 0.5rem;
+  }
+
+  /* Player & Duration V2 - Small Mobile */
+  .player-buttons-v2 {
+    gap: 5px;
+    margin-top: 8px;
+  }
+
+  .player-btn-v2 {
+    padding: 8px 3px 7px;
+    border-radius: 10px;
+    gap: 3px;
+  }
+
+  .player-mini-icon {
+    width: 10px;
+    height: 10px;
+  }
+
+  .player-btn-v2-icon {
+    height: 14px;
+  }
+
+  .player-btn-v2-number {
+    font-size: 1rem;
+  }
+
+  .player-btn-v2-label {
+    font-size: 0.5rem;
+  }
+
+  .duration-buttons-v2 {
+    gap: 5px;
+    margin-top: 8px;
+  }
+
+  .duration-btn-v2 {
+    padding: 8px 3px 7px;
+    border-radius: 10px;
+    gap: 3px;
+  }
+
+  .dur-v2-ring {
+    width: 32px;
+    height: 32px;
+  }
+
+  .dur-v2-value {
+    font-size: 0.85rem;
+  }
+
+  .dur-v2-unit {
+    font-size: 0.45rem;
   }
 
   /* Checkout Form */
