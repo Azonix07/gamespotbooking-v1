@@ -676,36 +676,489 @@
   box-shadow: 0 4px 12px rgba(40, 116, 240, 0.3);
 }
 
-/* Responsive Design */
+/* ─── Membership Status Card ─── */
+.membership-status-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.membership-deco-circle {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(255, 165, 0, 0.15);
+  pointer-events: none;
+}
+
+.membership-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.membership-category-label {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.membership-plan-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.membership-status-badge {
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.membership-active {
+  background: #00c853;
+}
+
+.membership-inactive {
+  background: #ff9800;
+}
+
+.membership-rate {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.membership-rate-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #ffa500;
+}
+
+.membership-rate-unit {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.membership-progress-section {
+  margin-bottom: 14px;
+}
+
+.membership-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #ccc;
+  margin-bottom: 6px;
+}
+
+.membership-progress-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.membership-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #ffa500, #ff6b35);
+  transition: width 0.5s ease;
+}
+
+.membership-remaining-text {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-top: 4px;
+}
+
+.membership-days-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.membership-days-value {
+  font-weight: 600;
+  color: #fff;
+}
+
+/* ─── Quest Pass Card ─── */
+.quest-pass-card {
+  background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #4a1d6e 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.quest-pass-pending {
+  background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 100%);
+}
+
+.quest-deco-circle {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.15);
+  pointer-events: none;
+}
+
+.quest-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.quest-category-label {
+  font-size: 0.75rem;
+  color: #b39ddb;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.quest-plan-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.quest-status-badge {
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.quest-badge-active {
+  background: #00c853;
+}
+
+.quest-current-game {
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.quest-game-label {
+  font-size: 0.7rem;
+  color: #b39ddb;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quest-game-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  color: #e0b0ff;
+}
+
+.quest-game-details {
+  font-size: 0.75rem;
+  color: #b39ddb;
+  margin-top: 4px;
+}
+
+.quest-change-pending {
+  background: rgba(255, 152, 0, 0.15);
+  border: 1px solid rgba(255, 152, 0, 0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quest-pending-icon {
+  font-size: 1.1rem;
+}
+
+.quest-pending-title {
+  font-size: 0.75rem;
+  color: #ffb74d;
+  margin: 0;
+  font-weight: 600;
+}
+
+.quest-pending-detail {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin: 0;
+}
+
+.quest-pending-detail strong {
+  color: #fff;
+}
+
+.quest-days-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #ccc;
+  margin-bottom: 14px;
+}
+
+.quest-days-value {
+  font-weight: 600;
+  color: #fff;
+}
+
+.quest-change-game-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  background: rgba(139, 92, 246, 0.2);
+  color: #e0b0ff;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.quest-change-game-btn:hover {
+  background: rgba(139, 92, 246, 0.35);
+  border-color: rgba(139, 92, 246, 0.7);
+}
+
+/* Quest Pass Pending State */
+.quest-pending-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.quest-pending-emoji {
+  font-size: 1.4rem;
+}
+
+.quest-pending-heading {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.quest-pending-subtext {
+  font-size: 0.75rem;
+  color: #b39ddb;
+  margin: 0;
+}
+
+.quest-pending-notice {
+  background: rgba(255, 152, 0, 0.12);
+  border: 1px solid rgba(255, 152, 0, 0.25);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 0.8rem;
+  color: #ffb74d;
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN — COMPREHENSIVE MOBILE OPTIMIZATION
+   ============================================================================ */
+
+/* ── Tablet (≤992px) ── */
 @media (max-width: 992px) {
   .profile-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .profile-sidebar {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-  }
-}
-
-@media (max-width: 768px) {
-  .profile-page-new {
-    padding: 70px 12px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
-  .profile-sidebar {
-    grid-template-columns: 1fr;
+  .profile-pic-card {
+    padding: 24px 20px;
+  }
+
+  .profile-picture-large {
+    width: 100px;
+    height: 100px;
+  }
+
+  .camera-overlay {
+    width: 34px;
+    height: 34px;
+  }
+
+  .points-info h3 {
+    font-size: 20px;
+  }
+
+  .points-number {
+    font-size: 42px;
+  }
+
+  .points-worth {
+    font-size: 28px;
   }
 
   .redemption-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+}
+
+/* ── Mobile (≤768px) ── */
+@media (max-width: 768px) {
+  .profile-page-new {
+    padding: 70px 10px 30px;
+  }
+
+  .profile-container-new {
+    max-width: 100%;
+  }
+
+  .profile-grid {
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .profile-card {
+    padding: 20px 16px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+  }
+
+  /* Sidebar */
+  .profile-sidebar {
+    gap: 12px;
+  }
+
+  .profile-pic-card {
+    padding: 20px 16px;
+  }
+
+  .profile-picture-large {
+    width: 88px;
+    height: 88px;
+    margin-bottom: 12px;
+    border-width: 3px;
+  }
+
+  .profile-avatar-large {
+    font-size: 36px;
+  }
+
+  .camera-overlay {
+    width: 30px;
+    height: 30px;
+    border-width: 2px;
+  }
+
+  .profile-info-text h2 {
+    font-size: 20px;
+  }
+
+  .profile-member-since {
+    font-size: 12px;
+  }
+
+  .card-title {
+    font-size: 16px;
+    margin-bottom: 16px;
+    gap: 8px;
+  }
+
+  /* Detail Items */
+  .detail-item {
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .detail-icon {
+    font-size: 18px;
+  }
+
+  .detail-label {
+    font-size: 11px;
+  }
+
+  .detail-value {
+    font-size: 14px;
+  }
+
+  /* Points Card */
+  .points-header-flipkart {
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .points-icon-wrapper {
+    width: 42px;
+    height: 42px;
+  }
+
+  .points-star-icon {
+    font-size: 22px;
+  }
+
+  .points-info h3 {
+    font-size: 18px;
+  }
+
+  .points-subtitle {
+    font-size: 12px;
   }
 
   .points-balance-flipkart {
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
     text-align: center;
+    padding: 20px 16px;
+    border-radius: 10px;
+  }
+
+  .points-circle-flipkart {
+    text-align: center;
+  }
+
+  .points-number {
+    font-size: 38px;
+  }
+
+  .points-label {
+    font-size: 12px;
+    letter-spacing: 0.8px;
   }
 
   .points-value-info {
@@ -713,35 +1166,701 @@
   }
 
   .points-worth {
+    font-size: 26px;
     justify-content: center;
   }
 
+  .rupee-symbol {
+    font-size: 20px;
+  }
+
+  .points-worth-label {
+    font-size: 11px;
+  }
+
+  .points-info-box {
+    padding: 14px;
+    gap: 10px;
+    border-radius: 10px;
+  }
+
+  .info-icon {
+    font-size: 20px;
+  }
+
+  .info-text p {
+    font-size: 13px;
+  }
+
+  .info-text li {
+    font-size: 12px;
+    line-height: 1.6;
+    padding-left: 10px;
+  }
+
+  .info-text ul {
+    padding-left: 16px;
+  }
+
+  /* Instagram Card */
   .card-header-flex {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .btn-instagram {
     width: 100%;
     justify-content: center;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .card-subtitle {
+    font-size: 12px;
+  }
+
+  .share-progress {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .progress-count {
+    font-size: 16px;
+  }
+
+  .progress-complete {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+
+  .progress-bar-track {
+    height: 10px;
+  }
+
+  .btn-claim-reward {
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 10px;
+    gap: 8px;
+  }
+
+  /* Redemption Grid */
+  .redemption-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .redemption-card-new {
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .redemption-icon-new {
+    font-size: 28px;
+  }
+
+  .redemption-card-new h4 {
+    font-size: 16px;
+  }
+
+  .redemption-desc {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .redemption-points {
+    padding: 10px;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .points-cost {
+    font-size: 16px;
+  }
+
+  .btn-redeem,
+  .btn-redeem-disabled {
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+
+  /* Membership Card - mobile overrides */
+  .membership-status-card {
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+
+  .membership-deco-circle {
+    width: 80px;
+    height: 80px;
+    top: -16px;
+    right: -16px;
+  }
+
+  .membership-category-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+  }
+
+  .membership-plan-name {
+    font-size: 1.05rem;
+  }
+
+  .membership-status-badge {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+  }
+
+  .membership-rate-value {
+    font-size: 1.5rem;
+  }
+
+  .membership-rate-unit {
+    font-size: 0.8rem;
+  }
+
+  .membership-progress-labels {
+    font-size: 0.75rem;
+  }
+
+  .membership-remaining-text {
+    font-size: 0.7rem;
+  }
+
+  .membership-days-row {
+    font-size: 0.75rem;
+  }
+
+  /* Quest Pass Card - mobile overrides */
+  .quest-pass-card {
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+
+  .quest-deco-circle {
+    width: 80px;
+    height: 80px;
+    top: -16px;
+    right: -16px;
+  }
+
+  .quest-category-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+  }
+
+  .quest-plan-name {
+    font-size: 1.05rem;
+  }
+
+  .quest-status-badge {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+  }
+
+  .quest-current-game {
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+
+  .quest-game-name {
+    font-size: 1rem;
+  }
+
+  .quest-game-details {
+    font-size: 0.7rem;
+  }
+
+  .quest-change-pending {
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .quest-pending-title,
+  .quest-pending-detail {
+    font-size: 0.7rem;
+  }
+
+  .quest-days-row {
+    font-size: 0.75rem;
+    margin-bottom: 12px;
+  }
+
+  .quest-change-game-btn {
+    padding: 9px 14px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+
+  .quest-pending-header {
+    gap: 8px;
+  }
+
+  .quest-pending-emoji {
+    font-size: 1.2rem;
+  }
+
+  .quest-pending-heading {
+    font-size: 0.9rem;
+  }
+
+  .quest-pending-subtext {
+    font-size: 0.7rem;
+  }
+
+  .quest-pending-notice {
+    padding: 8px;
+    font-size: 0.75rem;
+    border-radius: 8px;
+  }
+
+  /* Booking History Section */
+  .booking-history-header {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }
 
+/* ── Small Mobile (≤480px) ── */
 @media (max-width: 480px) {
   .profile-page-new {
-    padding: 65px 8px 20px;
+    padding: 62px 6px 16px;
+  }
+
+  .profile-grid {
+    gap: 8px;
+    margin-top: 12px;
   }
 
   .profile-card {
-    padding: 20px;
+    padding: 16px 14px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Avatar */
+  .profile-pic-card {
+    padding: 18px 14px;
+  }
+
+  .profile-picture-large {
+    width: 76px;
+    height: 76px;
+    margin-bottom: 10px;
+  }
+
+  .profile-avatar-large {
+    font-size: 30px;
+  }
+
+  .camera-overlay {
+    width: 26px;
+    height: 26px;
+    border-width: 2px;
+  }
+
+  .profile-info-text h2 {
+    font-size: 18px;
+  }
+
+  .profile-member-since {
+    font-size: 11px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    margin-bottom: 14px;
+  }
+
+  /* Detail Items */
+  .detail-item {
+    gap: 10px;
+    padding: 10px 0;
+  }
+
+  .detail-icon {
+    font-size: 16px;
+  }
+
+  .detail-label {
+    font-size: 10px;
+  }
+
+  .detail-value {
+    font-size: 13px;
+    word-break: break-word;
+  }
+
+  /* Points Card */
+  .points-header-flipkart {
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .points-icon-wrapper {
+    width: 38px;
+    height: 38px;
+  }
+
+  .points-star-icon {
+    font-size: 20px;
+  }
+
+  .points-info h3 {
+    font-size: 16px;
+  }
+
+  .points-subtitle {
+    font-size: 11px;
+  }
+
+  .points-balance-flipkart {
+    padding: 16px 12px;
+    gap: 12px;
+    margin-bottom: 14px;
   }
 
   .points-number {
-    font-size: 36px;
+    font-size: 32px;
   }
 
   .points-worth {
+    font-size: 22px;
+  }
+
+  .rupee-symbol {
+    font-size: 18px;
+  }
+
+  .points-info-box {
+    padding: 12px;
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .info-text p {
+    font-size: 12px;
+  }
+
+  .info-text li {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  /* Instagram Card */
+  .share-progress {
+    padding: 14px;
+  }
+
+  .progress-count {
+    font-size: 14px;
+  }
+
+  .progress-bar-track {
+    height: 8px;
+  }
+
+  .btn-claim-reward {
+    padding: 11px;
+    font-size: 13px;
+  }
+
+  /* Redemption */
+  .redemption-card-new {
+    padding: 16px;
+    border-width: 1.5px;
+    border-radius: 10px;
+  }
+
+  .redemption-header {
+    margin-bottom: 12px;
+  }
+
+  .redemption-icon-new {
     font-size: 24px;
+  }
+
+  .redemption-card-new h4 {
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .redemption-desc {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  .redemption-points {
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+  }
+
+  .points-icon-small {
+    font-size: 16px;
+  }
+
+  .points-cost {
+    font-size: 15px;
+  }
+
+  .btn-redeem,
+  .btn-redeem-disabled {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  /* Membership Card */
+  .membership-status-card {
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
+
+  .membership-header-row {
+    margin-bottom: 12px;
+  }
+
+  .membership-category-label {
+    font-size: 0.65rem;
+  }
+
+  .membership-plan-name {
+    font-size: 0.95rem;
+  }
+
+  .membership-rate-value {
+    font-size: 1.3rem;
+  }
+
+  .membership-rate-unit {
+    font-size: 0.75rem;
+  }
+
+  .membership-rate {
+    margin-bottom: 12px;
+  }
+
+  .membership-progress-section {
+    margin-bottom: 10px;
+  }
+
+  .membership-progress-labels {
+    font-size: 0.7rem;
+  }
+
+  .membership-progress-track {
+    height: 6px;
+  }
+
+  .membership-remaining-text {
+    font-size: 0.65rem;
+  }
+
+  .membership-days-row {
+    font-size: 0.7rem;
+  }
+
+  /* Quest Pass Card */
+  .quest-pass-card {
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
+
+  .quest-header-row {
+    margin-bottom: 12px;
+  }
+
+  .quest-category-label {
+    font-size: 0.65rem;
+  }
+
+  .quest-plan-name {
+    font-size: 0.95rem;
+  }
+
+  .quest-current-game {
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+
+  .quest-game-label {
+    font-size: 0.6rem;
+  }
+
+  .quest-game-name {
+    font-size: 0.9rem;
+  }
+
+  .quest-game-details {
+    font-size: 0.65rem;
+  }
+
+  .quest-change-pending {
+    padding: 7px 10px;
+    margin-bottom: 10px;
+    gap: 6px;
+  }
+
+  .quest-pending-icon {
+    font-size: 0.95rem;
+  }
+
+  .quest-pending-title,
+  .quest-pending-detail {
+    font-size: 0.65rem;
+  }
+
+  .quest-days-row {
+    font-size: 0.7rem;
+    margin-bottom: 10px;
+  }
+
+  .quest-change-game-btn {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    border-radius: 8px;
+    gap: 6px;
+  }
+
+  .quest-pending-emoji {
+    font-size: 1rem;
+  }
+
+  .quest-pending-heading {
+    font-size: 0.85rem;
+  }
+
+  .quest-pending-subtext {
+    font-size: 0.65rem;
+  }
+
+  .quest-pending-notice {
+    padding: 8px;
+    font-size: 0.7rem;
+  }
+
+  /* Loading & Error */
+  .profile-loading,
+  .profile-error {
+    padding: 40px 16px;
+    margin-top: 20px;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+  }
+
+  .profile-error h2 {
+    font-size: 18px;
+  }
+
+  .profile-error p {
+    font-size: 13px;
+  }
+
+  .btn-primary {
+    padding: 10px 24px;
+    font-size: 14px;
+  }
+
+  /* Alerts */
+  .alert {
+    padding: 12px 14px;
+    font-size: 13px;
+    gap: 8px;
+    border-radius: 8px;
+  }
+}
+
+/* ── Extra Small (≤360px) — very small phones ── */
+@media (max-width: 360px) {
+  .profile-page-new {
+    padding: 60px 4px 12px;
+  }
+
+  .profile-card {
+    padding: 14px 12px;
+    border-radius: 8px;
+  }
+
+  .profile-picture-large {
+    width: 64px;
+    height: 64px;
+  }
+
+  .profile-avatar-large {
+    font-size: 26px;
+  }
+
+  .profile-info-text h2 {
+    font-size: 16px;
+  }
+
+  .points-number {
+    font-size: 28px;
+  }
+
+  .points-worth {
+    font-size: 20px;
+  }
+
+  .points-info h3 {
+    font-size: 15px;
+  }
+
+  .card-title {
+    font-size: 14px;
+  }
+
+  .detail-value {
+    font-size: 12px;
+  }
+
+  .bh-card-top {
+    padding: 10px 12px;
+  }
+
+  .bh-date-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+  }
+
+  .bh-day { font-size: 14px; }
+  .bh-month { font-size: 9px; }
+  .bh-price { font-size: 14px; }
+
+  /* Membership & Quest at 360px */
+  .membership-status-card,
+  .quest-pass-card {
+    padding: 14px 12px;
+    border-radius: 10px;
+  }
+
+  .membership-plan-name,
+  .quest-plan-name {
+    font-size: 0.9rem;
+  }
+
+  .membership-rate-value {
+    font-size: 1.2rem;
+  }
+
+  .quest-game-name {
+    font-size: 0.85rem;
+  }
+
+  .quest-change-game-btn {
+    padding: 7px 10px;
+    font-size: 0.7rem;
   }
 }
 
@@ -1340,61 +2459,61 @@
   margin-left: 8px;
 }
 
-/* ── Mobile Responsive ── */
+/* ── Booking History — Mobile Responsive ── */
 @media (max-width: 768px) {
+  .booking-history-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .booking-count-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+
   .booking-filter-bar {
-    gap: 4px;
+    gap: 3px;
     padding: 4px;
-    border-radius: 12px;
+    border-radius: 10px;
+    margin-bottom: 14px;
   }
 
   .booking-filter-tab {
     padding: 7px 10px;
     font-size: 12px;
+    border-radius: 8px;
+    gap: 4px;
+  }
+
+  .filter-count {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+
+  .bookings-list {
+    gap: 10px;
+  }
+
+  .bh-card {
+    border-radius: 12px;
   }
 
   .bh-card-top {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
-    padding: 14px 16px;
+    padding: 14px 14px;
+  }
+
+  .bh-left {
+    gap: 10px;
   }
 
   .bh-right {
     width: 100%;
     justify-content: space-between;
-  }
-
-  .bh-detail-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .bh-footer {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .bh-bill-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .bh-footer-actions {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .bh-footer-actions .bh-bill-btn,
-  .bh-footer-actions .bh-cancel-btn,
-  .bh-footer-actions .bh-change-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .bh-cancel-confirm {
-    width: 100%;
-    justify-content: center;
   }
 
   .bh-date-badge {
@@ -1405,17 +2524,22 @@
 
   .bh-day { font-size: 16px; }
   .bh-month { font-size: 10px; }
-  .bh-price { font-size: 16px; }
-}
 
-@media (max-width: 480px) {
-  .booking-filter-bar {
-    margin-left: -4px;
-    margin-right: -4px;
+  .bh-time-row {
+    font-size: 13px;
   }
 
-  .bh-card-top {
-    padding: 12px 14px;
+  .bh-device-chip {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .bh-price { font-size: 16px; }
+
+  .bh-status-pill {
+    padding: 4px 10px;
+    font-size: 10px;
+    gap: 3px;
   }
 
   .bh-details {
@@ -1423,8 +2547,242 @@
   }
 
   .bh-detail-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .bh-detail-label {
+    font-size: 10px;
+  }
+
+  .bh-detail-value {
+    font-size: 13px;
+  }
+
+  .bh-device-row {
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .bh-players-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  .bh-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .bh-footer-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .bh-total-amount {
+    font-size: 18px;
+  }
+
+  .bh-points-badge {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
+  .bh-bill-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .bh-footer-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .bh-footer-actions .bh-bill-btn,
+  .bh-footer-actions .bh-cancel-btn,
+  .bh-footer-actions .bh-change-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bh-cancel-btn,
+  .bh-change-btn {
+    padding: 9px 14px;
+    font-size: 12px;
+  }
+
+  .bh-cancel-confirm {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 10px;
+  }
+
+  .bh-cancel-text {
+    font-size: 12px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .bh-cancel-yes,
+  .bh-cancel-no {
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Pagination */
+  .bh-pagination {
+    gap: 4px;
+    margin-top: 16px;
+    padding-top: 14px;
+  }
+
+  .bh-page-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .bh-page-num {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .bh-page-info {
+    font-size: 11px;
+    width: 100%;
+    text-align: center;
+    margin-left: 0;
+    margin-top: 4px;
+  }
+
+  /* Booked-as tag */
+  .booking-booked-as {
+    font-size: 12px;
+    padding: 5px 10px;
+    gap: 5px;
+  }
+
+  /* Empty state */
+  .no-bookings {
+    padding: 32px 16px;
+  }
+
+  .no-bookings-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+  }
+
+  .no-bookings p {
+    font-size: 14px;
+  }
+
+  .no-bookings-sub {
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-filter-bar {
+    margin-left: -2px;
+    margin-right: -2px;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 8px;
+  }
+
+  .booking-filter-tab {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .bh-card {
+    border-radius: 10px;
+    border-width: 1px;
+  }
+
+  .bh-card-top {
+    padding: 12px 12px;
+    gap: 8px;
+  }
+
+  .bh-left {
+    gap: 8px;
+  }
+
+  .bh-date-badge {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+  }
+
+  .bh-day { font-size: 15px; }
+  .bh-month { font-size: 9px; }
+
+  .bh-time-row {
+    font-size: 12px;
+  }
+
+  .bh-duration {
+    font-size: 11px;
+  }
+
+  .bh-price { font-size: 15px; }
+
+  .bh-details {
+    padding: 0 12px 14px;
+  }
+
+  .bh-detail-grid {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .bh-device-row {
+    padding: 7px 10px;
+    font-size: 11px;
+    gap: 6px;
+  }
+
+  .bh-device-list {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .bh-footer {
+    padding-top: 10px;
+    gap: 8px;
+  }
+
+  .bh-total-label {
+    font-size: 10px;
+  }
+
+  .bh-total-amount {
+    font-size: 17px;
+  }
+
+  .bh-bill-btn {
+    padding: 9px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .bh-cancel-btn,
+  .bh-change-btn {
+    padding: 8px 12px;
+    font-size: 11px;
+    border-radius: 8px;
   }
 }
 
@@ -1630,5 +2988,63 @@
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+/* ── Quest Modal — Mobile Responsive ── */
+@media (max-width: 480px) {
+  .quest-game-change-overlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .quest-game-change-modal {
+    padding: 22px 18px;
+    border-radius: 18px 18px 12px 12px;
+    max-width: 100%;
+  }
+
+  .quest-modal-header h3 {
+    font-size: 1.05rem;
+  }
+
+  .quest-modal-header p {
+    font-size: 0.75rem;
+  }
+
+  .quest-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .quest-modal-current {
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+
+  .quest-modal-game {
+    font-size: 0.9rem;
+  }
+
+  .quest-modal-select {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    border-radius: 10px;
+    padding-right: 32px;
+  }
+
+  .quest-modal-note {
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 0.7rem;
+    border-radius: 8px;
+  }
+
+  .quest-modal-submit {
+    padding: 11px 16px;
+    font-size: 0.88rem;
+    border-radius: 10px;
   }
 }

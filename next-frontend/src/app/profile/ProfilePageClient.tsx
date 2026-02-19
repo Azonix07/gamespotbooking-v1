@@ -512,88 +512,54 @@ const ProfilePage = () => {
 
               {/* Membership Card */}
               {membershipData && (
-                <div className="profile-card membership-status-card" style={{
-                  background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-                  color: '#fff',
-                  borderRadius: '16px',
-                  padding: '24px',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{
-                    position: 'absolute',
-                    top: '-20px',
-                    right: '-20px',
-                    width: '100px',
-                    height: '100px',
-                    borderRadius: '50%',
-                    background: 'rgba(255, 165, 0, 0.15)',
-                    pointerEvents: 'none'
-                  }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <div className="profile-card membership-status-card">
+                  <div className="membership-deco-circle" />
+                  <div className="membership-header-row">
                     <div>
-                      <p style={{ fontSize: '0.75rem', color: '#aaa', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      <p className="membership-category-label">
                         {membershipData.category === 'story' ? '🎮 Story Pass' : '🏎️ Driving Pass'}
                       </p>
-                      <h3 style={{ fontSize: '1.2rem', fontWeight: '700', margin: 0, textTransform: 'capitalize' }}>
+                      <h3 className="membership-plan-name">
                         {membershipData.plan_type?.replace(/_/g, ' ')}
                       </h3>
                     </div>
-                    <span style={{
-                      background: membershipData.status === 'active' ? '#00c853' : '#ff9800',
-                      color: '#fff',
-                      padding: '4px 10px',
-                      borderRadius: '12px',
-                      fontSize: '0.7rem',
-                      fontWeight: '600',
-                      textTransform: 'uppercase'
-                    }}>
+                    <span className={`membership-status-badge ${membershipData.status === 'active' ? 'membership-active' : 'membership-inactive'}`}>
                       {membershipData.status}
                     </span>
                   </div>
                   
                   {/* Rate per hour */}
                   {membershipData.rate_per_hour && (
-                    <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                      <span style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffa500' }}>
+                    <div className="membership-rate">
+                      <span className="membership-rate-value">
                         ₹{membershipData.rate_per_hour}
                       </span>
-                      <span style={{ fontSize: '0.85rem', color: '#aaa' }}>/hour</span>
+                      <span className="membership-rate-unit">/hour</span>
                     </div>
                   )}
 
                   {/* Hours Progress */}
-                  <div style={{ marginBottom: '14px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#ccc', marginBottom: '6px' }}>
+                  <div className="membership-progress-section">
+                    <div className="membership-progress-labels">
                       <span>Hours Used</span>
                       <span>
                         {parseFloat(membershipData.hours_used || 0).toFixed(1)} / {parseFloat(membershipData.total_hours || 0).toFixed(0)}h
                       </span>
                     </div>
-                    <div style={{
-                      width: '100%',
-                      height: '8px',
-                      borderRadius: '4px',
-                      background: 'rgba(255,255,255,0.15)',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{
-                        width: `${parseFloat(membershipData.total_hours || 0) > 0 ? Math.min(100, (parseFloat(membershipData.hours_used || 0) / parseFloat(membershipData.total_hours || 1)) * 100) : 0}%`,
-                        height: '100%',
-                        borderRadius: '4px',
-                        background: 'linear-gradient(90deg, #ffa500, #ff6b35)',
-                        transition: 'width 0.5s ease'
+                    <div className="membership-progress-track">
+                      <div className="membership-progress-fill" style={{
+                        width: `${parseFloat(membershipData.total_hours || 0) > 0 ? Math.min(100, (parseFloat(membershipData.hours_used || 0) / parseFloat(membershipData.total_hours || 1)) * 100) : 0}%`
                       }} />
                     </div>
-                    <p style={{ fontSize: '0.75rem', color: '#aaa', marginTop: '4px' }}>
+                    <p className="membership-remaining-text">
                       {parseFloat(membershipData.hours_remaining || 0).toFixed(1)}h remaining
                     </p>
                   </div>
 
                   {/* Days remaining */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#ccc' }}>
+                  <div className="membership-days-row">
                     <span><FiClock style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Days Remaining</span>
-                    <span style={{ fontWeight: '600', color: '#fff' }}>
+                    <span className="membership-days-value">
                       {membershipData.days_remaining || 0} days
                     </span>
                   </div>
@@ -602,96 +568,57 @@ const ProfilePage = () => {
 
               {/* Quest Pass Card */}
               {questPass?.has_active && (
-                <div className="profile-card quest-pass-card" style={{
-                  background: 'linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #4a1d6e 100%)',
-                  color: '#fff',
-                  borderRadius: '16px',
-                  padding: '24px',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}>
+                <div className="profile-card quest-pass-card">
                   {/* Decorative circle */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '-20px',
-                    right: '-20px',
-                    width: '100px',
-                    height: '100px',
-                    borderRadius: '50%',
-                    background: 'rgba(139, 92, 246, 0.15)',
-                    pointerEvents: 'none'
-                  }} />
+                  <div className="quest-deco-circle" />
 
                   {/* Header */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                  <div className="quest-header-row">
                     <div>
-                      <p style={{ fontSize: '0.75rem', color: '#b39ddb', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      <p className="quest-category-label">
                         🏆 Quest Pass
                       </p>
-                      <h3 style={{ fontSize: '1.2rem', fontWeight: '700', margin: 0 }}>
+                      <h3 className="quest-plan-name">
                         Dedicated Console
                       </h3>
                     </div>
-                    <span style={{
-                      background: '#00c853',
-                      color: '#fff',
-                      padding: '4px 10px',
-                      borderRadius: '12px',
-                      fontSize: '0.7rem',
-                      fontWeight: '600',
-                      textTransform: 'uppercase'
-                    }}>
+                    <span className="quest-status-badge quest-badge-active">
                       Active
                     </span>
                   </div>
 
                   {/* Current Game */}
-                  <div style={{
-                    background: 'rgba(139, 92, 246, 0.15)',
-                    border: '1px solid rgba(139, 92, 246, 0.3)',
-                    borderRadius: '12px',
-                    padding: '14px',
-                    marginBottom: '14px'
-                  }}>
-                    <p style={{ fontSize: '0.7rem', color: '#b39ddb', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <div className="quest-current-game">
+                    <p className="quest-game-label">
                       Current Game
                     </p>
-                    <p style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0, color: '#e0b0ff' }}>
+                    <p className="quest-game-name">
                       🎮 {questPass.active_pass?.game_name || 'Not set'}
                     </p>
-                    <p style={{ fontSize: '0.75rem', color: '#b39ddb', marginTop: '4px' }}>
+                    <p className="quest-game-details">
                       PS5-{questPass.active_pass?.device_number} • ₹{questPass.active_pass?.play_rate || 50}/hr
                     </p>
                   </div>
 
                   {/* Game Change Pending Notice */}
                   {questPass.active_pass?.game_change_requested && (
-                    <div style={{
-                      background: 'rgba(255, 152, 0, 0.15)',
-                      border: '1px solid rgba(255, 152, 0, 0.3)',
-                      borderRadius: '10px',
-                      padding: '10px 14px',
-                      marginBottom: '14px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}>
-                      <span style={{ fontSize: '1.1rem' }}>⏳</span>
+                    <div className="quest-change-pending">
+                      <span className="quest-pending-icon">⏳</span>
                       <div>
-                        <p style={{ fontSize: '0.75rem', color: '#ffb74d', margin: 0, fontWeight: '600' }}>
+                        <p className="quest-pending-title">
                           Game Change Pending
                         </p>
-                        <p style={{ fontSize: '0.75rem', color: '#aaa', margin: 0 }}>
-                          Requested: <strong style={{ color: '#fff' }}>{questPass.active_pass.game_change_requested}</strong>
+                        <p className="quest-pending-detail">
+                          Requested: <strong>{questPass.active_pass.game_change_requested}</strong>
                         </p>
                       </div>
                     </div>
                   )}
 
                   {/* Days Remaining */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#ccc', marginBottom: '14px' }}>
+                  <div className="quest-days-row">
                     <span><FiClock style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Days Remaining</span>
-                    <span style={{ fontWeight: '600', color: '#fff' }}>
+                    <span className="quest-days-value">
                       {questPass.active_pass?.days_remaining || 0} days
                     </span>
                   </div>
@@ -699,23 +626,8 @@ const ProfilePage = () => {
                   {/* Change Game Button */}
                   {!questPass.active_pass?.game_change_requested && (
                     <button
+                      className="quest-change-game-btn"
                       onClick={() => setShowGameChangeModal(true)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 16px',
-                        border: '1px solid rgba(139, 92, 246, 0.5)',
-                        background: 'rgba(139, 92, 246, 0.2)',
-                        color: '#e0b0ff',
-                        borderRadius: '10px',
-                        fontSize: '0.85rem',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        transition: 'all 0.2s ease'
-                      }}
                     >
                       <FiRefreshCw size={16} /> Change Game
                     </button>
@@ -725,27 +637,15 @@ const ProfilePage = () => {
 
               {/* Quest Pass Pending */}
               {questPass?.has_pending && !questPass?.has_active && (
-                <div className="profile-card" style={{
-                  background: 'linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 100%)',
-                  color: '#fff',
-                  borderRadius: '16px',
-                  padding: '24px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '1.4rem' }}>🏆</span>
+                <div className="profile-card quest-pass-card quest-pass-pending">
+                  <div className="quest-pending-header">
+                    <span className="quest-pending-emoji">🏆</span>
                     <div>
-                      <h3 style={{ fontSize: '1rem', fontWeight: '700', margin: 0 }}>Quest Pass</h3>
-                      <p style={{ fontSize: '0.75rem', color: '#b39ddb', margin: 0 }}>Awaiting Admin Approval</p>
+                      <h3 className="quest-pending-heading">Quest Pass</h3>
+                      <p className="quest-pending-subtext">Awaiting Admin Approval</p>
                     </div>
                   </div>
-                  <div style={{
-                    background: 'rgba(255, 152, 0, 0.12)',
-                    border: '1px solid rgba(255, 152, 0, 0.25)',
-                    borderRadius: '10px',
-                    padding: '10px',
-                    fontSize: '0.8rem',
-                    color: '#ffb74d'
-                  }}>
+                  <div className="quest-pending-notice">
                     ⏳ Request pending for "<strong>{questPass.pending_pass?.game_name}</strong>"
                   </div>
                 </div>
