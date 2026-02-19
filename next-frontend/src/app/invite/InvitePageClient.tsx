@@ -78,7 +78,7 @@ function InvitePage() {
           Welcome to <span className="invite-brand">GameSpot</span>
         </h1>
         <p className="invite-sub">
-          Calicut's premium gaming lounge — book, play, and level up!
+          Kodungallur&apos;s premium gaming lounge — book, play, and level up!
         </p>
 
         <div className="invite-grid">
@@ -104,7 +104,7 @@ function InvitePage() {
         </div>
 
         <p className="invite-footer-text">
-          GameSpot Gaming Lounge · Kozhikode, Kerala
+          GameSpot Gaming Lounge · Kodungallur, Thrissur, Kerala
         </p>
       </div>
     </div>
