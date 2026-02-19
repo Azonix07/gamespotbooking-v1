@@ -141,8 +141,7 @@ const RentalPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
-      const response = await fetch(`${API_BASE_URL}/api/rentals`, {
+      const response = await fetch(`/api/rentals`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

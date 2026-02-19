@@ -103,14 +103,19 @@ def is_origin_allowed(origin):
     # Allow any Railway-deployed service (*.up.railway.app)
     if origin.endswith('.up.railway.app') and origin.startswith('https://'):
         return True
+    # Allow any subdomain of the main domains
+    for allowed in ['gamespotkdlr.com', 'gamespot.in']:
+        if origin.endswith(f'.{allowed}') and origin.startswith('https://'):
+            return True
     return False
 
 
-# CORS Configuration
+# CORS Configuration — flask-cors handles OPTIONS preflight automatically
 CORS(app, 
      supports_credentials=True,
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
-     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     max_age=3600)  # Cache preflight for 1 hour to reduce OPTIONS requests
 
 # Add after_request handler for security headers
 @app.after_request
@@ -123,6 +128,7 @@ def add_security_headers(response):
         response.headers['Access-Control-Allow-Credentials'] = 'true'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Max-Age'] = '3600'  # Cache preflight for 1 hour
     
     # Security headers
     response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -131,14 +137,16 @@ def add_security_headers(response):
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     response.headers['Permissions-Policy'] = 'camera=(), microphone=(self), geolocation=()'
     
-    # Content-Security-Policy
+    # Content-Security-Policy — allow all known frontend domains in connect-src
     response.headers['Content-Security-Policy'] = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https:; "
-        "connect-src 'self' https://*.railway.app https://accounts.google.com; "
+        "connect-src 'self' https://*.railway.app https://accounts.google.com "
+        "https://gamespotkdlr.com https://www.gamespotkdlr.com "
+        "https://gamespot.in https://www.gamespot.in; "
         "frame-src https://accounts.google.com; "
         "object-src 'none'; "
         "base-uri 'self'"

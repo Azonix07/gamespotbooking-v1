@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     clearTokens();
     try { localStorage.removeItem('gamespot_logged_in'); localStorage.removeItem('gamespot_user_type'); } catch (e) {}
     try {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app'}/api/auth/logout`, {
+      fetch(`/api/auth/logout`, {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
       }).catch(() => {});
     } catch (err) {}

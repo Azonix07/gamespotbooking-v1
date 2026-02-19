@@ -62,7 +62,8 @@ const ProfilePage = () => {
   const [confirmCancelId, setConfirmCancelId] = useState(null);
   const BOOKINGS_PER_PAGE = 5;
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+  const API_URL = '';  // Use relative URLs — proxied through Next.js rewrites
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
 
   // Safe date formatter — never throws
   const formatDate = useCallback((dateStr, options = {}) => {
@@ -457,7 +458,7 @@ const ProfilePage = () => {
                   <div className="profile-picture-large">
                     {profileData?.profile_picture ? (
                       <img 
-                        src={`${API_URL}/${profileData.profile_picture}`} 
+                        src={`${BACKEND_URL}/${profileData.profile_picture}`} 
                         alt="Profile" 
                       />
                     ) : (

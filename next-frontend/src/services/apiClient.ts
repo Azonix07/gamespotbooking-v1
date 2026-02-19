@@ -1,9 +1,16 @@
 /**
  * Central API Client (Security-Hardened) — Next.js Version
  * Handles ALL backend communication with JWT + HttpOnly cookies.
+ * 
+ * Uses relative URLs on the client (proxied through Next.js rewrites to avoid CORS)
+ * Falls back to direct backend URL for server-side rendering
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+
+// On the client (browser), use relative URLs so requests go through the Next.js proxy → no CORS.
+// On the server (SSR), we must use the full backend URL directly.
+const API_BASE_URL = typeof window !== 'undefined' ? '' : BACKEND_URL;
 
 // In-memory token store (NOT accessible to XSS attacks)
 let _accessToken: string | null = null;
@@ -74,12 +81,16 @@ const refreshAccessToken = async (): Promise<boolean> => {
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export const apiFetch = async (path: string, options: RequestInit = {}, _isRetry = false, _networkRetries = 2): Promise<any> => {
+export const apiFetch = async (path: string, options: RequestInit = {}, _isRetry = false, _networkRetries = 3): Promise<any> => {
   const url = `${API_BASE_URL}${path}`;
   const token = getAuthToken();
 
+  // Only set Content-Type for requests with a body to avoid unnecessary CORS preflight on GET
+  const method = (options.method || 'GET').toUpperCase();
+  const needsContentType = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(needsContentType ? { 'Content-Type': 'application/json' } : {}),
     ...((options.headers as Record<string, string>) || {}),
   };
 
@@ -89,7 +100,7 @@ export const apiFetch = async (path: string, options: RequestInit = {}, _isRetry
 
   const isAuthPath = path.includes('/auth/');
   const isForgotPassword = path.includes('/forgot-password') || path.includes('/reset-password') || path.includes('/verify-reset-otp');
-  const timeoutMs = isForgotPassword ? 45000 : isAuthPath ? 20000 : 30000;
+  const timeoutMs = isForgotPassword ? 50000 : isAuthPath ? 30000 : 40000;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -104,19 +115,22 @@ export const apiFetch = async (path: string, options: RequestInit = {}, _isRetry
   } catch (err: any) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
-      if (_networkRetries > 0) { await delay(1000); return apiFetch(path, options, _isRetry, _networkRetries - 1); }
-      throw new Error('Request timed out. Please check your internet connection and try again.');
+      if (_networkRetries > 0) {
+        await delay(1500 + (3 - _networkRetries) * 1000);
+        return apiFetch(path, options, _isRetry, _networkRetries - 1);
+      }
+      throw new Error('Request timed out. The server may be starting up — please try again in a moment.');
     }
-    // Retry on network errors (DNS failures, connection resets, etc.)
+    // Retry on network errors (DNS failures, connection resets, CORS blocks, etc.)
     if (_networkRetries > 0) {
-      await delay(1500);
+      await delay(2000 + (3 - _networkRetries) * 1500);
       return apiFetch(path, options, _isRetry, _networkRetries - 1);
     }
-    throw new Error('Network error. Please check your internet connection.');
+    throw new Error('Unable to connect to the server. Please try again.');
   }
   clearTimeout(timeoutId);
 
-  // Retry on 502/503/504 (server temporarily down)
+  // Retry on 502/503/504 (server temporarily down / Railway cold start)
   if ([502, 503, 504].includes(response.status) && _networkRetries > 0) {
     await delay(2000);
     return apiFetch(path, options, _isRetry, _networkRetries - 1);

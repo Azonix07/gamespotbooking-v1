@@ -64,16 +64,15 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app',
     NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '556892794157-0ou93bns5ok2n32nk3nruhhnf4juog1h.apps.googleusercontent.com',
   },
-  // Rewrites for API proxy in development
+  // Rewrites for API proxy — works in both dev and production
+  // This avoids CORS issues by proxying API calls through the Next.js server
   async rewrites() {
-    return process.env.NODE_ENV === 'development'
-      ? [
-          {
-            source: '/api/:path*',
-            destination: `${process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app'}/api/:path*`,
-          },
-        ]
-      : [];
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app'}/api/:path*`,
+      },
+    ];
   },
 };
 

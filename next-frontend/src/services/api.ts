@@ -1,9 +1,16 @@
 /**
  * API Service — Next.js Version
  * All API calls to the backend
+ * 
+ * Uses relative URLs on the client (proxied through Next.js rewrites to avoid CORS)
+ * Falls back to direct backend URL for server-side rendering
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
+
+// On the client (browser), use relative URLs so requests go through the Next.js proxy → no CORS.
+// On the server (SSR), we must use the full backend URL directly.
+const API_BASE_URL = typeof window !== 'undefined' ? '' : BACKEND_URL;
 
 const getAuthToken = (): string | null => {
   try {
@@ -16,49 +23,89 @@ const getAuthToken = (): string | null => {
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const fetchWithCredentials = async (url: string, options: RequestInit = {}, retries = 2): Promise<any> => {
+const fetchWithCredentials = async (url: string, options: RequestInit = {}, retries = 3): Promise<any> => {
   const token = getAuthToken();
+
+  // Only set Content-Type for requests with a body (POST, PUT, PATCH, DELETE)
+  // GET requests should NOT send Content-Type to avoid unnecessary CORS preflight
+  const method = (options.method || 'GET').toUpperCase();
+  const needsContentType = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(needsContentType ? { 'Content-Type': 'application/json' } : {}),
     ...((options.headers as Record<string, string>) || {}),
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
+  // Longer timeout for slow mobile networks and Railway cold starts
+  const timeoutMs = retries <= 1 ? 45000 : 35000;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   let response: Response;
   try {
     response = await fetch(url, { ...options, credentials: 'include', headers, signal: controller.signal });
   } catch (err: any) {
     clearTimeout(timeoutId);
+
+    // Detect CORS errors — browsers throw TypeError with specific messages
+    const isCORSError = err instanceof TypeError && (
+      err.message.includes('Failed to fetch') ||
+      err.message.includes('NetworkError') ||
+      err.message.includes('Network request failed') ||
+      err.message.includes('Load failed') // Safari
+    );
+
     if (err.name === 'AbortError') {
-      if (retries > 0) { await delay(1000); return fetchWithCredentials(url, options, retries - 1); }
-      throw new Error('Request timed out. Please try again.');
+      if (retries > 0) {
+        await delay(1500 + (3 - retries) * 1000); // Progressive backoff
+        return fetchWithCredentials(url, options, retries - 1);
+      }
+      throw new Error('Request timed out. The server may be starting up — please try again in a moment.');
     }
-    // Retry on network errors (DNS failures, connection resets, etc.)
+
+    // Retry on network errors (DNS failures, connection resets, CORS, etc.)
     if (retries > 0) {
-      await delay(1500);
+      await delay(2000 + (3 - retries) * 1500); // Progressive backoff: 2s, 3.5s, 5s
       return fetchWithCredentials(url, options, retries - 1);
     }
-    throw new Error('Network error. Please check your internet connection.');
+
+    // Give a more helpful error message
+    if (isCORSError) {
+      throw new Error('Unable to connect to the server. Please try again.');
+    }
+    throw new Error('Network error. Please check your internet connection and try again.');
   }
   clearTimeout(timeoutId);
 
-  // Retry on 502/503/504 (server temporarily down)
+  // Retry on 502/503/504 (server temporarily down / Railway cold start)
   if ([502, 503, 504].includes(response.status) && retries > 0) {
-    await delay(2000);
+    await delay(2500 + (3 - retries) * 1500);
     return fetchWithCredentials(url, options, retries - 1);
+  }
+
+  // Handle 0 status (network level block, e.g. ad blockers, firewalls)
+  if (response.status === 0) {
+    if (retries > 0) {
+      await delay(2000);
+      return fetchWithCredentials(url, options, retries - 1);
+    }
+    throw new Error('Unable to reach the server. Please check if anything is blocking the connection.');
   }
 
   const contentType = response.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {
     await response.text();
-    throw new Error(`Server returned non-JSON response (${response.status})`);
+    // On non-JSON response, retry once (could be a CDN/proxy error page)
+    if (retries > 0) {
+      await delay(2000);
+      return fetchWithCredentials(url, options, retries - 1);
+    }
+    throw new Error(`Server returned an unexpected response (${response.status}). Please try again.`);
   }
 
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'API request failed');
+  if (!response.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
   return data;
 };
 

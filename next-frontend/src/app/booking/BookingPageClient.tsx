@@ -4,7 +4,7 @@
 import { useRouter } from 'next/navigation';
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo, FiRefreshCw } from 'react-icons/fi';
 import { GiSteeringWheel } from 'react-icons/gi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus, getGames, createPartyBooking } from '@/services/api';
@@ -200,18 +200,21 @@ const BookingPage = () => {
     };
   }, [bookingsKey]);
 
-  const loadSlots = async () => {
+  const loadSlots = async (isRetry = false) => {
     try {
       setLoading(true);
-      setError(null);
+      if (!isRetry) setError(null);
       setDayClosedInfo(null);
       const response = await getSlots(selectedDate);
       setSlots(response?.slots || []);
+      setError(null); // Clear error on success
       if (response?.is_closed) {
         setDayClosedInfo({ is_closed: true, reason: response.closure_reason || 'Shop closed for the day' });
       }
     } catch (err) {
-      setError(err.message);
+      console.error('Failed to load slots:', err);
+      setSlots([]); // Clear stale slots on error
+      setError(err.message || 'Failed to load time slots. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -1346,26 +1349,26 @@ const BookingPage = () => {
                         <FiClock />
                       </div>
                       <div className="header-text">
-                        <h3 className="header-title">Available Time Slots</h3>
-                        <p className="header-subtitle">Select your preferred gaming time</p>
+                        <h3 className="header-title">Pick Your Time</h3>
+                        <p className="header-subtitle">Tap a slot to start gaming 🎮</p>
                       </div>
                     </div>
-                    <div className="slot-status-legend">
-                      <div className="legend-item">
-                        <span className="status-dot status-available"></span>
-                        <span className="status-label">Available</span>
+                    <div className="slot-legend-bar">
+                      <div className="legend-chip legend-available">
+                        <span className="legend-dot"></span>
+                        <span className="legend-label">Open</span>
                       </div>
-                      <div className="legend-item">
-                        <span className="status-dot status-partial"></span>
-                        <span className="status-label">Partly Booked</span>
+                      <div className="legend-chip legend-partial">
+                        <span className="legend-dot"></span>
+                        <span className="legend-label">Filling</span>
                       </div>
-                      <div className="legend-item">
-                        <span className="status-dot status-full"></span>
-                        <span className="status-label">Full</span>
+                      <div className="legend-chip legend-full">
+                        <span className="legend-dot"></span>
+                        <span className="legend-label">Full</span>
                       </div>
-                      <div className="legend-item">
-                        <span className="status-dot status-closed"></span>
-                        <span className="status-label">Closed</span>
+                      <div className="legend-chip legend-past">
+                        <span className="legend-dot"></span>
+                        <span className="legend-label">Past</span>
                       </div>
                     </div>
                   </div>
@@ -1391,6 +1394,19 @@ const BookingPage = () => {
                       </div>
                       <p className="loading-text">Finding available slots...</p>
                     </div>
+                  ) : error && slots.length === 0 ? (
+                    <div className="slots-error-container">
+                      <div className="slots-error-icon">⚠️</div>
+                      <p className="slots-error-message">{error}</p>
+                      <button 
+                        className="slots-retry-btn"
+                        onClick={() => loadSlots(true)}
+                      >
+                        <FiRefreshCw className="retry-icon" />
+                        Try Again
+                      </button>
+                      <p className="slots-error-hint">If this keeps happening, try refreshing the page or switching to a different network.</p>
+                    </div>
                   ) : (
                     <div className="time-slots-scroll-wrapper">
                       <motion.div 
@@ -1403,42 +1419,52 @@ const BookingPage = () => {
                           const disabled = isSlotDisabled(slot);
                           const past = isSlotPast(slot.time);
                           const maxDur = getMaxDuration(slot.time);
-                          const isLateSlot = maxDur <= 60 && maxDur >= MIN_BOOKING_DURATION; // 23:00 or 23:30
+                          const isLateSlot = maxDur <= 60 && maxDur >= MIN_BOOKING_DURATION;
+                          const isSelected = selectedTime === slot.time;
+                          
+                          // Determine visual state class
+                          let stateClass = slot.status;
+                          if (slot.status === 'closed') stateClass = 'closed';
+                          else if (past) stateClass = 'past';
+                          else if (disabled && slot.status !== 'closed') stateClass = 'closing-soon';
+
                           return (
                           <motion.button
                             key={slot.time}
                             variants={fadeInUp}
-                            className={`time-slot ${slot.status} ${selectedTime === slot.time ? 'selected' : ''} ${past ? 'past' : ''} ${disabled && !past && slot.status !== 'closed' ? 'closing-soon' : ''}`}
+                            className={`ts-card ts-${stateClass} ${isSelected ? 'ts-selected' : ''}`}
                             onClick={() => !disabled && handleTimeSelect(slot.time, slot.status)}
                             disabled={disabled}
-                            whileHover={!disabled ? { scale: 1.04 } : {}}
-                            whileTap={!disabled ? { scale: 0.97 } : {}}
+                            whileHover={!disabled ? { scale: 1.05, y: -2 } : {}}
+                            whileTap={!disabled ? { scale: 0.96 } : {}}
                             title={slot.status === 'closed' ? (slot.closure_reason || 'Shop closed') : past ? 'This slot has passed' : maxDur < MIN_BOOKING_DURATION ? 'Too close to closing time (12 AM)' : isLateSlot ? `Max ${maxDur} min — closes at 12 AM` : ''}
                           >
-                            <span className="slot-time">{formatTime12Hour(slot.time)}</span>
+                            {/* Status indicator dot */}
+                            <span className="ts-dot"></span>
+
+                            {/* Time */}
+                            <span className="ts-time">{formatTime12Hour(slot.time)}</span>
+
+                            {/* Sub-label based on state */}
                             {slot.status === 'closed' && (
-                              <span className="slot-capacity slot-closed-label">🚫 Closed</span>
+                              <span className="ts-label">Closed</span>
                             )}
                             {slot.status !== 'closed' && past && (
-                              <span className="slot-capacity slot-past-label">Past</span>
+                              <span className="ts-label">Past</span>
                             )}
                             {slot.status !== 'closed' && !past && isLateSlot && (
-                              <span className="slot-capacity slot-closing-label">
-                                Max {maxDur}min
-                              </span>
+                              <span className="ts-label ts-label-warn">Max {maxDur}m</span>
                             )}
                             {slot.status !== 'closed' && !past && !isLateSlot && slot.status === 'partial' && (
-                              <span className="slot-capacity">
-                                <FiMonitor className="capacity-icon" />
-                                {slot.available_ps5} PS5 free
+                              <span className="ts-label ts-label-partial">
+                                {slot.available_ps5} left
                               </span>
                             )}
-                            {selectedTime === slot.time && (
-                              <motion.div 
-                                className="slot-selected-indicator"
-                                layoutId="timeIndicator"
-                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                              />
+                            {slot.status !== 'closed' && !past && !isLateSlot && slot.status === 'available' && (
+                              <span className="ts-label ts-label-open">Open</span>
+                            )}
+                            {slot.status !== 'closed' && !past && !isLateSlot && slot.status === 'full' && (
+                              <span className="ts-label ts-label-full">Full</span>
                             )}
                           </motion.button>
                           );
@@ -1446,7 +1472,7 @@ const BookingPage = () => {
                       </motion.div>
                       <div className="closing-time-notice">
                         <FiInfo className="closing-notice-icon" />
-                        <span>We close at <strong>12:00 AM (Midnight)</strong>. Last booking must end by midnight. Book at least 30 mins before closing.</span>
+                        <span>We close at <strong>12:00 AM (Midnight)</strong>. Last booking must end by midnight.</span>
                       </div>
                     </div>
                   )}

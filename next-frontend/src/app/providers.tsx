@@ -29,8 +29,7 @@ function ThemeLoader() {
     const controller = new AbortController();
     const fetchTheme = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gamespotbooking-v1-production.up.railway.app';
-        const res = await fetch(`${API_URL}/api/theme`, {
+        const res = await fetch(`/api/theme`, {
           credentials: 'include',
           signal: controller.signal,
         });
