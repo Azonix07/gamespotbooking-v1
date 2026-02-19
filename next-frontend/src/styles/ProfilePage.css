@@ -29,6 +29,14 @@
   margin-top: 24px;
   width: 100%;
   box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Grid children must not overflow */
+.profile-sidebar,
+.profile-content {
+  min-width: 0;
+  width: 100%;
 }
 
 /* Alert Messages */
@@ -1056,32 +1064,43 @@
 /* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
   .profile-page-new {
-    padding: 70px 16px 30px;
+    padding: 70px 14px 30px;
     width: 100%;
+    max-width: 100vw;
   }
 
   .profile-container-new {
     width: 100%;
     max-width: 100%;
     padding: 0;
+    margin: 0;
   }
 
   .profile-grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
     margin-top: 16px;
     width: 100%;
   }
 
-  .profile-card {
-    padding: 20px 16px;
-    margin-bottom: 12px;
-    border-radius: 12px;
+  .profile-sidebar {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
-  /* Sidebar */
-  .profile-sidebar {
-    gap: 12px;
+  .profile-content {
+    width: 100%;
+  }
+
+  .profile-card {
+    padding: 20px 16px;
+    margin-bottom: 0;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .profile-pic-card {
@@ -1449,29 +1468,41 @@
 /* ── Small Mobile (≤480px) ── */
 @media (max-width: 480px) {
   .profile-page-new {
-    padding: 64px 16px 20px;
+    padding: 64px 12px 20px;
     width: 100%;
+    max-width: 100vw;
   }
 
   .profile-container-new {
     width: 100%;
     max-width: 100%;
     padding: 0;
+    margin: 0;
   }
 
   .profile-grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 10px;
     margin-top: 12px;
     width: 100%;
   }
 
+  .profile-sidebar {
+    width: 100%;
+  }
+
+  .profile-content {
+    width: 100%;
+  }
+
   .profile-card {
     padding: 16px 14px;
-    margin-bottom: 8px;
+    margin-bottom: 0;
     border-radius: 10px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
     width: 100%;
+    max-width: 100%;
   }
 
   /* Avatar */
@@ -1813,17 +1844,20 @@
 /* ── Extra Small (≤360px) — very small phones ── */
 @media (max-width: 360px) {
   .profile-page-new {
-    padding: 60px 10px 16px;
+    padding: 60px 8px 16px;
     width: 100%;
+    max-width: 100vw;
   }
 
   .profile-container-new {
     width: 100%;
     max-width: 100%;
+    margin: 0;
   }
 
   .profile-grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 8px;
     width: 100%;
   }
