@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fi';
 import { IoGameController, IoCarSport } from 'react-icons/io5';
 import { TbDeviceVisionPro } from 'react-icons/tb';
+import { FaInstagram } from 'react-icons/fa';
 import { getToday } from '@/utils/helpers';
 import useFreePlaces, { haversineDistance, getFreeMapUrl, getOSMLink, getDirectionsUrl } from '@/hooks/useFreePlaces';
 import '@/styles/CollegeSetupPage.css';
@@ -33,7 +34,7 @@ const completedColleges = [
   {
     id: 1,
     name: 'Vidya Academy of Science & Technology',
-    shortName: 'Vidya Engineering',
+    shortName: 'VAST',
     location: 'Thrissur',
     state: 'Kerala',
     date: 'January 2026',
@@ -46,7 +47,7 @@ const completedColleges = [
       '/images/colleges/vidya-2.jpg',
       '/images/colleges/vidya-3.jpg'
     ],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoUrl: 'https://www.instagram.com/s/aGlnaGxpZ2h0OjE3OTY0MzU4NjI4ODQ0Nzk0?story_media_id=3470624048138732843&igsh=b3dranNtOTMzMm5w',
     highlights: ['4 PS5 Stations', '2 VR Zones', 'Driving Simulator', 'FIFA Tournament'],
     equipment: { ps5: 4, vr: 2, drivingSim: true },
     rating: 4.9,
@@ -60,21 +61,21 @@ const completedColleges = [
   },
   {
     id: 2,
-    name: 'Sahridaya College of Advanced Studies',
-    shortName: 'Sahridaya',
-    location: 'Kodakara',
+    name: 'Sahrdaya College of Engineering & Technology (Autonomous)',
+    shortName: 'Sahrdaya',
+    location: 'Kodungallur',
     state: 'Kerala',
     date: 'December 2025',
-    eventName: 'Sahridaya Fest 2025',
+    eventName: 'Sahrdaya Fest 2025',
     students: '600+',
     duration: '3 days',
-    thumbnail: '/images/colleges/sahridaya.jpg',
+    thumbnail: '/images/colleges/sahrdaya.jpg',
     gallery: [
-      '/images/colleges/sahridaya-1.jpg',
-      '/images/colleges/sahridaya-2.jpg',
-      '/images/colleges/sahridaya-3.jpg'
+      '/images/colleges/sahrdaya-1.jpg',
+      '/images/colleges/sahrdaya-2.jpg',
+      '/images/colleges/sahrdaya-3.jpg'
     ],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoUrl: 'https://www.instagram.com/reel/DB5vX7qRn6U/?igsh=MTF4emhrM2hkbGVqbw==',
     highlights: ['4 PS5 Stations', '2 VR Zones', 'Driving Simulator', 'Gaming Lounge'],
     equipment: { ps5: 4, vr: 2, drivingSim: true },
     rating: 4.8,
@@ -87,20 +88,20 @@ const completedColleges = [
   },
   {
     id: 3,
-    name: 'Thanallur Arts and Science College',
-    shortName: 'Thanallur College',
-    location: 'Irinjalakuda',
+    name: 'Tharananellur Arts & Science College',
+    shortName: 'Tharananellur College',
+    location: 'Tharananellur',
     state: 'Kerala',
     date: 'November 2025',
-    eventName: 'Thanallur Utsav 2025',
+    eventName: 'Tharananellur Utsav 2025',
     students: '500+',
     duration: '3 days',
-    thumbnail: '/images/colleges/thanallur.jpg',
+    thumbnail: '/images/colleges/tharananellur.jpg',
     gallery: [
-      '/images/colleges/thanallur-1.jpg',
-      '/images/colleges/thanallur-2.jpg'
+      '/images/colleges/tharananellur-1.jpg',
+      '/images/colleges/tharananellur-2.jpg'
     ],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoUrl: 'https://www.instagram.com/s/aGlnaGxpZ2h0OjE3ODYyNzkwMjg0MzQwNDE0?story_media_id=3551761286377482930&igsh=dHEydXYxMXBkajJ5',
     highlights: ['4 PS5 Stations', '2 VR Zones', 'Esports Tournament', 'Beat Saber Challenge'],
     equipment: { ps5: 4, vr: 2, drivingSim: false },
     rating: 4.9,
@@ -113,12 +114,12 @@ const completedColleges = [
   },
   {
     id: 4,
-    name: 'Nirmala College of Engineering',
-    shortName: 'Nirmala Engineering',
-    location: 'Chalakudy',
+    name: 'Nirmala College of Arts & Science',
+    shortName: 'Nirmala College',
+    location: 'Meloor, Thrissur',
     state: 'Kerala',
     date: 'October 2025',
-    eventName: 'Nirmala Tech Fest 2025',
+    eventName: 'Nirmala Fest 2025',
     students: '850+',
     duration: '5 days',
     thumbnail: '/images/colleges/nirmala.jpg',
@@ -127,7 +128,7 @@ const completedColleges = [
       '/images/colleges/nirmala-2.jpg',
       '/images/colleges/nirmala-3.jpg'
     ],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoUrl: 'https://www.instagram.com/reel/DHBdnOaMKUg/?igsh=Z29kdDh2cW54c2M4',
     highlights: ['4 PS5 Stations', '2 VR Zones', 'Driving Simulator', 'Gaming Marathon'],
     equipment: { ps5: 4, vr: 2, drivingSim: true },
     rating: 5.0,
@@ -140,9 +141,9 @@ const completedColleges = [
   },
   {
     id: 5,
-    name: 'Jyothi Engineering College',
+    name: 'Jyothi Engineering College (Autonomous)',
     shortName: 'Jyothi Engineering',
-    location: 'Thrissur',
+    location: 'Cheruthuruthy, Thrissur',
     state: 'Kerala',
     date: 'September 2025',
     eventName: 'Jyothi Carnival 2025',
@@ -153,7 +154,7 @@ const completedColleges = [
       '/images/colleges/jyothi-1.jpg',
       '/images/colleges/jyothi-2.jpg'
     ],
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoUrl: 'https://www.instagram.com/s/aGlnaGxpZ2h0OjE4MDc2NzQ1NTMxNTgyNTIz?story_media_id=3809966238920069623&igsh=MXh0cDFjdnJicXo5Yw==',
     highlights: ['4 PS5 Stations', '2 VR Zones', 'FIFA Championship', 'VR Racing'],
     equipment: { ps5: 4, vr: 2, drivingSim: false },
     rating: 4.8,
@@ -629,8 +630,7 @@ const CollegeSetupPage = () => {
                     <div className="card-overlay">
                       <button className="play-btn" onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedCollege(college);
-                        setShowVideoModal(true);
+                        window.open(college.videoUrl, '_blank', 'noopener');
                       }}>
                         <FiPlay />
                       </button>
@@ -1352,8 +1352,7 @@ const CollegeSetupPage = () => {
               <button 
                 className="watch-video-btn"
                 onClick={() => {
-                  setShowCollegeModal(false);
-                  setShowVideoModal(true);
+                  window.open(selectedCollege.videoUrl, '_blank', 'noopener');
                 }}
               >
                 <FiPlay /> Watch Event Video
@@ -1363,7 +1362,7 @@ const CollegeSetupPage = () => {
         )}
       </AnimatePresence>
       
-      {/* Video Modal */}
+      {/* Video Modal — Opens Instagram link */}
       <AnimatePresence>
         {showVideoModal && selectedCollege && (
           <motion.div 
@@ -1383,14 +1382,21 @@ const CollegeSetupPage = () => {
               <button className="modal-close" onClick={() => setShowVideoModal(false)}>
                 <FiX />
               </button>
-              <div className="video-container">
-                <iframe
-                  src={selectedCollege.videoUrl}
-                  title={`${selectedCollege.name} Event Video`}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
+              <div className="video-redirect-content">
+                <div className="video-redirect-icon">
+                  <FiPlay />
+                </div>
+                <h3 className="video-redirect-title">{selectedCollege.name}</h3>
+                <p className="video-redirect-subtitle">Watch the event highlights on Instagram</p>
+                <a
+                  href={selectedCollege.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="video-redirect-btn"
+                  onClick={() => setShowVideoModal(false)}
+                >
+                  <FaInstagram /> Open on Instagram
+                </a>
               </div>
             </motion.div>
           </motion.div>
