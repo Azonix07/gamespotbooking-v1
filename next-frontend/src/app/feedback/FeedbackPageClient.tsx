@@ -172,7 +172,7 @@ const FeedbackPage = () => {
                       className={`feedback-type-card ${formData.type === type.id ? 'selected' : ''}`}
                       style={{
                         '--type-color': type.color
-                      }}
+                      } as React.CSSProperties}
                     >
                       <input
                         type="radio"
@@ -205,7 +205,7 @@ const FeedbackPage = () => {
                 onChange={handleChange}
                 placeholder={`Share your ${selectedType?.label.toLowerCase()} here... Be as detailed as possible.`}
                 required
-                rows="6"
+                rows={6}
                 className="form-textarea"
               />
               <div className="char-count">

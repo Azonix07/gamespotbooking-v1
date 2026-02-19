@@ -1171,6 +1171,7 @@
 /* Devices Section */
 .devices-section {
   margin-top: 8px;
+  padding-bottom: 0px !important;
 }
 
 .devices-section-header {
