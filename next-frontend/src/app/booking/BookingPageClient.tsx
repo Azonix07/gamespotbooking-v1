@@ -2013,70 +2013,39 @@ const BookingPage = () => {
                                           transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
                                           onClick={(e) => e.stopPropagation()}
                                         >
-                                          <div className="option-group">
-                                            <label className="option-label">
-                                              <FiUsers className="option-icon" />
-                                              Number of Players
-                                            </label>
-                                            <div className="player-buttons-v2">
-                                              {[0, 1, 2, 3].map((idx) => {
-                                                const count = idx + 1;
-                                                const isActive = booking && booking.player_count >= count;
-                                                return (
+                                          <div className="compact-options">
+                                            <div className="compact-option-row">
+                                              <span className="compact-option-label"><FiUsers size={13} /> Players</span>
+                                              <div className="compact-pill-group">
+                                                {[1, 2, 3, 4].map((count) => (
                                                   <button
-                                                    key={idx}
-                                                    className={`player-btn-v2 ${isActive ? 'active' : ''}`}
-                                                    onClick={() => handlePlayerSelect(unitNumber, idx)}
+                                                    key={count}
+                                                    className={`compact-pill ${booking && booking.player_count >= count ? 'active' : ''}`}
+                                                    onClick={() => handlePlayerSelect(unitNumber, count - 1)}
                                                   >
-                                                    <span className="player-btn-v2-icon">
-                                                      {Array.from({ length: count }).map((_, i) => (
-                                                        <FiUsers key={i} className="player-mini-icon" />
-                                                      ))}
-                                                    </span>
-                                                    <span className="player-btn-v2-number">{count}</span>
-                                                    <span className="player-btn-v2-label">{count === 1 ? 'Solo' : count === 2 ? 'Duo' : count === 3 ? 'Trio' : 'Squad'}</span>
+                                                    {count}
                                                   </button>
-                                                );
-                                              })}
-                                            </div>
-                                          </div>
-                                          
-                                          {booking && (
-                                            <div className="option-group">
-                                              <label className="option-label">
-                                                <FiClock className="option-icon" />
-                                                Session Duration
-                                              </label>
-                                              <div className="duration-buttons-v2">
-                                                {getAllowedDurations(selectedTime).map(dur => {
-                                                  const isActive = booking.duration === dur || (!booking.duration && dur === 60);
-                                                  return (
-                                                    <button
-                                                      key={dur}
-                                                      className={`duration-btn-v2 ${isActive ? 'active' : ''}`}
-                                                      onClick={() => handlePS5DurationChange(unitNumber, dur)}
-                                                    >
-                                                      <div className="dur-v2-ring">
-                                                        <svg viewBox="0 0 36 36" className="dur-v2-circle">
-                                                          <path
-                                                            className="dur-v2-bg"
-                                                            d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                          />
-                                                          <path
-                                                            className="dur-v2-fill"
-                                                            strokeDasharray={`${(dur / 240) * 100}, 100`}
-                                                            d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                          />
-                                                        </svg>
-                                                        <span className="dur-v2-value">{dur < 60 ? dur : dur / 60}</span>
-                                                      </div>
-                                                      <span className="dur-v2-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
-                                                    </button>
-                                                  );
-                                                })}
+                                                ))}
                                               </div>
                                             </div>
-                                          )}
+                                            
+                                            {booking && (
+                                              <div className="compact-option-row">
+                                                <span className="compact-option-label"><FiClock size={13} /> Duration</span>
+                                                <div className="compact-pill-group">
+                                                  {getAllowedDurations(selectedTime).map(dur => (
+                                                    <button
+                                                      key={dur}
+                                                      className={`compact-pill dur ${booking.duration === dur || (!booking.duration && dur === 60) ? 'active' : ''}`}
+                                                      onClick={() => handlePS5DurationChange(unitNumber, dur)}
+                                                    >
+                                                      {dur < 60 ? `${dur}m` : `${dur / 60}h`}
+                                                    </button>
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
                                         </motion.div>
                                       )}
                                     </AnimatePresence>
@@ -2210,70 +2179,39 @@ const BookingPage = () => {
                                         </div>
                                       )}
 
-                                      <div className="option-group">
-                                        <label className="option-label">
-                                          <FiUsers className="option-icon" />
-                                          Number of Players
-                                        </label>
-                                        <div className="player-buttons-v2">
-                                          {[0, 1, 2, 3].map((idx) => {
-                                            const count = idx + 1;
-                                            const isActive = booking && booking.player_count >= count;
-                                            return (
+                                      <div className="compact-options">
+                                        <div className="compact-option-row">
+                                          <span className="compact-option-label"><FiUsers size={13} /> Players</span>
+                                          <div className="compact-pill-group">
+                                            {[1, 2, 3, 4].map((count) => (
                                               <button
-                                                key={idx}
-                                                className={`player-btn-v2 ${isActive ? 'active' : ''}`}
-                                                onClick={() => handlePlayerSelect(unitNumber, idx)}
+                                                key={count}
+                                                className={`compact-pill ${booking && booking.player_count >= count ? 'active' : ''}`}
+                                                onClick={() => handlePlayerSelect(unitNumber, count - 1)}
                                               >
-                                                <span className="player-btn-v2-icon">
-                                                  {Array.from({ length: count }).map((_, i) => (
-                                                    <FiUsers key={i} className="player-mini-icon" />
-                                                  ))}
-                                                </span>
-                                                <span className="player-btn-v2-number">{count}</span>
-                                                <span className="player-btn-v2-label">{count === 1 ? 'Solo' : count === 2 ? 'Duo' : count === 3 ? 'Trio' : 'Squad'}</span>
+                                                {count}
                                               </button>
-                                            );
-                                          })}
-                                        </div>
-                                      </div>
-                                      
-                                      {booking && (
-                                        <div className="option-group">
-                                          <label className="option-label">
-                                            <FiClock className="option-icon" />
-                                            Session Duration
-                                          </label>
-                                          <div className="duration-buttons-v2">
-                                            {getAllowedDurations(selectedTime).map(dur => {
-                                              const isActive = booking.duration === dur || (!booking.duration && dur === 60);
-                                              return (
-                                                <button
-                                                  key={dur}
-                                                  className={`duration-btn-v2 ${isActive ? 'active' : ''}`}
-                                                  onClick={() => handlePS5DurationChange(unitNumber, dur)}
-                                                >
-                                                  <div className="dur-v2-ring">
-                                                    <svg viewBox="0 0 36 36" className="dur-v2-circle">
-                                                      <path
-                                                        className="dur-v2-bg"
-                                                        d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                      />
-                                                      <path
-                                                        className="dur-v2-fill"
-                                                        strokeDasharray={`${(dur / 240) * 100}, 100`}
-                                                        d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                      />
-                                                    </svg>
-                                                    <span className="dur-v2-value">{dur < 60 ? dur : dur / 60}</span>
-                                                  </div>
-                                                  <span className="dur-v2-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
-                                                </button>
-                                              );
-                                            })}
+                                            ))}
                                           </div>
                                         </div>
-                                      )}
+                                        
+                                        {booking && (
+                                          <div className="compact-option-row">
+                                            <span className="compact-option-label"><FiClock size={13} /> Duration</span>
+                                            <div className="compact-pill-group">
+                                              {getAllowedDurations(selectedTime).map(dur => (
+                                                <button
+                                                  key={dur}
+                                                  className={`compact-pill dur ${booking.duration === dur || (!booking.duration && dur === 60) ? 'active' : ''}`}
+                                                  onClick={() => handlePS5DurationChange(unitNumber, dur)}
+                                                >
+                                                  {dur < 60 ? `${dur}m` : `${dur / 60}h`}
+                                                </button>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
                                     </motion.div>
                                   )}
                                 </AnimatePresence>
