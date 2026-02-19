@@ -1544,8 +1544,9 @@ span.device-unit {
 
 .compact-option-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .compact-option-label {
@@ -1558,8 +1559,6 @@ span.device-unit {
   letter-spacing: 0.06em;
   color: var(--booking-gray-500);
   white-space: nowrap;
-  min-width: 85px;
-  flex-shrink: 0;
 }
 
 .compact-option-label svg {
@@ -2727,15 +2726,8 @@ span.device-unit {
     padding-top: 10px;
   }
 
-  .compact-option-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
   .compact-option-label {
     font-size: 0.7rem;
-    min-width: unset;
   }
 
   .compact-pill {
