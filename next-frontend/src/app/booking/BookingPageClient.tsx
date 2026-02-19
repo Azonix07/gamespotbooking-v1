@@ -4,7 +4,8 @@
 import { useRouter } from 'next/navigation';
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiCpu, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonitor, FiUser, FiZap, FiUsers, FiCheck, FiTag, FiPhone, FiStar, FiSearch, FiX, FiGrid, FiList, FiInfo } from 'react-icons/fi';
+import { GiSteeringWheel } from 'react-icons/gi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus, getGames, createPartyBooking } from '@/services/api';
 import { formatDate, getToday, formatDuration, formatPrice, formatTime12Hour, isValidName, isValidPhone } from '@/utils/helpers';
@@ -1104,7 +1105,7 @@ const BookingPage = () => {
                       ))}
                       {drivingSim && (
                         <div className="booking-success-device">
-                          <FiCpu className="booking-success-device-icon" />
+                          <GiSteeringWheel className="booking-success-device-icon" />
                           <span>Driving Simulator</span>
                           <span className="booking-success-device-detail">{formatDuration(drivingSim.duration || 60)}</span>
                         </div>
@@ -1519,7 +1520,7 @@ const BookingPage = () => {
                     <div className="party-device-chip"><FiMonitor /> PS5 Unit 1</div>
                     <div className="party-device-chip"><FiMonitor /> PS5 Unit 2</div>
                     <div className="party-device-chip"><FiMonitor /> PS5 Unit 3</div>
-                    <div className="party-device-chip driving"><FiCpu /> Racing Sim</div>
+                    <div className="party-device-chip driving"><GiSteeringWheel /> Racing Sim</div>
                   </div>
                   
                   <div className="party-price-box">
@@ -1870,7 +1871,7 @@ const BookingPage = () => {
                                         )}
                                         {isDrivingSim && (
                                           <div className="game-device-badge driving-sim-badge">
-                                            <FiCpu style={{ fontSize: '0.6rem' }} /> Sim
+                                            <GiSteeringWheel style={{ fontSize: '0.6rem' }} /> Sim
                                           </div>
                                         )}
                                         <button
@@ -2235,7 +2236,7 @@ const BookingPage = () => {
                   {/* Driving Simulator - Always visible */}
                   <div className="devices-section" style={{ marginTop: selectionMode === 'game' && selectedGames.length === 0 ? 0 : 8 }}>
                     <h3 className="section-title driving-title">
-                      <FiCpu className="section-icon" />
+                      <GiSteeringWheel className="section-icon" />
                       Racing Simulator
                     </h3>
                     
@@ -2254,7 +2255,7 @@ const BookingPage = () => {
 
                       <div className="device-header">
                         <div className="device-icon-wrapper driving">
-                          <FiCpu className="device-icon" />
+                          <GiSteeringWheel className="device-icon" />
                         </div>
                         <div className="device-details">
                           <h4 className="device-name">Racing Simulator</h4>
@@ -2600,7 +2601,7 @@ const BookingPage = () => {
                         
                         {drivingSim && (
                           <div className="item-row-v2">
-                            <div className="item-icon-v2 driving"><FiCpu /></div>
+                            <div className="item-icon-v2 driving"><GiSteeringWheel /></div>
                             <div className="item-details-v2">
                               <span className="item-name-v2">Racing Sim</span>
                               <span className="item-meta-v2">{formatDuration(drivingSim.duration || 60)}</span>

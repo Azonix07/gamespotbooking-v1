@@ -810,11 +810,7 @@ html, body {
   }
   
   .card-icon {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    font-size: 1.2rem;
-    border-radius: 14px;
+    display: none !important;
   }
   
   .card-header-content {
@@ -1547,7 +1543,7 @@ html, body {
   /* FIX: Navbar clearance and price footer clearance for small mobile */
   .booking-page .booking-container,
   .booking-container {
-    padding: 20px 12px 210px !important; /* Top: navbar clearance, Bottom: fixed price-footer clearance */
+    padding: 20px 12px 50px !important; /* Top: navbar clearance, Bottom: fixed price-footer clearance */
   }
   
   .booking-hero {
@@ -1681,9 +1677,7 @@ html, body {
   }
 
   .card-icon {
-    flex: 0 0 42px;
-    width: 42px;
-    height: 42px;
+    display: none !important;
   }
 
   .card-header-content {

@@ -558,7 +558,10 @@ body:has(.hero-container) .main-content {
   font-size: 20px;
   font-family: var(--font-display);
   cursor: pointer;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
