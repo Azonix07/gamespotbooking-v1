@@ -3274,3 +3274,75 @@ html, body {
     right: 3px !important;
   }
 }
+
+/* =========================================================
+   HOMEPAGE - Fit to Screen, No Scroll on Mobile
+   The hero-container is 100dvh but sits below the navbar,
+   causing overflow. Fix: fill remaining space after navbar.
+   ========================================================= */
+@media (max-width: 1023px) {
+  /* Make hero fill remaining space instead of fixed 100dvh */
+  body:has(.hero-container) {
+    overflow: hidden !important;
+    height: 100dvh !important;
+  }
+
+  body:has(.hero-container) .app-wrapper {
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  body:has(.hero-container) .main-content {
+    flex: 1 !important;
+    overflow: hidden !important;
+    min-height: 0 !important;
+  }
+
+  .hero-container {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  /* Tighten hero content spacing so everything fits */
+  .hero-content {
+    padding: 10px 16px !important;
+    gap: 6px !important;
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-content {
+    gap: 4px !important;
+  }
+
+  .hero-logo {
+    max-width: 160px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .console-icons-container {
+    margin-top: 10px !important;
+  }
+}
+
+@media (max-width: 479px) {
+  .hero-content {
+    gap: 3px !important;
+  }
+
+  .hero-logo {
+    max-width: 130px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .cta-book-now-button {
+    padding: 8px 24px !important;
+    font-size: 12px !important;
+  }
+
+  .console-icons-container {
+    margin-top: 8px !important;
+  }
+}
