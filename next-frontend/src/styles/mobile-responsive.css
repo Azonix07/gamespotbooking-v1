@@ -199,8 +199,10 @@ html, body {
   position: absolute;
   top: 20px;
   right: 20px;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
@@ -211,6 +213,17 @@ html, body {
   color: var(--white);
   font-size: 1.5rem;
   transition: all 0.3s ease;
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.mobile-nav-close svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+  flex-shrink: 0;
+  stroke-width: 2.5;
 }
 
 .mobile-nav-close:hover {
