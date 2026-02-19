@@ -3242,10 +3242,27 @@ html, body {
   .game-info-btn {
     width: 20px !important;
     height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
     font-size: 0.55rem !important;
     top: 4px !important;
     right: 4px !important;
+    padding: 0 !important;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12) !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .game-info-btn svg {
+    width: 10px !important;
+    height: 10px !important;
+    min-width: 10px !important;
+    min-height: 10px !important;
+    max-width: 10px !important;
+    max-height: 10px !important;
+    flex-shrink: 0 !important;
   }
 }
 
@@ -3253,9 +3270,22 @@ html, body {
   .game-info-btn {
     width: 18px !important;
     height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    max-width: 18px !important;
+    max-height: 18px !important;
     font-size: 0.5rem !important;
     top: 3px !important;
     right: 3px !important;
+  }
+
+  .game-info-btn svg {
+    width: 9px !important;
+    height: 9px !important;
+    min-width: 9px !important;
+    min-height: 9px !important;
+    max-width: 9px !important;
+    max-height: 9px !important;
   }
 }
 
@@ -3263,9 +3293,22 @@ html, body {
   .game-info-btn {
     width: 16px !important;
     height: 16px !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
     font-size: 0.45rem !important;
     top: 3px !important;
     right: 3px !important;
+  }
+
+  .game-info-btn svg {
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
+    max-width: 8px !important;
+    max-height: 8px !important;
   }
 }
 
