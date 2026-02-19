@@ -3278,33 +3278,47 @@ html, body {
 /* =========================================================
    HOMEPAGE - Fit to Screen, No Scroll on Mobile
    The hero-container is 100dvh but sits below the navbar,
-   causing overflow. Fix: fill remaining space after navbar.
+   causing overflow. Fix: use explicit height chain so
+   hero-container fills only the space remaining after navbar.
+   
+   Chain: body → .app-wrapper → .main-content → .hero-container
+   All must have explicit height (not just min-height/flex)
+   so that height: 100% on children resolves correctly.
    ========================================================= */
+
+/* Apply to ALL screen sizes — desktop homepage should also not scroll */
+body:has(.hero-container) {
+  overflow: hidden !important;
+  height: 100dvh !important;
+  height: 100vh !important;
+  height: 100dvh !important; /* dvh wins if supported */
+}
+
+body:has(.hero-container) .app-wrapper {
+  height: 100dvh !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-height: 0 !important; /* Override the min-height: 100vh from globals */
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body:has(.hero-container) .main-content {
+  flex: 1 1 0% !important; /* flex-basis: 0 ensures it doesn't grow beyond container */
+  overflow: hidden !important;
+  min-height: 0 !important; /* Critical: allow flex item to shrink below content size */
+  height: 0 !important; /* Start at 0, flex-grow fills remaining space */
+}
+
+body:has(.hero-container) .hero-container {
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+}
+
+/* Tighten hero content spacing on mobile so everything fits */
 @media (max-width: 1023px) {
-  /* Make hero fill remaining space instead of fixed 100dvh */
-  body:has(.hero-container) {
-    overflow: hidden !important;
-    height: 100dvh !important;
-  }
-
-  body:has(.hero-container) .app-wrapper {
-    height: 100dvh !important;
-    overflow: hidden !important;
-  }
-
-  body:has(.hero-container) .main-content {
-    flex: 1 !important;
-    overflow: hidden !important;
-    min-height: 0 !important;
-  }
-
-  .hero-container {
-    height: 100% !important;
-    max-height: 100% !important;
-    min-height: 0 !important;
-  }
-
-  /* Tighten hero content spacing so everything fits */
   .hero-content {
     padding: 10px 16px !important;
     gap: 6px !important;
