@@ -1611,6 +1611,91 @@ span.device-unit {
   letter-spacing: -0.01em;
 }
 
+/* ============================================
+   COMPACT TOGGLE - Play After PS5
+   ============================================ */
+.compact-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1.5px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.compact-toggle:hover {
+  border-color: rgba(255, 107, 53, 0.3);
+  background: rgba(255, 107, 53, 0.03);
+}
+
+.compact-toggle.active {
+  border-color: rgba(255, 107, 53, 0.4);
+  background: rgba(255, 107, 53, 0.06);
+}
+
+.compact-toggle-track {
+  width: 36px;
+  height: 20px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.12);
+  position: relative;
+  transition: background 0.25s ease;
+  flex-shrink: 0;
+}
+
+.compact-toggle.active .compact-toggle-track {
+  background: var(--booking-primary);
+}
+
+.compact-toggle-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.compact-toggle.active .compact-toggle-thumb {
+  transform: translateX(16px);
+}
+
+.compact-toggle-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--booking-gray-600);
+  transition: color 0.2s ease;
+}
+
+.compact-toggle.active .compact-toggle-text {
+  color: var(--booking-primary);
+}
+
+.compact-after-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255, 107, 53, 0.08);
+  border: 1px solid rgba(255, 107, 53, 0.15);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--booking-primary);
+  margin-top: 2px;
+}
+
+.compact-after-info svg {
+  flex-shrink: 0;
+}
+
 /* Unavailable Visuals - Enhanced */
 .device-card.unavailable {
   opacity: 0.5;

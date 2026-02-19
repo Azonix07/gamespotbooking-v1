@@ -2282,59 +2282,56 @@ const BookingPage = () => {
                             transition={{ duration: 0.3 }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="option-group">
-                              <label className="option-label">
-                                <FiClock className="option-icon" />
-                                Session Duration
-                              </label>
-                              <div className="duration-buttons">
-                                {(() => {
-                                  // If driving after PS5, calculate effective start time
-                                  let effectiveStart = selectedTime;
-                                  if (drivingSim.afterPS5 && ps5Bookings.length > 0) {
-                                    const maxPS5 = Math.max(...ps5Bookings.map(b => b.duration || 60));
-                                    const [h, m] = selectedTime.split(':').map(Number);
-                                    const total = h * 60 + m + maxPS5;
-                                    effectiveStart = `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
-                                  }
-                                  return getAllowedDurations(effectiveStart).map(dur => (
-                                    <button
-                                      key={dur}
-                                      className={`duration-btn ${drivingSim.duration === dur ? 'active' : ''}`}
-                                      onClick={() => handleDrivingDurationChange(dur)}
-                                    >
-                                      <span className="dur-value">{dur < 60 ? dur : dur / 60}</span>
-                                      <span className="dur-unit">{dur < 60 ? 'min' : dur === 60 ? 'hr' : 'hrs'}</span>
-                                    </button>
-                                  ));
-                                })()}
-                              </div>
-                            </div>
-
-                            {ps5Bookings.length > 0 && (
-                              <div className="option-group after-ps5-option">
-                                <label className="toggle-label">
-                                  <input
-                                    type="checkbox"
-                                    checked={drivingSim.afterPS5 || false}
-                                    onChange={(e) => handleDrivingAfterPS5Change(e.target.checked)}
-                                  />
-                                  <span className="toggle-switch"></span>
-                                  <span className="toggle-text">Start after PS5 session ends</span>
-                                </label>
-                                {drivingSim.afterPS5 && (
-                                  <p className="after-ps5-info">
-                                    <FiClock className="info-icon-sm" />
-                                    Starts at: {(() => {
+                            <div className="compact-options">
+                              <div className="compact-option-row">
+                                <span className="compact-option-label"><FiClock size={13} /> Duration</span>
+                                <div className="compact-pill-group">
+                                  {(() => {
+                                    let effectiveStart = selectedTime;
+                                    if (drivingSim.afterPS5 && ps5Bookings.length > 0) {
                                       const maxPS5 = Math.max(...ps5Bookings.map(b => b.duration || 60));
                                       const [h, m] = selectedTime.split(':').map(Number);
                                       const total = h * 60 + m + maxPS5;
-                                      return formatTime12Hour(`${String(Math.floor(total / 60) % 24).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`);
-                                    })()}
-                                  </p>
-                                )}
+                                      effectiveStart = `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+                                    }
+                                    return getAllowedDurations(effectiveStart).map(dur => (
+                                      <button
+                                        key={dur}
+                                        className={`compact-pill dur ${drivingSim.duration === dur ? 'active' : ''}`}
+                                        onClick={() => handleDrivingDurationChange(dur)}
+                                      >
+                                        {dur < 60 ? `${dur}m` : `${dur / 60}h`}
+                                      </button>
+                                    ));
+                                  })()}
+                                </div>
                               </div>
-                            )}
+
+                              {ps5Bookings.length > 0 && (
+                                <div className="compact-option-row">
+                                  <div 
+                                    className={`compact-toggle ${drivingSim.afterPS5 ? 'active' : ''}`}
+                                    onClick={() => handleDrivingAfterPS5Change(!drivingSim.afterPS5)}
+                                  >
+                                    <div className="compact-toggle-track">
+                                      <div className="compact-toggle-thumb" />
+                                    </div>
+                                    <span className="compact-toggle-text">Play after PS5 session</span>
+                                  </div>
+                                  {drivingSim.afterPS5 && (
+                                    <div className="compact-after-info">
+                                      <FiClock size={12} />
+                                      <span>Starts at {(() => {
+                                        const maxPS5 = Math.max(...ps5Bookings.map(b => b.duration || 60));
+                                        const [h, m] = selectedTime.split(':').map(Number);
+                                        const total = h * 60 + m + maxPS5;
+                                        return formatTime12Hour(`${String(Math.floor(total / 60) % 24).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`);
+                                      })()}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
