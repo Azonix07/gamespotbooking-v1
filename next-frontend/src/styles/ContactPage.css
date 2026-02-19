@@ -738,11 +738,29 @@
 .whatsapp-social-card:hover { border-color: #25D366; }
 
 .social-icon {
-  font-size: 2rem;
-  padding: 14px;
-  border-radius: 16px;
+  font-size: 2.8rem;
+  width: 2.8rem;
+  height: 2.8rem;
+  min-width: 2.8rem;
+  min-height: 2.8rem;
+  padding: 16px;
+  border-radius: 18px;
   background: rgba(255, 107, 53, 0.06);
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: content-box;
+}
+
+/* Ensure SVG icons render at proper size */
+.social-icon svg,
+svg.social-icon {
+  width: 2.8rem !important;
+  height: 2.8rem !important;
+  min-width: 2.8rem;
+  min-height: 2.8rem;
 }
 
 .instagram-card .social-icon { color: #E4405F; background: rgba(228, 64, 95, 0.08); }
@@ -1185,7 +1203,8 @@
 
   .social-cards-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .social-card { padding: 20px 14px; }
-  .social-icon { font-size: 1.6rem; padding: 12px; }
+  .social-icon { font-size: 2.4rem; width: 2.4rem; height: 2.4rem; min-width: 2.4rem; min-height: 2.4rem; padding: 14px; border-radius: 16px; }
+  .social-icon svg, svg.social-icon { width: 2.4rem !important; height: 2.4rem !important; min-width: 2.4rem; min-height: 2.4rem; }
 
   .features-grid { grid-template-columns: 1fr; }
   .map-container { height: 300px; }
@@ -1201,6 +1220,8 @@
   .copy-btn { width: 100%; justify-content: center; }
   .quick-message-chips { justify-content: center; }
   .social-cards-grid { grid-template-columns: 1fr; }
+  .social-icon { font-size: 2.2rem; width: 2.2rem; height: 2.2rem; min-width: 2.2rem; min-height: 2.2rem; padding: 14px; }
+  .social-icon svg, svg.social-icon { width: 2.2rem !important; height: 2.2rem !important; min-width: 2.2rem; min-height: 2.2rem; }
   .location-grid { gap: 12px; }
   .map-container { height: 250px; }
 }
