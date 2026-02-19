@@ -291,6 +291,10 @@
   box-shadow: var(--booking-shadow-xl);
 }
 
+.booking-card.has-price-footer {
+  padding-bottom: 100px;
+}
+
 .card-header {
   display: flex;
   align-items: center;

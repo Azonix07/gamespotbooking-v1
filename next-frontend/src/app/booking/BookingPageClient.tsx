@@ -1606,7 +1606,7 @@ const BookingPage = () => {
           {currentStep === 2 && bookingType === 'regular' && (
             <motion.div
               key="step2"
-              className="booking-card step2-card"
+              className={`booking-card step2-card${(ps5Bookings.length > 0 || drivingSim) ? ' has-price-footer' : ''}`}
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 50 }}
