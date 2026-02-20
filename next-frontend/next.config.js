@@ -100,9 +100,9 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Origin', value: '*' },
         ],
       },
-      // HLS segments — immutable, they never change
+      // HLS segments — immutable, they never change (.seg to avoid Nixpacks .ts conflict)
       {
-        source: '/assets/videos/hls/:path*.ts',
+        source: '/assets/videos/hls/:path*.seg',
         headers: [
           { key: 'Content-Type', value: 'video/mp2t' },
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
