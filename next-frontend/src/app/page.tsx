@@ -4,19 +4,24 @@ import FAQSchema from '@/components/structured-data/FAQSchema';
 import BreadcrumbSchema from '@/components/structured-data/BreadcrumbSchema';
 
 export const metadata: Metadata = {
-  title: 'GameSpot Kodungallur - #1 Premium Gaming Lounge | PS5, Xbox, VR Gaming',
-  description: 'GameSpot is the best gaming lounge in Kodungallur, Thrissur, Kerala. Play GTA V, God of War, FIFA, Spider-Man, Call of Duty & 50+ games on PS5, Xbox Series X & Meta Quest VR. Book sessions online. Professional setup, competitive pricing. Near Irinjalakuda, Guruvayur & Chalakudy.',
+  title: 'Best Gaming Lounge in Kodungallur | PS5, GTA, VR & Driving Simulator',
+  description: 'Play PS5, GTA, VR games and driving simulator at the best gaming lounge in Kodungallur near Thrissur. Book online now. 50+ games including God of War, FIFA, Spider-Man & more on PS5, Xbox Series X & Meta Quest VR. Professional setup, competitive pricing.',
   keywords: [
     'GameSpot Kodungallur', 'gaming lounge Kodungallur', 'PS5 gaming Kodungallur',
     'best gaming cafe Kodungallur', 'VR gaming near Kodungallur', 'gaming zone Thrissur',
     'Xbox gaming Kerala', 'gaming near me Kodungallur', 'PlayStation 5 Kodungallur',
     'gaming cafe near Irinjalakuda', 'gaming lounge near Guruvayur',
     'GTA Kodungallur', 'GTA V gaming lounge Kodungallur', 'play GTA in Kodungallur',
+    'GTA in Kodungallur', 'games in Kodungallur', 'games in Thrissur',
+    'gaming center near me Kodungallur', 'gaming center near me Thrissur',
+    'best gaming lounge in Kodungallur', 'game booking in Kodungallur',
     'FIFA Kodungallur', 'God of War Kodungallur', 'Spider-Man PS5 Kodungallur',
     'Call of Duty Kodungallur', 'gaming cafe Thrissur district',
     'PS5 gaming near me', 'gaming zone near Chalakudy', 'gaming lounge near Angamaly',
     'best gaming experience Kerala', 'premium gaming lounge Kerala',
-    'VR experience Kodungallur', 'driving simulator Kodungallur',
+    'VR experience Kodungallur', 'VR games in Kodungallur', 'VR in Thrissur',
+    'driving simulator Kodungallur', 'driving simulator in Kodungallur',
+    'PS5 in Kodungallur', 'gaming center Kodungallur',
     'esports Kodungallur', 'gaming center Thrissur', 'console gaming Kerala',
     'Fortnite Kodungallur', 'WWE gaming Kodungallur', 'racing games Kodungallur',
   ],
@@ -24,8 +29,8 @@ export const metadata: Metadata = {
     canonical: 'https://gamespotkdlr.com',
   },
   openGraph: {
-    title: 'GameSpot Kodungallur - #1 Premium Gaming Lounge | PS5, Xbox, VR',
-    description: 'Play GTA, FIFA, God of War & 50+ games on PS5, Xbox & VR at Kodungallur\'s best gaming lounge. Book your session now!',
+    title: 'Best Gaming Lounge in Kodungallur | PS5, GTA, VR & Driving Simulator',
+    description: 'Play GTA, FIFA, God of War & 50+ games on PS5, Xbox & VR at Kodungallur\'s best gaming lounge near Thrissur. Book your session now!',
     url: 'https://gamespotkdlr.com',
     siteName: 'GameSpot Kodungallur',
     locale: 'en_IN',
@@ -34,19 +39,19 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'GameSpot Kodungallur - #1 Gaming Lounge in Kerala',
-    description: 'PS5, Xbox, VR gaming. GTA, FIFA, God of War & 50+ games. Book now!',
+    title: 'Best Gaming Lounge in Kodungallur | PS5, GTA, VR & Driving Simulator',
+    description: 'PS5, Xbox, VR gaming & driving simulator. GTA, FIFA, God of War & 50+ games. Book now!',
   },
 };
 
 /* JSON-LD Structured Data for Local Business SEO */
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'LocalBusiness',
-  '@id': 'https://gamespotkdlr.com',
-  name: 'GameSpot - Premium Gaming Lounge',
-  alternateName: 'GameSpot Kodungallur',
-  description: 'Premium gaming lounge in Kodungallur offering PS5, Xbox Series X, and Meta Quest VR gaming sessions. Professional setup, 50+ games, and competitive pricing.',
+  '@type': 'EntertainmentBusiness',
+  '@id': 'https://gamespotkdlr.com/#business',
+  name: 'GameSpot - Premium Gaming Lounge Kodungallur',
+  alternateName: ['GameSpot Kodungallur', 'GameSpot Gaming Lounge', 'GameSpot Kodungallur Gaming Center'],
+  description: 'Best gaming lounge in Kodungallur offering PS5, Xbox Series X, Meta Quest VR gaming sessions and driving simulator. Play GTA, FIFA, God of War & 50+ games. Professional setup, competitive pricing near Thrissur, Kerala.',
   url: 'https://gamespotkdlr.com',
   telephone: '+91-XXXXXXXXXX', // Replace with actual phone number
   image: 'https://gamespotkdlr.com/assets/images/logo.png',
@@ -56,15 +61,15 @@ const jsonLd = {
   paymentAccepted: 'Cash, UPI, Google Pay, PhonePe, Card',
   address: {
     '@type': 'PostalAddress',
-    streetAddress: 'Kodungallur', // Replace with actual street address
+    streetAddress: 'Shipu Complex, Near JJ Castle, Star Nagar',
     addressLocality: 'Kodungallur',
     addressRegion: 'Kerala',
-    postalCode: '680664', // Replace with actual postal code
+    postalCode: '680664',
     addressCountry: 'IN',
   },
   geo: {
     '@type': 'GeoCoordinates',
-    latitude: 10.2269, // Replace with actual coordinates
+    latitude: 10.2269,
     longitude: 76.1950,
   },
   areaServed: [
@@ -95,22 +100,26 @@ const jsonLd = {
     itemListElement: [
       {
         '@type': 'Offer',
-        itemOffered: { '@type': 'Service', name: 'PS5 Gaming Session', description: 'PlayStation 5 gaming session with 50+ games' },
+        itemOffered: { '@type': 'Service', name: 'PS5 Gaming Session', description: 'PlayStation 5 gaming session with 50+ games including GTA V, God of War, FIFA, Spider-Man at GameSpot Kodungallur' },
       },
       {
         '@type': 'Offer',
-        itemOffered: { '@type': 'Service', name: 'Xbox Series X Gaming Session', description: 'Xbox Series X gaming session' },
+        itemOffered: { '@type': 'Service', name: 'Xbox Series X Gaming Session', description: 'Xbox Series X gaming session with Forza Horizon, Halo & more at GameSpot Kodungallur' },
       },
       {
         '@type': 'Offer',
-        itemOffered: { '@type': 'Service', name: 'VR Gaming Experience', description: 'Meta Quest VR gaming experience' },
+        itemOffered: { '@type': 'Service', name: 'VR Gaming Experience', description: 'Meta Quest VR gaming experience with Beat Saber, VR adventures at GameSpot Kodungallur near Thrissur' },
+      },
+      {
+        '@type': 'Offer',
+        itemOffered: { '@type': 'Service', name: 'Driving Simulator', description: 'Professional driving simulator experience at GameSpot Kodungallur. Realistic racing simulation near Thrissur, Kerala.' },
       },
     ],
   },
   aggregateRating: {
     '@type': 'AggregateRating',
     ratingValue: '4.8',
-    reviewCount: '150', // Update with actual review count
+    reviewCount: '150',
     bestRating: '5',
   },
 };

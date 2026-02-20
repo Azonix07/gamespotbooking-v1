@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 import GameSpotLoader from '@/components/GameSpotLoader';
+import BreadcrumbSchema from '@/components/structured-data/BreadcrumbSchema';
 
 const ContactPageClient = dynamic(() => import('./ContactPageClient'), {
   loading: () => <GameSpotLoader />,
@@ -34,5 +35,10 @@ export const metadata: Metadata = {
 };
 
 export default function ContactPage() {
-  return <ContactPageClient />;
+  return (
+    <>
+      <BreadcrumbSchema items={[{ name: 'Home', url: '/' }, { name: 'Contact & Location', url: '/contact' }]} />
+      <ContactPageClient />
+    </>
+  );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import GamesPageClient from './GamesPageClient';
 import GameSpotLoader from '@/components/GameSpotLoader';
+import BreadcrumbSchema from '@/components/structured-data/BreadcrumbSchema';
 
 export const metadata: Metadata = {
   title: 'PS5 & Xbox Games Library - GTA, FIFA, God of War & 50+ Games | GameSpot Kodungallur',
@@ -34,8 +35,11 @@ export const metadata: Metadata = {
 
 export default function GamesPage() {
   return (
-    <Suspense fallback={<GameSpotLoader />}>
-      <GamesPageClient />
-    </Suspense>
+    <>
+      <BreadcrumbSchema items={[{ name: 'Home', url: '/' }, { name: 'Games Library', url: '/games' }]} />
+      <Suspense fallback={<GameSpotLoader />}>
+        <GamesPageClient />
+      </Suspense>
+    </>
   );
 }

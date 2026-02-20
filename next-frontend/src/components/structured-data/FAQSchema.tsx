@@ -66,6 +66,38 @@ export default function FAQSchema() {
       },
       {
         "@type": "Question",
+        "name": "Do you have GTA in Kodungallur?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! GameSpot Kodungallur has GTA V and GTA Online available on PS5. You can play GTA in a premium gaming setup with comfortable seating and large screens. Book your GTA session online at gamespotkdlr.com/booking."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is PS5 available in Kodungallur?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, GameSpot has multiple PS5 consoles available in Kodungallur. We have 3 PS5 units with 50+ games including GTA V, FIFA, God of War, Spider-Man 2, and more. Book your PS5 session online for guaranteed availability."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where can I play VR games in Thrissur?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GameSpot in Kodungallur (Thrissur district) offers Meta Quest VR gaming experiences. Enjoy VR games like Beat Saber, VR adventures and more. We are easily accessible from Thrissur, Irinjalakuda, Guruvayur and Chalakudy."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a driving simulator in Kodungallur?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! GameSpot Kodungallur has a professional driving simulator. Experience realistic racing simulation with professional steering wheel and pedals. Perfect for racing enthusiasts. Book your driving simulator session at gamespotkdlr.com/booking."
+        }
+      },
+      {
+        "@type": "Question",
         "name": "Is there a membership plan at GameSpot Kodungallur?",
         "acceptedAnswer": {
           "@type": "Answer",

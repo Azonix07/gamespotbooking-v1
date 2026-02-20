@@ -110,9 +110,11 @@ export default function HomePageClient() {
 
       {/* Main Content — this is the LCP element */}
       <div className="hero-content">
+        {/* SEO: visually-hidden H1 for search engines — logo serves as visual heading */}
+        <h1 className="sr-only">GameSpot – Best Gaming Lounge in Kodungallur | PS5, GTA, VR &amp; Driving Simulator near Thrissur</h1>
         <Image
           src="/assets/images/logo.png"
-          alt="GameSpot Logo"
+          alt="GameSpot Kodungallur – Best Gaming Lounge for PS5, GTA, VR & Driving Simulator near Thrissur, Kerala"
           className="hero-logo"
           width={400}
           height={75}
@@ -137,12 +139,12 @@ export default function HomePageClient() {
 
         {/* Console Icons — next/image for ps5 & meta; plain img for xbox to preserve clarity */}
         <div className="console-icons-container">
-          <Image src="/assets/images/ps5Icon.png" alt="PlayStation 5" className="console-icon ps5-icon" width={48} height={48} loading="lazy" />
+          <Image src="/assets/images/ps5Icon.png" alt="PS5 gaming in Kodungallur" className="console-icon ps5-icon" width={48} height={48} loading="lazy" />
           <div className="console-separator">|</div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/images/xboxIcon.png" alt="Xbox Series X" className="console-icon xbox-icon" loading="lazy" />
+          <img src="/assets/images/xboxIcon.png" alt="Xbox Series X gaming in Kodungallur" className="console-icon xbox-icon" loading="lazy" />
           <div className="console-separator">|</div>
-          <Image src="/assets/images/metaIcon.png" alt="Meta Quest VR" className="console-icon meta-icon" width={48} height={48} loading="lazy" />
+          <Image src="/assets/images/metaIcon.png" alt="VR gaming in Kodungallur near Thrissur" className="console-icon meta-icon" width={48} height={48} loading="lazy" />
         </div>
       </div>
 

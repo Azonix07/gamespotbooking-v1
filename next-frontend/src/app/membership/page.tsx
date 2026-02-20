@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 import GameSpotLoader from '@/components/GameSpotLoader';
+import BreadcrumbSchema from '@/components/structured-data/BreadcrumbSchema';
 
 const MembershipPlansPageClient = dynamic(() => import('./MembershipPlansPageClient'), {
   loading: () => <GameSpotLoader />,
@@ -34,5 +35,10 @@ export const metadata: Metadata = {
 };
 
 export default function MembershipPage() {
-  return <MembershipPlansPageClient />;
+  return (
+    <>
+      <BreadcrumbSchema items={[{ name: 'Home', url: '/' }, { name: 'Membership Plans', url: '/membership' }]} />
+      <MembershipPlansPageClient />
+    </>
+  );
 }

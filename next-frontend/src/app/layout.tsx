@@ -36,18 +36,23 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'GameSpot Kodungallur – Next-Gen Gaming Experience',
+    default: 'GameSpot Kodungallur – Best Gaming Lounge | PS5, GTA, VR & Driving Simulator near Thrissur',
     template: '%s | GameSpot Kodungallur',
   },
-  description: 'GameSpot is the #1 premium gaming lounge in Kodungallur, Thrissur, Kerala. Book PS5, Xbox Series X, Meta Quest VR sessions. Best gaming cafe near Kodungallur, Irinjalakuda, Guruvayur, Chalakudy. Professional gaming setup & ultimate entertainment.',
+  description: 'GameSpot is the best gaming lounge in Kodungallur, Thrissur, Kerala. Play GTA, PS5, VR games & driving simulator. Book PS5, Xbox Series X, Meta Quest VR sessions online. Near Irinjalakuda, Guruvayur, Chalakudy. 50+ games, professional setup.',
   keywords: [
+    'games in Kodungallur', 'games in Thrissur', 'GTA in Kodungallur',
+    'gaming lounge in Kodungallur', 'PS5 in Kodungallur', 'VR games in Kodungallur',
+    'driving simulator in Kodungallur', 'gaming center near me',
+    'best gaming lounge in Kodungallur', 'game booking in Kodungallur',
     'gaming lounge Kodungallur', 'PS5 gaming Kodungallur', 'gaming cafe Kodungallur',
     'VR gaming Kodungallur', 'Xbox gaming Kodungallur', 'gaming near Kodungallur',
     'GameSpot Kodungallur', 'gaming lounge Thrissur', 'gaming cafe Kerala',
     'PS5 booking Kerala', 'gaming lounge near me', 'best gaming cafe Thrissur',
-    'VR experience Kodungallur', 'Meta Quest VR Kerala', 'esports Kodungallur',
-    'gaming zone Kodungallur', 'gaming center Irinjalakuda', 'gaming cafe Guruvayur',
-    'PlayStation 5 gaming Kerala', 'console gaming Thrissur district',
+    'VR experience Kodungallur', 'VR in Thrissur', 'Meta Quest VR Kerala',
+    'esports Kodungallur', 'gaming zone Kodungallur', 'gaming center Irinjalakuda',
+    'gaming cafe Guruvayur', 'PlayStation 5 gaming Kerala', 'console gaming Thrissur district',
+    'gaming center near me Kodungallur', 'gaming center near me Thrissur',
   ],
   authors: [{ name: 'CarbonCrew Technologies' }],
   creator: 'CarbonCrew Technologies',
@@ -57,8 +62,8 @@ export const metadata: Metadata = {
     canonical: 'https://gamespotkdlr.com',
   },
   openGraph: {
-    title: 'GameSpot Kodungallur - Premium Gaming Lounge | PS5, Xbox, VR',
-    description: 'Kodungallur\'s #1 gaming lounge. Book PS5, Xbox Series X, Meta Quest VR sessions. Professional gaming setup near Kodungallur, Thrissur, Kerala.',
+    title: 'GameSpot Kodungallur – Best Gaming Lounge | PS5, GTA, VR & Driving Simulator',
+    description: 'Best gaming lounge in Kodungallur, Thrissur. Play GTA, PS5, VR games & driving simulator. Book sessions online. 50+ games, professional setup.',
     url: 'https://gamespotkdlr.com',
     siteName: 'GameSpot Kodungallur',
     locale: 'en_IN',
@@ -74,8 +79,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'GameSpot Kodungallur - Premium Gaming Lounge',
-    description: 'Book PS5, Xbox, VR gaming sessions at Kodungallur\'s premier gaming lounge. Best gaming cafe in Thrissur, Kerala.',
+    title: 'GameSpot Kodungallur – Best Gaming Lounge | PS5, GTA, VR',
+    description: 'Play GTA, PS5, VR & driving simulator at the best gaming lounge in Kodungallur near Thrissur, Kerala. Book online now.',
     site: '@GameSpotIndia',
   },
   robots: {
