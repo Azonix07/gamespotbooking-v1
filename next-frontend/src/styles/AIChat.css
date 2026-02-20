@@ -77,6 +77,9 @@
   z-index: 10000;
   padding: 24px;
   padding-top: 80px; /* Clear navbar */
+  /* Prevent iOS Safari from scrolling the page behind the overlay */
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 /* ============================================
@@ -96,6 +99,8 @@
   flex-direction: column;
   overflow: hidden;
   font-family: var(--ai-font-family);
+  /* Re-enable touch inside the chat panel */
+  touch-action: auto;
 }
 
 /* Background Effects */
@@ -354,6 +359,9 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  /* Prevent scroll from leaking to page behind on iOS */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Custom Scrollbar */

@@ -70,7 +70,25 @@ const AIChat = ({ onClose }: { onClose: () => void }) => {
       initializeChat();
       initializeVoice();
     }
+
+    // Lock body scroll while chat is open (prevents iOS Safari scroll-behind)
+    const scrollY = window.scrollY;
+    const body = document.body;
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.overflow = 'hidden';
+
     return () => {
+      // Restore body scroll position
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.overflow = '';
+      window.scrollTo(0, scrollY);
+
       if (recognitionRef.current) recognitionRef.current.stop();
       if (synthesisRef.current) synthesisRef.current.cancel();
     };
