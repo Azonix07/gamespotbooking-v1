@@ -9,21 +9,56 @@ import '@/styles/SplashScreen.css';
 
 const AIChat = lazy(() => import('@/components/AIChat'));
 
-/** HLS master playlist — contains 360p / 480p / 720p variants.
- *  The player starts with the lowest quality and upgrades automatically
- *  as network bandwidth improves (like YouTube / Netflix). */
-const HLS_SRC = '/assets/videos/hls/master.m3u8';
+/**
+ * Progressive video quality upgrade — NO HLS, NO stutter.
+ *
+ * Strategy:
+ *  1. Poster image shows instantly (109 KB)
+ *  2. 360p MP4 loads first (1 MB) — plays within ~2s on any connection
+ *  3. Once 360p is playing, we silently preload 720p in a hidden <video>
+ *  4. When 720p is fully buffered, we crossfade to it — zero stutter
+ *
+ * On low-end mobile (< 4 GB RAM or "slow" connection hint), we skip
+ * the upgrade and stay on 360p forever to keep things silky smooth.
+ */
+const VIDEO_360 = '/assets/videos/background-360p.mp4';
+const VIDEO_480 = '/assets/videos/background-480p.mp4';
+const VIDEO_720 = '/assets/videos/background-720p.mp4';
 
-/** Smallest MP4 fallback — used only if HLS is completely unsupported */
-const FALLBACK_MP4 = '/assets/videos/background-360p.mp4';
+/** Pick the upgrade target based on device capabilities */
+function getUpgradeTarget(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  // Detect low-end devices — skip upgrade entirely
+  const nav = navigator as any;
+  const memoryGB = nav.deviceMemory ?? 8; // defaults to 8 if unknown
+  const conn = nav.connection ?? {};
+  const saveData = conn.saveData === true;
+  const effectiveType = conn.effectiveType ?? '4g';
+
+  // Data-saver mode or very slow connection — stay on 360p
+  if (saveData || effectiveType === 'slow-2g' || effectiveType === '2g') return null;
+
+  // Low memory device — stay on 360p
+  if (memoryGB <= 2) return null;
+
+  // 3G or low memory — upgrade to 480p only
+  if (effectiveType === '3g' || memoryGB <= 4) return VIDEO_480;
+
+  // Everything else (4G, WiFi, desktop) — upgrade to 720p
+  return VIDEO_720;
+}
 
 export default function HomePageClient() {
   const [showAIChat, setShowAIChat] = useState(false);
   const [splashDone, setSplashDone] = useState(false);
   const [splashExiting, setSplashExiting] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<any>(null);
+  const [upgraded, setUpgraded] = useState(false);
+
+  const videoRef = useRef<HTMLVideoElement>(null);       // primary (360p initially)
+  const upgradeVideoRef = useRef<HTMLVideoElement>(null); // hidden preload video
+  const upgradeAttempted = useRef(false);
 
   /* Dismiss splash: start exit animation, then remove from DOM */
   const dismissSplash = useCallback(() => {
@@ -34,92 +69,49 @@ export default function HomePageClient() {
 
   /* Video ready — dismiss splash */
   const handleVideoReady = useCallback(() => {
-    if (videoLoaded) return; // prevent double-trigger
+    if (videoLoaded) return;
     setVideoLoaded(true);
     requestAnimationFrame(() => dismissSplash());
   }, [dismissSplash, videoLoaded]);
 
-  /* Attach HLS adaptive streaming on mount */
+  /**
+   * Progressive upgrade: once 360p is playing smoothly, silently
+   * preload a higher quality video and crossfade when ready.
+   */
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    if (!videoLoaded || upgradeAttempted.current) return;
+    upgradeAttempted.current = true;
 
-    let destroyed = false;
+    const target = getUpgradeTarget();
+    if (!target) return; // low-end device — stay on 360p
 
-    async function initHLS() {
-      // Safari natively supports HLS — just set the src
-      if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = HLS_SRC;
-        video.load();
-        return;
-      }
+    const primary = videoRef.current;
+    const upgrade = upgradeVideoRef.current;
+    if (!primary || !upgrade) return;
 
-      // All other browsers — use hls.js
-      try {
-        const Hls = (await import('hls.js')).default;
+    // Wait 2 seconds after 360p starts playing before preloading
+    // This ensures 360p playback is smooth first
+    const timer = setTimeout(() => {
+      upgrade.src = target;
+      upgrade.load();
 
-        if (!Hls.isSupported()) {
-          // Very old browser — fall back to smallest MP4
-          video.src = FALLBACK_MP4;
-          video.load();
-          return;
-        }
-
-        const hls = new Hls({
-          // Start from the lowest quality — upgrades automatically
-          startLevel: 0,
-          // Enable auto quality switching based on bandwidth
-          autoStartLoad: true,
-          // Cap start-level at 360p so first frames arrive fast
-          capLevelToPlayerSize: true,
-          // Aggressive buffer tuning for background video
-          maxBufferLength: 10,        // seconds of buffer ahead
-          maxMaxBufferLength: 20,
-          maxBufferSize: 2 * 1024 * 1024,  // 2 MB max buffer
-          // Faster ABR switching
-          abrEwmaDefaultEstimate: 500000,  // conservative start estimate (500 kbps)
-          abrBandWidthUpFactor: 0.7,       // upgrade when 70% of next level is achievable
+      const onReady = () => {
+        // Sync playback position so the swap is seamless
+        upgrade.currentTime = primary.currentTime % upgrade.duration;
+        upgrade.play().then(() => {
+          // Crossfade: fade in the upgrade video on top
+          setUpgraded(true);
+        }).catch(() => {
+          // Autoplay blocked — stay on 360p
         });
+        upgrade.removeEventListener('canplaythrough', onReady);
+      };
 
-        if (destroyed) { hls.destroy(); return; }
+      upgrade.addEventListener('canplaythrough', onReady);
+    }, 2000);
 
-        hlsRef.current = hls;
-        hls.loadSource(HLS_SRC);
-        hls.attachMedia(video);
-
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          if (!destroyed) video.play().catch(() => {});
-        });
-
-        // Handle fatal errors — fall back to MP4
-        hls.on(Hls.Events.ERROR, (_: any, data: any) => {
-          if (data.fatal && !destroyed) {
-            hls.destroy();
-            hlsRef.current = null;
-            video.src = FALLBACK_MP4;
-            video.load();
-            video.play().catch(() => {});
-          }
-        });
-      } catch {
-        // import failed — fall back to MP4
-        if (!destroyed) {
-          video.src = FALLBACK_MP4;
-          video.load();
-        }
-      }
-    }
-
-    initHLS();
-
-    return () => {
-      destroyed = true;
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-    };
-  }, []);
+    return () => clearTimeout(timer);
+  }, [videoLoaded]);
 
   /* Safety fallback: dismiss splash if video takes too long */
   useEffect(() => {
@@ -181,19 +173,30 @@ export default function HomePageClient() {
 
     {/* MAIN HOMEPAGE */}
     <div className={`hero-container ${splashDone ? 'hero-revealed' : 'hero-hidden'}`}>
-      {/* Video Background — HLS adaptive streaming (360p → 480p → 720p based on network) */}
+      {/* Primary video — starts with 360p for instant playback */}
       <video
         ref={videoRef}
-        className="hero-background-video"
+        className={`hero-background-video ${upgraded ? 'hero-video-fade-out' : ''}`}
         autoPlay
         loop
         muted
         playsInline
+        preload="auto"
         poster="/assets/videos/poster.jpg"
         onCanPlay={handleVideoReady}
         onCanPlayThrough={handleVideoReady}
+        src={VIDEO_360}
       />
-      {/* src is set programmatically by the HLS init effect — not via JSX */}
+
+      {/* Upgrade video — silently preloaded, fades in when ready */}
+      <video
+        ref={upgradeVideoRef}
+        className={`hero-background-video hero-upgrade-video ${upgraded ? 'hero-video-fade-in' : ''}`}
+        loop
+        muted
+        playsInline
+        preload="none"
+      />
 
       {/* Dark Overlay */}
       <div className="hero-video-overlay"></div>

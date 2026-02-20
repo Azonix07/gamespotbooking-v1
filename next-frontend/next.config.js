@@ -84,29 +84,11 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
-      // Cache videos
+      // Cache videos — MP4 progressive downloads
       {
         source: '/assets/videos/:path*',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
-      },
-      // HLS playlists — short cache so ABR switching works, correct MIME type
-      {
-        source: '/assets/videos/hls/:path*.m3u8',
-        headers: [
-          { key: 'Content-Type', value: 'application/vnd.apple.mpegurl' },
-          { key: 'Cache-Control', value: 'public, max-age=86400' },
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-        ],
-      },
-      // HLS segments — immutable, they never change (.seg to avoid Nixpacks .ts conflict)
-      {
-        source: '/assets/videos/hls/:path*.seg',
-        headers: [
-          { key: 'Content-Type', value: 'video/mp2t' },
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-          { key: 'Access-Control-Allow-Origin', value: '*' },
         ],
       },
     ];
