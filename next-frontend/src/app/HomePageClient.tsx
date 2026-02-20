@@ -9,75 +9,123 @@ import '@/styles/SplashScreen.css';
 
 const AIChat = lazy(() => import('@/components/AIChat'));
 
-/**
- * Pick the right video variant based on device capability.
- * - Low-end mobile / slow connection / data-saver → 360p (772 KB)
- * - Tablet or mid-range mobile → 480p (1.5 MB)
- * - Desktop / high-end → 720p (2.8 MB)
- * The original 4K file is never served — it's kept only as a source master.
- */
-function getOptimalVideoSrc(): string {
-  if (typeof window === 'undefined') return '/assets/videos/background-720p.mp4';
+/** HLS master playlist — contains 360p / 480p / 720p variants.
+ *  The player starts with the lowest quality and upgrades automatically
+ *  as network bandwidth improves (like YouTube / Netflix). */
+const HLS_SRC = '/assets/videos/hls/master.m3u8';
 
-  const w = window.screen.width;
-  const dpr = window.devicePixelRatio || 1;
-  const effectiveW = w * Math.min(dpr, 2); // cap DPR at 2 for video selection
-  const cores = navigator.hardwareConcurrency || 2;
-  const mem = (navigator as any).deviceMemory || 4; // GB — Chrome-only, fallback 4
-
-  // Check for data-saver mode (Save-Data header hint via JS)
-  const conn = (navigator as any).connection;
-  const saveData = conn?.saveData === true;
-  const slowConn = conn && (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g');
-
-  // Tier 1: Low-end — small screen, few cores, low memory, or slow network
-  if (saveData || slowConn || cores <= 2 || mem <= 2 || effectiveW <= 640) {
-    return '/assets/videos/background-360p.mp4';
-  }
-
-  // Tier 2: Mid-range — tablet, mid-tier phone
-  if (effectiveW <= 1024 || cores <= 4 || mem <= 4) {
-    return '/assets/videos/background-480p.mp4';
-  }
-
-  // Tier 3: Desktop / high-end
-  return '/assets/videos/background-720p.mp4';
-}
+/** Smallest MP4 fallback — used only if HLS is completely unsupported */
+const FALLBACK_MP4 = '/assets/videos/background-360p.mp4';
 
 export default function HomePageClient() {
   const [showAIChat, setShowAIChat] = useState(false);
   const [splashDone, setSplashDone] = useState(false);
   const [splashExiting, setSplashExiting] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  /* Pick optimal video on mount (client-side only) */
-  useEffect(() => {
-    setVideoSrc(getOptimalVideoSrc());
-  }, []);
+  const hlsRef = useRef<any>(null);
 
   /* Dismiss splash: start exit animation, then remove from DOM */
   const dismissSplash = useCallback(() => {
-    if (splashExiting) return; // prevent double-trigger
+    if (splashExiting) return;
     setSplashExiting(true);
-    setTimeout(() => setSplashDone(true), 500); // match exit animation duration
+    setTimeout(() => setSplashDone(true), 500);
   }, [splashExiting]);
 
-  /* Video loaded — dismiss splash */
+  /* Video ready — dismiss splash */
   const handleVideoReady = useCallback(() => {
+    if (videoLoaded) return; // prevent double-trigger
     setVideoLoaded(true);
-    // Small delay to let the first frame paint before removing splash
     requestAnimationFrame(() => dismissSplash());
-  }, [dismissSplash]);
+  }, [dismissSplash, videoLoaded]);
 
-  /* Safety fallback: if video takes too long (>4s), dismiss splash anyway */
+  /* Attach HLS adaptive streaming on mount */
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    let destroyed = false;
+
+    async function initHLS() {
+      // Safari natively supports HLS — just set the src
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = HLS_SRC;
+        video.load();
+        return;
+      }
+
+      // All other browsers — use hls.js
+      try {
+        const Hls = (await import('hls.js')).default;
+
+        if (!Hls.isSupported()) {
+          // Very old browser — fall back to smallest MP4
+          video.src = FALLBACK_MP4;
+          video.load();
+          return;
+        }
+
+        const hls = new Hls({
+          // Start from the lowest quality — upgrades automatically
+          startLevel: 0,
+          // Enable auto quality switching based on bandwidth
+          autoStartLoad: true,
+          // Cap start-level at 360p so first frames arrive fast
+          capLevelToPlayerSize: true,
+          // Aggressive buffer tuning for background video
+          maxBufferLength: 10,        // seconds of buffer ahead
+          maxMaxBufferLength: 20,
+          maxBufferSize: 2 * 1024 * 1024,  // 2 MB max buffer
+          // Faster ABR switching
+          abrEwmaDefaultEstimate: 500000,  // conservative start estimate (500 kbps)
+          abrBandWidthUpFactor: 0.7,       // upgrade when 70% of next level is achievable
+        });
+
+        if (destroyed) { hls.destroy(); return; }
+
+        hlsRef.current = hls;
+        hls.loadSource(HLS_SRC);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          if (!destroyed) video.play().catch(() => {});
+        });
+
+        // Handle fatal errors — fall back to MP4
+        hls.on(Hls.Events.ERROR, (_: any, data: any) => {
+          if (data.fatal && !destroyed) {
+            hls.destroy();
+            hlsRef.current = null;
+            video.src = FALLBACK_MP4;
+            video.load();
+            video.play().catch(() => {});
+          }
+        });
+      } catch {
+        // import failed — fall back to MP4
+        if (!destroyed) {
+          video.src = FALLBACK_MP4;
+          video.load();
+        }
+      }
+    }
+
+    initHLS();
+
+    return () => {
+      destroyed = true;
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, []);
+
+  /* Safety fallback: dismiss splash if video takes too long */
   useEffect(() => {
     const fallback = setTimeout(() => {
-      if (!splashDone && !splashExiting) {
-        dismissSplash();
-      }
-    }, 4000); // reduced from 6s → 4s since videos are much smaller now
+      if (!splashDone && !splashExiting) dismissSplash();
+    }, 4000);
     return () => clearTimeout(fallback);
   }, [splashDone, splashExiting, dismissSplash]);
 
@@ -133,23 +181,19 @@ export default function HomePageClient() {
 
     {/* MAIN HOMEPAGE */}
     <div className={`hero-container ${splashDone ? 'hero-revealed' : 'hero-hidden'}`}>
-      {/* Video Background — adaptive resolution based on device capability */}
-      {videoSrc && (
-        <video
-          ref={videoRef}
-          className="hero-background-video"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          poster="/assets/videos/poster.jpg"
-          onCanPlayThrough={handleVideoReady}
-          onCanPlay={handleVideoReady}
-        >
-          <source src={videoSrc} type="video/mp4" />
-        </video>
-      )}
+      {/* Video Background — HLS adaptive streaming (360p → 480p → 720p based on network) */}
+      <video
+        ref={videoRef}
+        className="hero-background-video"
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster="/assets/videos/poster.jpg"
+        onCanPlay={handleVideoReady}
+        onCanPlayThrough={handleVideoReady}
+      />
+      {/* src is set programmatically by the HLS init effect — not via JSX */}
 
       {/* Dark Overlay */}
       <div className="hero-video-overlay"></div>

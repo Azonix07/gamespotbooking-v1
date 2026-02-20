@@ -91,6 +91,24 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
+      // HLS playlists — short cache so ABR switching works, correct MIME type
+      {
+        source: '/assets/videos/hls/:path*.m3u8',
+        headers: [
+          { key: 'Content-Type', value: 'application/vnd.apple.mpegurl' },
+          { key: 'Cache-Control', value: 'public, max-age=86400' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+        ],
+      },
+      // HLS segments — immutable, they never change
+      {
+        source: '/assets/videos/hls/:path*.ts',
+        headers: [
+          { key: 'Content-Type', value: 'video/mp2t' },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+        ],
+      },
     ];
   },
   // Environment variables exposed to browser
