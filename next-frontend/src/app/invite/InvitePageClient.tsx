@@ -7,7 +7,6 @@ import { FaWhatsapp, FaInstagram, FaMapMarkerAlt, FaPhoneAlt, FaStar } from 'rea
 import { FiCalendar, FiGift, FiArrowRight, FiMonitor, FiNavigation, FiUsers, FiClock, FiZap } from 'react-icons/fi';
 import '@/styles/InvitePage.css';
 import Image from 'next/image';
-import Link from 'next/link';
 
 function InvitePage() {
   const router = useRouter();
@@ -15,13 +14,11 @@ function InvitePage() {
 
   useEffect(() => {
     setMounted(true);
-    // Prefetch booking route so CSS/JS is ready when user clicks "Book Now"
-    router.prefetch('/booking');
-  }, [router]);
+  }, []);
 
   const handleWhatsAppClick = () => window.open('https://wa.me/917012125919', '_blank', 'noopener');
   const handleInstagramClick = () => window.open('https://instagram.com/gamespot_kdlr', '_blank', 'noopener');
-  const handleBookingClick = () => router.push('/booking');
+  const handleBookingClick = () => router.push('/');
   const handleGetOffersClick = () => router.push('/get-offers');
   const handleCallClick = () => window.open('tel:+917012125919');
   const handleLocationClick = () => window.open('https://maps.app.goo.gl/QLiXnP23J5TW2xz77', '_blank', 'noopener');
