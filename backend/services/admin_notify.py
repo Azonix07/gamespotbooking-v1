@@ -52,7 +52,9 @@ def _send_in_background(fn, *args, **kwargs):
         try:
             fn(*args, **kwargs)
         except Exception as e:
-            sys.stderr.write(f"[AdminNotify] Background send error: {e}\n")
+            sys.stderr.write(f"[AdminNotify] Background send error: {type(e).__name__}: {e}\n")
+            import traceback
+            sys.stderr.write(f"[AdminNotify] Traceback: {traceback.format_exc()}\n")
     t = threading.Thread(target=_worker, daemon=True)
     t.start()
 
@@ -62,12 +64,19 @@ def _send_gmail(subject, html_body):
     config = _get_gmail_config()
     recipients = _get_admin_emails()
 
-    if not config['user'] or not config['password']:
-        sys.stderr.write("[AdminNotify] GMAIL_USER or GMAIL_APP_PASSWORD not set - skipping notification\n")
+    # Strip spaces from app password (Google formats them as "xxxx xxxx xxxx xxxx")
+    password = config['password'].replace(' ', '') if config['password'] else ''
+
+    if not config['user'] or not password:
+        sys.stderr.write(f"[AdminNotify] GMAIL_USER or GMAIL_APP_PASSWORD not set - skipping notification. "
+                         f"GMAIL_USER={'SET' if config['user'] else 'EMPTY'}, "
+                         f"GMAIL_APP_PASSWORD={'SET' if config['password'] else 'EMPTY'}\n")
         return
     if not recipients:
         sys.stderr.write("[AdminNotify] No admin emails configured - skipping notification\n")
         return
+
+    sys.stderr.write(f"[AdminNotify] Attempting to send: {subject} → {', '.join(recipients)}\n")
 
     # Build the email
     msg = MIMEMultipart('alternative')
@@ -84,29 +93,31 @@ def _send_gmail(subject, html_body):
         ('TLS/587', 587, 'tls'),
     ]
 
+    last_error = None
     for method_name, port, mode in methods:
         try:
             if mode == 'ssl':
                 context = ssl.create_default_context()
-                server = smtplib.SMTP_SSL('smtp.gmail.com', port, timeout=15, context=context)
+                server = smtplib.SMTP_SSL('smtp.gmail.com', port, timeout=30, context=context)
             else:
-                server = smtplib.SMTP('smtp.gmail.com', port, timeout=15)
+                server = smtplib.SMTP('smtp.gmail.com', port, timeout=30)
                 server.ehlo()
                 server.starttls()
                 server.ehlo()
 
-            server.login(config['user'], config['password'])
+            server.login(config['user'], password)
             server.sendmail(config['user'], recipients, msg.as_string())
             server.quit()
 
-            sys.stderr.write(f"[AdminNotify] Gmail sent via {method_name} to {', '.join(recipients)}: {subject}\n")
+            sys.stderr.write(f"[AdminNotify] ✅ Gmail sent via {method_name} to {', '.join(recipients)}: {subject}\n")
             return  # Success — stop trying other methods
 
         except Exception as e:
-            sys.stderr.write(f"[AdminNotify] Gmail {method_name} failed: {e}\n")
+            last_error = e
+            sys.stderr.write(f"[AdminNotify] Gmail {method_name} failed: {type(e).__name__}: {e}\n")
             continue
 
-    sys.stderr.write(f"[AdminNotify] All Gmail SMTP methods failed for: {subject}\n")
+    sys.stderr.write(f"[AdminNotify] ❌ All Gmail SMTP methods failed for: {subject}. Last error: {last_error}\n")
 
 
 def _build_html_email(title, emoji, fields, action_text=None):

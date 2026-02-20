@@ -100,7 +100,7 @@ def handle_bookings():
                     bd.price as device_price
                 FROM bookings b
                 LEFT JOIN booking_devices bd ON b.id = bd.booking_id
-                ORDER BY b.booking_date DESC, b.start_time DESC, b.id
+                ORDER BY b.id DESC
             """
             
             cursor.execute(query)

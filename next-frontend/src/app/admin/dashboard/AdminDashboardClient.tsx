@@ -561,11 +561,14 @@ const AdminDashboard = () => {
     
     // Apply preset filters
     const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
     if (bookingFilters.preset === 'today') {
       filtered = filtered.filter(b => b.booking_date === today);
+    } else if (bookingFilters.preset === 'tomorrow') {
+      filtered = filtered.filter(b => b.booking_date === tomorrow);
     } else if (bookingFilters.preset === 'week') {
       filtered = filtered.filter(b => b.booking_date >= weekAgo);
     } else if (bookingFilters.preset === 'month') {
@@ -576,6 +579,9 @@ const AdminDashboard = () => {
     if (bookingFilters.status && bookingFilters.status !== 'all') {
       filtered = filtered.filter(b => b.status === bookingFilters.status);
     }
+    
+    // Sort: newest bookings first (by id descending — higher id = more recently booked)
+    filtered.sort((a, b) => b.id - a.id);
     
     setFilteredBookings(filtered);
     setCurrentPage(1); // Reset to first page when filters change
@@ -1198,6 +1204,12 @@ const AdminDashboard = () => {
               Today
             </button>
             <button 
+              className={`filter-btn ${bookingFilters.preset === 'tomorrow' ? 'active' : ''}`}
+              onClick={() => setBookingFilters({...bookingFilters, preset: 'tomorrow'})}
+            >
+              Tomorrow
+            </button>
+            <button 
               className={`filter-btn ${bookingFilters.preset === 'week' ? 'active' : ''}`}
               onClick={() => setBookingFilters({...bookingFilters, preset: 'week'})}
             >
@@ -1292,6 +1304,11 @@ const AdminDashboard = () => {
                   <div className="booking-card-devices">
                     {formatDevices(booking.devices)}
                   </div>
+                  {booking.created_at && (
+                    <div className="booking-card-booked-at" style={{ fontSize: '11px', color: '#94a3b8', marginTop: '6px' }}>
+                      Booked at: {new Date(booking.created_at).toLocaleString()}
+                    </div>
+                  )}
                 </div>
                 <div className="booking-card-actions">
                   {editingId === booking.id ? (
@@ -1351,6 +1368,7 @@ const AdminDashboard = () => {
                       <th>Duration</th>
                       <th>Devices</th>
                       <th>Price</th>
+                      <th>Booked At</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -1403,6 +1421,9 @@ const AdminDashboard = () => {
                           ) : (
                             <span className="price">{formatPrice(booking.total_price)}</span>
                           )}
+                        </td>
+                        <td data-label="BOOKED AT" style={{ fontSize: '12px', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+                          {booking.created_at ? new Date(booking.created_at).toLocaleString() : '—'}
                         </td>
                         <td data-label="ACTIONS">
                           {editingId === booking.id ? (

@@ -1713,3 +1713,56 @@ def check_closures():
             cursor.close()
         if conn:
             conn.close()
+
+
+# ==========================================
+#  NOTIFICATION DIAGNOSTICS & TEST
+# ==========================================
+
+@admin_bp.route('/api/admin/test-notification', methods=['POST', 'OPTIONS'])
+def test_notification():
+    """Send a test email notification to verify Gmail SMTP config (Admin only)"""
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    auth_error = require_admin()
+    if auth_error:
+        return auth_error
+
+    import os
+    gmail_user = os.getenv('GMAIL_USER', '')
+    gmail_pass = os.getenv('GMAIL_APP_PASSWORD', '')
+    admin_emails = os.getenv('ADMIN_NOTIFY_EMAILS', '')
+
+    config_status = {
+        'GMAIL_USER': 'SET' if gmail_user else 'NOT SET',
+        'GMAIL_APP_PASSWORD': 'SET' if gmail_pass else 'NOT SET',
+        'GMAIL_APP_PASSWORD_LENGTH': len(gmail_pass) if gmail_pass else 0,
+        'ADMIN_NOTIFY_EMAILS': admin_emails if admin_emails else gmail_user or 'NOT SET',
+    }
+
+    if not gmail_user or not gmail_pass:
+        return jsonify({
+            'success': False,
+            'error': 'Gmail credentials not configured on Railway. Set GMAIL_USER, GMAIL_APP_PASSWORD, and ADMIN_NOTIFY_EMAILS environment variables.',
+            'config_status': config_status
+        }), 400
+
+    try:
+        from services.admin_notify import notify_generic
+        notify_generic("🔔 Test Notification", {
+            "Status": "Email notifications are working!",
+            "Sent from": "GameSpot Admin Dashboard",
+            "Time": str(os.popen('date').read().strip()),
+        })
+        return jsonify({
+            'success': True,
+            'message': 'Test notification sent! Check your inbox.',
+            'config_status': config_status
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Failed to send test notification: {str(e)}',
+            'config_status': config_status
+        }), 500
