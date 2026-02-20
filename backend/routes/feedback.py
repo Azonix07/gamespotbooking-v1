@@ -12,11 +12,13 @@ feedback_bp = Blueprint('feedback', __name__)
 @general_api_rate_limit
 def submit_feedback():
     """Submit user feedback/suggestion (public, rate-limited)"""
+    conn = None
+    cursor = None
     try:
         data = request.json
         
         # Validate required fields
-        if not data.get('type') or not data.get('message'):
+        if not data or not data.get('type') or not data.get('message'):
             return jsonify({
                 'success': False,
                 'error': 'Feedback type and message are required'
@@ -31,6 +33,29 @@ def submit_feedback():
         # Insert into database
         conn = get_db_connection()
         cursor = conn.cursor()
+
+        # Auto-create table if it doesn't exist
+        try:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_feedback (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    type ENUM('suggestion', 'bug', 'query', 'feature', 'other') NOT NULL,
+                    message TEXT NOT NULL,
+                    name VARCHAR(255) DEFAULT 'Anonymous',
+                    email VARCHAR(255) DEFAULT '',
+                    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+                    status ENUM('pending', 'reviewed', 'resolved', 'closed') DEFAULT 'pending',
+                    admin_notes TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_status (status),
+                    INDEX idx_type (type),
+                    INDEX idx_created_at (created_at)
+                )
+            """)
+            conn.commit()
+        except Exception:
+            conn.rollback()
         
         query = """
             INSERT INTO user_feedback 
@@ -42,9 +67,6 @@ def submit_feedback():
         conn.commit()
         
         feedback_id = cursor.lastrowid
-        
-        cursor.close()
-        conn.close()
         
         # Send admin email notification
         try:
@@ -71,6 +93,17 @@ def submit_feedback():
             'success': False,
             'error': 'Failed to submit feedback'
         }), 500
+    finally:
+        if cursor:
+            try:
+                cursor.close()
+            except Exception:
+                pass
+        if conn:
+            try:
+                conn.close()
+            except Exception:
+                pass
 
 @feedback_bp.route('/api/feedback/all', methods=['GET'])
 def get_all_feedback():

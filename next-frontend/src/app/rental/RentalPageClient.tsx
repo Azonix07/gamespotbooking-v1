@@ -141,6 +141,9 @@ const RentalPage = () => {
     try {
       setLoading(true);
       setError(null);
+      const dailyRate = selectedDevice === 'ps5' ? 400 : 350;
+      const basePrice = customDays * dailyRate;
+      const controllerCost = extraControllers * controllerPricePerDay * customDays;
       const response = await fetch(`/api/rentals`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,7 +151,8 @@ const RentalPage = () => {
         body: JSON.stringify({
           device_type: selectedDevice, start_date: startDate, end_date: endDate,
           rental_days: customDays, package_type: selectedPackage || 'custom',
-          total_price: totalPrice, savings,
+          base_price: basePrice, total_price: totalPrice, savings,
+          controller_cost: controllerCost,
           customer_name: customerName, customer_phone: customerPhone,
           customer_email: customerEmail, delivery_address: deliveryAddress,
           extra_controllers: extraControllers
