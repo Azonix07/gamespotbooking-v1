@@ -1,12 +1,7 @@
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
-import GameSpotLoader from '@/components/GameSpotLoader';
+import BookingPageClient from './BookingPageClient';
 import BreadcrumbSchema from '@/components/structured-data/BreadcrumbSchema';
-
-const BookingPageClient = dynamic(() => import('./BookingPageClient'), {
-  loading: () => <GameSpotLoader />,
-  ssr: false,
-});
+import '@/styles/BookingPage.css';
 
 export const metadata: Metadata = {
   title: 'Book Gaming Slot in Kodungallur | PS5, VR & Driving Simulator Booking',
