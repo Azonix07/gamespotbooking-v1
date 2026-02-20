@@ -135,11 +135,12 @@ export default function HomePageClient() {
           BOOK NOW
         </Link>
 
-        {/* Console Icons — use next/image for automatic WebP/AVIF optimization */}
+        {/* Console Icons — next/image for ps5 & meta; plain img for xbox to preserve clarity */}
         <div className="console-icons-container">
           <Image src="/assets/images/ps5Icon.png" alt="PlayStation 5" className="console-icon ps5-icon" width={48} height={48} loading="lazy" />
           <div className="console-separator">|</div>
-          <Image src="/assets/images/xboxIcon.png" alt="Xbox Series X" className="console-icon xbox-icon" width={48} height={48} loading="lazy" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/images/xboxIcon.png" alt="Xbox Series X" className="console-icon xbox-icon" loading="lazy" />
           <div className="console-separator">|</div>
           <Image src="/assets/images/metaIcon.png" alt="Meta Quest VR" className="console-icon meta-icon" width={48} height={48} loading="lazy" />
         </div>

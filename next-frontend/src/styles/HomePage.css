@@ -554,7 +554,7 @@ body:has(.hero-container) .main-content {
 .cta-book-now-button {
   padding: 12px 45px;
   color: rgb(0, 0, 0);
-  font-weight: 300;
+  font-weight: 600;
   font-size: 20px;
   font-family: var(--font-display);
   cursor: pointer;
