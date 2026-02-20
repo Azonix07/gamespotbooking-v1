@@ -1,7 +1,50 @@
 import type { Metadata } from 'next';
-import BookingPageClient from './BookingPageClient';
+import dynamic from 'next/dynamic';
 import BreadcrumbSchema from '@/components/structured-data/BreadcrumbSchema';
+
+/*
+ * Import BookingPage.css at the server-component (page) level so it's
+ * included in the initial HTML <head> as a <link> tag — NO flash of
+ * unstyled content.  The client component itself also imports it (safe
+ * to do — Next.js deduplicates), so styles work either way.
+ */
 import '@/styles/BookingPage.css';
+
+/*
+ * Dynamic-import the client component with ssr:false so it doesn't
+ * SSR invisible framer-motion elements (opacity:0 / translateX).
+ * While the JS chunk loads the user sees a themed skeleton loader
+ * with the BookingPage.css background already applied via the import
+ * above.
+ */
+const BookingPageClient = dynamic(() => import('./BookingPageClient'), {
+  ssr: false,
+  loading: () => (
+    <div className="booking-page" style={{ minHeight: '100vh' }}>
+      <div className="booking-bg-effects">
+        <div className="bg-orb bg-orb-1"></div>
+        <div className="bg-orb bg-orb-2"></div>
+        <div className="bg-orb bg-orb-3"></div>
+        <div className="bg-grid"></div>
+      </div>
+      <div className="container booking-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: 48, height: 48, margin: '0 auto 16px',
+            border: '3px solid rgba(255,107,53,0.2)',
+            borderTopColor: '#ff6b35',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+          }} />
+          <p style={{ color: '#6c757d', fontSize: '0.95rem', fontFamily: 'var(--font-body)' }}>
+            Loading booking...
+          </p>
+        </div>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </div>
+  ),
+});
 
 export const metadata: Metadata = {
   title: 'Book Gaming Slot in Kodungallur | PS5, VR & Driving Simulator Booking',
