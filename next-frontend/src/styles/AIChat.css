@@ -862,23 +862,22 @@
 @media (max-width: 640px) {
   .ai-chat-overlay {
     padding: 0;
-    align-items: flex-end;
-    justify-content: flex-end;
+    align-items: stretch;
+    justify-content: stretch;
   }
   
   .ai-chat-container {
     max-width: 100%;
     width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100vh;
-    max-height: 100dvh;
+    height: 100%;
+    max-height: 100%;
     border-radius: 0;
     border: none;
   }
-  
+
   .ai-chat-header {
     padding: 14px 16px;
+    padding-top: max(14px, env(safe-area-inset-top, 14px));
   }
   
   .ai-avatar {
@@ -908,7 +907,14 @@
   }
 
   .close-btn {
-    padding: 8px;
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .close-btn svg {
+    width: 20px;
+    height: 20px;
   }
   
   .ai-chat-messages {
@@ -1012,6 +1018,7 @@
 @media (max-width: 380px) {
   .ai-chat-header {
     padding: 10px 12px;
+    padding-top: max(10px, env(safe-area-inset-top, 10px));
     gap: 8px;
   }
 
@@ -1041,8 +1048,16 @@
     padding: 5px 8px;
   }
 
+  .close-btn {
+    padding: 8px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
   .close-btn svg {
-    font-size: 14px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
   }
   
   .ai-chat-messages {
