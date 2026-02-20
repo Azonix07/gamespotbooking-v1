@@ -118,24 +118,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Favicons are handled by metadata export — no manual <link> tags needed */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Russo One — deferred load: preload as style, then apply after page paints */}
+        {/* Russo One — non-blocking: load as preload + swap to avoid render-blocking CSS */}
         <link
           rel="preload"
           href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap"
           as="style"
         />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
           href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap"
           rel="stylesheet"
           media="print"
+          // @ts-ignore — onLoad switches media to "all" after load, avoiding render-block
+          onLoad="this.media='all'"
         />
         <noscript>
           {/* eslint-disable-next-line @next/next/no-page-custom-font */}
           <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet" />
         </noscript>
-        {/* Switch deferred font from media=print to media=all after first paint */}
-        <script dangerouslySetInnerHTML={{ __html: `document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('link[media=print][href*=fonts]').forEach(function(l){l.media='all'})})` }} />
         <link rel="preconnect" href="https://gamespotbooking-v1-production.up.railway.app" />
         <link rel="dns-prefetch" href="https://gamespotbooking-v1-production.up.railway.app" />
       </head>

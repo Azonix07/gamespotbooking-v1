@@ -22,5 +22,6 @@ COPY . .
 # Expose port (Railway uses $PORT)
 EXPOSE 8000
 
-# Start the app
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8000"]
+# Start the app — 2 workers × 4 threads = 8 concurrent requests
+# --keep-alive reuses TCP connections; --max-requests recycles workers to prevent memory leaks
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8000", "--workers", "2", "--threads", "4", "--worker-class", "gthread", "--timeout", "120", "--keep-alive", "5", "--max-requests", "1000", "--max-requests-jitter", "50", "--preload"]

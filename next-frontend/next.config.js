@@ -9,6 +9,19 @@ const nextConfig = {
   poweredByHeader: false,
   // ── Reduce JS bundle size ──
   reactStrictMode: false,
+  // ── SWC minification (default in Next 14, explicit for clarity) ──
+  swcMinify: true,
+  // ── Optimize package imports: tree-shake barrel files ──
+  // react-icons ships all icons per sub-package; this ensures only used icons are bundled
+  // framer-motion ships a large bundle; modularize imports
+  modularizeImports: {
+    'react-icons/fi': { transform: 'react-icons/fi/{{member}}' },
+    'react-icons/gi': { transform: 'react-icons/gi/{{member}}' },
+  },
+  experimental: {
+    // Optimize barrel-export packages — reduces JS parse time
+    optimizePackageImports: ['framer-motion', 'react-icons'],
+  },
   // ── Image optimization ──
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -53,6 +66,27 @@ const nextConfig = {
       },
       {
         source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      // Cache optimized images served by Next.js
+      {
+        source: '/_next/image/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=86400' },
+        ],
+      },
+      // Cache font files (woff2)
+      {
+        source: '/:path*.woff2',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      // Cache videos
+      {
+        source: '/assets/videos/:path*',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],

@@ -22,9 +22,13 @@ const NEEDS_GOOGLE_AUTH = new Set(['/login', '/signup', '/forgot-password']);
 function ThemeLoader() {
   useEffect(() => {
     const cachedTheme = localStorage.getItem('selectedTheme');
+    const cacheTime = localStorage.getItem('selectedTheme_ts');
     if (cachedTheme) {
       document.documentElement.setAttribute('data-theme', cachedTheme);
     }
+    /* Skip refetch if theme was fetched less than 5 minutes ago */
+    if (cacheTime && Date.now() - Number(cacheTime) < 300_000) return;
+    
     /* Fetch theme in a non-blocking microtask */
     const controller = new AbortController();
     const fetchTheme = async () => {
@@ -38,6 +42,7 @@ function ThemeLoader() {
           if (data.theme) {
             document.documentElement.setAttribute('data-theme', data.theme);
             localStorage.setItem('selectedTheme', data.theme);
+            localStorage.setItem('selectedTheme_ts', String(Date.now()));
           }
         }
       } catch { /* ignore */ }

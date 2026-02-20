@@ -91,7 +91,7 @@ export default function HomePageClient() {
 
     {/* MAIN HOMEPAGE */}
     <div className={`hero-container ${splashDone ? 'hero-revealed' : 'hero-hidden'}`}>
-      {/* Video Background — starts loading immediately, splash waits for it */}
+      {/* Video Background — preload=metadata saves bandwidth; starts playing on canplay */}
       <video
         ref={videoRef}
         className="hero-background-video"
@@ -99,7 +99,7 @@ export default function HomePageClient() {
         loop
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
         onCanPlay={handleVideoReady}
       >
         <source src="/assets/videos/background.mp4" type="video/mp4" />
@@ -135,16 +135,13 @@ export default function HomePageClient() {
           BOOK NOW
         </Link>
 
-        {/* Console Icons — plain <img> for crisp rendering (small sprites <6KB each) */}
+        {/* Console Icons — use next/image for automatic WebP/AVIF optimization */}
         <div className="console-icons-container">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/images/ps5Icon.png" alt="PlayStation 5" className="console-icon ps5-icon" loading="lazy" />
+          <Image src="/assets/images/ps5Icon.png" alt="PlayStation 5" className="console-icon ps5-icon" width={48} height={48} loading="lazy" />
           <div className="console-separator">|</div>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/images/xboxIcon.png" alt="Xbox Series X" className="console-icon xbox-icon" loading="lazy" />
+          <Image src="/assets/images/xboxIcon.png" alt="Xbox Series X" className="console-icon xbox-icon" width={48} height={48} loading="lazy" />
           <div className="console-separator">|</div>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/images/metaIcon.png" alt="Meta Quest VR" className="console-icon meta-icon" loading="lazy" />
+          <Image src="/assets/images/metaIcon.png" alt="Meta Quest VR" className="console-icon meta-icon" width={48} height={48} loading="lazy" />
         </div>
       </div>
 

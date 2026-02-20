@@ -14,19 +14,10 @@ import traceback
 slots_bp = Blueprint('slots', __name__)
 
 def get_closures_for_date(cursor, date):
-    """Get closures for a given date, returns (is_full_day_closed, blocked_ranges)"""
+    """Get closures for a given date, returns (is_full_day_closed, blocked_ranges).
+    Note: The shop_closures table is created at startup via create_missing_tables() in app.py.
+    """
     try:
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS shop_closures (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                closure_date DATE NOT NULL,
-                closure_type ENUM('full_day', 'time_range') NOT NULL DEFAULT 'full_day',
-                start_time TIME DEFAULT NULL,
-                end_time TIME DEFAULT NULL,
-                reason VARCHAR(255) DEFAULT '',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
         cursor.execute('SELECT * FROM shop_closures WHERE closure_date = %s', (date,))
         closures = cursor.fetchall()
         
@@ -53,12 +44,9 @@ def get_closures_for_date(cursor, date):
     except Exception:
         return False, []
 
-@slots_bp.route('/api/slots.php', methods=['GET', 'OPTIONS'])
+@slots_bp.route('/api/slots.php', methods=['GET'])
 def get_slots():
     """Get available slots for a date"""
-    
-    if request.method == 'OPTIONS':
-        return '', 200
     
     date = request.args.get('date')
     duration = request.args.get('duration', type=int)

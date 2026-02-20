@@ -13,7 +13,8 @@ from mysql.connector import pooling
 connection_pool = None
 
 # Pool configuration — tuned for Railway (limited MySQL connections)
-POOL_SIZE = int(os.getenv("DB_POOL_SIZE", 10))
+# 2 gunicorn workers × 4 threads = 8 concurrent requests; pool must cover them
+POOL_SIZE = int(os.getenv("DB_POOL_SIZE", 12))
 MAX_RETRIES = 3
 RETRY_DELAY = 0.5  # seconds
 

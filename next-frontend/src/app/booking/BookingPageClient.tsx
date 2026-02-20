@@ -82,6 +82,11 @@ const getGameCover = (gameName) => {
   return GAME_COVERS[gameName] || { img: null, emoji: '🎮', color: '#ff6b35' };
 };
 
+// ── Performance: stable motion variants at module scope (shared across renders) ──
+const SLOT_HOVER = { scale: 1.05, y: -2 };
+const SLOT_TAP = { scale: 0.96 };
+const EMPTY_MOTION = {};
+
 const BookingPage = () => {
   const router = useRouter();
   
@@ -943,54 +948,54 @@ const BookingPage = () => {
   const MIN_BOOKING_DURATION = 30;  // minimum 30-min booking
 
   /** Minutes from midnight for a HH:MM time string */
-  const timeToMinutes = (time) => {
+  const timeToMinutes = useCallback((time) => {
     const [h, m] = time.split(':').map(Number);
     return h * 60 + m;
-  };
+  }, []);
 
   /** Max bookable duration (in minutes) for a given start-time slot */
-  const getMaxDuration = (time) => {
+  const getMaxDuration = useCallback((time) => {
     return CLOSING_MINUTES - timeToMinutes(time);
-  };
+  }, [timeToMinutes]);
 
   /** Is this slot past (for today only)? */
-  const isSlotPast = (time) => {
+  const isSlotPast = useCallback((time) => {
     if (selectedDate !== getToday()) return false;
     const now = new Date();
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
     return timeToMinutes(time) <= nowMinutes;
-  };
+  }, [selectedDate, timeToMinutes]);
 
   /** Can't book this slot — either past, closed, or less than 30 min until midnight */
-  const isSlotDisabled = (slot) => {
+  const isSlotDisabled = useCallback((slot) => {
     if (slot.status === 'full') return true;
     if (slot.status === 'closed') return true;
     if (isSlotPast(slot.time)) return true;
     if (getMaxDuration(slot.time) < MIN_BOOKING_DURATION) return true;
     return false;
-  };
+  }, [isSlotPast, getMaxDuration]);
 
   /** Allowed durations for a given start time (30/60/90/120 that fit before midnight) */
-  const getAllowedDurations = (time) => {
+  const getAllowedDurations = useCallback((time) => {
     const maxDur = getMaxDuration(time);
     return [30, 60, 90, 120].filter(d => d <= maxDur);
-  };
+  }, [getMaxDuration]);
 
-  // Animation Variants
-  const fadeInUp = {
+  // Animation Variants — memoized to prevent object recreation on every render
+  const fadeInUp = useMemo(() => ({
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -20 },
     transition: { duration: 0.3 }
-  };
+  }), []);
 
-  const staggerContainer = {
+  const staggerContainer = useMemo(() => ({
     animate: {
       transition: {
         staggerChildren: 0.05
       }
     }
-  };
+  }), []);
 
   return (
     <div className="booking-page">
@@ -1435,8 +1440,8 @@ const BookingPage = () => {
                             className={`ts-card ts-${stateClass} ${isSelected ? 'ts-selected' : ''}`}
                             onClick={() => !disabled && handleTimeSelect(slot.time, slot.status)}
                             disabled={disabled}
-                            whileHover={!disabled ? { scale: 1.05, y: -2 } : {}}
-                            whileTap={!disabled ? { scale: 0.96 } : {}}
+                            whileHover={!disabled ? SLOT_HOVER : EMPTY_MOTION}
+                            whileTap={!disabled ? SLOT_TAP : EMPTY_MOTION}
                             title={slot.status === 'closed' ? (slot.closure_reason || 'Shop closed') : past ? 'This slot has passed' : maxDur < MIN_BOOKING_DURATION ? 'Too close to closing time (12 AM)' : isLateSlot ? `Max ${maxDur} min — closes at 12 AM` : ''}
                           >
                             {/* Status indicator dot */}

@@ -3,6 +3,7 @@
 # Web Framework
 Flask==3.0.0
 Flask-CORS==4.0.0
+flask-compress==1.14
 
 # MySQL Database Connector
 mysql-connector-python==8.2.0

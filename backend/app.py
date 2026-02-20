@@ -45,6 +45,20 @@ from routes.quest_pass import quest_pass_bp  # Quest Pass (story mode membership
 # Create Flask app
 app = Flask(__name__)
 
+# ── Performance: enable gzip compression for all responses ──
+# Reduces payload size by ~70%, dramatically improving TTFB on mobile
+try:
+    from flask_compress import Compress
+    Compress(app)
+    app.config['COMPRESS_MIMETYPES'] = [
+        'text/html', 'text/css', 'text/xml', 'text/plain',
+        'application/json', 'application/javascript', 'application/xml',
+    ]
+    app.config['COMPRESS_MIN_SIZE'] = 256  # Don't compress tiny responses
+    app.config['COMPRESS_LEVEL'] = 6       # Balance speed vs ratio
+except ImportError:
+    sys.stderr.write("⚠️  flask-compress not installed — responses will not be gzipped\n")
+
 # ============================================================
 # SECURITY CONFIGURATION
 # ============================================================
@@ -159,6 +173,21 @@ def add_security_headers(response):
     # Strict-Transport-Security for production
     if os.getenv('RAILWAY_ENVIRONMENT') or request.is_secure:
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    
+    # ── Performance: Cache-Control for read-only GET endpoints ──
+    # Slot data changes infrequently; a short cache reduces repeated fetches.
+    # POST/PUT/DELETE must never be cached.
+    if request.method == 'GET' and response.status_code == 200:
+        path = request.path
+        # Games catalog, theme, membership plans — cacheable for 5 min
+        if any(path.startswith(p) for p in ('/api/games', '/api/theme', '/api/membership/plans')):
+            response.headers.setdefault('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
+        # Slot data — short cache (15s) to reduce burst reloads but stay fresh
+        elif path.startswith('/api/slots'):
+            response.headers.setdefault('Cache-Control', 'public, max-age=15, stale-while-revalidate=10')
+        # Health check — cacheable
+        elif path == '/health':
+            response.headers.setdefault('Cache-Control', 'public, max-age=60')
     
     return response
 
@@ -297,6 +326,16 @@ def create_missing_tables():
         conn.commit()
         
         tables_sql = [
+            """CREATE TABLE IF NOT EXISTS shop_closures (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                closure_date DATE NOT NULL,
+                closure_type ENUM('full_day', 'time_range') NOT NULL DEFAULT 'full_day',
+                start_time TIME DEFAULT NULL,
+                end_time TIME DEFAULT NULL,
+                reason VARCHAR(255) DEFAULT '',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_closure_date (closure_date)
+            )""",
             """CREATE TABLE IF NOT EXISTS page_visits (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 page VARCHAR(255) NOT NULL,
