@@ -21,7 +21,7 @@ function InvitePage() {
   const handleBookingClick = () => router.push('/');
   const handleGetOffersClick = () => router.push('/get-offers');
   const handleCallClick = () => window.open('tel:+917012125919');
-  const handleLocationClick = () => window.open('https://maps.app.goo.gl/YourMapLinkHere', '_blank', 'noopener');
+  const handleLocationClick = () => window.open('https://maps.app.goo.gl/QLiXnP23J5TW2xz77', '_blank', 'noopener');
 
   return (
     <div className={`inv ${mounted ? 'inv--visible' : ''}`}>
@@ -91,7 +91,7 @@ function InvitePage() {
             {/* Location — desktop */}
             <div className="inv__loc-desktop" onClick={handleLocationClick}>
               <FaMapMarkerAlt />
-              <span>Near Private Bus Stand, Kodungallur, Thrissur</span>
+              <span>Shipu Complex, Near JJ Castle, Kodungallur, Thrissur</span>
             </div>
           </div>
         </div>
