@@ -516,6 +516,11 @@ body:has(.hero-container) .main-content {
   height: 100%;
   object-fit: cover;
   z-index: 0;
+  /* GPU compositing — prevents main-thread jank during video decode */
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 /* Dark Overlay for better text/content visibility */

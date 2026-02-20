@@ -9,12 +9,53 @@ import '@/styles/SplashScreen.css';
 
 const AIChat = lazy(() => import('@/components/AIChat'));
 
+/**
+ * Pick the right video variant based on device capability.
+ * - Low-end mobile / slow connection / data-saver → 360p (772 KB)
+ * - Tablet or mid-range mobile → 480p (1.5 MB)
+ * - Desktop / high-end → 720p (2.8 MB)
+ * The original 4K file is never served — it's kept only as a source master.
+ */
+function getOptimalVideoSrc(): string {
+  if (typeof window === 'undefined') return '/assets/videos/background-720p.mp4';
+
+  const w = window.screen.width;
+  const dpr = window.devicePixelRatio || 1;
+  const effectiveW = w * Math.min(dpr, 2); // cap DPR at 2 for video selection
+  const cores = navigator.hardwareConcurrency || 2;
+  const mem = (navigator as any).deviceMemory || 4; // GB — Chrome-only, fallback 4
+
+  // Check for data-saver mode (Save-Data header hint via JS)
+  const conn = (navigator as any).connection;
+  const saveData = conn?.saveData === true;
+  const slowConn = conn && (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g');
+
+  // Tier 1: Low-end — small screen, few cores, low memory, or slow network
+  if (saveData || slowConn || cores <= 2 || mem <= 2 || effectiveW <= 640) {
+    return '/assets/videos/background-360p.mp4';
+  }
+
+  // Tier 2: Mid-range — tablet, mid-tier phone
+  if (effectiveW <= 1024 || cores <= 4 || mem <= 4) {
+    return '/assets/videos/background-480p.mp4';
+  }
+
+  // Tier 3: Desktop / high-end
+  return '/assets/videos/background-720p.mp4';
+}
+
 export default function HomePageClient() {
   const [showAIChat, setShowAIChat] = useState(false);
   const [splashDone, setSplashDone] = useState(false);
   const [splashExiting, setSplashExiting] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  /* Pick optimal video on mount (client-side only) */
+  useEffect(() => {
+    setVideoSrc(getOptimalVideoSrc());
+  }, []);
 
   /* Dismiss splash: start exit animation, then remove from DOM */
   const dismissSplash = useCallback(() => {
@@ -26,16 +67,17 @@ export default function HomePageClient() {
   /* Video loaded — dismiss splash */
   const handleVideoReady = useCallback(() => {
     setVideoLoaded(true);
-    dismissSplash();
+    // Small delay to let the first frame paint before removing splash
+    requestAnimationFrame(() => dismissSplash());
   }, [dismissSplash]);
 
-  /* Safety fallback: if video takes too long (>6s), dismiss splash anyway */
+  /* Safety fallback: if video takes too long (>4s), dismiss splash anyway */
   useEffect(() => {
     const fallback = setTimeout(() => {
       if (!splashDone && !splashExiting) {
         dismissSplash();
       }
-    }, 6000);
+    }, 4000); // reduced from 6s → 4s since videos are much smaller now
     return () => clearTimeout(fallback);
   }, [splashDone, splashExiting, dismissSplash]);
 
@@ -91,19 +133,23 @@ export default function HomePageClient() {
 
     {/* MAIN HOMEPAGE */}
     <div className={`hero-container ${splashDone ? 'hero-revealed' : 'hero-hidden'}`}>
-      {/* Video Background — preload=metadata saves bandwidth; starts playing on canplay */}
-      <video
-        ref={videoRef}
-        className="hero-background-video"
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="metadata"
-        onCanPlay={handleVideoReady}
-      >
-        <source src="/assets/videos/background.mp4" type="video/mp4" />
-      </video>
+      {/* Video Background — adaptive resolution based on device capability */}
+      {videoSrc && (
+        <video
+          ref={videoRef}
+          className="hero-background-video"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          poster="/assets/videos/poster.jpg"
+          onCanPlayThrough={handleVideoReady}
+          onCanPlay={handleVideoReady}
+        >
+          <source src={videoSrc} type="video/mp4" />
+        </video>
+      )}
 
       {/* Dark Overlay */}
       <div className="hero-video-overlay"></div>
