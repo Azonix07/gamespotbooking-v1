@@ -151,6 +151,13 @@ const BookingPage = () => {
 
   const [priceLoading, setPriceLoading] = useState(false);
 
+  // Live clock tick — forces re-render every minute so past slots disappear in real time
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 60_000); // tick every 60 s
+    return () => clearInterval(id);
+  }, []);
+
   // Refs for cancelling stale async operations
   const priceUpdateIdRef = useRef(0);
   const priceDebounceRef = useRef(null);
@@ -953,10 +960,21 @@ const BookingPage = () => {
   /** Is this slot past (for today only)? */
   const isSlotPast = useCallback((time) => {
     if (selectedDate !== getToday()) return false;
+    // nowTick is listed as a dep so the callback refreshes every minute
     const now = new Date();
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
     return timeToMinutes(time) <= nowMinutes;
-  }, [selectedDate, timeToMinutes]);
+  }, [selectedDate, timeToMinutes, nowTick]);
+
+  // If the currently selected time slot becomes past, clear the selection
+  useEffect(() => {
+    if (selectedTime && isSlotPast(selectedTime)) {
+      setSelectedTime(null);
+      setPs5Bookings([]);
+      setDrivingSim(null);
+      if (currentStep > 1) setCurrentStep(1);
+    }
+  }, [nowTick, selectedTime, isSlotPast, currentStep]);
 
   /** Can't book this slot — either past, closed, or less than 30 min until midnight */
   const isSlotDisabled = useCallback((slot) => {
@@ -1404,6 +1422,12 @@ const BookingPage = () => {
                       </button>
                       <p className="slots-error-hint">If this keeps happening, try refreshing the page or switching to a different network.</p>
                     </div>
+                  ) : slots.filter((slot) => !isSlotPast(slot.time)).length === 0 ? (
+                    <div className="slots-error-container">
+                      <div className="slots-error-icon">⏰</div>
+                      <p className="slots-error-message">No more slots available for today</p>
+                      <p className="slots-error-hint">All time slots for today have passed. Please pick a future date to book your session.</p>
+                    </div>
                   ) : (
                     <div className="time-slots-scroll-wrapper">
                       <motion.div 
@@ -1412,9 +1436,10 @@ const BookingPage = () => {
                         initial="initial"
                         animate="animate"
                       >
-                        {slots.map((slot, index) => {
+                        {slots
+                        .filter((slot) => !isSlotPast(slot.time))  
+                        .map((slot, index) => {
                           const disabled = isSlotDisabled(slot);
-                          const past = isSlotPast(slot.time);
                           const maxDur = getMaxDuration(slot.time);
                           const isLateSlot = maxDur <= 60 && maxDur >= MIN_BOOKING_DURATION;
                           const isSelected = selectedTime === slot.time;
@@ -1422,7 +1447,6 @@ const BookingPage = () => {
                           // Determine visual state class
                           let stateClass = slot.status;
                           if (slot.status === 'closed') stateClass = 'closed';
-                          else if (past) stateClass = 'past';
                           else if (disabled && slot.status !== 'closed') stateClass = 'closing-soon';
 
                           return (
@@ -1434,7 +1458,7 @@ const BookingPage = () => {
                             disabled={disabled}
                             whileHover={!disabled ? SLOT_HOVER : EMPTY_MOTION}
                             whileTap={!disabled ? SLOT_TAP : EMPTY_MOTION}
-                            title={slot.status === 'closed' ? (slot.closure_reason || 'Shop closed') : past ? 'This slot has passed' : maxDur < MIN_BOOKING_DURATION ? 'Too close to closing time (12 AM)' : isLateSlot ? `Max ${maxDur} min — closes at 12 AM` : ''}
+                            title={slot.status === 'closed' ? (slot.closure_reason || 'Shop closed') : maxDur < MIN_BOOKING_DURATION ? 'Too close to closing time (12 AM)' : isLateSlot ? `Max ${maxDur} min — closes at 12 AM` : ''}
                           >
                             {/* Status indicator dot */}
                             <span className="ts-dot"></span>
@@ -1446,21 +1470,18 @@ const BookingPage = () => {
                             {slot.status === 'closed' && (
                               <span className="ts-label">Closed</span>
                             )}
-                            {slot.status !== 'closed' && past && (
-                              <span className="ts-label">Past</span>
-                            )}
-                            {slot.status !== 'closed' && !past && isLateSlot && (
+                            {slot.status !== 'closed' && isLateSlot && (
                               <span className="ts-label ts-label-warn">Max {maxDur}m</span>
                             )}
-                            {slot.status !== 'closed' && !past && !isLateSlot && slot.status === 'partial' && (
+                            {slot.status !== 'closed' && !isLateSlot && slot.status === 'partial' && (
                               <span className="ts-label ts-label-partial">
                                 {slot.available_ps5} left
                               </span>
                             )}
-                            {slot.status !== 'closed' && !past && !isLateSlot && slot.status === 'available' && (
+                            {slot.status !== 'closed' && !isLateSlot && slot.status === 'available' && (
                               <span className="ts-label ts-label-open">Open</span>
                             )}
-                            {slot.status !== 'closed' && !past && !isLateSlot && slot.status === 'full' && (
+                            {slot.status !== 'closed' && !isLateSlot && slot.status === 'full' && (
                               <span className="ts-label ts-label-full">Full</span>
                             )}
                           </motion.button>
