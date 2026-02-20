@@ -862,20 +862,19 @@
 @media (max-width: 640px) {
   .ai-chat-overlay {
     padding: 0;
-    padding-top: 64px; /* Clear navbar on mobile */
     align-items: flex-end;
+    justify-content: flex-end;
   }
   
   .ai-chat-container {
     max-width: 100%;
     width: 100%;
-    height: calc(100vh - 64px);
-    height: calc(100dvh - 64px);
-    max-height: calc(100vh - 64px);
-    max-height: calc(100dvh - 64px);
-    border-radius: 20px 20px 0 0;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    border-radius: 0;
     border: none;
-    border-top: 1px solid var(--ai-border-light);
   }
   
   .ai-chat-header {
