@@ -10,43 +10,85 @@ import '@/styles/SplashScreen.css';
 const AIChat = lazy(() => import('@/components/AIChat'));
 
 /**
- * Progressive video quality upgrade — NO HLS, NO stutter.
+ * One-shot video quality selection — detect during splash, pick ONE quality,
+ * play it forever. No switching, no stutter, no crossfading.
  *
- * Strategy:
- *  1. Poster image shows instantly (109 KB)
- *  2. 360p MP4 loads first (1 MB) — plays within ~2s on any connection
- *  3. Once 360p is playing, we silently preload 720p in a hidden <video>
- *  4. When 720p is fully buffered, we crossfade to it — zero stutter
- *
- * On low-end mobile (< 4 GB RAM or "slow" connection hint), we skip
- * the upgrade and stay on 360p forever to keep things silky smooth.
+ * Tiers:
+ *  - 480p  (2.5 MB) — slow network / low-end device / data-saver
+ *  - 720p  (4.7 MB) — mid-range network & device
+ *  - 1080p (10 MB)  — fast network + powerful device
  */
-const VIDEO_360 = '/assets/videos/background-360p.mp4';
-const VIDEO_480 = '/assets/videos/background-480p.mp4';
-const VIDEO_720 = '/assets/videos/background-720p.mp4';
+const VIDEO_480  = '/assets/videos/background-480p.mp4';
+const VIDEO_720  = '/assets/videos/background-720p.mp4';
+const VIDEO_1080 = '/assets/videos/background-1080p.mp4';
 
-/** Pick the upgrade target based on device capabilities */
-function getUpgradeTarget(): string | null {
-  if (typeof window === 'undefined') return null;
+/**
+ * Runs a real bandwidth probe + device capability check.
+ * Downloads a small chunk and measures throughput, then combines
+ * with device hints (RAM, CPU cores, connection type) to pick
+ * the best video the device can handle smoothly.
+ */
+async function detectBestVideo(): Promise<string> {
+  if (typeof window === 'undefined') return VIDEO_480;
 
-  // Detect low-end devices — skip upgrade entirely
   const nav = navigator as any;
-  const memoryGB = nav.deviceMemory ?? 8; // defaults to 8 if unknown
-  const conn = nav.connection ?? {};
-  const saveData = conn.saveData === true;
-  const effectiveType = conn.effectiveType ?? '4g';
 
-  // Data-saver mode or very slow connection — stay on 360p
-  if (saveData || effectiveType === 'slow-2g' || effectiveType === '2g') return null;
+  // ── Device capability signals ──
+  const memoryGB      = nav.deviceMemory ?? 8;       // GB of RAM (Chrome only, defaults 8)
+  const cpuCores      = nav.hardwareConcurrency ?? 4; // logical cores
+  const conn          = nav.connection ?? {};
+  const saveData      = conn.saveData === true;
+  const effectiveType = conn.effectiveType ?? '4g';   // slow-2g | 2g | 3g | 4g
+  const downlinkMbps  = conn.downlink ?? null;        // estimated Mbps (Chrome only)
 
-  // Low memory device — stay on 360p
-  if (memoryGB <= 2) return null;
+  // ── Immediate bail-outs ──
+  if (saveData) return VIDEO_480;
+  if (effectiveType === 'slow-2g' || effectiveType === '2g') return VIDEO_480;
+  if (memoryGB <= 2) return VIDEO_480;
 
-  // 3G or low memory — upgrade to 480p only
-  if (effectiveType === '3g' || memoryGB <= 4) return VIDEO_480;
+  // ── Real bandwidth measurement ──
+  // Download a tiny probe file and measure speed.
+  // We use the poster image (~109 KB) — it's already cached by the browser
+  // after the <img> in splash loads it, so on fast connections this resolves
+  // near-instantly from cache; on slow connections it gives us real throughput.
+  let measuredMbps = downlinkMbps; // fallback to Network Information API value
 
-  // Everything else (4G, WiFi, desktop) — upgrade to 720p
-  return VIDEO_720;
+  try {
+    const probeUrl = '/assets/videos/poster.jpg?_probe=' + Date.now();
+    const start = performance.now();
+    const res = await fetch(probeUrl, { cache: 'no-store' });
+    const blob = await res.blob();
+    const elapsed = (performance.now() - start) / 1000; // seconds
+    const bits = blob.size * 8;
+    measuredMbps = (bits / elapsed) / 1_000_000; // Mbps
+  } catch {
+    // fetch failed — use API hint or default to conservative
+    measuredMbps = measuredMbps ?? 2;
+  }
+
+  // ── Decision matrix ──
+  // Combine bandwidth + device capability into a single score
+
+  // Device score: 0 (weak) to 3 (powerful)
+  let deviceScore = 0;
+  if (memoryGB >= 4) deviceScore++;
+  if (memoryGB >= 8) deviceScore++;
+  if (cpuCores >= 4) deviceScore++;
+
+  // Network score: 0 (slow) to 3 (fast)
+  let networkScore = 0;
+  if (effectiveType === '4g') networkScore++;
+  if (measuredMbps !== null && measuredMbps > 5)  networkScore++;
+  if (measuredMbps !== null && measuredMbps > 15) networkScore++;
+
+  const totalScore = deviceScore + networkScore; // 0–6
+
+  // Score 0–2: 480p  (slow network or weak device)
+  // Score 3–4: 720p  (mid-range)
+  // Score 5–6: 1080p (fast + powerful)
+  if (totalScore >= 5) return VIDEO_1080;
+  if (totalScore >= 3) return VIDEO_720;
+  return VIDEO_480;
 }
 
 export default function HomePageClient() {
@@ -54,11 +96,9 @@ export default function HomePageClient() {
   const [splashDone, setSplashDone] = useState(false);
   const [splashExiting, setSplashExiting] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const [upgraded, setUpgraded] = useState(false);
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
-  const videoRef = useRef<HTMLVideoElement>(null);       // primary (360p initially)
-  const upgradeVideoRef = useRef<HTMLVideoElement>(null); // hidden preload video
-  const upgradeAttempted = useRef(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   /* Dismiss splash: start exit animation, then remove from DOM */
   const dismissSplash = useCallback(() => {
@@ -74,44 +114,25 @@ export default function HomePageClient() {
     requestAnimationFrame(() => dismissSplash());
   }, [dismissSplash, videoLoaded]);
 
-  /**
-   * Progressive upgrade: once 360p is playing smoothly, silently
-   * preload a higher quality video and crossfade when ready.
-   */
+  /* Run detection during splash screen, then set video src */
   useEffect(() => {
-    if (!videoLoaded || upgradeAttempted.current) return;
-    upgradeAttempted.current = true;
+    let cancelled = false;
 
-    const target = getUpgradeTarget();
-    if (!target) return; // low-end device — stay on 360p
+    detectBestVideo().then((src) => {
+      if (!cancelled) setVideoSrc(src);
+    });
 
-    const primary = videoRef.current;
-    const upgrade = upgradeVideoRef.current;
-    if (!primary || !upgrade) return;
+    return () => { cancelled = true; };
+  }, []);
 
-    // Wait 2 seconds after 360p starts playing before preloading
-    // This ensures 360p playback is smooth first
-    const timer = setTimeout(() => {
-      upgrade.src = target;
-      upgrade.load();
-
-      const onReady = () => {
-        // Sync playback position so the swap is seamless
-        upgrade.currentTime = primary.currentTime % upgrade.duration;
-        upgrade.play().then(() => {
-          // Crossfade: fade in the upgrade video on top
-          setUpgraded(true);
-        }).catch(() => {
-          // Autoplay blocked — stay on 360p
-        });
-        upgrade.removeEventListener('canplaythrough', onReady);
-      };
-
-      upgrade.addEventListener('canplaythrough', onReady);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [videoLoaded]);
+  /* Once videoSrc is set, load and play */
+  useEffect(() => {
+    if (!videoSrc || !videoRef.current) return;
+    const video = videoRef.current;
+    video.src = videoSrc;
+    video.load();
+    video.play().catch(() => {});
+  }, [videoSrc]);
 
   /* Safety fallback: dismiss splash if video takes too long */
   useEffect(() => {
@@ -173,10 +194,10 @@ export default function HomePageClient() {
 
     {/* MAIN HOMEPAGE */}
     <div className={`hero-container ${splashDone ? 'hero-revealed' : 'hero-hidden'}`}>
-      {/* Primary video — starts with 360p for instant playback */}
+      {/* Single background video — quality chosen during splash based on network + device */}
       <video
         ref={videoRef}
-        className={`hero-background-video ${upgraded ? 'hero-video-fade-out' : ''}`}
+        className="hero-background-video"
         autoPlay
         loop
         muted
@@ -185,18 +206,8 @@ export default function HomePageClient() {
         poster="/assets/videos/poster.jpg"
         onCanPlay={handleVideoReady}
         onCanPlayThrough={handleVideoReady}
-        src={VIDEO_360}
       />
-
-      {/* Upgrade video — silently preloaded, fades in when ready */}
-      <video
-        ref={upgradeVideoRef}
-        className={`hero-background-video hero-upgrade-video ${upgraded ? 'hero-video-fade-in' : ''}`}
-        loop
-        muted
-        playsInline
-        preload="none"
-      />
+      {/* src is set by the detection effect — not via JSX prop */}
 
       {/* Dark Overlay */}
       <div className="hero-video-overlay"></div>

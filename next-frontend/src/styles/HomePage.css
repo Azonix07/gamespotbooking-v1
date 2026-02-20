@@ -521,26 +521,6 @@ body:has(.hero-container) .main-content {
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  /* Smooth crossfade during quality upgrade */
-  transition: opacity 1.2s ease-in-out;
-  opacity: 1;
-}
-
-/* Upgrade video sits on top, invisible until ready */
-.hero-upgrade-video {
-  z-index: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* When upgrade is ready, fade OUT the low-quality video */
-.hero-video-fade-out {
-  opacity: 0;
-}
-
-/* When upgrade is ready, fade IN the high-quality video */
-.hero-video-fade-in {
-  opacity: 1;
 }
 
 /* Dark Overlay for better text/content visibility */

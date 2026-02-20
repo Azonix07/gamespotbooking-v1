@@ -20,3 +20,4 @@ frontend/build/
 # Mac
 .DS_Store
 _replace_step2.py
+next-frontend/public/assets/videos/background.mp4
