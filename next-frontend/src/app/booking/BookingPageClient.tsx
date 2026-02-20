@@ -249,7 +249,7 @@ const BookingPage = () => {
             setMembership(membershipResponse.membership);
           }
         } catch (membershipErr) {
-          console.log('No active membership');
+          // No active membership — continue as guest
         }
       }
     } catch (err) {
@@ -425,10 +425,7 @@ const BookingPage = () => {
         ? Math.max(...ps5Bookings.map(b => b.duration || 60))
         : 60;
       
-      console.log('🔄 Checking PS5 availability with duration:', maxPS5Duration);
       const ps5Response = await getSlotDetails(selectedDate, selectedTime, maxPS5Duration);
-      console.log('🔍 PS5 Availability Response:', ps5Response);
-      console.log('📱 Available PS5 Units:', ps5Response?.available_ps5_units);
       
       setAvailablePS5Units(ps5Response?.available_ps5_units || []);
       setTotalPlayers(ps5Response?.total_ps5_players_booked || 0);
@@ -455,9 +452,7 @@ const BookingPage = () => {
         const drivingCheckTime = `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
         const drivingDuration = drivingSim.duration || 60;
         
-        console.log('🔄 Checking Driving Sim (AFTER PS5) at:', drivingCheckTime, 'duration:', drivingDuration);
         const drivingResponse = await getSlotDetails(selectedDate, drivingCheckTime, drivingDuration);
-        console.log('🏎️ Driving Sim Availability (adjusted time):', drivingResponse?.available_driving);
         
         setAvailableDriving(drivingResponse?.available_driving ?? true);
         
@@ -467,7 +462,6 @@ const BookingPage = () => {
         }
       } else {
         // "Play After PS5" is DISABLED or no PS5 selected - use availability at selected time
-        console.log('🏎️ Driving Sim Availability (selected time):', ps5Response?.available_driving);
         setAvailableDriving(ps5Response?.available_driving ?? true);
         
         // Only reset driving sim if it was selected but is not available at selected time
@@ -598,8 +592,6 @@ const BookingPage = () => {
     try {
       setLoading(true);
       const response = await getSlotDetails(selectedDate, time, 60);
-      console.log('🔍 Slot Details Response:', response);
-      console.log('📱 Available PS5 Units:', response?.available_ps5_units);
       setAvailablePS5Units(response?.available_ps5_units || []);
       setAvailableDriving(response?.available_driving ?? true);
       setTotalPlayers(response?.total_ps5_players_booked || 0);

@@ -26,6 +26,27 @@ class BookingError(Exception):
 bookings_bp = Blueprint('bookings', __name__)
 
 
+# ── Module-level column existence cache ──
+# Avoids querying INFORMATION_SCHEMA on every booking POST (~5-15ms each)
+_column_cache = {}  # key: "table.column" -> bool
+
+def _has_column(cursor, table_name, column_name):
+    """Check if a column exists, with caching to avoid repeated INFORMATION_SCHEMA queries."""
+    cache_key = f"{table_name}.{column_name}"
+    if cache_key in _column_cache:
+        return _column_cache[cache_key]
+    try:
+        cursor.execute("""
+            SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = %s
+        """, (table_name, column_name))
+        exists = cursor.fetchone() is not None
+        _column_cache[cache_key] = exists
+        return exists
+    except Exception:
+        return False
+
+
 # Note: require_admin is now imported from middleware.auth
 # It supports both session-based and JWT token authentication
 
@@ -50,12 +71,10 @@ def _get_current_user_id():
     
     return None
 
-@bookings_bp.route('/api/bookings.php', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+@bookings_bp.route('/api/bookings.php', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@rate_limit(max_requests=10, window_seconds=60)
 def handle_bookings():
     """Handle all booking operations"""
-    
-    if request.method == 'OPTIONS':
-        return '', 200
     
     # GET - Fetch all bookings (Admin only)
     if request.method == 'GET':
@@ -163,17 +182,8 @@ def handle_bookings():
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
             
-            # Check if bonus_minutes/promo_code_id columns exist (before transaction)
-            has_promo_columns = True
-            try:
-                cursor.execute("""
-                    SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
-                    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'bonus_minutes'
-                """)
-                if not cursor.fetchone():
-                    has_promo_columns = False
-            except Exception:
-                has_promo_columns = False
+            # Check if bonus_minutes/promo_code_id columns exist (cached)
+            has_promo_columns = _has_column(cursor, 'bookings', 'bonus_minutes')
             
             # Start explicit transaction for the booking creation
             # (availability check + insert must be atomic)
@@ -191,6 +201,7 @@ def handle_bookings():
                         device_number = ps5['device_number']
                         
                         # Check if this PS5 unit is already booked for this slot
+                        # FOR UPDATE locks matching rows to prevent double-booking under concurrency
                         query = """
                             SELECT COUNT(*) as count
                             FROM bookings b
@@ -201,6 +212,7 @@ def handle_bookings():
                             AND bd.device_number = %s
                             AND b.start_time <= %s
                             AND ADDTIME(b.start_time, SEC_TO_TIME(b.duration_minutes * 60)) > %s
+                            FOR UPDATE
                         """
                         
                         cursor.execute(query, (booking_date, device_number, slot_time, slot_time))
@@ -221,6 +233,7 @@ def handle_bookings():
                         AND bd.device_type = 'ps5'
                         AND b.start_time <= %s
                         AND ADDTIME(b.start_time, SEC_TO_TIME(b.duration_minutes * 60)) > %s
+                        FOR UPDATE
                     """
                     
                     cursor.execute(query, (booking_date, slot_time, slot_time))
@@ -232,6 +245,7 @@ def handle_bookings():
                 
                 # Check driving simulator availability
                 if driving_sim:
+                    # FOR UPDATE locks matching rows to prevent double-booking under concurrency
                     query = """
                         SELECT COUNT(*) as count
                         FROM bookings b
@@ -241,6 +255,7 @@ def handle_bookings():
                         AND bd.device_type = 'driving_sim'
                         AND b.start_time <= %s
                         AND ADDTIME(b.start_time, SEC_TO_TIME(b.duration_minutes * 60)) > %s
+                        FOR UPDATE
                     """
                     
                     cursor.execute(query, (booking_date, slot_time, slot_time))
@@ -265,17 +280,8 @@ def handle_bookings():
                 except Exception:
                     pass  # Not critical — proceed as guest
             
-            # Check if user_id column exists in bookings table
-            has_user_id_column = True
-            try:
-                cursor.execute("""
-                    SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
-                    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'user_id'
-                """)
-                if not cursor.fetchone():
-                    has_user_id_column = False
-            except Exception:
-                has_user_id_column = False
+            # Check if user_id column exists in bookings table (cached)
+            has_user_id_column = _has_column(cursor, 'bookings', 'user_id')
             
             # Insert booking
             bonus_minutes = data.get('bonus_minutes', 0)
@@ -498,41 +504,37 @@ def handle_bookings():
                                 f"({mem['plan_type']}) for booking #{booking_id}\n"
                             )
 
-                    # Try to store membership_id and membership_rate flag on the booking
-                    try:
-                        cursor.execute("""
-                            SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
-                            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'membership_id'
-                        """)
-                        if cursor.fetchone():
-                            # Find the primary membership used (story for ps5, driving for sim)
-                            primary_mem_id = None
-                            mem_rate_applied = False
-                            for mem in user_memberships:
-                                pi = VALID_PLANS.get(mem['plan_type'], {})
-                                c = pi.get('category', '')
-                                rem = max(0, float(mem['total_hours']) - float(mem['hours_used']))
-                                if c == 'story' and has_ps5 and rem >= 0:
-                                    # Check player count coverage before marking rate applied
-                                    cp = 2 if mem['plan_type'] == 'god_mode' else 1
-                                    all_ok = all(
-                                        ps5.get('player_count', 1) <= cp
-                                        for ps5 in (ps5_bookings if isinstance(ps5_bookings, list) else [])
-                                    )
-                                    if all_ok:
-                                        primary_mem_id = mem['id']
-                                        mem_rate_applied = True
-                                        break
-                                elif c == 'driving' and has_driving and rem >= 0:
+                    # Try to store membership_id and membership_rate flag on the booking (cached check)
+                    if _has_column(cursor, 'bookings', 'membership_id'):
+                        # Find the primary membership used (story for ps5, driving for sim)
+                        primary_mem_id = None
+                        mem_rate_applied = False
+                        for mem in user_memberships:
+                            pi = VALID_PLANS.get(mem['plan_type'], {})
+                            c = pi.get('category', '')
+                            rem = max(0, float(mem['total_hours']) - float(mem['hours_used']))
+                            if c == 'story' and has_ps5 and rem >= 0:
+                                # Check player count coverage before marking rate applied
+                                cp = 2 if mem['plan_type'] == 'god_mode' else 1
+                                all_ok = all(
+                                    ps5.get('player_count', 1) <= cp
+                                    for ps5 in (ps5_bookings if isinstance(ps5_bookings, list) else [])
+                                )
+                                if all_ok:
                                     primary_mem_id = mem['id']
                                     mem_rate_applied = True
                                     break
-                            if primary_mem_id:
+                            elif c == 'driving' and has_driving and rem >= 0:
+                                primary_mem_id = mem['id']
+                                mem_rate_applied = True
+                                break
+                        if primary_mem_id:
+                            try:
                                 cursor.execute('''
                                     UPDATE bookings SET membership_id = %s, membership_rate = %s WHERE id = %s
                                 ''', (primary_mem_id, 1 if mem_rate_applied else 0, booking_id))
-                    except Exception:
-                        pass  # membership columns might not exist yet
+                            except Exception:
+                                pass  # membership_rate column might not exist yet
 
                 except Exception as mem_err:
                     sys.stderr.write(f"[Booking] Membership hours tracking failed (non-critical): {mem_err}\n")

@@ -539,6 +539,9 @@ def create_missing_tables():
             "CREATE INDEX idx_bookings_date ON bookings (booking_date)",
             "CREATE INDEX idx_booking_devices_booking ON booking_devices (booking_id)",
             "CREATE INDEX idx_bookings_user ON bookings (user_id)",
+            # ── Composite indexes for booking overlap checks (concurrent-safe) ──
+            "CREATE INDEX idx_bookings_date_status ON bookings (booking_date, status, start_time, duration_minutes)",
+            "CREATE INDEX idx_booking_devices_type ON booking_devices (booking_id, device_type, device_number)",
         ]
         for sql in index_statements:
             try:
