@@ -1388,10 +1388,6 @@ const BookingPage = () => {
                         <span className="legend-dot"></span>
                         <span className="legend-label">Full</span>
                       </div>
-                      <div className="legend-chip legend-past">
-                        <span className="legend-dot"></span>
-                        <span className="legend-label">Past</span>
-                      </div>
                     </div>
                   </div>
                   
