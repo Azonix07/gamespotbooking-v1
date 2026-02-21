@@ -11,6 +11,7 @@ import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipS
 import { formatDate, getToday, formatDuration, formatPrice, formatTime12Hour, isValidName, isValidPhone } from '@/utils/helpers';
 import { apiFetch } from '@/services/apiClient';
 import ModernDatePicker from '@/components/ModernDatePicker';
+import MobileDateCarousel from '@/components/MobileDateCarousel';
 import '@/styles/BookingPage.css';
 
 // Game cover images mapping - using Steam CDN (library_600x900) for verified correct covers
@@ -1257,6 +1258,11 @@ const BookingPage = () => {
                     minDate={getToday()}
                   />
                 </div>
+                {/* Mobile-only date carousel — matches Flutter app design */}
+                <MobileDateCarousel
+                  selectedDate={selectedDate}
+                  onChange={(dateStr) => setSelectedDate(dateStr)}
+                />
               </div>
               
               {error && (

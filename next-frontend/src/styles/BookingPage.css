@@ -2580,11 +2580,9 @@ span.device-unit {
     font-size: 0.75rem;
   }
 
-  /* Header Date Picker */
+  /* Header Date Picker — HIDDEN on mobile, replaced by MobileDateCarousel */
   .header-date-picker {
-    width: 100%;
-    margin-left: 0;
-    justify-content: space-between;
+    display: none !important;
   }
 
   .date-input-compact {
