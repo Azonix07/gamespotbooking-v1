@@ -42,6 +42,10 @@ class BookingProvider extends ChangeNotifier {
   int _partyHours = 1;
   bool _partySubmitting = false;
 
+  // Game search & filter (matching web)
+  String _gameSearchQuery = '';
+  String _activeGenreFilter = 'All';
+
   // Getters
   String get selectedDate => _selectedDate;
   String? get selectedTime => _selectedTime;
@@ -69,6 +73,33 @@ class BookingProvider extends ChangeNotifier {
   List<Map<String, dynamic>> get selectedGames => _selectedGames;
   int get partyHours => _partyHours;
   bool get partySubmitting => _partySubmitting;
+  String get gameSearchQuery => _gameSearchQuery;
+  String get activeGenreFilter => _activeGenreFilter;
+
+  /// Get unique genres from all games
+  List<String> get gameGenres {
+    final genres = <String>{'All'};
+    for (final game in _allGames) {
+      final genre = game['genre']?.toString();
+      if (genre != null && genre.isNotEmpty) genres.add(genre);
+    }
+    return genres.toList();
+  }
+
+  /// Get filtered games based on search query and genre filter
+  List<Map<String, dynamic>> get filteredGames {
+    var games = _allGames;
+    if (_activeGenreFilter != 'All') {
+      games = games.where((g) => g['genre']?.toString() == _activeGenreFilter).toList();
+    }
+    if (_gameSearchQuery.isNotEmpty) {
+      final q = _gameSearchQuery.toLowerCase();
+      games = games.where((g) =>
+          (g['name']?.toString().toLowerCase().contains(q) ?? false) ||
+          (g['genre']?.toString().toLowerCase().contains(q) ?? false)).toList();
+    }
+    return games;
+  }
 
   BookingProvider() {
     _selectedDate = getToday(); // Uses IST (Kerala time)
@@ -91,10 +122,13 @@ class BookingProvider extends ChangeNotifier {
   }
 
   /// Select a time slot → fetches slot details → moves to step 2
+  /// For party bookings: checks full party duration, requires ALL devices free
+  /// For regular bookings: fetches 60min slot details
   Future<void> selectTimeSlot(String time) async {
     _selectedTime = time;
     _ps5Bookings = [];
     _drivingSim = null;
+    _selectedGames = [];
     _price = 0;
     _originalPrice = 0;
     _error = null;
@@ -103,11 +137,44 @@ class BookingProvider extends ChangeNotifier {
       _loading = true;
       notifyListeners();
 
-      final response = await _api.getSlotDetails(_selectedDate, time, 60);
-      _availablePS5Units = List<int>.from(response['available_ps5_units'] ?? []);
-      _availableDriving = response['available_driving'] ?? true;
-      _totalPlayersBooked = response['total_ps5_players_booked'] ?? 0;
-      _currentStep = 2;
+      if (_bookingType == 'party') {
+        // Party booking: check availability for full party duration
+        final partyDuration = _partyHours * 60;
+
+        // Check if party would exceed midnight (closing at 00:00 = 1440 min)
+        final parts = time.split(':');
+        final startMin = int.parse(parts[0]) * 60 + int.parse(parts[1]);
+        if (startMin + partyDuration > 1440) {
+          _error = 'Party booking of $_partyHours hour(s) starting at $time would go past midnight. Please choose an earlier slot or shorter duration.';
+          _loading = false;
+          notifyListeners();
+          return;
+        }
+
+        final response = await _api.getSlotDetails(_selectedDate, time, partyDuration);
+        final availPs5 = List<int>.from(response['available_ps5_units'] ?? []);
+        final availDriving = response['available_driving'] ?? true;
+
+        // Party booking needs ALL 3 PS5 units + driving sim free
+        if (availPs5.length < 3 || !availDriving) {
+          _error = 'Not all devices are available for this time slot. Party booking requires the entire shop to be free.';
+          _loading = false;
+          notifyListeners();
+          return;
+        }
+
+        _availablePS5Units = availPs5;
+        _availableDriving = availDriving;
+        _totalPlayersBooked = response['total_ps5_players_booked'] ?? 0;
+        _currentStep = 2; // Go to party confirmation
+      } else {
+        // Regular booking: fetch 60min slot details
+        final response = await _api.getSlotDetails(_selectedDate, time, 60);
+        _availablePS5Units = List<int>.from(response['available_ps5_units'] ?? []);
+        _availableDriving = response['available_driving'] ?? true;
+        _totalPlayersBooked = response['total_ps5_players_booked'] ?? 0;
+        _currentStep = 2; // Go to device/game selection
+      }
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -170,12 +237,14 @@ class BookingProvider extends ChangeNotifier {
 
   void setBookingType(String type) {
     _bookingType = type;
-    // Reset device selections when switching type
+    // Reset selections when switching type
+    _selectedTime = null;
     _ps5Bookings = [];
     _drivingSim = null;
     _selectedGames = [];
     _price = 0;
     _originalPrice = 0;
+    _error = null;
     notifyListeners();
   }
 
@@ -186,6 +255,19 @@ class BookingProvider extends ChangeNotifier {
 
   void setPartyHours(int hours) {
     _partyHours = hours;
+    // Reset time selection since duration changed
+    _selectedTime = null;
+    _error = null;
+    notifyListeners();
+  }
+
+  void setGameSearchQuery(String query) {
+    _gameSearchQuery = query;
+    notifyListeners();
+  }
+
+  void setActiveGenreFilter(String genre) {
+    _activeGenreFilter = genre;
     notifyListeners();
   }
 
@@ -210,30 +292,63 @@ class BookingProvider extends ChangeNotifier {
   }
 
   void _autoSelectUnitsForGames() {
-    // Auto-select the first available unit for each selected game
+    // Match web's PS5 allocation priority:
+    // PS5-2 first → PS5-3 (if driving sim game selected) → PS5-3 → PS5-1 (last resort)
     _ps5Bookings = [];
+    _drivingSim = null;
+
+    final hasDrivingSimGame = _selectedGames.any((g) =>
+        (g['ps5_numbers'] as List?)?.contains(4) == true);
+
     for (final game in _selectedGames) {
       final ps5Numbers = List<int>.from(game['ps5_numbers'] ?? []);
       final ps5Units = ps5Numbers.where((n) => n != 4).toList();
-      final hasDrivingSim = ps5Numbers.contains(4);
-      
-      if (game['device_type'] == 'driving_sim' || (ps5Units.isEmpty && hasDrivingSim)) {
+      final isOnlyDrivingSim = game['device_type'] == 'driving_sim' ||
+          (ps5Numbers.isNotEmpty && ps5Numbers.every((n) => n == 4));
+
+      if (isOnlyDrivingSim) {
         // Driving sim game
         if (_availableDriving && _drivingSim == null) {
           _drivingSim = {'duration': 60, 'afterPS5': false};
         }
       } else {
-        // PS5 game - find first available unit
-        for (final unit in ps5Units) {
-          if (_availablePS5Units.contains(unit) &&
-              !_ps5Bookings.any((b) => b['device_number'] == unit)) {
+        // PS5 game - use priority allocation
+        final availableUnitsWithGame =
+            ps5Units.where((n) => _availablePS5Units.contains(n)).toList();
+        
+        if (availableUnitsWithGame.isNotEmpty &&
+            !_ps5Bookings.any((b) =>
+                availableUnitsWithGame.contains(b['device_number']))) {
+          int? unitNumber;
+          // Priority: PS5-2 > PS5-3 (if driving sim) > PS5-3 > PS5-1 (last resort)
+          if (availableUnitsWithGame.contains(2) &&
+              !_ps5Bookings.any((b) => b['device_number'] == 2)) {
+            unitNumber = 2;
+          } else if (hasDrivingSimGame &&
+              availableUnitsWithGame.contains(3) &&
+              !_ps5Bookings.any((b) => b['device_number'] == 3)) {
+            unitNumber = 3;
+          } else if (availableUnitsWithGame.contains(3) &&
+              !_ps5Bookings.any((b) => b['device_number'] == 3)) {
+            unitNumber = 3;
+          } else if (availableUnitsWithGame.contains(1) &&
+              !_ps5Bookings.any((b) => b['device_number'] == 1)) {
+            unitNumber = 1;
+          } else {
+            // Fallback: any available unit not yet used
+            unitNumber = availableUnitsWithGame.firstWhere(
+                (n) => !_ps5Bookings.any((b) => b['device_number'] == n),
+                orElse: () => 0);
+            if (unitNumber == 0) unitNumber = null;
+          }
+
+          if (unitNumber != null) {
             _ps5Bookings.add({
-              'device_number': unit,
+              'device_number': unitNumber,
               'player_count': 1,
               'duration': 60,
               'game_preference': game['name'],
             });
-            break;
           }
         }
       }
@@ -595,6 +710,8 @@ class BookingProvider extends ChangeNotifier {
     _selectedGames = [];
     _partyHours = 1;
     _partySubmitting = false;
+    _gameSearchQuery = '';
+    _activeGenreFilter = 'All';
     notifyListeners();
   }
 }

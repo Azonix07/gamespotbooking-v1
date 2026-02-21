@@ -97,11 +97,13 @@ class _Step1Schedule extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bp = context.watch<BookingProvider>();
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // ── Section header ──
           Row(
             children: [
@@ -245,6 +247,199 @@ class _Step1Schedule extends StatelessWidget {
           if (bp.error != null && bp.slots.isEmpty)
             _ErrorBanner(message: bp.error!, onRetry: bp.loadSlots),
 
+          // Show error for party availability check failures
+          if (bp.error != null && bp.slots.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: _ErrorBanner(message: bp.error!),
+            ),
+
+          // ── Booking Type Toggle (Regular vs Party) — matching web Step 1 ──
+          const SizedBox(height: 14),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.lpGray100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.all(4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => bp.setBookingType('regular'),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: bp.bookingType == 'regular' ? Colors.white : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: bp.bookingType == 'regular'
+                            ? [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8)]
+                            : null,
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(FeatherIcons.monitor, size: 18,
+                              color: bp.bookingType == 'regular' ? AppColors.lpPrimary : AppColors.lpGray),
+                          const SizedBox(height: 4),
+                          Text('Regular Booking',
+                              style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: bp.bookingType == 'regular' ? AppColors.lpDark : AppColors.lpGray)),
+                          Text('Book individual consoles',
+                              style: GoogleFonts.inter(fontSize: 9, color: AppColors.lpGray)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => bp.setBookingType('party'),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: bp.bookingType == 'party' ? AppColors.orangeGradient : null,
+                        color: bp.bookingType == 'party' ? null : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: bp.bookingType == 'party'
+                            ? [BoxShadow(color: AppColors.lpPrimary.withOpacity(0.3), blurRadius: 8)]
+                            : null,
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(FeatherIcons.zap, size: 18,
+                              color: bp.bookingType == 'party' ? Colors.white : AppColors.lpGray),
+                          const SizedBox(height: 4),
+                          Text('🎉 Party / Full Book',
+                              style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: bp.bookingType == 'party' ? Colors.white : AppColors.lpGray)),
+                          Text('Book entire shop • ₹600/hr',
+                              style: GoogleFonts.inter(
+                                  fontSize: 9,
+                                  color: bp.bookingType == 'party' ? Colors.white70 : AppColors.lpGray)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Party config (only when party mode) ──
+          if (bp.bookingType == 'party') ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.lpPrimary.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.lpPrimary.withOpacity(0.15)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('🎉', style: TextStyle(fontSize: 22)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Full Shop Party Booking',
+                                style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.lpDark)),
+                            Text('Get all 3 PS5 units + Racing Simulator!',
+                                style: GoogleFonts.inter(
+                                    fontSize: 11, color: AppColors.lpGray700)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Party hours selector
+                  Row(
+                    children: [
+                      Icon(FeatherIcons.clock, size: 14, color: AppColors.lpPrimary),
+                      const SizedBox(width: 6),
+                      Text('How many hours?',
+                          style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.lpDark)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [1, 2, 3].map((h) {
+                      final active = bp.partyHours == h;
+                      return Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(right: h < 3 ? 8 : 0),
+                          child: GestureDetector(
+                            onTap: () => bp.setPartyHours(h),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                gradient: active ? AppColors.orangeGradient : null,
+                                color: active ? null : Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: active ? Colors.transparent : AppColors.lpGray200),
+                                boxShadow: active
+                                    ? [BoxShadow(color: AppColors.lpPrimary.withOpacity(0.3), blurRadius: 8)]
+                                    : null,
+                              ),
+                              child: Column(
+                                children: [
+                                  Text('$h',
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                          color: active ? Colors.white : AppColors.lpDark)),
+                                  Text('hr${h > 1 ? 's' : ''}',
+                                      style: GoogleFonts.inter(
+                                          fontSize: 10,
+                                          color: active ? Colors.white70 : AppColors.lpGray)),
+                                  Text('₹${h * 600}',
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: active ? Colors.white : AppColors.lpPrimary)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 10),
+                  // Includes
+                  Wrap(
+                    spacing: 6, runSpacing: 6,
+                    children: [
+                      _partyChip('🎮 PS5 Unit 1'),
+                      _partyChip('🎮 PS5 Unit 2'),
+                      _partyChip('🎮 PS5 Unit 3'),
+                      _partyChip('🏎️ Racing Sim'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           // ── Time slots (fills remaining height) ──
           if (bp.selectedDate.isNotEmpty && bp.dayClosedInfo == null) ...[
             const SizedBox(height: 16),
@@ -269,7 +464,8 @@ class _Step1Schedule extends StatelessWidget {
             const SizedBox(height: 10),
 
             if (bp.loading)
-              const Expanded(
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 40),
                 child: Center(
                     child: CircularProgressIndicator(
                         color: AppColors.lpPrimary, strokeWidth: 3)),
@@ -278,27 +474,28 @@ class _Step1Schedule extends StatelessWidget {
                 .where((s) =>
                     !_isSlotPast(s['time']?.toString() ?? '', bp.selectedDate))
                 .isEmpty)
-              Expanded(
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 30),
                 child: Center(
                   child: _emptyState(
                       '⏰', 'No more slots available', 'Pick a future date.'),
                 ),
               )
             else
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.lpGray100.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.lpGray200.withOpacity(0.5)),
-                  ),
-                  padding: const EdgeInsets.all(10),
-                  child: GridView.count(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 1.4,
-                    physics: const BouncingScrollPhysics(),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.lpGray100.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.lpGray200.withOpacity(0.5)),
+                ),
+                padding: const EdgeInsets.all(10),
+                child: GridView.count(
+                  crossAxisCount: 4,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 1.4,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                     children: bp.slots
                         .where((s) => !_isSlotPast(
                             s['time']?.toString() ?? '', bp.selectedDate))
@@ -415,7 +612,6 @@ class _Step1Schedule extends StatelessWidget {
                     }).toList(),
                   ),
                 ),
-              ),
 
             const SizedBox(height: 8),
             Row(
@@ -429,6 +625,7 @@ class _Step1Schedule extends StatelessWidget {
             const SizedBox(height: 8),
           ],
         ],
+        ),
       ),
     );
   }
@@ -444,6 +641,22 @@ class _Step1Schedule extends StatelessWidget {
         const SizedBox(width: 4),
         Text(label, style: GoogleFonts.inter(fontSize: 11, color: AppColors.lpGray700)),
       ],
+    );
+  }
+
+  static Widget _partyChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.lpGray200),
+      ),
+      child: Text(label,
+          style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: AppColors.lpDark)),
     );
   }
 }
@@ -481,6 +694,198 @@ class _Step2Devices extends StatelessWidget {
     final hasSelections = bp.ps5Bookings.isNotEmpty || bp.drivingSim != null;
     final isParty = bp.bookingType == 'party';
 
+    // ═══════════════════════════════════════
+    //  PARTY BOOKING — Step 2: Confirmation
+    // ═══════════════════════════════════════
+    if (isParty) {
+      return SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Header ──
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => bp.setStep(1),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.orangeGradient,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(FeatherIcons.arrowLeft, size: 18, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('🎉 Party Booking Confirmation',
+                          style: GoogleFonts.poppins(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.lpDark)),
+                      Text('Book the entire shop for your exclusive event',
+                          style: GoogleFonts.inter(
+                              fontSize: 12, color: AppColors.lpGray)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            if (bp.error != null) ...[
+              _ErrorBanner(message: bp.error!),
+              const SizedBox(height: 12),
+            ],
+
+            // ── Party Summary Card ──
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.lpPrimary.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.lpPrimary.withOpacity(0.15)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('🎉 Party Package',
+                      style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.lpDark)),
+                  const SizedBox(height: 14),
+                  _partySummaryRow(FeatherIcons.calendar, 'Date', formatDateDisplay(bp.selectedDate)),
+                  const SizedBox(height: 8),
+                  _partySummaryRow(FeatherIcons.clock, 'Time',
+                    bp.selectedTime != null
+                        ? '${formatTime12Hour(bp.selectedTime!)} — ${_partyEndTime(bp.selectedTime!, bp.partyHours)}'
+                        : '—'),
+                  const SizedBox(height: 8),
+                  _partySummaryRow(FeatherIcons.clock, 'Duration',
+                    '${bp.partyHours} hour${bp.partyHours > 1 ? 's' : ''}'),
+                  const SizedBox(height: 14),
+                  // Included devices
+                  Wrap(
+                    spacing: 8, runSpacing: 8,
+                    children: [
+                      _partyDeviceChip(FeatherIcons.monitor, 'PS5 Unit 1'),
+                      _partyDeviceChip(FeatherIcons.monitor, 'PS5 Unit 2'),
+                      _partyDeviceChip(FeatherIcons.monitor, 'PS5 Unit 3'),
+                      _partyDeviceChip(FeatherIcons.navigation, 'Racing Sim'),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  // Price box
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.orangeGradient,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Text('Total Price',
+                            style: GoogleFonts.inter(
+                                fontSize: 11, color: Colors.white70)),
+                        Text('₹${bp.partyHours * 600}',
+                            style: GoogleFonts.poppins(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white)),
+                        Text('₹600 × ${bp.partyHours} hour${bp.partyHours > 1 ? 's' : ''}',
+                            style: GoogleFonts.inter(
+                                fontSize: 11, color: Colors.white70)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // ── Customer Details ──
+            _CardSection(
+              icon: FeatherIcons.user,
+              title: 'Enter Your Details',
+              child: Column(
+                children: [
+                  const SizedBox(height: 8),
+                  _InputField(
+                    icon: FeatherIcons.user,
+                    hint: 'Full Name',
+                    value: bp.customerName,
+                    onChanged: bp.setCustomerName,
+                  ),
+                  const SizedBox(height: 12),
+                  _InputField(
+                    icon: FeatherIcons.phone,
+                    hint: 'Phone Number',
+                    value: bp.customerPhone,
+                    onChanged: bp.setCustomerPhone,
+                    keyboardType: TextInputType.phone,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Submit button
+            SizedBox(
+              width: double.infinity,
+              child: _OrangeButton(
+                label: bp.partySubmitting
+                    ? 'Booking...'
+                    : '🎉 Confirm Party Booking — ₹${bp.partyHours * 600}',
+                icon: bp.partySubmitting ? null : FeatherIcons.check,
+                loading: bp.partySubmitting,
+                onTap: bp.partySubmitting
+                    ? null
+                    : () async {
+                        final result = await bp.submitPartyBooking();
+                        if (result['success'] == true && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  '🎉 Party Booked! #${result['booking_id'] ?? ''}',
+                                  style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                              backgroundColor: AppColors.lpSuccess,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              duration: const Duration(seconds: 4),
+                            ),
+                          );
+                          bp.reset();
+                        }
+                      },
+                wide: true,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(FeatherIcons.checkCircle, size: 14, color: AppColors.lpSuccess),
+                const SizedBox(width: 6),
+                Text('No payment required now — pay at venue',
+                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.lpGray)),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    // ═══════════════════════════════════════
+    //  REGULAR BOOKING — Step 2: Device/Game Selection
+    // ═══════════════════════════════════════
     return Stack(
       children: [
         SingleChildScrollView(
@@ -489,7 +894,7 @@ class _Step2Devices extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Header (matching Step 1 style — icon box + title at top left) ──
+              // ── Header ──
               Row(
                 children: [
                   GestureDetector(
@@ -549,82 +954,6 @@ class _Step2Devices extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // ── Booking Type Toggle (Regular vs Party) ──
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.lpGray100,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.all(4),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => bp.setBookingType('regular'),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: bp.bookingType == 'regular' ? Colors.white : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: bp.bookingType == 'regular'
-                                ? [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8)]
-                                : null,
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(FeatherIcons.monitor, size: 18,
-                                  color: bp.bookingType == 'regular' ? AppColors.lpPrimary : AppColors.lpGray),
-                              const SizedBox(height: 4),
-                              Text('Regular Booking',
-                                  style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: bp.bookingType == 'regular' ? AppColors.lpDark : AppColors.lpGray)),
-                              Text('Book individual consoles',
-                                  style: GoogleFonts.inter(fontSize: 9, color: AppColors.lpGray)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => bp.setBookingType('party'),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            gradient: bp.bookingType == 'party' ? AppColors.orangeGradient : null,
-                            color: bp.bookingType == 'party' ? null : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: bp.bookingType == 'party'
-                                ? [BoxShadow(color: AppColors.lpPrimary.withOpacity(0.3), blurRadius: 8)]
-                                : null,
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(FeatherIcons.zap, size: 18,
-                                  color: bp.bookingType == 'party' ? Colors.white : AppColors.lpGray),
-                              const SizedBox(height: 4),
-                              Text('🎉 Party / Full Book',
-                                  style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: bp.bookingType == 'party' ? Colors.white : AppColors.lpGray)),
-                              Text('Book entire shop • ₹600/hr',
-                                  style: GoogleFonts.inter(
-                                      fontSize: 9,
-                                      color: bp.bookingType == 'party' ? Colors.white70 : AppColors.lpGray)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
               if (bp.loading)
                 const Padding(
                   padding: EdgeInsets.all(40),
@@ -632,164 +961,7 @@ class _Step2Devices extends StatelessWidget {
                       child: CircularProgressIndicator(
                           color: AppColors.lpPrimary, strokeWidth: 3)),
                 )
-              else if (isParty) ...[
-                // ════════════════════════════
-                //  PARTY BOOKING MODE
-                // ════════════════════════════
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.lpPrimary.withOpacity(0.06),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.lpPrimary.withOpacity(0.15)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Text('🎉', style: TextStyle(fontSize: 24)),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Full Shop Party Booking',
-                                    style: GoogleFonts.poppins(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.lpDark)),
-                                Text('Get all 3 PS5 units + Racing Simulator!',
-                                    style: GoogleFonts.inter(
-                                        fontSize: 12, color: AppColors.lpGray700)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // Party hours selector
-                      Row(
-                        children: [
-                          Icon(FeatherIcons.clock, size: 16, color: AppColors.lpPrimary),
-                          const SizedBox(width: 8),
-                          Text('How many hours?',
-                              style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.lpDark)),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [1, 2, 3].map((h) {
-                          final active = bp.partyHours == h;
-                          return Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(right: h < 3 ? 10 : 0),
-                              child: GestureDetector(
-                                onTap: () => bp.setPartyHours(h),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  decoration: BoxDecoration(
-                                    gradient: active ? AppColors.orangeGradient : null,
-                                    color: active ? null : Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                        color: active ? Colors.transparent : AppColors.lpGray200),
-                                    boxShadow: active
-                                        ? [BoxShadow(color: AppColors.lpPrimary.withOpacity(0.3), blurRadius: 8)]
-                                        : null,
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Text('$h',
-                                          style: GoogleFonts.poppins(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.w700,
-                                              color: active ? Colors.white : AppColors.lpDark)),
-                                      Text('hour${h > 1 ? 's' : ''}',
-                                          style: GoogleFonts.inter(
-                                              fontSize: 11,
-                                              color: active ? Colors.white70 : AppColors.lpGray)),
-                                      const SizedBox(height: 4),
-                                      Text('₹${h * 600}',
-                                          style: GoogleFonts.poppins(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              color: active ? Colors.white : AppColors.lpPrimary)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 16),
-                      // Included devices
-                      Text('What\'s included:',
-                          style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.lpGray700)),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _partyDeviceChip(FeatherIcons.monitor, 'PS5 Unit 1'),
-                          _partyDeviceChip(FeatherIcons.monitor, 'PS5 Unit 2'),
-                          _partyDeviceChip(FeatherIcons.monitor, 'PS5 Unit 3'),
-                          _partyDeviceChip(FeatherIcons.navigation, 'Racing Sim'),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // Price box
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.orangeGradient,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            Text('Total Price',
-                                style: GoogleFonts.inter(
-                                    fontSize: 11, color: Colors.white70)),
-                            Text('₹${bp.partyHours * 600}',
-                                style: GoogleFonts.poppins(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white)),
-                            Text('₹600 × ${bp.partyHours} hour${bp.partyHours > 1 ? 's' : ''}',
-                                style: GoogleFonts.inter(
-                                    fontSize: 11, color: Colors.white70)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Continue to confirm (party)
-                SizedBox(
-                  width: double.infinity,
-                  child: _OrangeButton(
-                    label: 'Continue to Details',
-                    icon: FeatherIcons.arrowRight,
-                    onTap: () => bp.setStep(3),
-                    wide: true,
-                  ),
-                ),
-              ] else ...[
-                // ════════════════════════════
-                //  REGULAR BOOKING MODE
-                // ════════════════════════════
-                if (bp.error != null) _ErrorBanner(message: bp.error!),
+              else ...[
 
                 // ── Mode Toggle: Book by Console / Book by Game ──
                 const SizedBox(height: 14),
@@ -1217,11 +1389,99 @@ class _Step2Devices extends StatelessWidget {
                     const SizedBox(height: 14),
                   ],
 
-                  // Game title
-                  _SectionHeader(icon: FeatherIcons.star, title: 'What do you want to play?'),
+                  // Game browser header + search
+                  Row(
+                    children: [
+                      Icon(FeatherIcons.star, size: 16, color: AppColors.lpPrimary),
+                      const SizedBox(width: 8),
+                      Text('What do you want to play?',
+                          style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.lpDark)),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Search box
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.lpGray100,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.lpGray200),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        Icon(FeatherIcons.search, size: 16, color: AppColors.lpGray),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: TextEditingController.fromValue(
+                              TextEditingValue(
+                                text: bp.gameSearchQuery,
+                                selection: TextSelection.collapsed(offset: bp.gameSearchQuery.length),
+                              ),
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Search games...',
+                              hintStyle: GoogleFonts.inter(fontSize: 13, color: AppColors.lpGray),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                            ),
+                            style: GoogleFonts.inter(fontSize: 13, color: AppColors.lpDark),
+                            onChanged: bp.setGameSearchQuery,
+                          ),
+                        ),
+                        if (bp.gameSearchQuery.isNotEmpty)
+                          GestureDetector(
+                            onTap: () => bp.setGameSearchQuery(''),
+                            child: const Icon(Icons.close_rounded, size: 18, color: AppColors.lpGray),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Genre filter pills
+                  SizedBox(
+                    height: 32,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: bp.gameGenres.length,
+                      itemBuilder: (_, i) {
+                        final genre = bp.gameGenres[i];
+                        final isActive = bp.activeGenreFilter == genre;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: GestureDetector(
+                            onTap: () => bp.setActiveGenreFilter(genre),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                gradient: isActive ? AppColors.orangeGradient : null,
+                                color: isActive ? null : Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                    color: isActive ? Colors.transparent : AppColors.lpGray200),
+                              ),
+                              child: Text(genre,
+                                  style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: isActive ? Colors.white : AppColors.lpGray700)),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                   const SizedBox(height: 12),
 
-                  // Games grid
+                  // Games grid (using filtered games)
                   if (bp.gamesLoading)
                     const Padding(
                       padding: EdgeInsets.all(30),
@@ -1229,8 +1489,9 @@ class _Step2Devices extends StatelessWidget {
                           child: CircularProgressIndicator(
                               color: AppColors.lpPrimary, strokeWidth: 3)),
                     )
-                  else if (bp.allGames.isEmpty)
-                    _emptyState('🎮', 'No games found', 'Games will appear here.')
+                  else if (bp.filteredGames.isEmpty)
+                    _emptyState('🎮', 'No games found',
+                        bp.gameSearchQuery.isNotEmpty ? 'Try a different search.' : 'Games will appear here.')
                   else
                     GridView.count(
                       crossAxisCount: 3,
@@ -1239,7 +1500,7 @@ class _Step2Devices extends StatelessWidget {
                       childAspectRatio: 0.75,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      children: bp.allGames.map((game) {
+                      children: bp.filteredGames.map((game) {
                         final gameName = game['name']?.toString() ?? '';
                         final cover = _getCover(gameName);
                         final isSelected = bp.selectedGames.any((g) => g['id'] == game['id']);
@@ -1469,6 +1730,35 @@ class _Step2Devices extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static Widget _partySummaryRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: AppColors.lpPrimary),
+        const SizedBox(width: 8),
+        Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 12, color: AppColors.lpGray700)),
+        const Spacer(),
+        Text(value,
+            style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.lpDark)),
+      ],
+    );
+  }
+
+  static String _partyEndTime(String startTime, int hours) {
+    final parts = startTime.split(':');
+    final h = int.parse(parts[0]);
+    final m = int.parse(parts[1]);
+    final endMin = h * 60 + m + hours * 60;
+    final endH = (endMin ~/ 60) % 24;
+    final endM = endMin % 60;
+    final endStr = '${endH.toString().padLeft(2, '0')}:${endM.toString().padLeft(2, '0')}';
+    return formatTime12Hour(endStr);
   }
 }
 
