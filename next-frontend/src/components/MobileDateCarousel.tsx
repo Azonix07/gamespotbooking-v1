@@ -19,27 +19,23 @@ const MobileDateCarousel = ({ selectedDate, onChange }: MobileDateCarouselProps)
   const days = Array.from({ length: 14 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i);
-    const dayOfWeek = d.getDay();
     return {
       date: d,
       dateStr: formatDate(d),
       day: d.getDate(),
-      weekday: i === 0 ? 'Today' : WEEKDAYS[dayOfWeek],
+      weekday: i === 0 ? 'Today' : WEEKDAYS[d.getDay()],
       month: MONTHS[d.getMonth()],
       isToday: i === 0,
-      isTomorrow: i === 1,
-      isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
     };
   });
 
-  // Auto-scroll to selected date on mount and when selection changes
+  // Auto-scroll to selected date
   useEffect(() => {
     if (scrollRef.current) {
       const idx = days.findIndex((d) => d.dateStr === selectedDate);
-      if (idx >= 0) {
-        const cardWidth = 68; // card width (60) + gap (8)
-        const containerWidth = scrollRef.current.offsetWidth;
-        const scrollTo = idx * cardWidth - (containerWidth / 2 - 30);
+      if (idx > 0) {
+        const cardWidth = 64; // card width + gap
+        const scrollTo = idx * cardWidth - (scrollRef.current.offsetWidth / 2 - cardWidth / 2);
         scrollRef.current.scrollTo({ left: Math.max(0, scrollTo), behavior: 'smooth' });
       }
     }
@@ -53,17 +49,10 @@ const MobileDateCarousel = ({ selectedDate, onChange }: MobileDateCarouselProps)
           return (
             <button
               key={d.dateStr}
-              className={`mobile-date-card ${isSelected ? 'selected' : ''} ${d.isToday ? 'is-today' : ''} ${d.isWeekend && !isSelected ? 'is-weekend' : ''}`}
+              className={`mobile-date-card ${isSelected ? 'selected' : ''} ${d.isToday ? 'is-today' : ''}`}
               onClick={() => onChange(d.dateStr)}
               type="button"
-              aria-label={`${d.weekday} ${d.day} ${d.month}`}
             >
-              {/* Today badge */}
-              {d.isToday && isSelected && (
-                <span className="mobile-date-today-badge">TODAY</span>
-              )}
-              {/* Glow ring for selected */}
-              {isSelected && <span className="mobile-date-glow" />}
               <span className="mobile-date-weekday">{d.weekday}</span>
               <span className="mobile-date-day">{d.day}</span>
               <span className="mobile-date-month">{d.month}</span>
@@ -71,9 +60,6 @@ const MobileDateCarousel = ({ selectedDate, onChange }: MobileDateCarouselProps)
           );
         })}
       </div>
-      {/* Fade edges for scroll hint */}
-      <div className="mobile-date-fade-left" />
-      <div className="mobile-date-fade-right" />
     </div>
   );
 };
