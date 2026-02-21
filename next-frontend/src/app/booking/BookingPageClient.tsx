@@ -1450,6 +1450,7 @@ const BookingPage = () => {
                           // Determine visual state class
                           let stateClass = slot.status;
                           if (slot.status === 'closed') stateClass = 'closed';
+                          else if (slot.status === 'full') stateClass = 'full';
                           else if (disabled && slot.status !== 'closed') stateClass = 'closing-soon';
 
                           return (

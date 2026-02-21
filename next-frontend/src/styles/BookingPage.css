@@ -1003,25 +1003,24 @@
 }
 
 /* ============================================
-   STATE: FULL — Bold red, clearly unavailable
+   STATE: FULL — Soft red, clearly unavailable
    ============================================ */
 .ts-full {
-  background: linear-gradient(145deg, #fee2e2 0%, #fecaca 100%);
-  border-color: #f87171;
+  background: #fef2f2;
+  border-color: #fecaca;
   cursor: not-allowed;
-  opacity: 1;
+  opacity: 0.75;
 }
-.ts-full .ts-dot { background: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2); }
+.ts-full .ts-dot { background: #ef4444; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15); }
 .ts-full .ts-time {
-  color: #dc2626;
+  color: #b91c1c;
   text-decoration: line-through;
-  text-decoration-color: #f87171;
+  text-decoration-color: #fca5a5;
   text-decoration-thickness: 2px;
-  font-weight: 800;
 }
 .ts-full .ts-label-full {
   color: #dc2626;
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(239, 68, 68, 0.08);
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
