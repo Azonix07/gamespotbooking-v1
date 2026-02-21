@@ -3,6 +3,7 @@ import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import '../config/theme.dart';
 import '../services/api_service.dart';
 import '../utils/helpers.dart';
+import '../widgets/menu_button.dart';
 
 class RentalScreen extends StatefulWidget {
   const RentalScreen({super.key});
@@ -86,6 +87,8 @@ class _RentalScreenState extends State<RentalScreen> {
       child: SafeArea(child: Padding(padding: const EdgeInsets.all(20), child: Form(key: _formKey, child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const MenuButton(light: false),
+          const SizedBox(height: 12),
           const Text('Console Rental', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.lpDark)),
           const SizedBox(height: 4),
           const Text('Rent a gaming console to enjoy at home', style: TextStyle(fontSize: 14, color: AppColors.lpGray)),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../config/theme.dart';
+import '../widgets/menu_button.dart';
 
 class ContactScreen extends StatelessWidget {
   const ContactScreen({super.key});
@@ -24,6 +25,8 @@ class ContactScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const MenuButton(light: false),
+                  const SizedBox(height: 12),
                   const Text('Contact Us', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.lpDark)),
                   const SizedBox(height: 4),
                   const Text("We'd love to hear from you", style: TextStyle(fontSize: 14, color: AppColors.lpGray)),

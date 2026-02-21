@@ -16,7 +16,6 @@ import '../screens/feedback_screen.dart';
 import '../screens/updates_screen.dart';
 import '../screens/offers_screen.dart';
 import '../screens/rental_screen.dart';
-import '../widgets/main_shell.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -26,7 +25,7 @@ final appRouter = GoRouter(
       path: '/splash',
       builder: (context, state) => const SplashScreen(),
     ),
-    // Login / Signup — no bottom nav
+    // Login / Signup
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
@@ -35,51 +34,46 @@ final appRouter = GoRouter(
       path: '/signup',
       builder: (context, state) => const SignupScreen(),
     ),
-    // Main app with bottom navigation shell
-    ShellRoute(
-      builder: (context, state, child) => MainShell(child: child),
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => const HomeScreen(),
-        ),
-        GoRoute(
-          path: '/booking',
-          builder: (context, state) => const BookingScreen(),
-        ),
-        GoRoute(
-          path: '/games',
-          builder: (context, state) => const GamesScreen(),
-        ),
-        GoRoute(
-          path: '/membership',
-          builder: (context, state) => const MembershipScreen(),
-        ),
-        GoRoute(
-          path: '/profile',
-          builder: (context, state) => const ProfileScreen(),
-        ),
-        GoRoute(
-          path: '/contact',
-          builder: (context, state) => const ContactScreen(),
-        ),
-        GoRoute(
-          path: '/feedback',
-          builder: (context, state) => const FeedbackScreen(),
-        ),
-        GoRoute(
-          path: '/updates',
-          builder: (context, state) => const UpdatesScreen(),
-        ),
-        GoRoute(
-          path: '/offers',
-          builder: (context, state) => const OffersScreen(),
-        ),
-        GoRoute(
-          path: '/rental',
-          builder: (context, state) => const RentalScreen(),
-        ),
-      ],
+    // All main screens — no bottom nav, side menu accessible everywhere
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const HomeScreen(),
+    ),
+    GoRoute(
+      path: '/booking',
+      builder: (context, state) => const BookingScreen(),
+    ),
+    GoRoute(
+      path: '/games',
+      builder: (context, state) => const GamesScreen(),
+    ),
+    GoRoute(
+      path: '/membership',
+      builder: (context, state) => const MembershipScreen(),
+    ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const ProfileScreen(),
+    ),
+    GoRoute(
+      path: '/contact',
+      builder: (context, state) => const ContactScreen(),
+    ),
+    GoRoute(
+      path: '/feedback',
+      builder: (context, state) => const FeedbackScreen(),
+    ),
+    GoRoute(
+      path: '/updates',
+      builder: (context, state) => const UpdatesScreen(),
+    ),
+    GoRoute(
+      path: '/offers',
+      builder: (context, state) => const OffersScreen(),
+    ),
+    GoRoute(
+      path: '/rental',
+      builder: (context, state) => const RentalScreen(),
     ),
   ],
 );

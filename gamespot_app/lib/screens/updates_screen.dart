@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import '../config/theme.dart';
 import '../services/api_service.dart';
+import '../widgets/menu_button.dart';
 
 class UpdatesScreen extends StatefulWidget {
   const UpdatesScreen({super.key});
@@ -47,6 +48,8 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
               SliverToBoxAdapter(child: SafeArea(child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const MenuButton(light: false),
+                  const SizedBox(height: 12),
                   const Text('Updates', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.lpDark)),
                   const SizedBox(height: 4),
                   const Text('Latest news and announcements', style: TextStyle(fontSize: 14, color: AppColors.lpGray)),

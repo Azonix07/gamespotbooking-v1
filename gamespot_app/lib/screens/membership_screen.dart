@@ -5,6 +5,7 @@ import '../config/theme.dart';
 import '../providers/membership_provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/helpers.dart';
+import '../widgets/menu_button.dart';
 
 class MembershipScreen extends StatefulWidget {
   const MembershipScreen({super.key});
@@ -57,6 +58,8 @@ class _MembershipScreenState extends State<MembershipScreen> {
               SliverToBoxAdapter(child: SafeArea(child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const MenuButton(light: false),
+                  const SizedBox(height: 12),
                   const Text('Membership Plans', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.lpDark)),
                   const SizedBox(height: 4),
                   const Text('Choose the perfect plan', style: TextStyle(fontSize: 14, color: AppColors.lpGray)),

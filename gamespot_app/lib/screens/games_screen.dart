@@ -4,6 +4,7 @@ import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../config/theme.dart';
 import '../providers/games_provider.dart';
+import '../widgets/menu_button.dart';
 
 class GamesScreen extends StatefulWidget {
   const GamesScreen({super.key});
@@ -50,6 +51,8 @@ class _GamesScreenState extends State<GamesScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const MenuButton(light: false),
+                        const SizedBox(height: 12),
                         const Text('Games Library', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.lpDark)),
                         const SizedBox(height: 4),
                         Text('${gp.games.length} games available', style: const TextStyle(fontSize: 14, color: AppColors.lpGray)),

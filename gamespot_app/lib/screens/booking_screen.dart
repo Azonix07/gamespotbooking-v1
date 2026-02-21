@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
 import '../providers/booking_provider.dart';
 import '../utils/helpers.dart';
+import '../widgets/menu_button.dart';
 
 // ─────────────────────────────────────────────────────────
 //  BOOKING SCREEN — Light orange theme, matching web app
@@ -36,6 +37,11 @@ class _BookingScreenState extends State<BookingScreen> {
         child: SafeArea(
           child: Column(
             children: [
+              // ── Hamburger menu ──
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Row(children: const [MenuButton(light: false)]),
+              ),
               // ── Step indicator ──
               _StepBar(step: bp.currentStep),
               // ── Content ──

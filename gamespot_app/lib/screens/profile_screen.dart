@@ -6,6 +6,7 @@ import '../config/theme.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 import '../utils/helpers.dart';
+import '../widgets/menu_button.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -55,6 +56,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Padding(
               padding: const EdgeInsets.all(32),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
+                // Hamburger menu at top
+                const Align(alignment: Alignment.centerLeft, child: MenuButton(light: true)),
+                const SizedBox(height: 24),
                 // Avatar placeholder with glow
                 Container(
                   width: 90, height: 90,
@@ -120,7 +124,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: const EdgeInsets.only(bottom: 100),
                   child: SafeArea(
                     child: Column(children: [
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
+                      // Hamburger menu
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Align(alignment: Alignment.centerLeft, child: MenuButton(light: true)),
+                      ),
+                      const SizedBox(height: 8),
                       // Header section with gradient background
                       Container(
                         width: double.infinity,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import '../config/theme.dart';
 import '../services/api_service.dart';
+import '../widgets/menu_button.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
@@ -97,6 +98,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const MenuButton(light: false),
+                const SizedBox(height: 12),
                 const Text('Feedback', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.lpDark)),
                 const SizedBox(height: 4),
                 const Text('Help us improve your experience', style: TextStyle(fontSize: 14, color: AppColors.lpGray)),
