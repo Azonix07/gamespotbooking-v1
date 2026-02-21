@@ -1,117 +1,264 @@
 /* ============================================
-   MOBILE DATE CAROUSEL
-   Matches Flutter app date carousel design
+   MOBILE DATE CAROUSEL — Eye-Catching Design
+   Horizontal scroll with rich visual depth
    Only visible on mobile (≤768px)
    ============================================ */
 
+/* ── Wrapper ── */
 .mobile-date-carousel {
   display: none; /* Hidden on desktop — shown via media query */
   width: 100%;
-  margin-top: 4px;
+  margin-top: 6px;
+  position: relative;
 }
 
+/* ── Scrollable Track ── */
 .mobile-date-carousel-scroll {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   overflow-x: auto;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  padding: 4px 2px 8px;
+  padding: 10px 18px 14px 4px;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
 }
 
 .mobile-date-carousel-scroll::-webkit-scrollbar {
   display: none;
 }
 
-/* ── Individual Date Card ── */
+/* ── Fade edges — scroll hint ── */
+.mobile-date-fade-left,
+.mobile-date-fade-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.mobile-date-fade-left {
+  left: 0;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.95) 0%, transparent 100%);
+}
+
+.mobile-date-fade-right {
+  right: 0;
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.95) 0%, transparent 100%);
+}
+
+/* ============================================
+   INDIVIDUAL DATE CARD
+   ============================================ */
 .mobile-date-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 58px;
-  width: 58px;
-  height: 78px;
-  border-radius: 14px;
-  border: 1.5px solid #e2e8f0;
-  background: #ffffff;
+  min-width: 60px;
+  width: 60px;
+  height: 82px;
+  border-radius: 16px;
+  border: 1.5px solid #e8ecf1;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04), 0 0 0 0 transparent;
   padding: 6px 4px;
+  gap: 1px;
   flex-shrink: 0;
   position: relative;
   -webkit-tap-highlight-color: transparent;
   outline: none;
+  overflow: hidden;
+  scroll-snap-align: center;
+}
+
+.mobile-date-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 107, 53, 0) 0%, rgba(255, 107, 53, 0) 100%);
+  transition: background 0.3s ease;
+  z-index: 0;
+}
+
+.mobile-date-card:hover:not(.selected) {
+  border-color: rgba(255, 107, 53, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+}
+
+.mobile-date-card:hover:not(.selected)::before {
+  background: linear-gradient(180deg, rgba(255, 107, 53, 0.03) 0%, rgba(255, 107, 53, 0.06) 100%);
 }
 
 .mobile-date-card:active {
-  transform: scale(0.95);
+  transform: scale(0.93);
+  transition-duration: 0.1s;
 }
 
-/* ── Selected State — Orange Gradient ── */
-.mobile-date-card.selected {
-  background: linear-gradient(135deg, #ff6b35 0%, #ff8f5e 100%);
-  border-color: transparent;
-  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
-  transform: translateY(-2px);
+/* ── Weekend subtle tint ── */
+.mobile-date-card.is-weekend {
+  border-color: rgba(255, 143, 94, 0.2);
+  background: linear-gradient(180deg, #fff9f5 0%, #fff4ee 100%);
 }
+
+/* ============================================
+   SELECTED STATE — Bold Orange Gradient
+   ============================================ */
+.mobile-date-card.selected {
+  background: linear-gradient(145deg, #ff6b35 0%, #ff9966 60%, #ffb347 100%);
+  border-color: transparent;
+  box-shadow:
+    0 6px 20px rgba(255, 107, 53, 0.4),
+    0 2px 6px rgba(255, 107, 53, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px) scale(1.05);
+}
+
+.mobile-date-card.selected::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 50%);
+}
+
+.mobile-date-card.selected:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* ── Animated glow ring behind selected card ── */
+.mobile-date-glow {
+  position: absolute;
+  inset: -3px;
+  border-radius: 19px;
+  background: linear-gradient(145deg, rgba(255, 107, 53, 0.5), rgba(255, 153, 102, 0.3));
+  z-index: -1;
+  animation: dateGlowPulse 2s ease-in-out infinite;
+}
+
+@keyframes dateGlowPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+/* ============================================
+   TODAY BADGE — floating label
+   ============================================ */
+.mobile-date-today-badge {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ff4500 0%, #ff6b35 100%);
+  color: #fff;
+  font-size: 0.42rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  z-index: 3;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(255, 69, 0, 0.4);
+  line-height: 1.4;
+}
+
+/* ============================================
+   TEXT STYLES
+   ============================================ */
 
 /* ── Weekday Label ── */
 .mobile-date-weekday {
   font-size: 0.6rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
   line-height: 1;
+  position: relative;
+  z-index: 1;
+  transition: color 0.25s ease;
 }
 
 .mobile-date-card.selected .mobile-date-weekday {
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
 }
 
-/* ── Day Number (large) ── */
-.mobile-date-day {
-  font-size: 1.25rem;
+.mobile-date-card.is-today:not(.selected) .mobile-date-weekday {
+  color: #ff6b35;
   font-weight: 700;
+}
+
+/* ── Day Number (large & bold) ── */
+.mobile-date-day {
+  font-size: 1.35rem;
+  font-weight: 800;
   color: #1e293b;
-  line-height: 1.2;
+  line-height: 1.15;
   font-family: var(--font-heading, 'Poppins', sans-serif);
+  position: relative;
+  z-index: 1;
+  transition: all 0.25s ease;
 }
 
 .mobile-date-card.selected .mobile-date-day {
   color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+}
+
+.mobile-date-card.is-today:not(.selected) .mobile-date-day {
+  color: #ff6b35;
 }
 
 /* ── Month Label ── */
 .mobile-date-month {
-  font-size: 0.58rem;
-  font-weight: 500;
+  font-size: 0.55rem;
+  font-weight: 600;
   color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
   line-height: 1;
+  position: relative;
+  z-index: 1;
+  transition: color 0.25s ease;
 }
 
 .mobile-date-card.selected .mobile-date-month {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.7);
 }
 
-/* ── Today indicator dot ── */
+.mobile-date-card.is-today:not(.selected) .mobile-date-month {
+  color: rgba(255, 107, 53, 0.6);
+}
+
+/* ── Today indicator dot (when not selected) ── */
 .mobile-date-card.is-today:not(.selected)::after {
   content: '';
   position: absolute;
-  bottom: 5px;
+  bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: #ff6b35;
+  background: linear-gradient(135deg, #ff6b35, #ff9966);
+  box-shadow: 0 0 6px rgba(255, 107, 53, 0.5);
+  animation: todayDotPulse 2s ease-in-out infinite;
+}
+
+@keyframes todayDotPulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
+  50% { transform: translateX(-50%) scale(1.4); opacity: 0.7; }
 }
 
 /* ============================================
@@ -125,12 +272,20 @@
 
 /* ── Smaller phones ── */
 @media (max-width: 380px) {
+  .mobile-date-carousel-scroll {
+    gap: 6px;
+    padding: 8px 14px 12px 2px;
+  }
+
   .mobile-date-card {
-    min-width: 52px;
-    width: 52px;
-    height: 72px;
-    border-radius: 12px;
-    gap: 1px;
+    min-width: 54px;
+    width: 54px;
+    height: 76px;
+    border-radius: 14px;
+  }
+
+  .mobile-date-card.selected {
+    transform: translateY(-2px) scale(1.04);
   }
 
   .mobile-date-weekday {
@@ -138,10 +293,21 @@
   }
 
   .mobile-date-day {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
 
   .mobile-date-month {
-    font-size: 0.52rem;
+    font-size: 0.5rem;
+  }
+
+  .mobile-date-today-badge {
+    font-size: 0.38rem;
+    padding: 1.5px 5px;
+    top: -7px;
+  }
+
+  .mobile-date-fade-left,
+  .mobile-date-fade-right {
+    width: 16px;
   }
 }
