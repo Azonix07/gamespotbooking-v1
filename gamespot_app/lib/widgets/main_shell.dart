@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import '../config/theme.dart';
+import '../providers/auth_provider.dart';
 
 /// MainShell — bottom navigation matching web's mobile nav bar
 /// Dark background with subtle border, gradient active indicator
+/// Profile tab shows user initial when logged in
 class MainShell extends StatelessWidget {
   final Widget child;
   const MainShell({super.key, required this.child});
@@ -33,6 +36,7 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final index = _currentIndex(context);
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final auth = context.watch<AuthProvider>();
 
     return Scaffold(
       body: child,
@@ -51,6 +55,7 @@ class MainShell extends StatelessWidget {
             children: List.generate(_navItems.length, (i) {
               final item = _navItems[i];
               final isActive = i == index;
+              final isProfile = item.path == '/profile';
               return _NavButton(
                 icon: item.icon,
                 label: item.label,
@@ -58,6 +63,8 @@ class MainShell extends StatelessWidget {
                 onTap: () {
                   if (i != index) context.go(item.path);
                 },
+                // Show user initial in profile tab when authenticated
+                profileInitial: isProfile && auth.isAuthenticated ? auth.userInitial : null,
               );
             }),
           ),
@@ -79,12 +86,14 @@ class _NavButton extends StatelessWidget {
   final String label;
   final bool isActive;
   final VoidCallback onTap;
+  final String? profileInitial;
 
   const _NavButton({
     required this.icon,
     required this.label,
     required this.isActive,
     required this.onTap,
+    this.profileInitial,
   });
 
   @override
@@ -106,11 +115,32 @@ class _NavButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 22,
-              color: isActive ? AppColors.primaryLight : AppColors.textMuted,
-            ),
+            // Show user initial circle for Profile tab when logged in
+            if (profileInitial != null)
+              Container(
+                width: 24, height: 24,
+                decoration: BoxDecoration(
+                  gradient: isActive ? AppColors.primaryGradient : null,
+                  color: isActive ? null : AppColors.textMuted.withOpacity(0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    profileInitial!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: isActive ? Colors.white : AppColors.textMuted,
+                    ),
+                  ),
+                ),
+              )
+            else
+              Icon(
+                icon,
+                size: 22,
+                color: isActive ? AppColors.primaryLight : AppColors.textMuted,
+              ),
             const SizedBox(height: 3),
             Text(
               label,

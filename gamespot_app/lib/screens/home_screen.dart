@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
+import 'package:video_player/video_player.dart';
 import '../config/theme.dart';
 import '../providers/auth_provider.dart';
+import '../services/video_quality_service.dart';
 
 /// HomeScreen — full-viewport dark hero matching web's HomePage.css
-/// Hamburger top-left → slide-out drawer from LEFT, login/avatar top-right
+/// Background video with adaptive quality, hamburger top-left
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -19,16 +21,49 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   late AnimationController _menuAnim;
   late Animation<Offset> _slideAnim;
 
+  // Video player
+  VideoPlayerController? _videoController;
+  bool _videoReady = false;
+
   @override
   void initState() {
     super.initState();
     _menuAnim = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
     _slideAnim = Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero)
         .animate(CurvedAnimation(parent: _menuAnim, curve: Curves.easeOutCubic));
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    try {
+      final videoUrl = await VideoQualityService.detectBestVideo();
+      debugPrint('[HomeScreen] Loading video: $videoUrl');
+
+      final controller = VideoPlayerController.networkUrl(
+        Uri.parse(videoUrl),
+        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+      );
+
+      await controller.initialize();
+      controller.setLooping(true);
+      controller.setVolume(0); // muted
+      controller.play();
+
+      if (mounted) {
+        setState(() {
+          _videoController = controller;
+          _videoReady = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('[HomeScreen] Video load failed: $e');
+      // Falls back to gradient background
+    }
   }
 
   @override
   void dispose() {
+    _videoController?.dispose();
     _menuAnim.dispose();
     super.dispose();
   }
@@ -59,17 +94,34 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return Scaffold(
       body: Stack(
         children: [
-          // ── Dark gradient background (replaces video) ──
-          Container(
-            width: size.width,
-            height: size.height,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF080D1A), Color(0xFF0F172A), Color(0xFF141932), Color(0xFF0F172A)],
+          // ── Video background (or gradient fallback) ──
+          if (_videoReady && _videoController != null)
+            SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: _videoController!.value.size.width,
+                  height: _videoController!.value.size.height,
+                  child: VideoPlayer(_videoController!),
+                ),
+              ),
+            )
+          else
+            Container(
+              width: size.width,
+              height: size.height,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF080D1A), Color(0xFF0F172A), Color(0xFF141932), Color(0xFF0F172A)],
+                ),
               ),
             ),
+
+          // Dark overlay on video
+          Positioned.fill(
+            child: Container(color: Colors.black.withOpacity(_videoReady ? 0.45 : 0.0)),
           ),
 
           // Subtle radial glow
@@ -97,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
           ),
 
-          // ── Top bar: hamburger + login/avatar ──
+          // ── Top bar: hamburger only (login removed — use Profile tab) ──
           Positioned(
             top: 0, left: 0, right: 0,
             child: SafeArea(
@@ -107,41 +159,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _iconBtn(FeatherIcons.menu, _openMenu),
-                    if (!auth.isAuthenticated)
-                      GestureDetector(
-                        onTap: () => context.push('/login'),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.white.withOpacity(0.12)),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(FeatherIcons.logIn, size: 16, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text('Login', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
-                            ],
-                          ),
-                        ),
-                      )
-                    else
-                      GestureDetector(
-                        onTap: () => context.go('/profile'),
-                        child: Container(
-                          width: 42, height: 42,
-                          decoration: BoxDecoration(
-                            gradient: AppColors.primaryGradient,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.4), blurRadius: 10)],
-                          ),
-                          child: Center(
-                            child: Text(auth.userInitial, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 17)),
-                          ),
-                        ),
-                      ),
+                    // Right side intentionally empty — profile access via bottom nav
+                    const SizedBox(width: 42),
                   ],
                 ),
               ),
@@ -192,15 +211,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ),
                   const SizedBox(height: 32),
 
-                  // Console icons
+                  // Console icons (images only, no text labels)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _ConsoleIcon(asset: 'assets/images/ps5Icon.png', label: 'PS5'),
+                      _ConsoleIcon(asset: 'assets/images/ps5Icon.png'),
                       _sep(),
-                      _ConsoleIcon(asset: 'assets/images/xboxIcon.png', label: 'Xbox'),
+                      _ConsoleIcon(asset: 'assets/images/xboxIcon.png'),
                       _sep(),
-                      _ConsoleIcon(asset: 'assets/images/metaIcon.png', label: 'VR'),
+                      _ConsoleIcon(asset: 'assets/images/metaIcon.png'),
                     ],
                   ),
                 ],
@@ -208,19 +227,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
           ),
 
-          // ── Quick actions at bottom ──
-          Positioned(
-            bottom: 100, left: 20, right: 20,
-            child: Row(
-              children: [
-                _QuickAction(icon: FeatherIcons.gift, label: 'Offers', onTap: () => context.go('/offers')),
-                const SizedBox(width: 10),
-                _QuickAction(icon: FeatherIcons.phone, label: 'Contact', onTap: () => context.go('/contact')),
-                const SizedBox(width: 10),
-                _QuickAction(icon: FeatherIcons.bell, label: 'Updates', onTap: () => context.go('/updates')),
-              ],
-            ),
-          ),
+          // ── Quick actions removed — access via slide menu or bottom nav ──
 
           // ── Overlay ──
           if (_menuOpen)
@@ -268,56 +275,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   );
 }
 
-// ── Console Icon ──
+// ── Console Icon (image only, no text label) ──
 class _ConsoleIcon extends StatelessWidget {
   final String asset;
-  final String label;
-  const _ConsoleIcon({required this.asset, required this.label});
+  const _ConsoleIcon({required this.asset});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Image.asset(asset, width: 36, height: 36,
-          errorBuilder: (_, __, ___) => Icon(FeatherIcons.monitor, size: 28, color: AppColors.textMuted)),
-        const SizedBox(height: 6),
-        Text(label, style: TextStyle(fontSize: 11, color: AppColors.textMuted.withOpacity(0.8))),
-      ],
-    );
+    return Image.asset(asset, width: 36, height: 36,
+      errorBuilder: (_, __, ___) => Icon(FeatherIcons.monitor, size: 28, color: AppColors.textMuted));
   }
 }
 
-// ── Quick Action ──
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _QuickAction({required this.icon, required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
-          ),
-          child: Column(
-            children: [
-              Icon(icon, size: 20, color: AppColors.primaryLight),
-              const SizedBox(height: 6),
-              Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+// ── Quick Action removed ──
 
 // ═══════════════════════════════════════
 // Slide Menu — matches web's .slide-menu
