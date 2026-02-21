@@ -89,24 +89,36 @@ body:has(.hero-container) .main-content {
   transform: translateY(-2px);
 }
 
-/* Slide-out Menu - Premium Design */
+.header-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #FF6B35, #FF9966);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* Slide-out Menu - Warm Orange/White Theme (matches Flutter AppDrawer) */
 .slide-menu {
   position: fixed;
   top: 0;
   left: -340px;
   width: 320px;
   height: 100vh;
-  background: linear-gradient(180deg, rgba(10, 15, 30, 0.98) 0%, rgba(20, 25, 50, 0.98) 50%, rgba(15, 20, 40, 0.98) 100%);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  height: 100dvh;
+  background: linear-gradient(180deg, #ffffff 0%, #fff8f5 50%, #fff0e8 100%);
   z-index: 101;
   transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  border-right: 1px solid rgba(99, 102, 241, 0.15);
+  border-right: 1px solid rgba(255, 107, 53, 0.1);
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 5px 0 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 5px 0 40px rgba(255, 107, 53, 0.12);
 }
 
 .slide-menu::-webkit-scrollbar {
@@ -118,7 +130,7 @@ body:has(.hero-container) .main-content {
 }
 
 .slide-menu::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.3);
+  background: rgba(255, 107, 53, 0.3);
   border-radius: 10px;
 }
 
@@ -132,15 +144,15 @@ body:has(.hero-container) .main-content {
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(99, 102, 241, 0.05);
+  border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+  background: #ffffff;
   flex-shrink: 0;
 }
 
 .slide-menu-logo {
-  height: 38px;
+  height: 30px;
   width: auto;
-  filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.3));
+  filter: none;
   transition: transform 0.3s ease;
 }
 
@@ -149,10 +161,10 @@ body:has(.hero-container) .main-content {
 }
 
 .slide-menu-close {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #e9ecef;
+  border: none;
   border-radius: 10px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6c757d;
   width: 38px;
   height: 38px;
   display: flex;
@@ -163,9 +175,8 @@ body:has(.hero-container) .main-content {
 }
 
 .slide-menu-close:hover {
-  background: rgba(255, 75, 75, 0.15);
-  border-color: rgba(255, 75, 75, 0.3);
-  color: #ff4b4b;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
   transform: rotate(90deg);
 }
 
@@ -174,24 +185,32 @@ body:has(.hero-container) .main-content {
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1rem 1.25rem;
+  margin: 14px 16px 6px;
+  background: linear-gradient(135deg, #FF6B35, #FF9966);
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.25);
+  transition: all 0.3s ease;
   flex-shrink: 0;
 }
 
+.slide-menu-user:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.35);
+}
+
 .slide-menu-avatar {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: white;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
   flex-shrink: 0;
 }
 
@@ -200,6 +219,7 @@ body:has(.hero-container) .main-content {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  flex: 1;
 }
 
 .slide-menu-user-name {
@@ -213,19 +233,24 @@ body:has(.hero-container) .main-content {
 
 .slide-menu-user-email {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.75);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.slide-menu-user-arrow {
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
 }
 
 .slide-menu-admin-badge {
   display: inline-block;
   font-size: 0.65rem;
   font-weight: 700;
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 1px 8px;
   border-radius: 20px;
   text-transform: uppercase;
@@ -249,7 +274,7 @@ body:has(.hero-container) .main-content {
 .slide-menu-section-title {
   font-size: 0.68rem;
   font-weight: 700;
-  color: rgba(99, 102, 241, 0.7);
+  color: rgba(255, 107, 53, 0.7);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   padding: 0.5rem 0.75rem 0.4rem;
@@ -270,13 +295,13 @@ body:has(.hero-container) .main-content {
 }
 
 .slide-menu-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 107, 53, 0.06);
   transform: translateX(4px);
 }
 
 .slide-menu-item.active {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.2);
 }
 
 .slide-menu-item.active::before {
@@ -287,7 +312,7 @@ body:has(.hero-container) .main-content {
   transform: translateY(-50%);
   width: 3px;
   height: 60%;
-  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  background: linear-gradient(180deg, #FF6B35, #FF9966);
   border-radius: 0 3px 3px 0;
 }
 
@@ -295,68 +320,66 @@ body:has(.hero-container) .main-content {
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 107, 53, 0.1);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: #FF6B35;
   flex-shrink: 0;
   transition: all 0.25s ease;
 }
 
 .slide-menu-item:hover .slide-menu-item-icon {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.25);
-  color: #818cf8;
+  background: rgba(255, 107, 53, 0.15);
+  color: #E85A2A;
 }
 
 .slide-menu-item.active .slide-menu-item-icon {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: rgba(99, 102, 241, 0.3);
-  color: #818cf8;
+  background: rgba(255, 107, 53, 0.2);
+  color: #E85A2A;
 }
 
 /* Special icon colors */
 .slide-menu-item-icon.booking-icon {
-  color: #22c55e;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
 }
 
 .slide-menu-item:hover .slide-menu-item-icon.booking-icon {
-  background: rgba(34, 197, 94, 0.15);
-  border-color: rgba(34, 197, 94, 0.25);
-  color: #4ade80;
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
 }
 
 .slide-menu-item-icon.membership-icon {
-  color: #f59e0b;
+  color: #F59E0B;
+  background: rgba(245, 158, 11, 0.1);
 }
 
 .slide-menu-item:hover .slide-menu-item-icon.membership-icon {
   background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.25);
-  color: #fbbf24;
+  color: #D97706;
 }
 
 .slide-menu-item-icon.promo-icon {
-  color: #ff4757;
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .slide-menu-item:hover .slide-menu-item-icon.promo-icon,
 .slide-menu-item.promo-item:hover .slide-menu-item-icon {
-  background: rgba(255, 71, 87, 0.15);
-  border-color: rgba(255, 71, 87, 0.25);
-  color: #ff6b81;
+  background: rgba(239, 68, 68, 0.15);
+  color: #DC2626;
 }
 
 .slide-menu-item-icon.logout-icon {
   color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .slide-menu-item.logout-item:hover .slide-menu-item-icon {
   background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.25);
-  color: #f87171;
+  color: #DC2626;
 }
 
 /* Menu item text */
@@ -371,7 +394,7 @@ body:has(.hero-container) .main-content {
 .slide-menu-item-label {
   font-size: 0.88rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: #212529;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -379,46 +402,46 @@ body:has(.hero-container) .main-content {
 
 .slide-menu-item-desc {
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(108, 117, 125, 0.7);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .slide-menu-item:hover .slide-menu-item-label {
-  color: white;
+  color: #212529;
 }
 
 .slide-menu-item:hover .slide-menu-item-desc {
-  color: rgba(255, 255, 255, 0.5);
+  color: #6c757d;
 }
 
 /* Chevron arrow */
 .slide-menu-item-arrow {
-  color: rgba(255, 255, 255, 0.15);
+  color: rgba(108, 117, 125, 0.3);
   flex-shrink: 0;
   font-size: 0.85rem;
   transition: all 0.25s ease;
 }
 
 .slide-menu-item:hover .slide-menu-item-arrow {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(108, 117, 125, 0.5);
   transform: translateX(3px);
 }
 
 /* Promo item special glow */
 .slide-menu-item.promo-item {
-  background: rgba(255, 71, 87, 0.04);
-  border: 1px solid rgba(255, 71, 87, 0.08);
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px solid rgba(239, 68, 68, 0.08);
 }
 
 .slide-menu-item.promo-item:hover {
-  background: rgba(255, 71, 87, 0.1);
-  border-color: rgba(255, 71, 87, 0.2);
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.15);
 }
 
 .slide-menu-item.promo-item .slide-menu-item-label {
-  background: linear-gradient(135deg, #ff4757, #ff6b81);
+  background: linear-gradient(135deg, #EF4444, #F87171);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -426,11 +449,11 @@ body:has(.hero-container) .main-content {
 
 /* Logout item */
 .slide-menu-item.logout-item:hover {
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(239, 68, 68, 0.06);
 }
 
 .slide-menu-item.logout-item:hover .slide-menu-item-label {
-  color: #f87171;
+  color: #EF4444;
 }
 
 /* Login Button */
@@ -440,20 +463,22 @@ body:has(.hero-container) .main-content {
   justify-content: center;
   gap: 0.75rem;
   padding: 0.85rem 1.5rem;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  width: 100%;
+  background: linear-gradient(135deg, #FF6B35, #FF9966);
+  border: none;
   border-radius: 12px;
   color: white;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
 }
 
 .slide-menu-login-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(99, 102, 241, 0.45);
-  background: linear-gradient(135deg, #818cf8, #a78bfa);
+  box-shadow: 0 6px 25px rgba(255, 107, 53, 0.45);
+  background: linear-gradient(135deg, #FF8C5F, #FFB088);
 }
 
 /* Menu Footer */
@@ -462,14 +487,14 @@ body:has(.hero-container) .main-content {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(222, 226, 230, 0.6);
   flex-shrink: 0;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .slide-menu-footer span {
   font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.25);
+  color: rgba(108, 117, 125, 0.6);
   letter-spacing: 0.3px;
 }
 

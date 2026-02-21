@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { FiCpu } from 'react-icons/fi';
+import { FiCpu, FiMenu, FiX, FiHome, FiCalendar, FiGrid, FiAward, FiGift, FiMonitor, FiBell, FiPhone, FiMessageSquare, FiUser, FiLogOut, FiLogIn, FiChevronRight } from 'react-icons/fi';
+import { useAuth } from '@/context/AuthContext';
 import '@/styles/HomePage.css';
 import '@/styles/SplashScreen.css';
 
@@ -97,6 +99,11 @@ export default function HomePageClient() {
   const [splashExiting, setSplashExiting] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, isAdmin, isAuthenticated, logout } = useAuth();
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -141,6 +148,29 @@ export default function HomePageClient() {
     }, 4000);
     return () => clearTimeout(fallback);
   }, [splashDone, splashExiting, dismissSplash]);
+
+  /* Prevent body scroll when drawer is open */
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
+  const handleMenuNav = (path: string) => {
+    setMenuOpen(false);
+    setTimeout(() => router.push(path), 150);
+  };
+
+  const handleLogout = async () => {
+    setMenuOpen(false);
+    await logout();
+    router.push('/');
+  };
+
+  const isActivePath = (path: string) => pathname === path;
 
   return (
     <>
@@ -212,6 +242,26 @@ export default function HomePageClient() {
       {/* Dark Overlay */}
       <div className="hero-video-overlay"></div>
 
+      {/* Homepage Header — Hamburger (left) + Profile (right) */}
+      <div className="homepage-header">
+        <button className="hamburger-menu-btn" onClick={() => setMenuOpen(true)} aria-label="Open menu">
+          <FiMenu size={22} />
+        </button>
+        <div className="header-right">
+          {user ? (
+            <button className="user-button" onClick={() => router.push(isAdmin ? '/admin/dashboard' : '/profile')}>
+              <div className="header-user-avatar">
+                {user.name ? user.name.charAt(0).toUpperCase() : '👤'}
+              </div>
+            </button>
+          ) : (
+            <button className="login-button" onClick={() => router.push('/login')}>
+              <FiUser size={18} />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Main Content — this is the LCP element */}
       <div className="hero-content">
         {/* SEO: visually-hidden H1 for search engines — logo serves as visual heading */}
@@ -252,6 +302,156 @@ export default function HomePageClient() {
         </div>
       </div>
 
+    </div>
+
+    {/* ── Slide-out Drawer (matches Flutter AppDrawer warm orange/white theme) ── */}
+    {menuOpen && (
+      <div className="menu-overlay" onClick={() => setMenuOpen(false)} />
+    )}
+    <div className={`slide-menu ${menuOpen ? 'menu-open' : ''}`}>
+      {/* Header: Logo + close */}
+      <div className="slide-menu-header">
+        <img src="/assets/images/logo.png" alt="GameSpot" className="slide-menu-logo" />
+        <button className="slide-menu-close" onClick={() => setMenuOpen(false)} aria-label="Close menu">
+          <FiX size={18} />
+        </button>
+      </div>
+
+      {/* User section */}
+      {isAuthenticated && user ? (
+        <div className="slide-menu-user" onClick={() => handleMenuNav(isAdmin ? '/admin/dashboard' : '/profile')}>
+          <div className="slide-menu-avatar">
+            {user.name ? user.name.charAt(0).toUpperCase() : '👤'}
+          </div>
+          <div className="slide-menu-user-info">
+            <div className="slide-menu-user-name">{user.name}</div>
+            {user.email && <div className="slide-menu-user-email">{user.email}</div>}
+            {isAdmin && <span className="slide-menu-admin-badge">Admin</span>}
+          </div>
+          <FiChevronRight size={16} className="slide-menu-user-arrow" />
+        </div>
+      ) : (
+        <div className="slide-menu-section" style={{ padding: '14px 16px 6px' }}>
+          <button className="slide-menu-login-btn" onClick={() => handleMenuNav('/login')}>
+            <FiLogIn size={18} />
+            Login / Sign Up
+          </button>
+        </div>
+      )}
+
+      {/* Menu items */}
+      <div className="slide-menu-content">
+        <div className="slide-menu-section">
+          <div className="slide-menu-section-title">MAIN</div>
+          <div className={`slide-menu-item ${isActivePath('/') ? 'active' : ''}`} onClick={() => handleMenuNav('/')}>
+            <div className="slide-menu-item-icon"><FiHome size={18} /></div>
+            <div className="slide-menu-item-text">
+              <div className="slide-menu-item-label">Home</div>
+              <div className="slide-menu-item-desc">Dashboard</div>
+            </div>
+            <FiChevronRight size={16} className="slide-menu-item-arrow" />
+          </div>
+          <div className={`slide-menu-item ${isActivePath('/booking') ? 'active' : ''}`} onClick={() => handleMenuNav('/booking')}>
+            <div className="slide-menu-item-icon booking-icon"><FiCalendar size={18} /></div>
+            <div className="slide-menu-item-text">
+              <div className="slide-menu-item-label">Book Session</div>
+              <div className="slide-menu-item-desc">Reserve your spot</div>
+            </div>
+            <FiChevronRight size={16} className="slide-menu-item-arrow" />
+          </div>
+          <div className={`slide-menu-item ${isActivePath('/games') ? 'active' : ''}`} onClick={() => handleMenuNav('/games')}>
+            <div className="slide-menu-item-icon"><FiGrid size={18} /></div>
+            <div className="slide-menu-item-text">
+              <div className="slide-menu-item-label">Games Library</div>
+              <div className="slide-menu-item-desc">Browse games</div>
+            </div>
+            <FiChevronRight size={16} className="slide-menu-item-arrow" />
+          </div>
+          <div className={`slide-menu-item ${isActivePath('/membership') ? 'active' : ''}`} onClick={() => handleMenuNav('/membership')}>
+            <div className="slide-menu-item-icon membership-icon"><FiAward size={18} /></div>
+            <div className="slide-menu-item-text">
+              <div className="slide-menu-item-label">Membership</div>
+              <div className="slide-menu-item-desc">Plans & pricing</div>
+            </div>
+            <FiChevronRight size={16} className="slide-menu-item-arrow" />
+          </div>
+        </div>
+
+        <div className="slide-menu-section">
+          <div className="slide-menu-section-title">EXPLORE</div>
+          <div className={`slide-menu-item promo-item ${isActivePath('/get-offers') ? 'active' : ''}`} onClick={() => handleMenuNav('/get-offers')}>
+            <div className="slide-menu-item-icon promo-icon"><FiGift size={18} /></div>
+            <div className="slide-menu-item-text">
+              <div className="slide-menu-item-label">Offers</div>
+              <div className="slide-menu-item-desc">Instagram promo</div>
+            </div>
+            <FiChevronRight size={16} className="slide-menu-item-arrow" />
+          </div>
+          <div className={`slide-menu-item ${isActivePath('/rental') ? 'active' : ''}`} onClick={() => handleMenuNav('/rental')}>
+            <div className="slide-menu-item-icon"><FiMonitor size={18} /></div>
+            <div className="slide-menu-item-text">
+              <div className="slide-menu-item-label">Rentals</div>
+              <div className="slide-menu-item-desc">VR & PS5 rental</div>
+            </div>
+            <FiChevronRight size={16} className="slide-menu-item-arrow" />
+          </div>
+          <div className={`slide-menu-item ${isActivePath('/updates') ? 'active' : ''}`} onClick={() => handleMenuNav('/updates')}>
+            <div className="slide-menu-item-icon"><FiBell size={18} /></div>
+            <div className="slide-menu-item-text">
+              <div className="slide-menu-item-label">Updates</div>
+              <div className="slide-menu-item-desc">News & events</div>
+            </div>
+            <FiChevronRight size={16} className="slide-menu-item-arrow" />
+          </div>
+        </div>
+
+        <div className="slide-menu-section">
+          <div className="slide-menu-section-title">SUPPORT</div>
+          <div className={`slide-menu-item ${isActivePath('/contact') ? 'active' : ''}`} onClick={() => handleMenuNav('/contact')}>
+            <div className="slide-menu-item-icon"><FiPhone size={18} /></div>
+            <div className="slide-menu-item-text">
+              <div className="slide-menu-item-label">Contact</div>
+              <div className="slide-menu-item-desc">Get in touch</div>
+            </div>
+            <FiChevronRight size={16} className="slide-menu-item-arrow" />
+          </div>
+          <div className={`slide-menu-item ${isActivePath('/feedback') ? 'active' : ''}`} onClick={() => handleMenuNav('/feedback')}>
+            <div className="slide-menu-item-icon"><FiMessageSquare size={18} /></div>
+            <div className="slide-menu-item-text">
+              <div className="slide-menu-item-label">Feedback</div>
+              <div className="slide-menu-item-desc">Share your thoughts</div>
+            </div>
+            <FiChevronRight size={16} className="slide-menu-item-arrow" />
+          </div>
+
+          {isAuthenticated && user && (
+            <>
+              <div className={`slide-menu-item ${isActivePath('/profile') ? 'active' : ''}`} onClick={() => handleMenuNav('/profile')}>
+                <div className="slide-menu-item-icon"><FiUser size={18} /></div>
+                <div className="slide-menu-item-text">
+                  <div className="slide-menu-item-label">Profile</div>
+                  <div className="slide-menu-item-desc">Your account</div>
+                </div>
+                <FiChevronRight size={16} className="slide-menu-item-arrow" />
+              </div>
+              <div className="slide-menu-item logout-item" onClick={handleLogout}>
+                <div className="slide-menu-item-icon logout-icon"><FiLogOut size={18} /></div>
+                <div className="slide-menu-item-text">
+                  <div className="slide-menu-item-label">Logout</div>
+                  <div className="slide-menu-item-desc">Sign out</div>
+                </div>
+                <FiChevronRight size={16} className="slide-menu-item-arrow" />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="slide-menu-footer">
+        <span>GameSpot Kodungallur</span>
+        <span>v1.0</span>
+      </div>
     </div>
 
     {/* AI Chat FAB — outside hero-container so overflow:hidden doesn't clip it */}

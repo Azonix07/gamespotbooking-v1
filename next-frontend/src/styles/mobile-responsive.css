@@ -307,7 +307,7 @@ html, body {
   }
   
   .hero-logo {
-    max-width: 180px;
+    max-width: 280px;
     margin-bottom: 6px;
   }
   
@@ -360,7 +360,7 @@ html, body {
   }
   
   .hero-logo {
-    max-width: 140px;
+    max-width: 240px;
     margin-bottom: 4px;
   }
   
@@ -426,7 +426,7 @@ html, body {
   }
   
   .hero-logo {
-    max-width: 110px;
+    max-width: 210px;
     margin-bottom: 2px;
   }
   
@@ -1175,7 +1175,7 @@ html, body {
   .device-icon-wrapper {
     width: 52px;
     height: 52px;
-    min-width: 52px;
+    min-width: 40px;
     border-radius: 14px;
   }
   
@@ -2531,7 +2531,7 @@ html, body {
   }
   
   .hero-logo {
-    max-width: 150px;
+    max-width: 250px;
   }
   
   .hero-subtitle,
@@ -3382,7 +3382,7 @@ body:has(.hero-container) .hero-container {
   }
 
   .hero-logo {
-    max-width: 160px !important;
+    max-width: 260px !important;
     margin-bottom: 4px !important;
   }
 
@@ -3397,7 +3397,7 @@ body:has(.hero-container) .hero-container {
   }
 
   .hero-logo {
-    max-width: 130px !important;
+    max-width: 230px !important;
     margin-bottom: 2px !important;
   }
 
