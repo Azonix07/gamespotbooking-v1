@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FiCalendar, FiChevronDown, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import '@/styles/ModernDatePicker.css';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, getISTDate } from '@/utils/helpers';
 
 interface ModernDatePickerProps {
   selectedDate: string;
@@ -52,7 +52,7 @@ const ModernDatePicker = ({ selectedDate, onChange, minDate }: ModernDatePickerP
       const isSelected = selectedDate === dateString;
       let isDisabled = false;
       if (minDate) isDisabled = dateString < minDate;
-      const today = new Date();
+      const today = getISTDate();
       const isToday = date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
       days.push({ day: i, date: dateString, type: 'day', isSelected, isDisabled, isToday });
     }
@@ -114,7 +114,7 @@ const ModernDatePicker = ({ selectedDate, onChange, minDate }: ModernDatePickerP
               ))}
             </div>
             <div className="calendar-footer">
-              <button className="quick-date-btn" onClick={() => { const today = new Date(); onChange({ target: { value: formatDate(today) } }); setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setIsOpen(false); }} type="button">Select Today</button>
+              <button className="quick-date-btn" onClick={() => { const today = getISTDate(); onChange({ target: { value: formatDate(today) } }); setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setIsOpen(false); }} type="button">Select Today</button>
             </div>
           </motion.div>
         )}

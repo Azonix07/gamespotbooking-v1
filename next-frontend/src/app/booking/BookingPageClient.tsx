@@ -8,7 +8,7 @@ import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiCalendar, FiClock, FiMonito
 import { GiSteeringWheel } from 'react-icons/gi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSlots, getSlotDetails, createBooking, calculatePrice, getMembershipStatus, getGames, createPartyBooking } from '@/services/api';
-import { formatDate, getToday, formatDuration, formatPrice, formatTime12Hour, isValidName, isValidPhone } from '@/utils/helpers';
+import { formatDate, getToday, formatDuration, formatPrice, formatTime12Hour, isValidName, isValidPhone, getISTTime } from '@/utils/helpers';
 import { apiFetch } from '@/services/apiClient';
 import ModernDatePicker from '@/components/ModernDatePicker';
 import MobileDateCarousel from '@/components/MobileDateCarousel';
@@ -958,12 +958,13 @@ const BookingPage = () => {
     return CLOSING_MINUTES - timeToMinutes(time);
   }, [timeToMinutes]);
 
-  /** Is this slot past (for today only)? */
+  /** Is this slot past (for today only)? Uses IST (Kerala time) */
   const isSlotPast = useCallback((time) => {
     if (selectedDate !== getToday()) return false;
     // nowTick is listed as a dep so the callback refreshes every minute
-    const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    // Use IST time so it works correctly for users in any timezone
+    const ist = getISTTime();
+    const nowMinutes = ist.hours * 60 + ist.minutes;
     return timeToMinutes(time) <= nowMinutes;
   }, [selectedDate, timeToMinutes, nowTick]);
 

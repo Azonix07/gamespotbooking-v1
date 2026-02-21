@@ -1,5 +1,25 @@
 /** Utility Functions — Next.js Version */
 
+/**
+ * Get current time in IST (Asia/Kolkata, UTC+5:30).
+ * This ensures the booking page always works relative to Kerala time,
+ * regardless of the user's browser timezone (e.g. UK, US, etc.).
+ */
+export const getISTDate = (): Date => {
+  const now = new Date();
+  // Get UTC time, then add IST offset (+5:30 = 330 minutes)
+  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utcMs + 330 * 60000);
+};
+
+/**
+ * Get IST hours and minutes as { hours, minutes }
+ */
+export const getISTTime = (): { hours: number; minutes: number } => {
+  const ist = getISTDate();
+  return { hours: ist.getHours(), minutes: ist.getMinutes() };
+};
+
 export const formatDate = (date: Date | string): string => {
   const d = new Date(date);
   const year = d.getFullYear();
@@ -21,7 +41,7 @@ export const formatTime12Hour = (time24: string): string => {
   return `${hours12}:${String(minutes).padStart(2, '0')} ${period}`;
 };
 
-export const getToday = (): string => formatDate(new Date());
+export const getToday = (): string => formatDate(getISTDate());
 
 export const timeToMinutes = (time: string): number => {
   const [hours, minutes] = time.split(':').map(Number);

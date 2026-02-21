@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, getISTDate } from '@/utils/helpers';
 import '@/styles/MobileDateCarousel.css';
 
 interface MobileDateCarouselProps {
@@ -15,9 +15,9 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const MobileDateCarousel = ({ selectedDate, onChange }: MobileDateCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Generate 14 days starting from today
+  // Generate 14 days starting from today (IST)
   const days = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date();
+    const d = getISTDate();
     d.setDate(d.getDate() + i);
     return {
       date: d,

@@ -218,6 +218,8 @@ def get_slots():
                 status = 'closed'
             elif len(booked_ps5_units) == 3 and driving_booked:
                 status = 'full'
+            elif len(booked_ps5_units) == 3:
+                status = 'full'  # All PS5s booked — show as full (driving sim alone doesn't matter)
             elif booked_ps5_units or driving_booked:
                 status = 'partial'
             else:
