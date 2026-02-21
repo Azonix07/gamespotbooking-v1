@@ -42,9 +42,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 child: Row(children: const [MenuButton(light: false)]),
               ),
-              // ── Step indicator ──
-              _StepBar(step: bp.currentStep),
-              // ── Content ──
+              // ── Content (full height) ──
               Expanded(
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 350),
@@ -76,100 +74,6 @@ class _BookingScreenState extends State<BookingScreen> {
 }
 
 // ═══════════════════════════════════════════════════
-//  STEP BAR — clean minimal design matching web mobile
-//  Shows numbered circles with connector lines.
-//  Only active step shows label text (like web).
-// ═══════════════════════════════════════════════════
-class _StepBar extends StatelessWidget {
-  final int step;
-  const _StepBar({required this.step});
-
-  static const _labels = ['Schedule', 'Equipment', 'Confirm'];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(color: AppColors.lpPrimary.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 2)),
-        ],
-      ),
-      child: Row(
-        children: List.generate(5, (index) {
-          // 0=step1, 1=connector, 2=step2, 3=connector, 4=step3
-          if (index.isOdd) {
-            // Connector line
-            final stepBefore = (index ~/ 2) + 1;
-            final completed = stepBefore < step;
-            return Expanded(
-              child: Container(
-                height: 2,
-                margin: const EdgeInsets.symmetric(horizontal: 6),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(1),
-                  color: completed ? AppColors.lpPrimary : AppColors.lpGray200,
-                ),
-              ),
-            );
-          }
-
-          // Step circle
-          final stepNum = (index ~/ 2) + 1;
-          final isActive = stepNum == step;
-          final isCompleted = stepNum < step;
-          final isFuture = stepNum > step;
-
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: (isActive || isCompleted) ? AppColors.orangeGradient : null,
-                  color: isFuture ? AppColors.lpGray200 : null,
-                  boxShadow: isActive
-                      ? [BoxShadow(color: AppColors.lpPrimary.withOpacity(0.35), blurRadius: 10)]
-                      : null,
-                ),
-                child: Center(
-                  child: isCompleted
-                      ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
-                      : Text(
-                          '$stepNum',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: (isActive || isCompleted) ? Colors.white : AppColors.lpGray,
-                          ),
-                        ),
-                ),
-              ),
-              // Show label only for active step (matching web mobile behavior)
-              if (isActive) ...[
-                const SizedBox(width: 8),
-                Text(
-                  _labels[stepNum - 1],
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.lpDark,
-                  ),
-                ),
-              ],
-            ],
-          );
-        }),
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════
 //  STEP 1 — Date & Time Selection
 // ═══════════════════════════════════════════════════
 class _Step1Schedule extends StatelessWidget {
@@ -193,319 +97,337 @@ class _Step1Schedule extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bp = context.watch<BookingProvider>();
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(16).copyWith(bottom: 32),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _CardSection(
-            icon: FeatherIcons.calendar,
-            title: 'Choose Your Schedule',
-            subtitle: 'Select your preferred date and time slot',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 12),
-                // ── Date carousel ──
-                SizedBox(
-                  height: 80,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: 14,
-                    itemBuilder: (_, i) {
-                      // Use IST for date generation so international users see Kerala dates
-                      final istToday = getISTDate();
-                      final d = DateTime(istToday.year, istToday.month, istToday.day).add(Duration(days: i));
-                      final ds = formatDateYMD(d);
-                      final sel = bp.selectedDate == ds;
-                      final isToday = i == 0;
-                      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                      const months = [
-                        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-                      ];
-                      return GestureDetector(
-                        onTap: () => bp.setDate(ds),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          width: 60,
-                          margin: const EdgeInsets.only(right: 10),
-                          decoration: BoxDecoration(
-                            gradient: sel ? AppColors.orangeGradient : null,
-                            color: sel ? null : Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: sel ? Colors.transparent : AppColors.lpGray200,
-                            ),
-                            boxShadow: sel
-                                ? [
-                                    BoxShadow(
-                                        color: AppColors.lpPrimary.withOpacity(0.3),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4))
-                                  ]
-                                : [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4)],
+          // ── Section header ──
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: AppColors.orangeGradient,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(FeatherIcons.calendar, size: 18, color: Colors.white),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Choose Your Schedule',
+                        style: GoogleFonts.poppins(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.lpDark)),
+                    Text('Select your preferred date and time slot',
+                        style: GoogleFonts.inter(
+                            fontSize: 12, color: AppColors.lpGray)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // ── Date carousel ──
+          SizedBox(
+            height: 80,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: 14,
+              itemBuilder: (_, i) {
+                // Use IST for date generation so international users see Kerala dates
+                final istToday = getISTDate();
+                final d = DateTime(istToday.year, istToday.month, istToday.day).add(Duration(days: i));
+                final ds = formatDateYMD(d);
+                final sel = bp.selectedDate == ds;
+                final isToday = i == 0;
+                const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                const months = [
+                  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+                ];
+                return GestureDetector(
+                  onTap: () => bp.setDate(ds),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    width: 60,
+                    margin: const EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                      gradient: sel ? AppColors.orangeGradient : null,
+                      color: sel ? null : Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: sel ? Colors.transparent : AppColors.lpGray200,
+                      ),
+                      boxShadow: sel
+                          ? [
+                              BoxShadow(
+                                  color: AppColors.lpPrimary.withOpacity(0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4))
+                            ]
+                          : [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4)],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          isToday ? 'Today' : weekdays[d.weekday - 1],
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
+                            color: sel ? Colors.white : AppColors.lpGray,
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${d.day}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: sel ? Colors.white : AppColors.lpDark,
+                          ),
+                        ),
+                        Text(
+                          months[d.month - 1],
+                          style: GoogleFonts.inter(
+                              fontSize: 10,
+                              color: sel ? Colors.white70 : AppColors.lpGray),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // ── Day closed banner ──
+          if (bp.dayClosedInfo != null)
+            Container(
+              margin: const EdgeInsets.only(top: 14),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.lpError.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.lpError.withOpacity(0.2)),
+              ),
+              child: Row(
+                children: [
+                  const Text('🚫', style: TextStyle(fontSize: 18)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Shop Closed',
+                            style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.lpError)),
+                        const SizedBox(height: 2),
+                        Text(
+                            bp.dayClosedInfo!['reason']?.toString() ?? 'Closed',
+                            style: GoogleFonts.inter(
+                                fontSize: 12, color: AppColors.lpGray700)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          if (bp.error != null && bp.slots.isEmpty)
+            _ErrorBanner(message: bp.error!, onRetry: bp.loadSlots),
+
+          // ── Time slots (fills remaining height) ──
+          if (bp.selectedDate.isNotEmpty && bp.dayClosedInfo == null) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(FeatherIcons.clock, size: 18, color: AppColors.lpPrimary),
+                const SizedBox(width: 8),
+                Text('Pick Your Time',
+                    style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.lpDark)),
+                const Spacer(),
+                // Legend inline
+                _legendDot(AppColors.lpSuccess, 'Open'),
+                const SizedBox(width: 10),
+                _legendDot(AppColors.warning, 'Filling'),
+                const SizedBox(width: 10),
+                _legendDot(AppColors.lpError, 'Full'),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            if (bp.loading)
+              const Expanded(
+                child: Center(
+                    child: CircularProgressIndicator(
+                        color: AppColors.lpPrimary, strokeWidth: 3)),
+              )
+            else if (bp.slots
+                .where((s) =>
+                    !_isSlotPast(s['time']?.toString() ?? '', bp.selectedDate))
+                .isEmpty)
+              Expanded(
+                child: Center(
+                  child: _emptyState(
+                      '⏰', 'No more slots available', 'Pick a future date.'),
+                ),
+              )
+            else
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.lpGray100.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.lpGray200.withOpacity(0.5)),
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: GridView.count(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 1.4,
+                    physics: const BouncingScrollPhysics(),
+                    children: bp.slots
+                        .where((s) => !_isSlotPast(
+                            s['time']?.toString() ?? '', bp.selectedDate))
+                        .map((slot) {
+                      final time = slot['time']?.toString() ?? '';
+                      final status = slot['status']?.toString() ?? 'available';
+                      final isFull = status == 'full';
+                      final isClosed = status == 'closed';
+                      final isPartial = status == 'partial';
+                      final isDisabled = isFull || isClosed;
+                      final availPs5 = slot['available_ps5'];
+                      final isSelected = bp.selectedTime == time;
+
+                      Color bgColor, borderColor, dotColor, textColor;
+                      if (isClosed) {
+                        bgColor = AppColors.lpGray100;
+                        borderColor = AppColors.lpGray200;
+                        dotColor = AppColors.lpGray300;
+                        textColor = AppColors.lpGray;
+                      } else if (isFull) {
+                        bgColor = AppColors.lpError.withOpacity(0.06);
+                        borderColor = AppColors.lpError.withOpacity(0.2);
+                        dotColor = AppColors.lpError;
+                        textColor = AppColors.lpError;
+                      } else if (isPartial) {
+                        bgColor = AppColors.warning.withOpacity(0.06);
+                        borderColor = AppColors.warning.withOpacity(0.25);
+                        dotColor = AppColors.warning;
+                        textColor = AppColors.lpDark;
+                      } else {
+                        bgColor = Colors.white;
+                        borderColor = AppColors.lpSuccess.withOpacity(0.3);
+                        dotColor = AppColors.lpSuccess;
+                        textColor = AppColors.lpDark;
+                      }
+
+                      // Selected state override
+                      if (isSelected && !isDisabled) {
+                        bgColor = AppColors.lpPrimary.withOpacity(0.1);
+                        borderColor = AppColors.lpPrimary;
+                      }
+
+                      return GestureDetector(
+                        onTap: isDisabled
+                            ? null
+                            : () => bp.selectTimeSlot(time),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: bgColor,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: borderColor,
+                              width: isSelected ? 2 : 1,
+                            ),
+                            boxShadow: [
+                              if (!isDisabled)
+                                BoxShadow(
+                                    color: Colors.black.withOpacity(0.03),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2)),
+                            ],
+                          ),
+                          child: Stack(
                             children: [
-                              Text(
-                                isToday ? 'Today' : weekdays[d.weekday - 1],
-                                style: GoogleFonts.inter(
-                                  fontSize: 10,
-                                  fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
-                                  color: sel ? Colors.white : AppColors.lpGray,
+                              // Status dot top-right
+                              Positioned(
+                                top: 4, right: 4,
+                                child: Container(
+                                  width: 5, height: 5,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle, color: dotColor,
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${d.day}',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  color: sel ? Colors.white : AppColors.lpDark,
+                              // Content centered
+                              Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      formatTime12Hour(time),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: textColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    if (isPartial && availPs5 != null)
+                                      Text('$availPs5 left',
+                                          style: GoogleFonts.inter(
+                                              fontSize: 8,
+                                              color: AppColors.warning,
+                                              fontWeight: FontWeight.w500))
+                                    else if (isFull)
+                                      Text('Full',
+                                          style: GoogleFonts.inter(
+                                              fontSize: 8,
+                                              color: AppColors.lpError,
+                                              fontWeight: FontWeight.w500))
+                                    else if (!isClosed)
+                                      Text('Open',
+                                          style: GoogleFonts.inter(
+                                              fontSize: 8,
+                                              color: AppColors.lpSuccess,
+                                              fontWeight: FontWeight.w500)),
+                                  ],
                                 ),
-                              ),
-                              Text(
-                                months[d.month - 1],
-                                style: GoogleFonts.inter(
-                                    fontSize: 10,
-                                    color: sel ? Colors.white70 : AppColors.lpGray),
                               ),
                             ],
                           ),
                         ),
                       );
-                    },
+                    }).toList(),
                   ),
                 ),
+              ),
 
-                // ── Day closed banner ──
-                if (bp.dayClosedInfo != null)
-                  Container(
-                    margin: const EdgeInsets.only(top: 14),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: AppColors.lpError.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.lpError.withOpacity(0.2)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Text('🚫', style: TextStyle(fontSize: 18)),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Shop Closed',
-                                  style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.lpError)),
-                              const SizedBox(height: 2),
-                              Text(
-                                  bp.dayClosedInfo!['reason']?.toString() ?? 'Closed',
-                                  style: GoogleFonts.inter(
-                                      fontSize: 12, color: AppColors.lpGray700)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                if (bp.error != null && bp.slots.isEmpty)
-                  _ErrorBanner(message: bp.error!, onRetry: bp.loadSlots),
-
-                // ── Time slots ──
-                if (bp.selectedDate.isNotEmpty && bp.dayClosedInfo == null) ...[
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Icon(FeatherIcons.clock, size: 18, color: AppColors.lpPrimary),
-                      const SizedBox(width: 8),
-                      Text('Pick Your Time',
-                          style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.lpDark)),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  // Legend (matching web — no Past since past slots are filtered out)
-                  Wrap(
-                    spacing: 12,
-                    children: [
-                      _legendDot(AppColors.lpSuccess, 'Open'),
-                      _legendDot(AppColors.warning, 'Filling'),
-                      _legendDot(AppColors.lpError, 'Full'),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-
-                  if (bp.loading)
-                    const Padding(
-                      padding: EdgeInsets.all(30),
-                      child: Center(
-                          child: CircularProgressIndicator(
-                              color: AppColors.lpPrimary, strokeWidth: 3)),
-                    )
-                  else if (bp.slots
-                      .where((s) =>
-                          !_isSlotPast(s['time']?.toString() ?? '', bp.selectedDate))
-                      .isEmpty)
-                    _emptyState(
-                        '⏰', 'No more slots available', 'Pick a future date.')
-                  else
-                    // Fixed-height container so it doesn't shrink when few slots remain
-                    Container(
-                      height: 280,
-                      decoration: BoxDecoration(
-                        color: AppColors.lpGray100.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.lpGray200.withOpacity(0.5)),
-                      ),
-                      padding: const EdgeInsets.all(10),
-                      child: GridView.count(
-                        crossAxisCount: 3,
-                        mainAxisSpacing: 8,
-                        crossAxisSpacing: 8,
-                        childAspectRatio: 1.6,
-                        physics: const BouncingScrollPhysics(),
-                        shrinkWrap: false,
-                        children: bp.slots
-                            .where((s) => !_isSlotPast(
-                                s['time']?.toString() ?? '', bp.selectedDate))
-                            .map((slot) {
-                          final time = slot['time']?.toString() ?? '';
-                          final status = slot['status']?.toString() ?? 'available';
-                          final isFull = status == 'full';
-                          final isClosed = status == 'closed';
-                          final isPartial = status == 'partial';
-                          final isDisabled = isFull || isClosed;
-                          final availPs5 = slot['available_ps5'];
-                          final isSelected = bp.selectedTime == time;
-
-                          Color bgColor, borderColor, dotColor, textColor;
-                          if (isClosed) {
-                            bgColor = AppColors.lpGray100;
-                            borderColor = AppColors.lpGray200;
-                            dotColor = AppColors.lpGray300;
-                            textColor = AppColors.lpGray;
-                          } else if (isFull) {
-                            bgColor = AppColors.lpError.withOpacity(0.06);
-                            borderColor = AppColors.lpError.withOpacity(0.2);
-                            dotColor = AppColors.lpError;
-                            textColor = AppColors.lpError;
-                          } else if (isPartial) {
-                            bgColor = AppColors.warning.withOpacity(0.06);
-                            borderColor = AppColors.warning.withOpacity(0.25);
-                            dotColor = AppColors.warning;
-                            textColor = AppColors.lpDark;
-                          } else {
-                            bgColor = Colors.white;
-                            borderColor = AppColors.lpSuccess.withOpacity(0.3);
-                            dotColor = AppColors.lpSuccess;
-                            textColor = AppColors.lpDark;
-                          }
-
-                          // Selected state override
-                          if (isSelected && !isDisabled) {
-                            bgColor = AppColors.lpPrimary.withOpacity(0.1);
-                            borderColor = AppColors.lpPrimary;
-                          }
-
-                          return GestureDetector(
-                            onTap: isDisabled
-                                ? null
-                                : () => bp.selectTimeSlot(time),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: bgColor,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: borderColor,
-                                  width: isSelected ? 2 : 1,
-                                ),
-                                boxShadow: [
-                                  if (!isDisabled)
-                                    BoxShadow(
-                                        color: Colors.black.withOpacity(0.03),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2)),
-                                ],
-                              ),
-                              child: Stack(
-                                children: [
-                                  // Status dot top-right
-                                  Positioned(
-                                    top: 5, right: 5,
-                                    child: Container(
-                                      width: 6, height: 6,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle, color: dotColor,
-                                      ),
-                                    ),
-                                  ),
-                                  // Content centered
-                                  Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          formatTime12Hour(time),
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: textColor,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        if (isPartial && availPs5 != null)
-                                          Text('$availPs5 left',
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 9,
-                                                  color: AppColors.warning,
-                                                  fontWeight: FontWeight.w500))
-                                        else if (isFull)
-                                          Text('Full',
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 9,
-                                                  color: AppColors.lpError,
-                                                  fontWeight: FontWeight.w500))
-                                        else if (!isClosed)
-                                          Text('Open',
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 9,
-                                                  color: AppColors.lpSuccess,
-                                                  fontWeight: FontWeight.w500)),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Icon(FeatherIcons.info, size: 13, color: AppColors.lpGray),
-                      const SizedBox(width: 6),
-                      Text('We close at 12:00 AM (Midnight)',
-                          style: GoogleFonts.inter(fontSize: 12, color: AppColors.lpGray)),
-                    ],
-                  ),
-                ],
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(FeatherIcons.info, size: 13, color: AppColors.lpGray),
+                const SizedBox(width: 6),
+                Text('We close at 12:00 AM (Midnight)',
+                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.lpGray)),
               ],
             ),
-          ),
+            const SizedBox(height: 8),
+          ],
         ],
       ),
     );
