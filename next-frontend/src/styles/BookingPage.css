@@ -1184,7 +1184,7 @@
   background: rgba(255, 255, 255, 0.85); /* Light glass base */
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 107, 53, 0.15); /* Orange border */
+  border: 2px solid #ff905d; /* Orange border */
   border-radius: 18px; /* Slightly more rounded */
   padding: 16px; 
   cursor: pointer;
@@ -1273,7 +1273,7 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  color: var(--booking-gray-500);
+  color: var(--booking-primary);
   transition: transform 0.3s ease, color 0.3s ease;
 }
 
@@ -1523,7 +1523,7 @@ span.device-unit {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--booking-gray-500);
+  color: black;
   white-space: nowrap;
 }
 
