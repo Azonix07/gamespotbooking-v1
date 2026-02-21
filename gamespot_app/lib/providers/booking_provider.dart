@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/helpers.dart';
 
 /// BookingProvider — manages booking flow state (mirrors web app flow)
 class BookingProvider extends ChangeNotifier {
@@ -58,13 +59,11 @@ class BookingProvider extends ChangeNotifier {
   bool get gamesLoading => _gamesLoading;
 
   BookingProvider() {
-    _selectedDate = _getToday();
+    _selectedDate = getToday(); // Uses IST (Kerala time)
   }
 
-  String _getToday() {
-    final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-  }
+  // Use IST for "today" to work correctly for international users
+  String _getToday() => getToday();
 
   void setDate(String date) {
     _selectedDate = date;

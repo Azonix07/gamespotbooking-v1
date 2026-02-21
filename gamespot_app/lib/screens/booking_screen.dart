@@ -150,15 +150,15 @@ class _StepBar extends StatelessWidget {
 class _Step1Schedule extends StatelessWidget {
   const _Step1Schedule({super.key});
 
+  /// Is this slot past? Uses IST (Kerala time) so international users see correct results
   bool _isSlotPast(String time, String selectedDate) {
-    final today = DateTime.now();
-    final todayStr =
-        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final todayStr = getToday(); // IST today
     if (selectedDate != todayStr) return false;
     try {
       final parts = time.split(':');
       final slotMin = int.parse(parts[0]) * 60 + int.parse(parts[1]);
-      final nowMin = today.hour * 60 + today.minute;
+      final ist = getISTTime();
+      final nowMin = ist['hours']! * 60 + ist['minutes']!;
       return slotMin <= nowMin;
     } catch (_) {
       return false;
@@ -190,7 +190,9 @@ class _Step1Schedule extends StatelessWidget {
                     physics: const BouncingScrollPhysics(),
                     itemCount: 14,
                     itemBuilder: (_, i) {
-                      final d = DateTime.now().add(Duration(days: i));
+                      // Use IST for date generation so international users see Kerala dates
+                      final istToday = getISTDate();
+                      final d = DateTime(istToday.year, istToday.month, istToday.day).add(Duration(days: i));
                       final ds = formatDateYMD(d);
                       final sel = bp.selectedDate == ds;
                       final isToday = i == 0;
@@ -308,14 +310,13 @@ class _Step1Schedule extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  // Legend
+                  // Legend (matching web — no Past since past slots are filtered out)
                   Wrap(
                     spacing: 12,
                     children: [
                       _legendDot(AppColors.lpSuccess, 'Open'),
                       _legendDot(AppColors.warning, 'Filling'),
                       _legendDot(AppColors.lpError, 'Full'),
-                      _legendDot(AppColors.lpGray300, 'Past'),
                     ],
                   ),
                   const SizedBox(height: 14),
