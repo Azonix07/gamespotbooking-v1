@@ -2023,7 +2023,7 @@ const BookingPage = () => {
                                     
                                     <div className="device-header">
                                       <div className="device-icon-wrapper ps5">
-                                        <FiMonitor className="device-icon" />
+                                        <img src="/assets/images/Ps5_logo_small.png" alt="PS5" className="device-logo-img" />
                                       </div>
                                       <div className="device-details">
                                         <h4 className="device-name">PlayStation 5</h4>
@@ -2037,19 +2037,6 @@ const BookingPage = () => {
                                         </div>
                                       )}
                                     </div>
-
-                                    {!isExpanded && isAvailable && (
-                                      <div className="device-games-preview">
-                                        {getGamesForUnit(unitNumber).slice(0, 3).map(g => (
-                                          <span key={g.id} className={`mini-game-tag ${selectedGames.some(sg => sg.id === g.id) ? 'highlight' : ''}`}>
-                                            {g.name}
-                                          </span>
-                                        ))}
-                                        {getGamesForUnit(unitNumber).length > 3 && (
-                                          <span className="mini-game-tag more">+{getGamesForUnit(unitNumber).length - 3} more</span>
-                                        )}
-                                      </div>
-                                    )}
                                     
                                     <AnimatePresence>
                                       {isExpanded && isAvailable && (
@@ -2148,7 +2135,7 @@ const BookingPage = () => {
                                 
                                 <div className="device-header">
                                   <div className="device-icon-wrapper ps5">
-                                    <FiMonitor className="device-icon" />
+                                    <img src="/assets/images/Ps5_logo_small.png" alt="PS5" className="device-logo-img" />
                                   </div>
                                   <div className="device-details">
                                     <h4 className="device-name">PlayStation 5</h4>
@@ -2162,17 +2149,6 @@ const BookingPage = () => {
                                     </div>
                                   )}
                                 </div>
-
-                                {!isExpanded && isAvailable && unitGames.length > 0 && (
-                                  <div className="device-games-preview">
-                                    {unitGames.slice(0, 3).map(g => (
-                                      <span key={g.id} className="mini-game-tag">{g.name}</span>
-                                    ))}
-                                    {unitGames.length > 3 && (
-                                      <span className="mini-game-tag more">+{unitGames.length - 3} more</span>
-                                    )}
-                                  </div>
-                                )}
                                 
                                 <AnimatePresence>
                                   {isExpanded && isAvailable && (
@@ -2185,16 +2161,16 @@ const BookingPage = () => {
                                       onClick={(e) => e.stopPropagation()}
                                     >
                                       {unitGames.length > 0 && (
-                                        <div className="option-group">
+                                        <div className="option-group available-games-group">
                                           <label className="option-label">
                                             <FiStar className="option-icon" />
                                             Available Games
                                           </label>
-                                          <div className="unit-games-list">
+                                          <div className="unit-games-grid">
                                             {unitGames.map(g => (
                                               <div 
                                                 key={g.id} 
-                                                className={`unit-game-item ${booking?.game_preference === g.name ? 'chosen' : ''}`}
+                                                className={`unit-game-card ${booking?.game_preference === g.name ? 'chosen' : ''}`}
                                                 onClick={() => {
                                                   if (booking) {
                                                     setPs5Bookings(ps5Bookings.map(b => 
@@ -2203,24 +2179,19 @@ const BookingPage = () => {
                                                         : b
                                                     ));
                                                   }
-                                                  // Add game to selection if not already selected
                                                   if (!selectedGames.some(sg => sg.id === g.id)) {
                                                     setSelectedGames([...selectedGames, g]);
                                                   }
                                                 }}
                                               >
-                                                {getGameCover(g.name).img ? (
-                                                  <img src={getGameCover(g.name).img} alt={g.name} className="unit-game-thumb" />
-                                                ) : (
-                                                  <span className="unit-game-emoji">{getGameCover(g.name).emoji}</span>
-                                                )}
-                                                <span className="unit-game-name">{g.name}</span>
-                                                <span className="unit-game-genre">{g.genre}</span>
-                                                {g.rating && (
-                                                  <span className="unit-game-rating">
-                                                    <FiStar className="mini-star" /> {g.rating}
-                                                  </span>
-                                                )}
+                                                <div className="unit-game-cover">
+                                                  {getGameCover(g.name).img ? (
+                                                    <img src={getGameCover(g.name).img} alt={g.name} className="unit-game-cover-img" />
+                                                  ) : (
+                                                    <span className="unit-game-emoji">{getGameCover(g.name).emoji}</span>
+                                                  )}
+                                                </div>
+                                                <span className="unit-game-title">{g.name}</span>
                                               </div>
                                             ))}
                                           </div>
