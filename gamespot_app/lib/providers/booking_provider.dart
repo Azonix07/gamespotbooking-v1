@@ -35,6 +35,13 @@ class BookingProvider extends ChangeNotifier {
   List<Map<String, dynamic>> _allGames = [];
   bool _gamesLoading = false;
 
+  // Selection mode & party booking (matching web)
+  String _bookingType = 'regular'; // 'regular' or 'party'
+  String _selectionMode = 'device'; // 'device' or 'game'
+  List<Map<String, dynamic>> _selectedGames = [];
+  int _partyHours = 1;
+  bool _partySubmitting = false;
+
   // Getters
   String get selectedDate => _selectedDate;
   String? get selectedTime => _selectedTime;
@@ -57,6 +64,11 @@ class BookingProvider extends ChangeNotifier {
   String get customerPhone => _customerPhone;
   List<Map<String, dynamic>> get allGames => _allGames;
   bool get gamesLoading => _gamesLoading;
+  String get bookingType => _bookingType;
+  String get selectionMode => _selectionMode;
+  List<Map<String, dynamic>> get selectedGames => _selectedGames;
+  int get partyHours => _partyHours;
+  bool get partySubmitting => _partySubmitting;
 
   BookingProvider() {
     _selectedDate = getToday(); // Uses IST (Kerala time)
@@ -151,6 +163,126 @@ class BookingProvider extends ChangeNotifier {
     } finally {
       _gamesLoading = false;
       notifyListeners();
+    }
+  }
+
+  // ── Booking type & selection mode (matching web) ──
+
+  void setBookingType(String type) {
+    _bookingType = type;
+    // Reset device selections when switching type
+    _ps5Bookings = [];
+    _drivingSim = null;
+    _selectedGames = [];
+    _price = 0;
+    _originalPrice = 0;
+    notifyListeners();
+  }
+
+  void setSelectionMode(String mode) {
+    _selectionMode = mode;
+    notifyListeners();
+  }
+
+  void setPartyHours(int hours) {
+    _partyHours = hours;
+    notifyListeners();
+  }
+
+  void toggleGameSelection(Map<String, dynamic> game) {
+    final idx = _selectedGames.indexWhere((g) => g['id'] == game['id']);
+    if (idx >= 0) {
+      _selectedGames.removeAt(idx);
+    } else {
+      _selectedGames.add(game);
+    }
+    // Auto-select PS5 unit for the game
+    _autoSelectUnitsForGames();
+    notifyListeners();
+    _updatePrice();
+  }
+
+  void clearSelectedGames() {
+    _selectedGames = [];
+    _ps5Bookings = [];
+    notifyListeners();
+    _updatePrice();
+  }
+
+  void _autoSelectUnitsForGames() {
+    // Auto-select the first available unit for each selected game
+    _ps5Bookings = [];
+    for (final game in _selectedGames) {
+      final ps5Numbers = List<int>.from(game['ps5_numbers'] ?? []);
+      final ps5Units = ps5Numbers.where((n) => n != 4).toList();
+      final hasDrivingSim = ps5Numbers.contains(4);
+      
+      if (game['device_type'] == 'driving_sim' || (ps5Units.isEmpty && hasDrivingSim)) {
+        // Driving sim game
+        if (_availableDriving && _drivingSim == null) {
+          _drivingSim = {'duration': 60, 'afterPS5': false};
+        }
+      } else {
+        // PS5 game - find first available unit
+        for (final unit in ps5Units) {
+          if (_availablePS5Units.contains(unit) &&
+              !_ps5Bookings.any((b) => b['device_number'] == unit)) {
+            _ps5Bookings.add({
+              'device_number': unit,
+              'player_count': 1,
+              'duration': 60,
+              'game_preference': game['name'],
+            });
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  /// Submit party booking
+  Future<Map<String, dynamic>> submitPartyBooking() async {
+    if (_customerName.trim().length < 2) {
+      _error = 'Please enter a valid name (min 2 characters)';
+      notifyListeners();
+      return {'success': false, 'error': _error};
+    }
+    if (_customerPhone.replaceAll(RegExp(r'\D'), '').length < 10) {
+      _error = 'Please enter a valid phone number (min 10 digits)';
+      notifyListeners();
+      return {'success': false, 'error': _error};
+    }
+
+    try {
+      _partySubmitting = true;
+      _error = null;
+      notifyListeners();
+
+      final response = await _api.createPartyBooking({
+        'customer_name': _customerName,
+        'customer_phone': _customerPhone,
+        'booking_date': _selectedDate,
+        'start_time': _selectedTime,
+        'duration_hours': _partyHours,
+        'total_price': _partyHours * 600,
+      });
+
+      if (response['success'] == true) {
+        _success = 'Party booking confirmed!';
+        _partySubmitting = false;
+        notifyListeners();
+        return response;
+      } else {
+        _error = response['error'] ?? 'Party booking failed';
+        _partySubmitting = false;
+        notifyListeners();
+        return response;
+      }
+    } catch (e) {
+      _error = e.toString();
+      _partySubmitting = false;
+      notifyListeners();
+      return {'success': false, 'error': _error};
     }
   }
 
@@ -458,6 +590,11 @@ class BookingProvider extends ChangeNotifier {
     _totalPlayersBooked = 0;
     _customerName = '';
     _customerPhone = '';
+    _bookingType = 'regular';
+    _selectionMode = 'device';
+    _selectedGames = [];
+    _partyHours = 1;
+    _partySubmitting = false;
     notifyListeners();
   }
 }

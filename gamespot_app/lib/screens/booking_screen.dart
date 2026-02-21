@@ -449,33 +449,81 @@ class _Step1Schedule extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════
-//  STEP 2 — Device Selection
+//  STEP 2 — Device / Game Selection (matching web)
 // ═══════════════════════════════════════════════════
 class _Step2Devices extends StatelessWidget {
   const _Step2Devices({super.key});
 
   static const _durations = [30, 60, 90, 120];
 
+  // Game emoji/color mapping (matching web GAME_COVERS)
+  static const _gameCovers = <String, Map<String, dynamic>>{
+    'Spider-Man 2': {'emoji': '🕷️', 'color': 0xFFB91C1C},
+    'FC 26': {'emoji': '⚽', 'color': 0xFF1A472A},
+    'WWE 2K24': {'emoji': '🤼', 'color': 0xFF8B0000},
+    'WWE 2K25': {'emoji': '🤼', 'color': 0xFF990000},
+    'Split Fiction': {'emoji': '📖', 'color': 0xFF4A0E8F},
+    'It Takes Two': {'emoji': '💑', 'color': 0xFFE85D04},
+    'Marvel Rivals': {'emoji': '🦸', 'color': 0xFFC41E3A},
+    'Mortal Kombat 1': {'emoji': '🐉', 'color': 0xFF8B4513},
+    'GTA 5': {'emoji': '🔫', 'color': 0xFF006400},
+    'Gran Turismo 7': {'emoji': '🏎️', 'color': 0xFF00308F},
+    'Forza Horizon 5': {'emoji': '🏁', 'color': 0xFFFF6B00},
+    'The Crew Motorfest': {'emoji': '🏝️', 'color': 0xFF0077BE},
+  };
+
+  static Map<String, dynamic> _getCover(String name) =>
+      _gameCovers[name] ?? {'emoji': '🎮', 'color': 0xFFFF6B35};
+
   @override
   Widget build(BuildContext context) {
     final bp = context.watch<BookingProvider>();
     final hasSelections = bp.ps5Bookings.isNotEmpty || bp.drivingSim != null;
+    final isParty = bp.bookingType == 'party';
 
     return Stack(
       children: [
         SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.all(16).copyWith(bottom: hasSelections ? 100 : 32),
+          padding: EdgeInsets.fromLTRB(16, 8, 16, hasSelections ? 100 : 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _BackHeader(
-                onBack: () => bp.setStep(1),
-                title: 'Choose Your Experience',
-                subtitle: 'Select your gaming station',
+              // ── Header (matching Step 1 style — icon box + title at top left) ──
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => bp.setStep(1),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.orangeGradient,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(FeatherIcons.arrowLeft, size: 18, color: Colors.white),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Choose Your Experience',
+                            style: GoogleFonts.poppins(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.lpDark)),
+                        Text('Pick a game or select your gaming station',
+                            style: GoogleFonts.inter(
+                                fontSize: 12, color: AppColors.lpGray)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 14),
 
-              const SizedBox(height: 12),
+              // ── Session info badges ──
               Row(
                 children: [
                   _InfoBadge(
@@ -499,6 +547,83 @@ class _Step2Devices extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+
+              // ── Booking Type Toggle (Regular vs Party) ──
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.lpGray100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => bp.setBookingType('regular'),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: bp.bookingType == 'regular' ? Colors.white : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: bp.bookingType == 'regular'
+                                ? [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8)]
+                                : null,
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(FeatherIcons.monitor, size: 18,
+                                  color: bp.bookingType == 'regular' ? AppColors.lpPrimary : AppColors.lpGray),
+                              const SizedBox(height: 4),
+                              Text('Regular Booking',
+                                  style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: bp.bookingType == 'regular' ? AppColors.lpDark : AppColors.lpGray)),
+                              Text('Book individual consoles',
+                                  style: GoogleFonts.inter(fontSize: 9, color: AppColors.lpGray)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => bp.setBookingType('party'),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            gradient: bp.bookingType == 'party' ? AppColors.orangeGradient : null,
+                            color: bp.bookingType == 'party' ? null : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: bp.bookingType == 'party'
+                                ? [BoxShadow(color: AppColors.lpPrimary.withOpacity(0.3), blurRadius: 8)]
+                                : null,
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(FeatherIcons.zap, size: 18,
+                                  color: bp.bookingType == 'party' ? Colors.white : AppColors.lpGray),
+                              const SizedBox(height: 4),
+                              Text('🎉 Party / Full Book',
+                                  style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: bp.bookingType == 'party' ? Colors.white : AppColors.lpGray)),
+                              Text('Book entire shop • ₹600/hr',
+                                  style: GoogleFonts.inter(
+                                      fontSize: 9,
+                                      color: bp.bookingType == 'party' ? Colors.white70 : AppColors.lpGray)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
               if (bp.loading)
                 const Padding(
@@ -507,8 +632,236 @@ class _Step2Devices extends StatelessWidget {
                       child: CircularProgressIndicator(
                           color: AppColors.lpPrimary, strokeWidth: 3)),
                 )
-              else ...[
+              else if (isParty) ...[
+                // ════════════════════════════
+                //  PARTY BOOKING MODE
+                // ════════════════════════════
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.lpPrimary.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.lpPrimary.withOpacity(0.15)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text('🎉', style: TextStyle(fontSize: 24)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Full Shop Party Booking',
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.lpDark)),
+                                Text('Get all 3 PS5 units + Racing Simulator!',
+                                    style: GoogleFonts.inter(
+                                        fontSize: 12, color: AppColors.lpGray700)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Party hours selector
+                      Row(
+                        children: [
+                          Icon(FeatherIcons.clock, size: 16, color: AppColors.lpPrimary),
+                          const SizedBox(width: 8),
+                          Text('How many hours?',
+                              style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.lpDark)),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [1, 2, 3].map((h) {
+                          final active = bp.partyHours == h;
+                          return Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(right: h < 3 ? 10 : 0),
+                              child: GestureDetector(
+                                onTap: () => bp.setPartyHours(h),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  decoration: BoxDecoration(
+                                    gradient: active ? AppColors.orangeGradient : null,
+                                    color: active ? null : Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                        color: active ? Colors.transparent : AppColors.lpGray200),
+                                    boxShadow: active
+                                        ? [BoxShadow(color: AppColors.lpPrimary.withOpacity(0.3), blurRadius: 8)]
+                                        : null,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Text('$h',
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.w700,
+                                              color: active ? Colors.white : AppColors.lpDark)),
+                                      Text('hour${h > 1 ? 's' : ''}',
+                                          style: GoogleFonts.inter(
+                                              fontSize: 11,
+                                              color: active ? Colors.white70 : AppColors.lpGray)),
+                                      const SizedBox(height: 4),
+                                      Text('₹${h * 600}',
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: active ? Colors.white : AppColors.lpPrimary)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 16),
+                      // Included devices
+                      Text('What\'s included:',
+                          style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.lpGray700)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _partyDeviceChip(FeatherIcons.monitor, 'PS5 Unit 1'),
+                          _partyDeviceChip(FeatherIcons.monitor, 'PS5 Unit 2'),
+                          _partyDeviceChip(FeatherIcons.monitor, 'PS5 Unit 3'),
+                          _partyDeviceChip(FeatherIcons.navigation, 'Racing Sim'),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Price box
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.orangeGradient,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            Text('Total Price',
+                                style: GoogleFonts.inter(
+                                    fontSize: 11, color: Colors.white70)),
+                            Text('₹${bp.partyHours * 600}',
+                                style: GoogleFonts.poppins(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white)),
+                            Text('₹600 × ${bp.partyHours} hour${bp.partyHours > 1 ? 's' : ''}',
+                                style: GoogleFonts.inter(
+                                    fontSize: 11, color: Colors.white70)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Continue to confirm (party)
+                SizedBox(
+                  width: double.infinity,
+                  child: _OrangeButton(
+                    label: 'Continue to Details',
+                    icon: FeatherIcons.arrowRight,
+                    onTap: () => bp.setStep(3),
+                    wide: true,
+                  ),
+                ),
+              ] else ...[
+                // ════════════════════════════
+                //  REGULAR BOOKING MODE
+                // ════════════════════════════
                 if (bp.error != null) _ErrorBanner(message: bp.error!),
+
+                // ── Mode Toggle: Book by Console / Book by Game ──
+                const SizedBox(height: 14),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.lpGray100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.all(3),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => bp.setSelectionMode('device'),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: bp.selectionMode == 'device' ? Colors.white : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: bp.selectionMode == 'device'
+                                  ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6)]
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(FeatherIcons.monitor, size: 14,
+                                    color: bp.selectionMode == 'device' ? AppColors.lpPrimary : AppColors.lpGray),
+                                const SizedBox(width: 6),
+                                Text('Book by Console',
+                                    style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: bp.selectionMode == 'device' ? AppColors.lpDark : AppColors.lpGray)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => bp.setSelectionMode('game'),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: bp.selectionMode == 'game' ? Colors.white : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: bp.selectionMode == 'game'
+                                  ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6)]
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(FeatherIcons.grid, size: 14,
+                                    color: bp.selectionMode == 'game' ? AppColors.lpPrimary : AppColors.lpGray),
+                                const SizedBox(width: 6),
+                                Text('Book by Game',
+                                    style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: bp.selectionMode == 'game' ? AppColors.lpDark : AppColors.lpGray)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
                 // Availability warning
                 if (bp.availablePS5Units.length < 3 || !bp.availableDriving) ...[
@@ -547,87 +900,159 @@ class _Step2Devices extends StatelessWidget {
                   ),
                 ],
 
-                // ── PS5 Units ──
-                const SizedBox(height: 18),
-                _SectionHeader(icon: FeatherIcons.monitor, title: 'PlayStation 5 Consoles'),
-                const SizedBox(height: 10),
+                // ════════════════════════════
+                //  DEVICE MODE (Book by Console)
+                // ════════════════════════════
+                if (bp.selectionMode == 'device') ...[
+                  // ── PS5 Units ──
+                  const SizedBox(height: 18),
+                  _SectionHeader(icon: FeatherIcons.monitor, title: 'PlayStation 5 Consoles'),
+                  const SizedBox(height: 10),
 
-                ...List.generate(3, (i) {
-                  final unit = i + 1;
-                  final isAvail = bp.availablePS5Units.contains(unit);
-                  final booking = bp.ps5Bookings
-                      .where((b) => b['device_number'] == unit)
-                      .firstOrNull;
-                  final isSelected = booking != null;
+                  ...List.generate(3, (i) {
+                    final unit = i + 1;
+                    final isAvail = bp.availablePS5Units.contains(unit);
+                    final booking = bp.ps5Bookings
+                        .where((b) => b['device_number'] == unit)
+                        .firstOrNull;
+                    final isSelected = booking != null;
 
-                  return _DeviceCard(
-                    title: 'PlayStation 5',
-                    subtitle: 'Unit $unit',
-                    icon: FeatherIcons.monitor,
-                    iconColor: AppColors.lpPrimary,
-                    isAvailable: isAvail,
-                    isSelected: isSelected,
-                    onTap: isAvail ? () => bp.togglePS5Unit(unit) : null,
-                    expandedContent: isSelected
+                    return _DeviceCard(
+                      title: 'PlayStation 5',
+                      subtitle: 'Unit $unit',
+                      icon: FeatherIcons.monitor,
+                      iconColor: AppColors.lpPrimary,
+                      isAvailable: isAvail,
+                      isSelected: isSelected,
+                      onTap: isAvail ? () => bp.togglePS5Unit(unit) : null,
+                      expandedContent: isSelected
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _OptionRow(
+                                  icon: FeatherIcons.users,
+                                  label: 'Players',
+                                  child: Row(
+                                    children: List.generate(4, (pi) {
+                                      final count = pi + 1;
+                                      final active =
+                                          (booking['player_count'] as int? ?? 1) >= count;
+                                      return Padding(
+                                        padding: const EdgeInsets.only(right: 6),
+                                        child: GestureDetector(
+                                          onTap: () =>
+                                              bp.setPS5PlayerCount(unit, count),
+                                          child: Container(
+                                            width: 36,
+                                            height: 36,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(8),
+                                              gradient: active
+                                                  ? AppColors.orangeGradient
+                                                  : null,
+                                              color:
+                                                  active ? null : AppColors.lpGray100,
+                                              border: Border.all(
+                                                  color: active
+                                                      ? Colors.transparent
+                                                      : AppColors.lpGray200),
+                                            ),
+                                            child: Center(
+                                              child: Text('$count',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: active
+                                                        ? Colors.white
+                                                        : AppColors.lpGray700,
+                                                  )),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                _OptionRow(
+                                  icon: FeatherIcons.clock,
+                                  label: 'Duration',
+                                  child: Row(
+                                    children: _durations.map((dur) {
+                                      final active =
+                                          (booking['duration'] as int? ?? 60) == dur;
+                                      return Padding(
+                                        padding: const EdgeInsets.only(right: 6),
+                                        child: GestureDetector(
+                                          onTap: () => bp.setPS5Duration(unit, dur),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(8),
+                                              gradient: active
+                                                  ? AppColors.orangeGradient
+                                                  : null,
+                                              color:
+                                                  active ? null : AppColors.lpGray100,
+                                              border: Border.all(
+                                                  color: active
+                                                      ? Colors.transparent
+                                                      : AppColors.lpGray200),
+                                            ),
+                                            child: Text(
+                                              dur < 60
+                                                  ? '${dur}m'
+                                                  : '${dur ~/ 60}h${dur % 60 > 0 ? '${dur % 60}m' : ''}',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: active
+                                                    ? Colors.white
+                                                    : AppColors.lpGray700,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : null,
+                    );
+                  }),
+
+                  // ── Driving Simulator ──
+                  const SizedBox(height: 18),
+                  _SectionHeader(
+                      icon: FeatherIcons.navigation, title: 'Racing Simulator'),
+                  const SizedBox(height: 10),
+                  _DeviceCard(
+                    title: 'Racing Simulator',
+                    subtitle: 'Pro Setup with Wheel & Pedals',
+                    icon: FeatherIcons.navigation,
+                    iconColor: const Color(0xFF059669),
+                    isAvailable: bp.availableDriving,
+                    isSelected: bp.drivingSim != null,
+                    onTap: bp.availableDriving ? () => bp.toggleDrivingSim() : null,
+                    expandedContent: bp.drivingSim != null
                         ? Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _OptionRow(
-                                icon: FeatherIcons.users,
-                                label: 'Players',
-                                child: Row(
-                                  children: List.generate(4, (pi) {
-                                    final count = pi + 1;
-                                    final active =
-                                        (booking['player_count'] as int? ?? 1) >= count;
-                                    return Padding(
-                                      padding: const EdgeInsets.only(right: 6),
-                                      child: GestureDetector(
-                                        onTap: () =>
-                                            bp.setPS5PlayerCount(unit, count),
-                                        child: Container(
-                                          width: 36,
-                                          height: 36,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(8),
-                                            gradient: active
-                                                ? AppColors.orangeGradient
-                                                : null,
-                                            color:
-                                                active ? null : AppColors.lpGray100,
-                                            border: Border.all(
-                                                color: active
-                                                    ? Colors.transparent
-                                                    : AppColors.lpGray200),
-                                          ),
-                                          child: Center(
-                                            child: Text('$count',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: active
-                                                      ? Colors.white
-                                                      : AppColors.lpGray700,
-                                                )),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
                               _OptionRow(
                                 icon: FeatherIcons.clock,
                                 label: 'Duration',
                                 child: Row(
                                   children: _durations.map((dur) {
                                     final active =
-                                        (booking['duration'] as int? ?? 60) == dur;
+                                        (bp.drivingSim!['duration'] as int? ?? 60) ==
+                                            dur;
                                     return Padding(
                                       padding: const EdgeInsets.only(right: 6),
                                       child: GestureDetector(
-                                        onTap: () => bp.setPS5Duration(unit, dur),
+                                        onTap: () => bp.setDrivingDuration(dur),
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 12, vertical: 8),
@@ -661,121 +1086,303 @@ class _Step2Devices extends StatelessWidget {
                                   }).toList(),
                                 ),
                               ),
-                            ],
-                          )
-                        : null,
-                  );
-                }),
-
-                // ── Driving Simulator ──
-                const SizedBox(height: 18),
-                _SectionHeader(
-                    icon: FeatherIcons.navigation, title: 'Racing Simulator'),
-                const SizedBox(height: 10),
-                _DeviceCard(
-                  title: 'Racing Simulator',
-                  subtitle: 'Pro Setup with Wheel & Pedals',
-                  icon: FeatherIcons.navigation,
-                  iconColor: const Color(0xFF059669),
-                  isAvailable: bp.availableDriving,
-                  isSelected: bp.drivingSim != null,
-                  onTap: bp.availableDriving ? () => bp.toggleDrivingSim() : null,
-                  expandedContent: bp.drivingSim != null
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _OptionRow(
-                              icon: FeatherIcons.clock,
-                              label: 'Duration',
-                              child: Row(
-                                children: _durations.map((dur) {
-                                  final active =
-                                      (bp.drivingSim!['duration'] as int? ?? 60) ==
-                                          dur;
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 6),
-                                    child: GestureDetector(
-                                      onTap: () => bp.setDrivingDuration(dur),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 8),
+                              if (bp.ps5Bookings.isNotEmpty) ...[
+                                const SizedBox(height: 10),
+                                GestureDetector(
+                                  onTap: () => bp.setDrivingAfterPS5(
+                                      !(bp.drivingSim!['afterPS5'] == true)),
+                                  child: Row(
+                                    children: [
+                                      AnimatedContainer(
+                                        duration: const Duration(milliseconds: 200),
+                                        width: 44,
+                                        height: 24,
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(8),
-                                          gradient: active
-                                              ? AppColors.orangeGradient
-                                              : null,
-                                          color:
-                                              active ? null : AppColors.lpGray100,
-                                          border: Border.all(
-                                              color: active
-                                                  ? Colors.transparent
-                                                  : AppColors.lpGray200),
+                                          borderRadius: BorderRadius.circular(12),
+                                          color: bp.drivingSim!['afterPS5'] == true
+                                              ? AppColors.lpPrimary
+                                              : AppColors.lpGray200,
                                         ),
-                                        child: Text(
-                                          dur < 60
-                                              ? '${dur}m'
-                                              : '${dur ~/ 60}h${dur % 60 > 0 ? '${dur % 60}m' : ''}',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: active
-                                                ? Colors.white
-                                                : AppColors.lpGray700,
+                                        child: AnimatedAlign(
+                                          duration: const Duration(milliseconds: 200),
+                                          alignment:
+                                              bp.drivingSim!['afterPS5'] == true
+                                                  ? Alignment.centerRight
+                                                  : Alignment.centerLeft,
+                                          child: Container(
+                                            width: 20,
+                                            height: 20,
+                                            margin: const EdgeInsets.symmetric(
+                                                horizontal: 2),
+                                            decoration: const BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.white),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                            if (bp.ps5Bookings.isNotEmpty) ...[
-                              const SizedBox(height: 10),
-                              GestureDetector(
-                                onTap: () => bp.setDrivingAfterPS5(
-                                    !(bp.drivingSim!['afterPS5'] == true)),
-                                child: Row(
-                                  children: [
-                                    AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      width: 44,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        color: bp.drivingSim!['afterPS5'] == true
-                                            ? AppColors.lpPrimary
-                                            : AppColors.lpGray200,
-                                      ),
-                                      child: AnimatedAlign(
-                                        duration: const Duration(milliseconds: 200),
-                                        alignment:
-                                            bp.drivingSim!['afterPS5'] == true
-                                                ? Alignment.centerRight
-                                                : Alignment.centerLeft,
-                                        child: Container(
-                                          width: 20,
-                                          height: 20,
-                                          margin: const EdgeInsets.symmetric(
-                                              horizontal: 2),
-                                          decoration: const BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.white),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text('Play after PS5 session',
-                                        style: GoogleFonts.inter(
-                                            fontSize: 13,
-                                            color: AppColors.lpDark)),
-                                  ],
+                                      const SizedBox(width: 10),
+                                      Text('Play after PS5 session',
+                                          style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              color: AppColors.lpDark)),
+                                    ],
+                                  ),
                                 ),
+                              ],
+                            ],
+                          )
+                        : null,
+                  ),
+                ],
+
+                // ════════════════════════════
+                //  GAME MODE (Book by Game)
+                // ════════════════════════════
+                if (bp.selectionMode == 'game') ...[
+                  const SizedBox(height: 16),
+
+                  // Selected games banner
+                  if (bp.selectedGames.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.lpPrimary.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.lpPrimary.withOpacity(0.15)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ...bp.selectedGames.map((game) {
+                            final cover = _getCover(game['name']?.toString() ?? '');
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 32, height: 32,
+                                    decoration: BoxDecoration(
+                                      color: Color(cover['color'] as int).withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Center(
+                                      child: Text(cover['emoji'] as String, style: const TextStyle(fontSize: 16)),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(game['name']?.toString() ?? '',
+                                            style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.lpDark)),
+                                        Text('${game['genre'] ?? ''} • ${game['max_players'] ?? ''}P',
+                                            style: GoogleFonts.inter(
+                                                fontSize: 10, color: AppColors.lpGray)),
+                                      ],
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => bp.toggleGameSelection(game),
+                                    child: const Icon(Icons.close_rounded, size: 18, color: AppColors.lpGray),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('${bp.selectedGames.length} game${bp.selectedGames.length > 1 ? 's' : ''} selected',
+                                  style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.lpPrimary)),
+                              GestureDetector(
+                                onTap: () => bp.clearSelectedGames(),
+                                child: Text('Clear All',
+                                    style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.lpError)),
                               ),
                             ],
-                          ],
-                        )
-                      : null,
-                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  // Game title
+                  _SectionHeader(icon: FeatherIcons.star, title: 'What do you want to play?'),
+                  const SizedBox(height: 12),
+
+                  // Games grid
+                  if (bp.gamesLoading)
+                    const Padding(
+                      padding: EdgeInsets.all(30),
+                      child: Center(
+                          child: CircularProgressIndicator(
+                              color: AppColors.lpPrimary, strokeWidth: 3)),
+                    )
+                  else if (bp.allGames.isEmpty)
+                    _emptyState('🎮', 'No games found', 'Games will appear here.')
+                  else
+                    GridView.count(
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 0.75,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: bp.allGames.map((game) {
+                        final gameName = game['name']?.toString() ?? '';
+                        final cover = _getCover(gameName);
+                        final isSelected = bp.selectedGames.any((g) => g['id'] == game['id']);
+                        final ps5Numbers = List<int>.from(game['ps5_numbers'] ?? []);
+                        final isDrivingSim = game['device_type'] == 'driving_sim' ||
+                            (ps5Numbers.isNotEmpty && ps5Numbers.every((n) => n == 4));
+                        final ps5Units = ps5Numbers.where((n) => n != 4).toList();
+                        final gameAvailPS5 = ps5Units.where((n) => bp.availablePS5Units.contains(n)).toList();
+                        final isAvailable = isDrivingSim
+                            ? bp.availableDriving
+                            : (gameAvailPS5.isNotEmpty || (ps5Numbers.contains(4) && bp.availableDriving));
+
+                        return GestureDetector(
+                          onTap: isAvailable ? () => bp.toggleGameSelection(game) : null,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            decoration: BoxDecoration(
+                              color: Color(cover['color'] as int).withOpacity(isAvailable ? 0.15 : 0.06),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.lpPrimary
+                                    : (isAvailable ? Color(cover['color'] as int).withOpacity(0.3) : AppColors.lpGray200),
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Stack(
+                              children: [
+                                // Game content
+                                Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(cover['emoji'] as String,
+                                          style: const TextStyle(fontSize: 28)),
+                                      const SizedBox(height: 6),
+                                      Text(gameName,
+                                          style: GoogleFonts.inter(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: isAvailable ? AppColors.lpDark : AppColors.lpGray),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis),
+                                      const SizedBox(height: 3),
+                                      Text('${game['genre'] ?? ''} • ${game['max_players'] ?? ''}P',
+                                          style: GoogleFonts.inter(
+                                              fontSize: 9, color: AppColors.lpGray),
+                                          textAlign: TextAlign.center),
+                                      const SizedBox(height: 4),
+                                      // Unit chips
+                                      Wrap(
+                                        spacing: 3,
+                                        runSpacing: 3,
+                                        alignment: WrapAlignment.center,
+                                        children: ps5Numbers.map((n) {
+                                          final isSim = n == 4;
+                                          final unitAvail = isSim
+                                              ? bp.availableDriving
+                                              : bp.availablePS5Units.contains(n);
+                                          return Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 5, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(4),
+                                              color: unitAvail
+                                                  ? AppColors.lpSuccess.withOpacity(0.1)
+                                                  : AppColors.lpError.withOpacity(0.1),
+                                              border: Border.all(
+                                                  color: unitAvail
+                                                      ? AppColors.lpSuccess.withOpacity(0.3)
+                                                      : AppColors.lpError.withOpacity(0.3)),
+                                            ),
+                                            child: Text(
+                                              isSim ? 'Sim' : 'PS5-$n',
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: unitAvail
+                                                      ? AppColors.lpSuccess
+                                                      : AppColors.lpError),
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Selected badge
+                                if (isSelected)
+                                  Positioned(
+                                    top: 6, right: 6,
+                                    child: Container(
+                                      width: 20, height: 20,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: AppColors.orangeGradient,
+                                      ),
+                                      child: const Icon(Icons.check, size: 12, color: Colors.white),
+                                    ),
+                                  ),
+                                // Unavailable overlay
+                                if (!isAvailable)
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.6),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Center(
+                                        child: Text('Unavailable',
+                                            style: GoogleFonts.inter(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.lpGray)),
+                                      ),
+                                    ),
+                                  ),
+                                // Driving sim badge
+                                if (isDrivingSim)
+                                  Positioned(
+                                    top: 6, left: 6,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF059669),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text('🏎️ Sim',
+                                          style: GoogleFonts.inter(
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white)),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                ],
 
                 const SizedBox(height: 80),
               ],
@@ -784,7 +1391,7 @@ class _Step2Devices extends StatelessWidget {
         ),
 
         // ── Fixed price footer ──
-        if (hasSelections)
+        if (hasSelections && !isParty)
           Positioned(
             bottom: 0,
             left: 0,
@@ -844,6 +1451,25 @@ class _Step2Devices extends StatelessWidget {
       ],
     );
   }
+
+  static Widget _partyDeviceChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.lpGray200),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.lpPrimary),
+          const SizedBox(width: 6),
+          Text(label, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.lpDark)),
+        ],
+      ),
+    );
+  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -861,10 +1487,38 @@ class _Step3Confirm extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _BackHeader(
-              onBack: () => bp.setStep(2),
-              title: 'Review & Confirm',
-              subtitle: 'Final step to lock in your session'),
+          // ── Header (matching Step 1/2 style) ──
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () => bp.setStep(2),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.orangeGradient,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(FeatherIcons.arrowLeft, size: 18, color: Colors.white),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Review & Confirm',
+                        style: GoogleFonts.poppins(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.lpDark)),
+                    Text('Final step to lock in your session',
+                        style: GoogleFonts.inter(
+                            fontSize: 12, color: AppColors.lpGray)),
+                  ],
+                ),
+              ),
+            ],
+          ),
 
           const SizedBox(height: 16),
 
