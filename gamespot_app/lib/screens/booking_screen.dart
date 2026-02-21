@@ -76,73 +76,92 @@ class _BookingScreenState extends State<BookingScreen> {
 }
 
 // ═══════════════════════════════════════════════════
-//  STEP BAR
+//  STEP BAR — clean minimal design matching web mobile
+//  Shows numbered circles with connector lines.
+//  Only active step shows label text (like web).
 // ═══════════════════════════════════════════════════
 class _StepBar extends StatelessWidget {
   final int step;
   const _StepBar({required this.step});
 
   static const _labels = ['Schedule', 'Equipment', 'Confirm'];
-  static const _icons = [FeatherIcons.calendar, FeatherIcons.monitor, FeatherIcons.checkCircle];
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(color: AppColors.lpPrimary.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 2)),
         ],
       ),
       child: Row(
-        children: List.generate(3, (i) {
-          final active = (i + 1) <= step;
-          final current = (i + 1) == step;
-          return Expanded(
-            child: Row(
-              children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: active ? AppColors.orangeGradient : null,
-                    color: active ? null : AppColors.lpGray200,
-                    boxShadow: current
-                        ? [BoxShadow(color: AppColors.lpPrimary.withOpacity(0.3), blurRadius: 8)]
-                        : null,
-                  ),
-                  child: Center(
-                    child: (i + 1) < step
-                        ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
-                        : Icon(_icons[i], size: 14, color: active ? Colors.white : AppColors.lpGray),
+        children: List.generate(5, (index) {
+          // 0=step1, 1=connector, 2=step2, 3=connector, 4=step3
+          if (index.isOdd) {
+            // Connector line
+            final stepBefore = (index ~/ 2) + 1;
+            final completed = stepBefore < step;
+            return Expanded(
+              child: Container(
+                height: 2,
+                margin: const EdgeInsets.symmetric(horizontal: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(1),
+                  color: completed ? AppColors.lpPrimary : AppColors.lpGray200,
+                ),
+              ),
+            );
+          }
+
+          // Step circle
+          final stepNum = (index ~/ 2) + 1;
+          final isActive = stepNum == step;
+          final isCompleted = stepNum < step;
+          final isFuture = stepNum > step;
+
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: (isActive || isCompleted) ? AppColors.orangeGradient : null,
+                  color: isFuture ? AppColors.lpGray200 : null,
+                  boxShadow: isActive
+                      ? [BoxShadow(color: AppColors.lpPrimary.withOpacity(0.35), blurRadius: 10)]
+                      : null,
+                ),
+                child: Center(
+                  child: isCompleted
+                      ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
+                      : Text(
+                          '$stepNum',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: (isActive || isCompleted) ? Colors.white : AppColors.lpGray,
+                          ),
+                        ),
+                ),
+              ),
+              // Show label only for active step (matching web mobile behavior)
+              if (isActive) ...[
+                const SizedBox(width: 8),
+                Text(
+                  _labels[stepNum - 1],
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.lpDark,
                   ),
                 ),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(_labels[i],
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                        color: active ? AppColors.lpDark : AppColors.lpGray,
-                      ),
-                      overflow: TextOverflow.ellipsis),
-                ),
-                if (i < 2)
-                  Expanded(
-                    child: Container(
-                      height: 2,
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(1),
-                        color: (i + 1) < step ? AppColors.lpPrimary : AppColors.lpGray200,
-                      ),
-                    ),
-                  ),
               ],
-            ),
+            ],
           );
         }),
       ),
@@ -341,115 +360,137 @@ class _Step1Schedule extends StatelessWidget {
                     _emptyState(
                         '⏰', 'No more slots available', 'Pick a future date.')
                   else
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: bp.slots
-                          .where((s) => !_isSlotPast(
-                              s['time']?.toString() ?? '', bp.selectedDate))
-                          .map((slot) {
-                        final time = slot['time']?.toString() ?? '';
-                        final status = slot['status']?.toString() ?? 'available';
-                        final isFull = status == 'full';
-                        final isClosed = status == 'closed';
-                        final isPartial = status == 'partial';
-                        final isDisabled = isFull || isClosed;
-                        final availPs5 = slot['available_ps5'];
+                    // Fixed-height container so it doesn't shrink when few slots remain
+                    Container(
+                      height: 280,
+                      decoration: BoxDecoration(
+                        color: AppColors.lpGray100.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.lpGray200.withOpacity(0.5)),
+                      ),
+                      padding: const EdgeInsets.all(10),
+                      child: GridView.count(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 8,
+                        crossAxisSpacing: 8,
+                        childAspectRatio: 1.6,
+                        physics: const BouncingScrollPhysics(),
+                        shrinkWrap: false,
+                        children: bp.slots
+                            .where((s) => !_isSlotPast(
+                                s['time']?.toString() ?? '', bp.selectedDate))
+                            .map((slot) {
+                          final time = slot['time']?.toString() ?? '';
+                          final status = slot['status']?.toString() ?? 'available';
+                          final isFull = status == 'full';
+                          final isClosed = status == 'closed';
+                          final isPartial = status == 'partial';
+                          final isDisabled = isFull || isClosed;
+                          final availPs5 = slot['available_ps5'];
+                          final isSelected = bp.selectedTime == time;
 
-                        Color bgColor, borderColor, dotColor, textColor;
-                        if (isClosed) {
-                          bgColor = AppColors.lpGray100;
-                          borderColor = AppColors.lpGray200;
-                          dotColor = AppColors.lpGray300;
-                          textColor = AppColors.lpGray;
-                        } else if (isFull) {
-                          bgColor = AppColors.lpError.withOpacity(0.06);
-                          borderColor = AppColors.lpError.withOpacity(0.2);
-                          dotColor = AppColors.lpError;
-                          textColor = AppColors.lpError;
-                        } else if (isPartial) {
-                          bgColor = AppColors.warning.withOpacity(0.06);
-                          borderColor = AppColors.warning.withOpacity(0.25);
-                          dotColor = AppColors.warning;
-                          textColor = AppColors.lpDark;
-                        } else {
-                          bgColor = Colors.white;
-                          borderColor = AppColors.lpSuccess.withOpacity(0.3);
-                          dotColor = AppColors.lpSuccess;
-                          textColor = AppColors.lpDark;
-                        }
+                          Color bgColor, borderColor, dotColor, textColor;
+                          if (isClosed) {
+                            bgColor = AppColors.lpGray100;
+                            borderColor = AppColors.lpGray200;
+                            dotColor = AppColors.lpGray300;
+                            textColor = AppColors.lpGray;
+                          } else if (isFull) {
+                            bgColor = AppColors.lpError.withOpacity(0.06);
+                            borderColor = AppColors.lpError.withOpacity(0.2);
+                            dotColor = AppColors.lpError;
+                            textColor = AppColors.lpError;
+                          } else if (isPartial) {
+                            bgColor = AppColors.warning.withOpacity(0.06);
+                            borderColor = AppColors.warning.withOpacity(0.25);
+                            dotColor = AppColors.warning;
+                            textColor = AppColors.lpDark;
+                          } else {
+                            bgColor = Colors.white;
+                            borderColor = AppColors.lpSuccess.withOpacity(0.3);
+                            dotColor = AppColors.lpSuccess;
+                            textColor = AppColors.lpDark;
+                          }
 
-                        return GestureDetector(
-                          onTap: isDisabled
-                              ? null
-                              : () => bp.selectTimeSlot(time),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: bgColor,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: borderColor),
-                              boxShadow: [
-                                if (!isDisabled)
-                                  BoxShadow(
-                                      color: Colors.black.withOpacity(0.03),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2)),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: BoxDecoration(
-                                          shape: BoxShape.circle, color: dotColor),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(formatTime12Hour(time),
-                                        style: GoogleFonts.inter(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                            color: textColor)),
-                                  ],
+                          // Selected state override
+                          if (isSelected && !isDisabled) {
+                            bgColor = AppColors.lpPrimary.withOpacity(0.1);
+                            borderColor = AppColors.lpPrimary;
+                          }
+
+                          return GestureDetector(
+                            onTap: isDisabled
+                                ? null
+                                : () => bp.selectTimeSlot(time),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: bgColor,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: borderColor,
+                                  width: isSelected ? 2 : 1,
                                 ),
-                                if (isPartial && availPs5 != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2),
-                                    child: Text('$availPs5 left',
-                                        style: GoogleFonts.inter(
-                                            fontSize: 10,
-                                            color: AppColors.warning,
-                                            fontWeight: FontWeight.w500)),
+                                boxShadow: [
+                                  if (!isDisabled)
+                                    BoxShadow(
+                                        color: Colors.black.withOpacity(0.03),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2)),
+                                ],
+                              ),
+                              child: Stack(
+                                children: [
+                                  // Status dot top-right
+                                  Positioned(
+                                    top: 5, right: 5,
+                                    child: Container(
+                                      width: 6, height: 6,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle, color: dotColor,
+                                      ),
+                                    ),
                                   ),
-                                if (isFull)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2),
-                                    child: Text('Full',
-                                        style: GoogleFonts.inter(
-                                            fontSize: 10,
-                                            color: AppColors.lpError,
-                                            fontWeight: FontWeight.w500)),
+                                  // Content centered
+                                  Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          formatTime12Hour(time),
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: textColor,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        if (isPartial && availPs5 != null)
+                                          Text('$availPs5 left',
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 9,
+                                                  color: AppColors.warning,
+                                                  fontWeight: FontWeight.w500))
+                                        else if (isFull)
+                                          Text('Full',
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 9,
+                                                  color: AppColors.lpError,
+                                                  fontWeight: FontWeight.w500))
+                                        else if (!isClosed)
+                                          Text('Open',
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 9,
+                                                  color: AppColors.lpSuccess,
+                                                  fontWeight: FontWeight.w500)),
+                                      ],
+                                    ),
                                   ),
-                                if (!isFull && !isPartial && !isClosed)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2),
-                                    child: Text('Open',
-                                        style: GoogleFonts.inter(
-                                            fontSize: 10,
-                                            color: AppColors.lpSuccess,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
+                          );
+                        }).toList(),
+                      ),
                     ),
 
                   const SizedBox(height: 14),
