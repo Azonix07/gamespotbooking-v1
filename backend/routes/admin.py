@@ -1733,18 +1733,21 @@ def test_notification():
     gmail_user = os.getenv('GMAIL_USER', '')
     gmail_pass = os.getenv('GMAIL_APP_PASSWORD', '')
     admin_emails = os.getenv('ADMIN_NOTIFY_EMAILS', '')
+    resend_key = os.getenv('RESEND_API_KEY', '')
 
     config_status = {
         'GMAIL_USER': 'SET' if gmail_user else 'NOT SET',
         'GMAIL_APP_PASSWORD': 'SET' if gmail_pass else 'NOT SET',
         'GMAIL_APP_PASSWORD_LENGTH': len(gmail_pass) if gmail_pass else 0,
         'ADMIN_NOTIFY_EMAILS': admin_emails if admin_emails else gmail_user or 'NOT SET',
+        'RESEND_API_KEY': 'SET' if resend_key else 'NOT SET',
+        'recommended_method': 'Resend (HTTP)' if resend_key else 'Gmail SMTP',
     }
 
-    if not gmail_user or not gmail_pass:
+    if not resend_key and (not gmail_user or not gmail_pass):
         return jsonify({
             'success': False,
-            'error': 'Gmail credentials not configured on Railway. Set GMAIL_USER, GMAIL_APP_PASSWORD, and ADMIN_NOTIFY_EMAILS environment variables.',
+            'error': 'No email provider configured. Set RESEND_API_KEY (recommended for Railway) or GMAIL_USER + GMAIL_APP_PASSWORD.',
             'config_status': config_status
         }), 400
 
@@ -1752,12 +1755,13 @@ def test_notification():
         from services.admin_notify import notify_generic
         notify_generic("🔔 Test Notification", {
             "Status": "Email notifications are working!",
+            "Method": "Resend HTTP API" if resend_key else "Gmail SMTP",
             "Sent from": "GameSpot Admin Dashboard",
             "Time": str(os.popen('date').read().strip()),
         })
         return jsonify({
             'success': True,
-            'message': 'Test notification sent! Check your inbox.',
+            'message': f'Test notification queued via {"Resend" if resend_key else "Gmail SMTP"}! Check your inbox.',
             'config_status': config_status
         })
     except Exception as e:

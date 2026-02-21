@@ -2,7 +2,7 @@
 Admin Notification Service for GameSpot
 Sends FREE Gmail email notifications to admin when new bookings or requests come in.
 
-SETUP:
+SETUP (Option A — Gmail SMTP):
   1. Go to your Google Account → Security → 2-Step Verification (turn ON)
   2. Go to https://myaccount.google.com/apppasswords
   3. Create an App Password (select "Mail" and "Other - GameSpot")
@@ -12,17 +12,29 @@ SETUP:
        GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx   (the 16-char app password)
        ADMIN_NOTIFY_EMAILS=gamespotkdlr@gmail.com   (comma-separated recipients)
 
+SETUP (Option B — Resend.com, recommended for Railway):
+  1. Sign up at https://resend.com (free: 100 emails/day)
+  2. Get your API key from the dashboard
+  3. Verify your domain OR use the onboarding@resend.dev sender
+  4. Set env var on Railway:
+       RESEND_API_KEY=re_xxxxxxxx
+  (Still set ADMIN_NOTIFY_EMAILS for recipient addresses)
+
 Environment Variables:
   GMAIL_USER            - Your Gmail address (sender)
   GMAIL_APP_PASSWORD    - Google App Password (NOT your regular password)
   ADMIN_NOTIFY_EMAILS   - Comma-separated admin email addresses to receive notifications
+  RESEND_API_KEY        - (Optional) Resend.com API key — used as primary if set
 """
 
 import os
 import sys
 import ssl
+import json
 import threading
 import smtplib
+import urllib.request
+import urllib.error
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
@@ -59,41 +71,69 @@ def _send_in_background(fn, *args, **kwargs):
     t.start()
 
 
-def _send_gmail(subject, html_body):
-    """Send email via Gmail SMTP to all admin emails."""
-    config = _get_gmail_config()
-    recipients = _get_admin_emails()
+def _send_via_resend(subject, html_body, recipients):
+    """Send email via Resend.com HTTP API (works on Railway, no SMTP needed)."""
+    api_key = os.getenv('RESEND_API_KEY', '')
+    if not api_key:
+        return False  # Not configured, skip
 
-    # Strip spaces from app password (Google formats them as "xxxx xxxx xxxx xxxx")
+    gmail_user = os.getenv('GMAIL_USER', 'noreply@gamespotkdlr.com')
+    # Resend requires a verified domain sender, or use onboarding@resend.dev for testing
+    from_email = os.getenv('RESEND_FROM_EMAIL', f'GameSpot Alerts <onboarding@resend.dev>')
+
+    payload = json.dumps({
+        "from": from_email,
+        "to": recipients,
+        "subject": subject,
+        "html": html_body
+    }).encode('utf-8')
+
+    req = urllib.request.Request(
+        'https://api.resend.com/emails',
+        data=payload,
+        headers={
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json',
+        },
+        method='POST'
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            result = json.loads(resp.read().decode())
+            sys.stderr.write(f"[AdminNotify] ✅ Resend sent to {', '.join(recipients)}: {subject} (id={result.get('id','?')})\n")
+            return True
+    except urllib.error.HTTPError as e:
+        body = e.read().decode() if e.fp else ''
+        sys.stderr.write(f"[AdminNotify] Resend HTTP {e.code} error: {body}\n")
+        return False
+    except Exception as e:
+        sys.stderr.write(f"[AdminNotify] Resend failed: {type(e).__name__}: {e}\n")
+        return False
+
+
+def _send_via_gmail_smtp(subject, html_body, recipients):
+    """Send email via Gmail SMTP (may be blocked on Railway/cloud platforms)."""
+    config = _get_gmail_config()
     password = config['password'].replace(' ', '') if config['password'] else ''
 
     if not config['user'] or not password:
-        sys.stderr.write(f"[AdminNotify] GMAIL_USER or GMAIL_APP_PASSWORD not set - skipping notification. "
+        sys.stderr.write(f"[AdminNotify] Gmail SMTP: credentials not set. "
                          f"GMAIL_USER={'SET' if config['user'] else 'EMPTY'}, "
                          f"GMAIL_APP_PASSWORD={'SET' if config['password'] else 'EMPTY'}\n")
-        return
-    if not recipients:
-        sys.stderr.write("[AdminNotify] No admin emails configured - skipping notification\n")
-        return
+        return False
 
-    sys.stderr.write(f"[AdminNotify] Attempting to send: {subject} → {', '.join(recipients)}\n")
-
-    # Build the email
     msg = MIMEMultipart('alternative')
     msg['From'] = f'GameSpot Alerts <{config["user"]}>'
     msg['To'] = ', '.join(recipients)
     msg['Subject'] = subject
     msg.attach(MIMEText(html_body, 'html'))
 
-    # Try multiple SMTP connection methods
-    # Method 1: SSL on port 465 (most reliable on cloud platforms)
-    # Method 2: TLS on port 587 (standard but often blocked on Railway)
     methods = [
         ('SSL/465', 465, 'ssl'),
         ('TLS/587', 587, 'tls'),
     ]
 
-    last_error = None
     for method_name, port, mode in methods:
         try:
             if mode == 'ssl':
@@ -109,15 +149,38 @@ def _send_gmail(subject, html_body):
             server.sendmail(config['user'], recipients, msg.as_string())
             server.quit()
 
-            sys.stderr.write(f"[AdminNotify] ✅ Gmail sent via {method_name} to {', '.join(recipients)}: {subject}\n")
-            return  # Success — stop trying other methods
+            sys.stderr.write(f"[AdminNotify] ✅ Gmail SMTP sent via {method_name} to {', '.join(recipients)}: {subject}\n")
+            return True
 
         except Exception as e:
-            last_error = e
-            sys.stderr.write(f"[AdminNotify] Gmail {method_name} failed: {type(e).__name__}: {e}\n")
+            sys.stderr.write(f"[AdminNotify] Gmail SMTP {method_name} failed: {type(e).__name__}: {e}\n")
             continue
 
-    sys.stderr.write(f"[AdminNotify] ❌ All Gmail SMTP methods failed for: {subject}. Last error: {last_error}\n")
+    return False
+
+
+def _send_email(subject, html_body):
+    """Send email using the best available method. Tries Resend first, then Gmail SMTP."""
+    recipients = _get_admin_emails()
+    if not recipients:
+        sys.stderr.write("[AdminNotify] No admin emails configured - skipping notification\n")
+        return
+
+    sys.stderr.write(f"[AdminNotify] Sending: {subject} → {', '.join(recipients)}\n")
+
+    # Method 1: Resend.com (HTTP API — works on Railway, no SMTP port needed)
+    if os.getenv('RESEND_API_KEY'):
+        if _send_via_resend(subject, html_body, recipients):
+            return
+
+    # Method 2: Gmail SMTP (may be blocked on cloud platforms like Railway)
+    if os.getenv('GMAIL_USER') and os.getenv('GMAIL_APP_PASSWORD'):
+        if _send_via_gmail_smtp(subject, html_body, recipients):
+            return
+
+    sys.stderr.write(f"[AdminNotify] ❌ All email methods failed for: {subject}\n")
+    sys.stderr.write(f"[AdminNotify] 💡 TIP: Railway blocks SMTP ports. "
+                     f"Set RESEND_API_KEY (free at resend.com) for reliable email on Railway.\n")
 
 
 def _build_html_email(title, emoji, fields, action_text=None):
@@ -196,7 +259,7 @@ def notify_new_booking(booking_id, customer_name, customer_phone, booking_date, 
             ("💰 Price", f"₹{total_price}"),
         ]
     )
-    _send_in_background(_send_gmail, subject, html)
+    _send_in_background(_send_email, subject, html)
 
 
 def notify_new_membership_request(membership_id, user_name, user_phone, plan_type, amount):
@@ -212,7 +275,7 @@ def notify_new_membership_request(membership_id, user_name, user_phone, plan_typ
         ],
         action_text="Action Required: Approve or Reject"
     )
-    _send_in_background(_send_gmail, subject, html)
+    _send_in_background(_send_email, subject, html)
 
 
 def notify_new_quest_pass(quest_id, user_name, user_phone, game_title):
@@ -227,7 +290,7 @@ def notify_new_quest_pass(quest_id, user_name, user_phone, game_title):
         ],
         action_text="Action Required: Approve"
     )
-    _send_in_background(_send_gmail, subject, html)
+    _send_in_background(_send_email, subject, html)
 
 
 def notify_new_party_booking(party_id, customer_name, customer_phone, event_date, event_type, guests):
@@ -243,7 +306,7 @@ def notify_new_party_booking(party_id, customer_name, customer_phone, event_date
             ("👥 Guests", str(guests)),
         ]
     )
-    _send_in_background(_send_gmail, subject, html)
+    _send_in_background(_send_email, subject, html)
 
 
 def notify_new_offer_claim(claim_id, user_name, user_phone, offer_name):
@@ -258,7 +321,7 @@ def notify_new_offer_claim(claim_id, user_name, user_phone, offer_name):
         ],
         action_text="Action Required: Verify & Approve"
     )
-    _send_in_background(_send_gmail, subject, html)
+    _send_in_background(_send_email, subject, html)
 
 
 def notify_new_rental(rental_id, user_name, user_phone, game_title, duration_days):
@@ -273,7 +336,7 @@ def notify_new_rental(rental_id, user_name, user_phone, game_title, duration_day
             ("📅 Duration", f"{duration_days} days"),
         ]
     )
-    _send_in_background(_send_gmail, subject, html)
+    _send_in_background(_send_email, subject, html)
 
 
 def notify_generic(title, details_dict):
@@ -281,7 +344,7 @@ def notify_generic(title, details_dict):
     fields = [(k, str(v)) for k, v in details_dict.items()]
     subject = f"📢 {title}"
     html = _build_html_email(title, "📢", fields)
-    _send_in_background(_send_gmail, subject, html)
+    _send_in_background(_send_email, subject, html)
 
 
 def notify_new_feedback(feedback_id, name, email, feedback_type, priority, message):
@@ -302,7 +365,7 @@ def notify_new_feedback(feedback_id, name, email, feedback_type, priority, messa
         ],
         action_text="Review this feedback in the Admin Dashboard"
     )
-    _send_in_background(_send_gmail, subject, html)
+    _send_in_background(_send_email, subject, html)
 
 
 def notify_new_college_booking(booking_id, contact_name, contact_phone, college_name, event_date, estimated_cost, booking_ref):
@@ -320,4 +383,4 @@ def notify_new_college_booking(booking_id, contact_name, contact_phone, college_
         ],
         action_text="Review & Respond to Inquiry"
     )
-    _send_in_background(_send_gmail, subject, html)
+    _send_in_background(_send_email, subject, html)
