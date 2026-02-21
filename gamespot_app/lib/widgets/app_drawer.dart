@@ -6,7 +6,7 @@ import '../config/theme.dart';
 import '../providers/auth_provider.dart';
 
 /// Global slide-out menu — reusable across all screens
-/// Contains navigation, profile/login, and branding
+/// Uses the booking page warm orange/white theme
 class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
 
@@ -16,7 +16,7 @@ class AppDrawer extends StatefulWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Close menu',
-      barrierColor: Colors.black54,
+      barrierColor: Colors.black45,
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (_, __, ___) => const AppDrawer(),
       transitionBuilder: (context, anim, _, child) {
@@ -41,6 +41,15 @@ class _AppDrawerState extends State<AppDrawer> {
     });
   }
 
+  // Booking-page palette
+  static const _primary = AppColors.lpPrimary;       // #FF6B35
+  static const _primaryDark = AppColors.lpPrimaryDark; // #E85A2A
+  static const _dark = AppColors.lpDark;              // #212529
+  static const _gray = AppColors.lpGray;              // #6C757D
+  static const _gray700 = AppColors.lpGray700;        // #495057
+  static const _gray300 = AppColors.lpGray300;        // #DEE2E6
+  static const _gray200 = AppColors.lpGray200;        // #E9ECEF
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -53,36 +62,56 @@ class _AppDrawerState extends State<AppDrawer> {
         child: Container(
           width: size.width * 0.82,
           height: size.height,
-          decoration: const BoxDecoration(
-            color: Color(0xFA0A0F1E),
-            border: Border(right: BorderSide(color: Color(0x1AFFFFFF))),
+          decoration: BoxDecoration(
+            // Warm white/light-peach gradient matching BookingPage.css
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFFFFFFFF),   // white
+                Color(0xFFFFF8F5),   // very light warm
+                Color(0xFFFFF0E8),   // light peach
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(color: _primary.withOpacity(0.12), blurRadius: 30, offset: const Offset(4, 0)),
+            ],
           ),
           child: SafeArea(
             child: Column(
               children: [
                 // ── Header: Logo + close ──
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 8, 0),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 8, 14),
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: _primary.withOpacity(0.1))),
+                    color: Colors.white,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Image.asset(
                         'assets/images/logo.png',
-                        height: 28,
+                        height: 30,
                         fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) => ShaderMask(
-                          shaderCallback: (b) => const LinearGradient(
-                            colors: [AppColors.primaryLight, AppColors.accent],
-                          ).createShader(b),
+                          shaderCallback: (b) => AppColors.orangeGradient.createShader(b),
                           child: const Text(
                             'GAMESPOT',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1.5),
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1.5),
                           ),
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(FeatherIcons.x, color: Colors.white54, size: 20),
-                        onPressed: () => Navigator.of(context).pop(),
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          width: 38, height: 38,
+                          decoration: BoxDecoration(
+                            color: _gray200,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(FeatherIcons.x, color: _gray, size: 18),
+                        ),
                       ),
                     ],
                   ),
@@ -91,21 +120,21 @@ class _AppDrawerState extends State<AppDrawer> {
                 // ── User section / Login ──
                 if (auth.isAuthenticated) ...[
                   Container(
-                    margin: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                    margin: const EdgeInsets.fromLTRB(16, 14, 16, 6),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.04),
+                      gradient: AppColors.orangeGradient,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white.withOpacity(0.06)),
+                      boxShadow: [BoxShadow(color: _primary.withOpacity(0.25), blurRadius: 12, offset: const Offset(0, 4))],
                     ),
                     child: GestureDetector(
                       onTap: () => _navigate('/profile'),
                       child: Row(
                         children: [
                           Container(
-                            width: 46, height: 46,
+                            width: 44, height: 44,
                             decoration: BoxDecoration(
-                              gradient: AppColors.primaryGradient,
+                              color: Colors.white.withOpacity(0.25),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(
@@ -128,29 +157,29 @@ class _AppDrawerState extends State<AppDrawer> {
                                 const SizedBox(height: 2),
                                 Text(
                                   auth.userEmail,
-                                  style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
+                                  style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 12),
                                   maxLines: 1, overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
                           ),
-                          Icon(FeatherIcons.chevronRight, size: 16, color: Colors.white.withOpacity(0.2)),
+                          Icon(FeatherIcons.chevronRight, size: 16, color: Colors.white.withOpacity(0.6)),
                         ],
                       ),
                     ),
                   ),
                 ] else ...[
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
                     child: GestureDetector(
                       onTap: () => _navigate('/login'),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
+                          gradient: AppColors.orangeGradient,
                           borderRadius: BorderRadius.circular(12),
-                          boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 15)],
+                          boxShadow: [BoxShadow(color: _primary.withOpacity(0.3), blurRadius: 15)],
                         ),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -170,17 +199,17 @@ class _AppDrawerState extends State<AppDrawer> {
                 // ── Menu items ──
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _secTitle('MAIN'),
                         _Item(icon: FeatherIcons.home, label: 'Home', desc: 'Dashboard', onTap: () => _navigate('/')),
-                        _Item(icon: FeatherIcons.calendar, label: 'Book Session', desc: 'Reserve your spot', iconColor: const Color(0xFF22C55E), onTap: () => _navigate('/booking')),
+                        _Item(icon: FeatherIcons.calendar, label: 'Book Session', desc: 'Reserve your spot', iconColor: const Color(0xFF10B981), onTap: () => _navigate('/booking')),
                         _Item(icon: FeatherIcons.grid, label: 'Games Library', desc: 'Browse games', onTap: () => _navigate('/games')),
                         _Item(icon: FeatherIcons.award, label: 'Membership', desc: 'Plans & pricing', iconColor: const Color(0xFFF59E0B), onTap: () => _navigate('/membership')),
                         _secTitle('EXPLORE'),
-                        _Item(icon: FeatherIcons.gift, label: 'Offers', desc: 'Instagram promo', iconColor: const Color(0xFFFF4757), onTap: () => _navigate('/offers')),
+                        _Item(icon: FeatherIcons.gift, label: 'Offers', desc: 'Instagram promo', iconColor: const Color(0xFFEF4444), onTap: () => _navigate('/offers')),
                         _Item(icon: FeatherIcons.monitor, label: 'Rentals', desc: 'VR & PS5 rental', onTap: () => _navigate('/rental')),
                         _Item(icon: FeatherIcons.bell, label: 'Updates', desc: 'News & events', onTap: () => _navigate('/updates')),
                         _secTitle('SUPPORT'),
@@ -210,14 +239,14 @@ class _AppDrawerState extends State<AppDrawer> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   decoration: BoxDecoration(
-                    border: Border(top: BorderSide(color: Colors.white.withOpacity(0.06))),
-                    color: Colors.black.withOpacity(0.15),
+                    border: Border(top: BorderSide(color: _gray300.withOpacity(0.6))),
+                    color: Colors.white.withOpacity(0.6),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('GameSpot Kodungallur', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.25))),
-                      Text('v1.0', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.2))),
+                      Text('GameSpot Kodungallur', style: TextStyle(fontSize: 10, color: _gray.withOpacity(0.6))),
+                      Text('v1.0', style: TextStyle(fontSize: 10, color: _gray.withOpacity(0.4))),
                     ],
                   ),
                 ),
@@ -231,7 +260,7 @@ class _AppDrawerState extends State<AppDrawer> {
 
   Widget _secTitle(String t) => Padding(
     padding: const EdgeInsets.fromLTRB(10, 16, 0, 6),
-    child: Text(t, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primary.withOpacity(0.6), letterSpacing: 1.5)),
+    child: Text(t, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: _primary.withOpacity(0.7), letterSpacing: 1.5)),
   );
 }
 
@@ -245,7 +274,7 @@ class _Item extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = iconColor ?? Colors.white.withOpacity(0.7);
+    final c = iconColor ?? AppColors.lpPrimary;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -257,9 +286,8 @@ class _Item extends StatelessWidget {
             Container(
               width: 38, height: 38,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.06),
+                color: c.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white.withOpacity(0.08)),
               ),
               child: Icon(icon, size: 18, color: c),
             ),
@@ -268,12 +296,12 @@ class _Item extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.9))),
-                  Text(desc, style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.35))),
+                  Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.lpDark)),
+                  Text(desc, style: TextStyle(fontSize: 11, color: AppColors.lpGray.withOpacity(0.7))),
                 ],
               ),
             ),
-            Icon(FeatherIcons.chevronRight, size: 16, color: Colors.white.withOpacity(0.15)),
+            Icon(FeatherIcons.chevronRight, size: 16, color: AppColors.lpGray.withOpacity(0.3)),
           ],
         ),
       ),

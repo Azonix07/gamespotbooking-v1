@@ -197,25 +197,34 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Console icons — matching web sizes: ps5 & xbox small, meta larger
+                  // Console icons — constrained to prevent overflow
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Image.asset('assets/images/ps5Icon.png', height: 22, fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Icon(FeatherIcons.monitor, size: 22, color: AppColors.textMuted)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('|', style: TextStyle(fontSize: 20, color: Colors.white.withOpacity(0.2))),
+                      SizedBox(
+                        height: 20, width: 40,
+                        child: Image.asset('assets/images/ps5Icon.png', fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(FeatherIcons.monitor, size: 18, color: AppColors.textMuted)),
                       ),
-                      Image.asset('assets/images/xboxIcon.png', height: 22, fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Icon(FeatherIcons.monitor, size: 22, color: AppColors.textMuted)),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('|', style: TextStyle(fontSize: 20, color: Colors.white.withOpacity(0.2))),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Text('|', style: TextStyle(fontSize: 18, color: Colors.white.withOpacity(0.2))),
                       ),
-                      Image.asset('assets/images/metaIcon.png', height: 55, fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Icon(FeatherIcons.monitor, size: 28, color: AppColors.textMuted)),
+                      SizedBox(
+                        height: 20, width: 40,
+                        child: Image.asset('assets/images/xboxIcon.png', fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(FeatherIcons.monitor, size: 18, color: AppColors.textMuted)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Text('|', style: TextStyle(fontSize: 18, color: Colors.white.withOpacity(0.2))),
+                      ),
+                      SizedBox(
+                        height: 40, width: 60,
+                        child: Image.asset('assets/images/metaIcon.png', fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(FeatherIcons.monitor, size: 24, color: AppColors.textMuted)),
+                      ),
                     ],
                   ),
                 ],
