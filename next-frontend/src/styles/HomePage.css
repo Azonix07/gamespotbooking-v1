@@ -5,13 +5,13 @@
 /* Gaming Font - Orbitron — loaded via next/font/google for performance */
 
 /* ===================================
-   HOME PAGE — NAVBAR OVERLAY (DESKTOP)
+   HOME PAGE — NAVBAR OVERLAY
    On the home page, the Navbar overlays the hero video
-   instead of taking up vertical space. On mobile (≤968px),
-   the Navbar is hidden and the homepage-header takes over.
+   instead of taking up vertical space. Same Navbar is used
+   for both desktop and mobile (with its own hamburger drawer).
    =================================== */
 
-/* Make Navbar transparent & overlay on home page */
+/* Make Navbar transparent & overlay on home page (both desktop & mobile) */
 body:has(.hero-container) .navbar {
   position: fixed;
   top: 0;
@@ -23,19 +23,6 @@ body:has(.hero-container) .navbar {
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-}
-
-/* Hide Navbar on mobile for home page — homepage-header + slide-menu handles it */
-@media (max-width: 968px) {
-  body:has(.hero-container) .navbar {
-    display: none !important;
-  }
-  
-  /* Also hide the Navbar's mobile drawer on home page since slide-menu handles it */
-  body:has(.hero-container) .mobile-nav-drawer,
-  body:has(.hero-container) .mobile-nav-overlay {
-    display: none !important;
-  }
 }
 
 /* Prevent body scroll on homepage */
@@ -64,33 +51,16 @@ body:has(.hero-container) .main-content {
 
 /* ===================================
    HOMEPAGE HEADER WITH HAMBURGER MENU
-   (Mobile only — on desktop the Navbar component is used)
+   (Hidden — the Navbar component handles all screen sizes)
    =================================== */
 .homepage-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  display: none; /* Hidden on desktop — Navbar handles it */
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.5rem 2rem;
+  display: none !important;
 }
 
-/* Show homepage-header only on mobile */
-@media (max-width: 968px) {
-  .homepage-header {
-    display: flex;
-  }
-}
-
-/* Hide slide-menu drawer + overlay on desktop (Navbar handles navigation) */
-@media (min-width: 969px) {
-  .slide-menu,
-  .menu-overlay {
-    display: none !important;
-  }
+/* Hide slide-menu drawer + overlay completely (Navbar handles navigation) */
+.slide-menu,
+.menu-overlay {
+  display: none !important;
 }
 
 .hamburger-menu-btn {
