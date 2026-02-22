@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Plus_Jakarta_Sans, Orbitron } from 'next/font/google';
+import { Inter, Plus_Jakarta_Sans, Orbitron, Rajdhani } from 'next/font/google';
 import { Providers } from './providers';
 import '@/styles/globals.css';
 
@@ -24,6 +24,13 @@ const orbitron = Orbitron({
   weight: ['500', '600', '700', '800'],
   display: 'swap',
   preload: false, /* Only used for display/CTA — not critical for LCP */
+});
+const rajdhani = Rajdhani({
+  subsets: ['latin'],
+  variable: '--font-rajdhani',
+  weight: ['600', '700'],
+  display: 'swap',
+  preload: false, /* Only used in navbar — not critical for LCP */
 });
 
 export const viewport: Viewport = {
@@ -118,7 +125,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${plusJakarta.variable} ${orbitron.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${plusJakarta.variable} ${orbitron.variable} ${rajdhani.variable}`}>
       <head>
         {/* Favicons are handled by metadata export — no manual <link> tags needed */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

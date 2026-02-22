@@ -629,10 +629,10 @@ body:has(.hero-container) .main-content {
 }
 
 .cta-book-now-button {
-  padding: 12px 45px;
+  padding: 14px 50px;
   color: rgb(0, 0, 0);
-  font-weight: 600;
-  font-size: 20px;
+  font-weight: 800;
+  font-size: 25px;
   font-family: var(--font-display);
   cursor: pointer;
   display: inline-flex;
@@ -1134,6 +1134,12 @@ body:has(.hero-container) .main-content {
     padding: var(--spacing-xl);
   }
 
+  .cta-book-now-button {
+    padding: 12px 42px;
+    font-size: 20px;
+    font-weight: 800;
+  }
+
   .hero-subtitle {
     font-size: 22px;
     margin-top: 25px;
@@ -1225,6 +1231,7 @@ body:has(.hero-container) .main-content {
   .cta-book-now-button {
     padding: 10px 35px;
     font-size: 16px;
+    font-weight: 800;
   }
 
   .console-icons-container {
