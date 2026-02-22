@@ -14,6 +14,52 @@ import ModernDatePicker from '@/components/ModernDatePicker';
 import MobileDateCarousel from '@/components/MobileDateCarousel';
 import '@/styles/BookingPage.css';
 
+/* ── Shimmer Image component — shows a loading pulse until the image loads ── */
+function ShimmerImg({ src, alt, className, ...rest }: React.ImgHTMLAttributes<HTMLImageElement>) {
+  const [loaded, setLoaded] = React.useState(false);
+  const [error, setError] = React.useState(false);
+  return (
+    <div className={`shimmer-img-wrap ${loaded ? 'loaded' : ''}`}>
+      {!loaded && !error && <div className="shimmer-placeholder" />}
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        onError={(e) => { setError(true); setLoaded(true); rest.onError?.(e); }}
+        {...rest}
+      />
+    </div>
+  );
+}
+
+/* ── Game cover with shimmer + emoji fallback on error ── */
+function GameCoverImg({ src, alt, fallbackEmoji, fallbackColor }: { src: string; alt: string; fallbackEmoji: string; fallbackColor: string }) {
+  const [loaded, setLoaded] = React.useState(false);
+  const [error, setError] = React.useState(false);
+  return (
+    <>
+      {!loaded && !error && <div className="game-cover-shimmer" />}
+      {!error ? (
+        <img
+          src={src}
+          alt={alt}
+          className="game-card-cover-img"
+          loading="lazy"
+          style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease' }}
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+        />
+      ) : (
+        <div className="game-card-cover-fallback" style={{ display: 'flex', background: `linear-gradient(135deg, ${fallbackColor}cc, ${fallbackColor}99)` }}>
+          <span className="game-card-emoji">{fallbackEmoji}</span>
+        </div>
+      )}
+    </>
+  );
+}
+
 // Game cover images mapping - using Steam CDN (library_600x900) for verified correct covers
 const GAME_COVERS = {
   'Spider-Man 2': {
@@ -1897,16 +1943,7 @@ const BookingPage = () => {
                                     >
                                       <div className="game-card-visual">
                                         {cover.img ? (
-                                          <img 
-                                            src={cover.img} 
-                                            alt={game.name} 
-                                            className="game-card-cover-img"
-                                            loading="lazy"
-                                            onError={(e) => {
-                                              (e.target as HTMLImageElement).style.display = 'none';
-                                              ((e.target as HTMLImageElement).nextSibling as HTMLElement).style.display = 'flex';
-                                            }}
-                                          />
+                                          <GameCoverImg src={cover.img} alt={game.name} fallbackEmoji={cover.emoji} fallbackColor={cover.color} />
                                         ) : null}
                                         <div className="game-card-cover-fallback" style={{ display: cover.img ? 'none' : 'flex', background: `linear-gradient(135deg, ${cover.color}cc, ${cover.color}99)` }}>
                                           <span className="game-card-emoji">{cover.emoji}</span>
@@ -2023,7 +2060,7 @@ const BookingPage = () => {
                                     
                                     <div className="device-header">
                                       <div className="device-icon-wrapper ps5">
-                                        <img src="/assets/images/Ps5_logo_small.png" alt="PS5" className="device-logo-img" />
+                                        <ShimmerImg src="/assets/images/Ps5_logo_small.png" alt="PS5" className="device-logo-img" />
                                       </div>
                                       <div className="device-details">
                                         <h4 className="device-name">PlayStation 5</h4>
@@ -2135,7 +2172,7 @@ const BookingPage = () => {
                                 
                                 <div className="device-header">
                                   <div className="device-icon-wrapper ps5">
-                                    <img src="/assets/images/Ps5_logo_small.png" alt="PS5" className="device-logo-img" />
+                                    <ShimmerImg src="/assets/images/Ps5_logo_small.png" alt="PS5" className="device-logo-img" />
                                   </div>
                                   <div className="device-details">
                                     <h4 className="device-name">PlayStation 5</h4>
@@ -2186,7 +2223,7 @@ const BookingPage = () => {
                                               >
                                                 <div className="unit-game-cover">
                                                   {getGameCover(g.name).img ? (
-                                                    <img src={getGameCover(g.name).img} alt={g.name} className="unit-game-cover-img" />
+                                                    <ShimmerImg src={getGameCover(g.name).img} alt={g.name} className="unit-game-cover-img" />
                                                   ) : (
                                                     <span className="unit-game-emoji">{getGameCover(g.name).emoji}</span>
                                                   )}

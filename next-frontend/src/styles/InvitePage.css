@@ -128,7 +128,7 @@
 
 /* Title */
 .inv__title {
-  font-family: var(--font-heading, 'Space Grotesk', sans-serif);
+  font-family: var(--font-heading, 'Plus Jakarta Sans', sans-serif);
   font-size: 2.1rem;
   font-weight: 800;
   color: #1a1a2e;

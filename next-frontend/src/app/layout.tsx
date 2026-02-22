@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Space_Grotesk, Rajdhani } from 'next/font/google';
+import { Inter, Plus_Jakarta_Sans, Orbitron } from 'next/font/google';
 import { Providers } from './providers';
 import '@/styles/globals.css';
 
@@ -11,19 +11,19 @@ const inter = Inter({
   display: 'swap',
   preload: true,
 });
-const spaceGrotesk = Space_Grotesk({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  variable: '--font-space-grotesk',
-  weight: ['500', '600', '700'],
+  variable: '--font-jakarta',
+  weight: ['500', '600', '700', '800'],
   display: 'swap',
   preload: true,
 });
-const rajdhani = Rajdhani({
+const orbitron = Orbitron({
   subsets: ['latin'],
-  variable: '--font-rajdhani',
-  weight: ['600', '700'],
+  variable: '--font-orbitron',
+  weight: ['500', '600', '700', '800'],
   display: 'swap',
-  preload: false, /* Only used in navbar — not critical for LCP */
+  preload: false, /* Only used for display/CTA — not critical for LCP */
 });
 
 export const viewport: Viewport = {
@@ -118,28 +118,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${spaceGrotesk.variable} ${rajdhani.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${plusJakarta.variable} ${orbitron.variable}`}>
       <head>
         {/* Favicons are handled by metadata export — no manual <link> tags needed */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Russo One — non-blocking: load as preload + swap to avoid render-blocking CSS */}
-        <link
-          rel="preload"
-          href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap"
-          as="style"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap"
-          rel="stylesheet"
-          media="print"
-          // @ts-ignore — onLoad switches media to "all" after load, avoiding render-block
-          onLoad="this.media='all'"
-        />
-        <noscript>
-          {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-          <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet" />
-        </noscript>
+        {/* Orbitron is now loaded via next/font — no external stylesheet needed */}
         <link rel="preconnect" href="https://gamespotbooking-v1-production.up.railway.app" />
         <link rel="dns-prefetch" href="https://gamespotbooking-v1-production.up.railway.app" />
       </head>

@@ -2,7 +2,7 @@
    HOME PAGE
    =================================== */
 
-/* Gaming Font - Russo One — loaded via index.html <link> for performance */
+/* Gaming Font - Orbitron — loaded via next/font/google for performance */
 
 /* Prevent body scroll on homepage */
 body:has(.hero-container) {
@@ -87,6 +87,33 @@ body:has(.hero-container) .main-content {
 .user-button:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
+}
+
+/* Circular login icon — matches Navbar login-icon-button */
+.header-login-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.header-login-icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+  color: white;
+}
+
+.header-login-icon:active {
+  transform: scale(0.95);
 }
 
 .header-user-avatar {

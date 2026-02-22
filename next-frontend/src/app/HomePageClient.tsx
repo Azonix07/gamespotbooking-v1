@@ -255,9 +255,9 @@ export default function HomePageClient() {
               </div>
             </button>
           ) : (
-            <button className="login-button" onClick={() => router.push('/login')}>
-              <FiUser size={18} />
-            </button>
+            <Link href="/login" className="header-login-icon" title="Login">
+              <FiUser size={22} />
+            </Link>
           )}
         </div>
       </div>
