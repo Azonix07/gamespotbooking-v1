@@ -54,7 +54,7 @@ function ThemeLoader() {
 }
 
 // Pages that have NO Navbar at all
-const NO_NAVBAR_PAGES = new Set(['/', '/admin/dashboard', '/invite']);
+const NO_NAVBAR_PAGES = new Set(['/admin/dashboard', '/invite']);
 
 // Pages that have NO Footer
 const NO_FOOTER_PAGES = new Set([

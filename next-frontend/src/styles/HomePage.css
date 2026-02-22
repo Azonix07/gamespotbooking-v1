@@ -4,6 +4,40 @@
 
 /* Gaming Font - Orbitron — loaded via next/font/google for performance */
 
+/* ===================================
+   HOME PAGE — NAVBAR OVERLAY (DESKTOP)
+   On the home page, the Navbar overlays the hero video
+   instead of taking up vertical space. On mobile (≤968px),
+   the Navbar is hidden and the homepage-header takes over.
+   =================================== */
+
+/* Make Navbar transparent & overlay on home page */
+body:has(.hero-container) .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Hide Navbar on mobile for home page — homepage-header + slide-menu handles it */
+@media (max-width: 968px) {
+  body:has(.hero-container) .navbar {
+    display: none !important;
+  }
+  
+  /* Also hide the Navbar's mobile drawer on home page since slide-menu handles it */
+  body:has(.hero-container) .mobile-nav-drawer,
+  body:has(.hero-container) .mobile-nav-overlay {
+    display: none !important;
+  }
+}
+
 /* Prevent body scroll on homepage */
 body:has(.hero-container) {
   overflow: hidden;
@@ -30,6 +64,7 @@ body:has(.hero-container) .main-content {
 
 /* ===================================
    HOMEPAGE HEADER WITH HAMBURGER MENU
+   (Mobile only — on desktop the Navbar component is used)
    =================================== */
 .homepage-header {
   position: fixed;
@@ -37,10 +72,25 @@ body:has(.hero-container) .main-content {
   left: 0;
   right: 0;
   z-index: 100;
-  display: flex;
+  display: none; /* Hidden on desktop — Navbar handles it */
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 2rem;
+}
+
+/* Show homepage-header only on mobile */
+@media (max-width: 968px) {
+  .homepage-header {
+    display: flex;
+  }
+}
+
+/* Hide slide-menu drawer + overlay on desktop (Navbar handles navigation) */
+@media (min-width: 969px) {
+  .slide-menu,
+  .menu-overlay {
+    display: none !important;
+  }
 }
 
 .hamburger-menu-btn {
