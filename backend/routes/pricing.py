@@ -118,11 +118,19 @@ def calculate_pricing():
                     })
 
         # Calculate driving simulator price (normal rate)
+        # driving_sim can be a boolean OR an object { duration: X }
         if driving_sim:
-            driving_price = calculate_driving_price(duration_minutes)
+            if isinstance(driving_sim, dict):
+                driving_dur = driving_sim.get('duration', duration_minutes)
+            else:
+                driving_dur = data.get('driving_duration', duration_minutes)
+            if driving_dur not in [30, 60, 90, 120]:
+                driving_dur = duration_minutes
+            driving_price = calculate_driving_price(driving_dur)
             breakdown.append({
                 'device': 'Driving Simulator',
                 'players': 1,
+                'duration': driving_dur,
                 'price': driving_price
             })
 
@@ -158,9 +166,20 @@ def calculate_pricing():
         # This is used to check if the user has enough membership hours
         max_ps5_duration = max(
             [ps5.get('duration', duration_minutes) for ps5 in (ps5_bookings if isinstance(ps5_bookings, list) else [])],
-            default=duration_minutes
+            default=0
         )
-        booking_hours = max(max_ps5_duration, duration_minutes) / 60.0
+        # Resolve actual driving sim duration for membership checks
+        if driving_sim:
+            if isinstance(driving_sim, dict):
+                actual_driving_dur = driving_sim.get('duration', duration_minutes)
+            else:
+                actual_driving_dur = data.get('driving_duration', duration_minutes)
+            if actual_driving_dur not in [30, 60, 90, 120]:
+                actual_driving_dur = duration_minutes
+        else:
+            actual_driving_dur = 0
+
+        booking_hours = max(max_ps5_duration, actual_driving_dur, duration_minutes) / 60.0
 
         # Apply story membership to PS5 bookings
         # IMPORTANT: Membership pass covers ONLY the pass holder (1 player).
@@ -232,9 +251,10 @@ def calculate_pricing():
             used_h = float(driving_membership['hours_used'])
             remaining_h = max(0, total_h - used_h)
             rate = driving_membership['_plan_info'].get('rate', 0)
+            driving_booking_hours = actual_driving_dur / 60.0
 
-            if remaining_h >= booking_hours:
-                membership_driving_final = calculate_membership_price(duration_minutes, rate)
+            if remaining_h >= driving_booking_hours:
+                membership_driving_final = calculate_membership_price(actual_driving_dur, rate)
                 membership_applied = True
                 if not active_membership_info:
                     active_membership_info = {
@@ -243,7 +263,7 @@ def calculate_pricing():
                         'category': 'driving',
                         'rate_per_hour': rate,
                         'hours_remaining': remaining_h,
-                        'hours_this_booking': booking_hours,
+                        'hours_this_booking': driving_booking_hours,
                         'days_remaining': driving_membership['days_remaining']
                     }
             else:
@@ -251,7 +271,7 @@ def calculate_pricing():
                     hours_warning = True
                     hours_warning_message = (
                         f'Driving Pass has {remaining_h:.1f}h remaining but booking '
-                        f'needs {booking_hours:.1f}h. Normal rate applied for Driving Sim.'
+                        f'needs {driving_booking_hours:.1f}h. Normal rate applied for Driving Sim.'
                     )
 
         final_price = membership_ps5_final + membership_driving_final

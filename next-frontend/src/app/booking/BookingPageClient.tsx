@@ -542,9 +542,14 @@ const BookingPage = () => {
         ? Math.max(...ps5Bookings.map(b => b.duration || 60))
         : (drivingSim ? (drivingSim.duration || 60) : 60);
       
+      // Send driving sim as an object with its own duration so the backend prices it correctly
+      const drivingSimPayload = drivingSim
+        ? { duration: drivingSim.duration || 60 }
+        : false;
+      
       const response = await calculatePrice(
         ps5Bookings,
-        !!drivingSim,
+        drivingSimPayload,
         maxDuration
       );
       
@@ -939,8 +944,9 @@ const BookingPage = () => {
       
       // Add Driving Sim booking
       if (drivingSim) {
-        // Calculate price for driving sim
-        const priceResponse = await calculatePrice([], true, drivingSim.duration || 60);
+        // Calculate price for driving sim — send duration as object for accuracy
+        const drivingDur = drivingSim.duration || 60;
+        const priceResponse = await calculatePrice([], { duration: drivingDur }, drivingDur);
         
         // Calculate adjusted start time if "Play After PS5" is enabled
         let drivingStartTime = selectedTime;

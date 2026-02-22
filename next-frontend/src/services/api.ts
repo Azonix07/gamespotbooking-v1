@@ -115,7 +115,7 @@ export const getSlotDetails = (date: string, time: string, duration: number) =>
   fetchWithCredentials(`${API_BASE_URL}/api/slots.php?date=${date}&time=${time}&duration=${duration}`);
 
 // Pricing
-export const calculatePrice = (ps5Bookings: any[], drivingSim: boolean, durationMinutes: number) =>
+export const calculatePrice = (ps5Bookings: any[], drivingSim: boolean | { duration: number }, durationMinutes: number) =>
   fetchWithCredentials(`${API_BASE_URL}/api/pricing.php`, {
     method: 'POST',
     body: JSON.stringify({ ps5_bookings: ps5Bookings, driving_sim: drivingSim, duration_minutes: durationMinutes }),
