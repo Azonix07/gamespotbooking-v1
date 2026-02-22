@@ -115,25 +115,29 @@
 }
 
 /* ============================================
-   RESPONSIVE — previously mobile-only, now all screens
+   RESPONSIVE
    ============================================ */
 
-/* ── Desktop enhancements — larger cards, hover effect ── */
+/* ── Desktop — inline in card-header, constrained width ── */
 @media (min-width: 769px) {
   .mobile-date-carousel {
-    margin-top: 8px;
+    margin-top: 0;
+    width: auto;
+    max-width: 480px;
+    margin-left: auto;
+    flex-shrink: 1;
   }
 
   .mobile-date-carousel-scroll {
-    gap: 12px;
-    padding: 6px 4px 10px;
+    gap: 8px;
+    padding: 4px 2px 6px;
   }
 
   .mobile-date-card {
-    min-width: 68px;
-    width: 68px;
-    height: 80px;
-    border-radius: 14px;
+    min-width: 60px;
+    width: 60px;
+    height: 72px;
+    border-radius: 12px;
     cursor: pointer;
   }
 
@@ -145,15 +149,15 @@
   }
 
   .mobile-date-weekday {
-    font-size: 0.65rem;
+    font-size: 0.58rem;
   }
 
   .mobile-date-day {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
   }
 
   .mobile-date-month {
-    font-size: 0.62rem;
+    font-size: 0.55rem;
   }
 }
 

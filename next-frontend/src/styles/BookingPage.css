@@ -302,7 +302,14 @@
   /* margin-bottom: 20px; */
   padding-bottom: 16px;
   border-bottom: 1px solid var(--booking-glass-border);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+/* On mobile, allow header to wrap so carousel goes below title */
+@media (max-width: 768px) {
+  .card-header {
+    flex-wrap: wrap;
+  }
 }
 
 .card-header.with-back {
