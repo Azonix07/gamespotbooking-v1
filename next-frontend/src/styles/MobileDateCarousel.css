@@ -5,7 +5,7 @@
    ============================================ */
 
 .mobile-date-carousel {
-  display: block; /* Visible on all screen sizes */
+  display: none; /* Hidden by default, shown on mobile only */
   width: 100%;
   margin-top: 4px;
 }
@@ -118,46 +118,10 @@
    RESPONSIVE
    ============================================ */
 
-/* ── Desktop — inline in card-header, constrained width ── */
-@media (min-width: 769px) {
+/* ── Mobile — show carousel ── */
+@media (max-width: 768px) {
   .mobile-date-carousel {
-    margin-top: 0;
-    width: auto;
-    max-width: 480px;
-    margin-left: auto;
-    flex-shrink: 1;
-  }
-
-  .mobile-date-carousel-scroll {
-    gap: 8px;
-    padding: 4px 2px 6px;
-  }
-
-  .mobile-date-card {
-    min-width: 60px;
-    width: 60px;
-    height: 72px;
-    border-radius: 12px;
-    cursor: pointer;
-  }
-
-  .mobile-date-card:hover:not(.selected) {
-    border-color: rgba(255, 107, 53, 0.4);
-    background: rgba(255, 107, 53, 0.04);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.12);
-  }
-
-  .mobile-date-weekday {
-    font-size: 0.58rem;
-  }
-
-  .mobile-date-day {
-    font-size: 1.2rem;
-  }
-
-  .mobile-date-month {
-    font-size: 0.55rem;
+    display: block;
   }
 }
 
